@@ -24,7 +24,6 @@ package edu.ohio.minuku.manager;
 
 import org.greenrobot.eventbus.Subscribe;
 
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
