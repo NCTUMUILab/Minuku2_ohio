@@ -363,7 +363,7 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
         activityRecognitionDataRecord.setID(id);
         Log.e(TAG,"CreateTime:" + activityRecognitionDataRecord.getCreationTime()+ " MostProbableActivity:"+activityRecognitionDataRecord.getMostProbableActivity());
 
-        Log.e("mLocalRecordPool ", String.valueOf(mLocalRecordPool));
+//        Log.e("mLocalRecordPool ", String.valueOf(mLocalRecordPool));
         mLocalRecordPool.add(activityRecognitionDataRecord); //it's working.
         Log.e(TAG, "[test logging]add record " + "logged at " + activityRecognitionDataRecord.getTimeString() );
         //Log.e(TAG, String.valueOf(mLocalRecordPool.size()));

@@ -240,7 +240,7 @@ public class MinukuStreamManager implements StreamManager {
             }
         }
 
-        //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which menas its not trip
+        //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which means its not trip
 
 
         //TODO filter < 100m trip its isTrip to 0
