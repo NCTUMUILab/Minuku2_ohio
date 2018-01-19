@@ -47,7 +47,8 @@ import edu.ohio.minuku.DBHelper.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
-import edu.ohio.minuku.manager.TripManager;
+import edu.ohio.minuku.model.Annotation;
+import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku_2.R;
 
 /**
@@ -83,10 +84,14 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
     private Button submit;
 
     private ArrayList<LatLng> latLngs;
+    private ArrayList<String> results;
 
     private Bundle bundle;
 
     private String ongoing;
+
+    private String start;
+    private String end;
 
     private Spinner activityspinner, preplanspinner, tripspinner;
     final String[] activityString = {"Choose an activity", "Static", "Biking", "In a car. (I'm the driver)",
@@ -104,12 +109,6 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         error2 = false;
         error3 = false;
         error4 = false;
-
-//        error1 = true;
-//        error2 = true;
-//        error3 = true;
-//        error4 = true;
-//        error4_2 = true;
 
     }
 
@@ -147,10 +146,15 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
             Log.d(TAG,"ListRecordAsyncTask");
 
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+//                latLngs = new AnnotateRecordAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionkey).get();
+//            else
+//                latLngs = new AnnotateRecordAsyncTask().execute(sessionkey).get();
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                latLngs = new AnnotateRecordAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionkey).get();
+                results = new AnnotateRecordAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionkey).get();
             else
-                latLngs = new AnnotateRecordAsyncTask().execute(sessionkey).get();
+                results = new AnnotateRecordAsyncTask().execute(sessionkey).get();
 
             Log.d(TAG,"locationDataRecords = new ListRecordAsyncTask().execute().get();");
 
@@ -162,15 +166,26 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
             e.printStackTrace();
         }
 
-//        latLngs = LocationDataRecordDAO.getTripLocToDrawOnMap(bundle.getString("timekey_id"));
+        for(int index = 0;index < results.size(); index++){
+            String[] separated = results.get(index).split(Constants.DELIMITER);
+            double lat = Double.valueOf(separated[2]);
+            double lng = Double.valueOf(separated[3]);
+
+            LatLng latLng = new LatLng(lat, lng);
+            latLngs.add(latLng);
+        }
+
+
         Log.d(TAG,"latLngs : " + latLngs);
         showRecordingVizualization();
 
         time = (TextView)findViewById(R.id.Time);
         String timeketForShow = null;
-        String[] timekeys = sessionkey.split("-");
-        String start = timekeys[0];
-        String end = timekeys[1];
+//        String[] timekeys = sessionkey.split("-");
+//        String start = timekeys[0];
+//        String end = timekeys[1];
+        start = results.get(0).split(Constants.DELIMITER)[1];
+        end = results.get(results.size()-1).split(Constants.DELIMITER)[1];
         start = getmillisecondToDateWithTime(Long.valueOf(start));
         end = getmillisecondToDateWithTime(Long.valueOf(end));
         timeketForShow = start+"-"+end;
@@ -799,11 +814,11 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
                     e.printStackTrace();
                 }
 
-                String[] timekeys = sessionkey.split("-");
-                String start = timekeys[0];
-                String end = timekeys[1];
-                start = TripManager.getmillisecondToDateWithTime(Long.valueOf(start));
-                end = TripManager.getmillisecondToDateWithTime(Long.valueOf(end));
+//                String[] timekeys = sessionkey.split("-");
+//                String start = timekeys[0];
+//                String end = timekeys[1];
+//                start = TripManager.getmillisecondToDateWithTime(Long.valueOf(start));
+//                end = TripManager.getmillisecondToDateWithTime(Long.valueOf(end));
 
                 Log.d(TAG, "sessionkey : "+ sessionkey);
 
@@ -830,43 +845,6 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         return timeInMilliseconds;
     }
 
-    private void addToDB(String starttime, String endtime, String activityType, String tripType, JSONArray latdata, JSONArray lngdata){
-        Log.d(TAG, "addToDB");
-
-        ContentValues values = new ContentValues();
-        SQLiteDatabase db = DBManager.getInstance().openDatabase();
-
-        try{
-            String startimekey[] = sessionkey.split("-");
-            db.delete(DBHelper.annotate_table,DBHelper.Trip_startTime+" = '"+startimekey[0]+"' ",null);
-        }catch (NullPointerException e){
-            Log.d(TAG,"No data yet.");
-            e.printStackTrace();
-        }
-
-        try {
-            values.put(DBHelper.TIME, sessionkey);
-            values.put(DBHelper.Trip_id, sessionid);
-            values.put(DBHelper.Trip_startTime, starttime);
-            values.put(DBHelper.Trip_endTime, endtime);
-            values.put(DBHelper.activityType, activityType);
-            values.put(DBHelper.tripType, tripType);
-            values.put(DBHelper.lat, latdata.toString());
-            values.put(DBHelper.lng, lngdata.toString());
-
-            Log.d(TAG," starttime :" + starttime);
-
-            db.insert(DBHelper.annotate_table, null, values);
-        }
-        catch(NullPointerException e){
-            e.printStackTrace();
-        }
-        finally {
-            values.clear();
-            DBManager.getInstance().closeDatabase(); // Closing database connection
-        }
-    }
-
     private void addToDB(String starttime, String endtime, String ans1, String ans2, String ans3
             , String ans4, JSONArray latdata, JSONArray lngdata){
         Log.d(TAG, "addToDB");
@@ -874,9 +852,34 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         ContentValues values = new ContentValues();
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
+        Annotation annotation = new Annotation();
+
+        JSONObject toContent = new JSONObject();
+
+        try {
+            toContent.put("starttime", starttime);
+            toContent.put("endtime", endtime);
+            toContent.put("ans1", ans1);
+            toContent.put("ans2", ans2);
+            toContent.put("ans3", ans3);
+            toContent.put("ans4", ans4);
+
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+        annotation.setContent(toContent.toString());
+
+        Session session = new Session(Integer.valueOf(sessionkey));
+
+        session.addAnnotation(annotation);
+
+        DBHelper.updateSessionTable(session);
+
+/*
+
         try{
-            String startimekey[] = sessionkey.split("-");
-            db.delete(DBHelper.annotate_table,DBHelper.Trip_startTime+" = '"+startimekey[0]+"' ",null);
+//            String startimekey[] = sessionkey.split("-");
+            db.delete(DBHelper.annotate_table,DBHelper.Trip_startTime+" = '"+starttime+"' ",null);
         }catch (NullPointerException e){
             Log.d(TAG,"No data yet.");
             e.printStackTrace();
@@ -891,6 +894,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
             values.put(DBHelper.Trip_startTime, starttime);
             Log.d(TAG," starttime :" + starttime);
             values.put(DBHelper.Trip_endTime, endtime);
+            Log.d(TAG," endtime :" + endtime);
 //            values.put(DBHelper.activityType, activityType);
 //            values.put(DBHelper.preplan, preplan);
             values.put(DBHelper.ans1, ans1);
@@ -910,6 +914,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
             values.clear();
             DBManager.getInstance().closeDatabase(); // Closing database connection
         }
+*/
 
     }
 
@@ -977,7 +982,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         }
     }*/
 
-    private class AnnotateRecordAsyncTask extends AsyncTask<String, Void, ArrayList<LatLng>> {
+    private class AnnotateRecordAsyncTask extends AsyncTask<String, Void, ArrayList<String>> {
 
         private final ProgressDialog dialog = new ProgressDialog(annotateohio.this);
 
@@ -990,15 +995,15 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         }
 
         @Override
-        protected ArrayList<LatLng> doInBackground(String... params) {
-            String timekey = params[0];
+        protected ArrayList<String> doInBackground(String... params) {
+            String sessionkey = params[0];
 
-            Log.d(TAG,"sessionkey : " + timekey);
+            Log.d(TAG,"sessionkey : " + sessionkey);
 
-            String timedata[] = timekey.split("-");
-            String startTime = timedata[0];
+//            String timedata[] = sessionkey.split("-");
+//            String startTime = timedata[0];
 
-            Log.d(TAG,"startTime : " + startTime);
+//            Log.d(TAG,"startTime : " + startTime);
 
             //TODO use freaking sessionkey to get data. First, get the session id by the sessionkey.
 
@@ -1006,12 +1011,29 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
             ArrayList<LatLng> locationDataRecords = null;
 
+            ArrayList<String> resultBySession = null;
+
             try {
-                sessionid = Integer.valueOf(getSessionIdByTimekey(startTime));
+//                sessionid = Integer.valueOf(getSessionIdByTimekey(startTime));
+
+                sessionid = Integer.valueOf(sessionkey);
+
 //                sessionid = Integer.valueOf(getSessionIdByTimekey(TripManager.getSpecialTimeInMillis(startTime)));
 //                locationDataRecords = LocationDataRecordDAO.getTripLocToDrawOnMap(sessionkey);
 //                sessionid = bundle.getInt("position_id");
-                locationDataRecords = TripManager.getInstance().getTripLocToDrawOnMap(sessionid);
+
+                resultBySession = DBHelper.queryRecordsInSession(DBHelper.location_table, sessionid);
+
+                /*for(String eachrow : resultBySession){
+                    String[] separated = eachrow.split(Constants.DELIMITER);
+                    double lat = Double.valueOf(separated[2]);
+                    double lng = Double.valueOf(separated[3]);
+
+                    LatLng latLng = new LatLng(lat, lng);
+                    locationDataRecords.add(latLng);
+                }*/
+
+//                locationDataRecords = TripManager.getInstance().getTripLocToDrawOnMap(sessionid);
 
             }catch (Exception e) {
                 locationDataRecords = new ArrayList<LatLng>();
@@ -1022,7 +1044,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
             Log.d(TAG,"sessionid in doInBackground : " + sessionid);
             Log.d(TAG,"AnnotateRecordAsyncTask : " + locationDataRecords);
 
-            return locationDataRecords;
+            return resultBySession;
 
         }
 
@@ -1059,7 +1081,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
         // onPostExecute displays the results of the AsyncTask.
         @Override
-        protected void onPostExecute(ArrayList<LatLng> result) {
+        protected void onPostExecute(ArrayList<String> result) {
 
             super.onPostExecute(result);
 

@@ -133,7 +133,7 @@ public class Session {
 		mAnnotationSet = annotationSet;
 	}
 
-    public void addAnnotaiton (Annotation annotation) {
+    public void addAnnotation (Annotation annotation) {
 
         if (mAnnotationSet==null){
             mAnnotationSet = new AnnotationSet();

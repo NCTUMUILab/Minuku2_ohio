@@ -426,8 +426,32 @@ public class MainActivity extends AppCompatActivity {
             String endTimeString = makingDataFormat(Year, Month, Day + 1);
             long startTime = getSpecialTimeInMillis(startTimeString);
             long endTime = getSpecialTimeInMillis(endTimeString);
+
+            ArrayList<String> results = DBHelper.querySessionsBetweenTimes(startTime, endTime);
+            int countForLight = 0;
+            for(String result : results){
+                String annotation = result.split(Constants.DELIMITER)[4];
+                if(!annotation.equals("")){
+                    countForLight++;
+                }
+            }
+
+            Drawable drawable_red = getResources().getDrawable(R.drawable.circle_red);
+            drawable_red.setBounds(0, 0, (int)(drawable_red.getIntrinsicWidth()*0.5), (int)(drawable_red.getIntrinsicHeight()*0.5));
+
+            Drawable drawable_green = getResources().getDrawable(R.drawable.circle_green);
+            drawable_green.setBounds(0, 0, (int)(drawable_green.getIntrinsicWidth()*0.5), (int)(drawable_green.getIntrinsicHeight()*0.5));
+
+
+            if(countForLight!=results.size()){
+                ohio_annotate.setCompoundDrawables(null, null, drawable_red, null);
+            }else {
+                ohio_annotate.setCompoundDrawables(null, null, drawable_green, null);
+            }
+
             //get all data in cursor
             //TODO notice !! Convert the function into getTripData
+            /*
             data = TripManager.getTripDatafromSQLite();
             ArrayList<String> dataInCursor = new ArrayList<String>();
             try {
@@ -478,7 +502,7 @@ public class MainActivity extends AppCompatActivity {
                 ohio_annotate.setCompoundDrawables(null, null, drawable_green, null);
 //                ohio_annotate.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.circle_green, 0);
                 sharedPrefs.edit().putBoolean("TripStatus", false).apply();
-            }
+            }*/
 
             dataPos = new ArrayList<Integer>();
 
