@@ -217,6 +217,7 @@ public class MinukuStreamManager implements StreamManager {
     //
     public void setActivityRecognitionDataRecord(ActivityRecognitionDataRecord activityRecognitionDataRecord){
         this.activityRecognitionDataRecord = activityRecognitionDataRecord;
+
     }
 
     public ActivityRecognitionDataRecord getActivityRecognitionDataRecord(){

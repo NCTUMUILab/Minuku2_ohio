@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import android.util.Log;
 
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minukucore.model.DataRecord;
@@ -20,9 +21,9 @@ import edu.ohio.minukucore.model.DataRecord;
 public class ActivityRecognitionDataRecord implements DataRecord {
 
     public long creationTime;
-    private static DetectedActivity MostProbableActivity;
+    private DetectedActivity MostProbableActivity;
     private List<DetectedActivity> mProbableActivities;
-    private static long Detectedtime;
+    private long Detectedtime;
 
     //create for ActivityRecognitionDataRecord Pool
     private int taskDayCount;
@@ -59,7 +60,10 @@ public class ActivityRecognitionDataRecord implements DataRecord {
 
     }
 
-    public DetectedActivity getMostProbableActivity(){return MostProbableActivity;}
+    public DetectedActivity getMostProbableActivity(){
+        Log.d("data record", "[test replay] return most probable activity: " + MostProbableActivity);
+        return MostProbableActivity;
+    }
 
     public void setProbableActivities(List<DetectedActivity> probableActivities) {
         mProbableActivities = probableActivities;
@@ -68,6 +72,7 @@ public class ActivityRecognitionDataRecord implements DataRecord {
 
     public void setMostProbableActivity(DetectedActivity mostProbableActivity) {
         MostProbableActivity = mostProbableActivity;
+        Log.d("data record", "[test replay] set most probable activity: " + MostProbableActivity);
 
     }
 
