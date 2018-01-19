@@ -24,7 +24,6 @@ package edu.ohio.minuku.manager;
 
 import org.greenrobot.eventbus.Subscribe;
 
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -218,6 +217,7 @@ public class MinukuStreamManager implements StreamManager {
     //
     public void setActivityRecognitionDataRecord(ActivityRecognitionDataRecord activityRecognitionDataRecord){
         this.activityRecognitionDataRecord = activityRecognitionDataRecord;
+
     }
 
     public ActivityRecognitionDataRecord getActivityRecognitionDataRecord(){

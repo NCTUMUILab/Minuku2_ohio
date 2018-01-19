@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Utilities.FileHelper;
 import edu.ohio.minuku.dao.ActivityRecognitionDataRecordDAO;
 import edu.ohio.minuku.dao.AppUsageDataRecordDAO;
 import edu.ohio.minuku.dao.BatteryDataRecordDAO;
@@ -110,6 +111,8 @@ public class InstanceManager {
         // DAO initialization stuff
 
         DBHelper dBHelper = new DBHelper(getApplicationContext());
+
+        FileHelper fileHelper = new FileHelper(getApplicationContext());
 
         MinukuDAOManager daoManager = MinukuDAOManager.getInstance();
         //For location

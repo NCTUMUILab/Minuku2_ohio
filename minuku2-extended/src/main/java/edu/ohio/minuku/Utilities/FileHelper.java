@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ohio.minuku.config.Constants;
+import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
+import edu.ohio.minuku.service.ActivityRecognitionService;
 import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator;
 import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
@@ -27,11 +29,24 @@ public class FileHelper {
     private static final String LOG_TAG = "FileHelper";
     
     private static Context mContext;
+
+    private static FileHelper instance;
     
     public FileHelper(Context context) {
-		mContext = context;
+
+        mContext = context;
 	}
 
+    public static FileHelper getInstance(Context context) {
+        if(FileHelper.instance == null) {
+            try {
+                FileHelper.instance = new FileHelper(context);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return FileHelper.instance;
+    }
 
     public static File getPackageDirectory() {
 
@@ -157,11 +172,13 @@ public class FileHelper {
 
             ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
             record.setProbableActivities(activityList);
+            record.setMostProbableActivity(activityList.get(0));
+           // Log.d("ARService", "[test replay] load activity is " + activityList.toString() + "  most probable activit is " + activityList.get(0));
             record.setTimestamp(time);
-            //  Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
+            Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
 
             //also add to the transportationModeDetector
-           TransportationModeService.addActivityRecognitionRecord(record);
+           ActivityRecognitionService.addActivityRecognitionRecord(record);
 
         }
 

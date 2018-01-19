@@ -149,7 +149,7 @@ public class TransportationModeService extends Service {
     private Context mContext;
 
     private ScheduledExecutorService mScheduledExecutorService;
-    public static final int TransportationMode_REFRESH_FREQUENCY = 20; //1s, 1000ms
+    public static final int TransportationMode_REFRESH_FREQUENCY = 5; //1s, 1000ms
     public static final int BACKGROUND_RECORDING_INITIAL_DELAY = 0;
 
     private SharedPreferences sharedPrefs;
@@ -252,6 +252,8 @@ public class TransportationModeService extends Service {
         @Override
         public void run() {
 
+
+//            Log.d(TAG, "test replay] examining transportation runnable ");
             try {
                 transportationModeStreamGenerator = (TransportationModeStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(TransportationModeDataRecord.class);
             }catch(StreamNotFoundException e){
@@ -264,14 +266,23 @@ public class TransportationModeService extends Service {
 
                 ActivityRecognitionDataRecord record = MinukuStreamManager.getInstance().getActivityRecognitionDataRecord();//activityRecognitionStreamGenerator.getLastSavedRecord();
 
+//                Log.d("ARService", "[test replay] before if null the AR record to examine is " +   record.getProbableActivities().toString());
+
                 if (record!=null) {
 
-                    Log.d(TAG, "examining Transportation...");
+//                    Log.d(TAG, "test replay] examining Transportation...");
+                    Log.d("ARService", "[test replay] inside if null the AR record to examine is " +  record.getDetectedtime() + " : " +  record.getProbableActivities().toString());
+
 
                     //getting latest Transportation based on the incoming record
                     examineTransportation(record);
 
-                    showTransportation(getConfirmedActvitiyString());
+//                    Log.d("ARService", "[test replay] after examine transportation");
+
+
+                   // showTransportation(getConfirmedActvitiyString());
+
+//                    Log.d("ARService", "[test replay] after show transportation");
 
                     try {
                         transportationModeStreamGenerator.setTransportationModeDataRecord(getConfirmedActvitiyString());
@@ -304,6 +315,9 @@ public class TransportationModeService extends Service {
             }
             else
                 Log.e(TAG, "TransportationMode's Stream might not start working yet.");
+
+
+//            Log.d("ARService", "[test replay] end of runnable");
 
         }
     };
@@ -752,25 +766,26 @@ public class TransportationModeService extends Service {
     }*/
 
     public int examineTransportation(ActivityRecognitionDataRecord activityRecognitionDataRecord){
-        //** eat ActivityRecognition and Timestamp to get
-        //List<DetectedActivity> probableActivities = record.getProbableActivities();
-        //long detectionTime = record.getTimestamp();
 
-        Log.d(TAG,"examineTransportation");
 
         List<DetectedActivity> probableActivities = activityRecognitionDataRecord.getProbableActivities();
 
-        Log.d(TAG, "activityRecognitionDataRecord.getMostProbableActivity() : "+ activityRecognitionDataRecord.getMostProbableActivity());
+        Log.d(TAG, "[test replay] examine the incoming record.....for transportation " + activityRecognitionDataRecord.getDetectedtime()  +" : "+ activityRecognitionDataRecord.getProbableActivities().toString());
 
         long detectionTime = activityRecognitionDataRecord.getCreationTime();
 
         //if in the static state, we try to suspect new activity
         if (getCurrentState()==STATE_STATIC) {
 
+            Log.d(TAG,"[test replay] in Static");
+
             //if the detected activity is vehicle, bike or on foot, then we suspect the activity from now
             if (probableActivities.get(0).getType()== DetectedActivity.ON_BICYCLE ||
                     probableActivities.get(0).getType()== DetectedActivity.IN_VEHICLE ||
                     probableActivities.get(0).getType()== DetectedActivity.ON_FOOT) {
+
+
+                Log.d(TAG,"[test replay] change to suspect");
 
                 //set current state to suspect stop
                 setCurrentState(STATE_SUSPECTING_START);
@@ -791,6 +806,8 @@ public class TransportationModeService extends Service {
 
         }
         else if (getCurrentState()==STATE_SUSPECTING_START) {
+
+            Log.d(TAG,"[test replay] in Suspect start");
             boolean isTimeToConfirm = checkTimeElapseOfLatestActivityFromSuspectPoint(detectionTime, getSuspectTime(), getWindowLengh(getSuspectedStartActivityType(), getCurrentState()) );
 
             StoreToCSV(isTimeToConfirm, detectionTime);
@@ -848,6 +865,8 @@ public class TransportationModeService extends Service {
         }
         //if in the confirmed state, we suspect whether users exit the activity
         else if (getCurrentState()==STATE_CONFIRMED) {
+
+            Log.d(TAG,"[test replay] in confirm");
             /** if the detected activity is vehicle, bike or on foot, then we suspect the activity from now**/
 
             //if the latest activity is not the currently confirmed activity nor tilting nor unkown
@@ -872,6 +891,8 @@ public class TransportationModeService extends Service {
             }
         }
         else if (getCurrentState()==STATE_SUSPECTING_STOP) {
+
+            Log.d(TAG,"[test replay] in suspect stop");
             //TODO change to the new constants.
             //TODO for "getTransitionWindowLength"
             //TODO If it is changing from unstatic to unstatic.
