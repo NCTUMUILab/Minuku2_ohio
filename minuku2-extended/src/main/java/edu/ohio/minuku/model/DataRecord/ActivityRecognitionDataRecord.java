@@ -61,7 +61,7 @@ public class ActivityRecognitionDataRecord implements DataRecord {
     }
 
     public DetectedActivity getMostProbableActivity(){
-        Log.d("data record", "[test replay] return most probable activity: " + MostProbableActivity);
+//        Log.d("data record", "[test replay] return most probable activity: " + MostProbableActivity);
         return MostProbableActivity;
     }
 
@@ -72,7 +72,7 @@ public class ActivityRecognitionDataRecord implements DataRecord {
 
     public void setMostProbableActivity(DetectedActivity mostProbableActivity) {
         MostProbableActivity = mostProbableActivity;
-        Log.d("data record", "[test replay] set most probable activity: " + MostProbableActivity);
+//        Log.d("data record", "[test replay] set most probable activity: " + MostProbableActivity);
 
     }
 

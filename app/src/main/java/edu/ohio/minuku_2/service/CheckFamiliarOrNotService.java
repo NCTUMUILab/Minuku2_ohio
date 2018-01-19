@@ -803,7 +803,7 @@ public class CheckFamiliarOrNotService extends Service {
                         e.printStackTrace();
                     }
 
-                    StoreToCSV(new Date().getTime(), transportation, countingTimeForIndoorOutdoor);
+//                    StoreToCSV(new Date().getTime(), transportation, countingTimeForIndoorOutdoor);
 
                     //walking
                     if(transportation.equals("on_foot")) {
@@ -1754,118 +1754,118 @@ public class CheckFamiliarOrNotService extends Service {
 
     }
 
-    public void StoreToCSV(long timestamp, String successOrNot, String filename){
+//    public void StoreToCSV(long timestamp, String successOrNot, String filename){
+//
+//        Log.d(TAG,"StoreToCSV");
+//
+//        String sFileName = filename+".csv";
+//
+//        try{
+//            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
+//            if (!root.exists()) {
+//                root.mkdirs();
+//            }
+//
+//            Log.d(TAG, "root : " + root);
+//
+//            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
+//
+//            List<String[]> data = new ArrayList<String[]>();
+//
+////            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy"});
+//            String timeString = getTimeString(timestamp);
+//
+//            TelephonyDataRecord telephonyDataRecord = TelephonyStreamGenerator.toOtherTelephonyDataRecord;
+//            ConnectivityDataRecord connectivityDataRecord = ConnectivityStreamGenerator.toOtherconnectDataRecord;
+//
+//            //TODO
+//            data.add(new String[]{String.valueOf(timestamp), timeString, successOrNot, transportation,
+//                    "",
+//                    telephonyDataRecord.getNetworkOperatorName(),
+//                    telephonyDataRecord.getCallState(),
+//                    String.valueOf(telephonyDataRecord.getPhoneSignalType()),
+//                    String.valueOf(telephonyDataRecord.getGsmSignalStrength()),
+//                    String.valueOf(telephonyDataRecord.getLTESignalStrength_dbm()),
+//                    String.valueOf(telephonyDataRecord.getCdmaSignalStrenthLevel()),
+//                    "",
+//                    connectivityDataRecord.getNetworkType(),
+//                    String.valueOf(connectivityDataRecord.getIsNetworkAvailable()),
+//                    String.valueOf(connectivityDataRecord.getIsConnected()),
+//                    String.valueOf(connectivityDataRecord.getIsWifiAvailable()),
+//                    String.valueOf(connectivityDataRecord.getIsMobileAvailable()),
+//                    String.valueOf(connectivityDataRecord.getIsWifiConnected()),
+//                    String.valueOf(connectivityDataRecord.getIsMobileConnected()),
+//                    "",
+//                    String.valueOf(ActivityRecognitionService.toOthermProbableActivities),
+//                    String.valueOf(ActivityRecognitionService.toOthermMostProbableActivity),
+//            });
+//
+//            csv_writer.writeAll(data);
+//
+//            csv_writer.close();
+//
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        }catch (NullPointerException e){
+//            e.printStackTrace();
+//        }
+//    }
 
-        Log.d(TAG,"StoreToCSV");
-
-        String sFileName = filename+".csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            Log.d(TAG, "root : " + root);
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-//            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy"});
-            String timeString = getTimeString(timestamp);
-
-            TelephonyDataRecord telephonyDataRecord = TelephonyStreamGenerator.toOtherTelephonyDataRecord;
-            ConnectivityDataRecord connectivityDataRecord = ConnectivityStreamGenerator.toOtherconnectDataRecord;
-
-            //TODO
-            data.add(new String[]{String.valueOf(timestamp), timeString, successOrNot, transportation,
-                    "",
-                    telephonyDataRecord.getNetworkOperatorName(),
-                    telephonyDataRecord.getCallState(),
-                    String.valueOf(telephonyDataRecord.getPhoneSignalType()),
-                    String.valueOf(telephonyDataRecord.getGsmSignalStrength()),
-                    String.valueOf(telephonyDataRecord.getLTESignalStrength_dbm()),
-                    String.valueOf(telephonyDataRecord.getCdmaSignalStrenthLevel()),
-                    "",
-                    connectivityDataRecord.getNetworkType(),
-                    String.valueOf(connectivityDataRecord.getIsNetworkAvailable()),
-                    String.valueOf(connectivityDataRecord.getIsConnected()),
-                    String.valueOf(connectivityDataRecord.getIsWifiAvailable()),
-                    String.valueOf(connectivityDataRecord.getIsMobileAvailable()),
-                    String.valueOf(connectivityDataRecord.getIsWifiConnected()),
-                    String.valueOf(connectivityDataRecord.getIsMobileConnected()),
-                    "",
-                    String.valueOf(ActivityRecognitionService.toOthermProbableActivities),
-                    String.valueOf(ActivityRecognitionService.toOthermMostProbableActivity),
-            });
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }catch (NullPointerException e){
-            e.printStackTrace();
-        }
-    }
-
-    public void StoreToCSV(long timestamp, String successOrNot, int countingTimeForIndoorOutdoor){
-
-        Log.d(TAG,"StoreToCSV");
-
-        String sFileName = "checkFamiliarTransportation.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            Log.d(TAG, "root : " + root);
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-//            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy"});
-            String timeString = getTimeString(timestamp);
-
-            TelephonyDataRecord telephonyDataRecord = TelephonyStreamGenerator.toOtherTelephonyDataRecord;
-            ConnectivityDataRecord connectivityDataRecord = ConnectivityStreamGenerator.toOtherconnectDataRecord;
-
-            data.add(new String[]{String.valueOf(timestamp), timeString, successOrNot, transportation,
-                    "",
-                    telephonyDataRecord.getNetworkOperatorName(),
-                    telephonyDataRecord.getCallState(),
-                    String.valueOf(telephonyDataRecord.getPhoneSignalType()),
-                    String.valueOf(telephonyDataRecord.getGsmSignalStrength()),
-                    String.valueOf(telephonyDataRecord.getLTESignalStrength_dbm()),
-                    String.valueOf(telephonyDataRecord.getCdmaSignalStrenthLevel()),
-                    "",
-                    connectivityDataRecord.getNetworkType(),
-                    String.valueOf(connectivityDataRecord.getIsNetworkAvailable()),
-                    String.valueOf(connectivityDataRecord.getIsConnected()),
-                    String.valueOf(connectivityDataRecord.getIsWifiAvailable()),
-                    String.valueOf(connectivityDataRecord.getIsMobileAvailable()),
-                    String.valueOf(connectivityDataRecord.getIsWifiConnected()),
-                    String.valueOf(connectivityDataRecord.getIsMobileConnected()),
-                    "",
-                    String.valueOf(ActivityRecognitionService.toOthermProbableActivities),
-                    String.valueOf(ActivityRecognitionService.toOthermMostProbableActivity),
-            });
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+//    public void StoreToCSV(long timestamp, String successOrNot, int countingTimeForIndoorOutdoor){
+//
+//        Log.d(TAG,"StoreToCSV");
+//
+//        String sFileName = "checkFamiliarTransportation.csv";
+//
+//        try{
+//            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
+//            if (!root.exists()) {
+//                root.mkdirs();
+//            }
+//
+//            Log.d(TAG, "root : " + root);
+//
+//            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
+//
+//            List<String[]> data = new ArrayList<String[]>();
+//
+////            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy"});
+//            String timeString = getTimeString(timestamp);
+//
+//            TelephonyDataRecord telephonyDataRecord = TelephonyStreamGenerator.toOtherTelephonyDataRecord;
+//            ConnectivityDataRecord connectivityDataRecord = ConnectivityStreamGenerator.toOtherconnectDataRecord;
+//
+//            data.add(new String[]{String.valueOf(timestamp), timeString, successOrNot, transportation,
+//                    "",
+//                    telephonyDataRecord.getNetworkOperatorName(),
+//                    telephonyDataRecord.getCallState(),
+//                    String.valueOf(telephonyDataRecord.getPhoneSignalType()),
+//                    String.valueOf(telephonyDataRecord.getGsmSignalStrength()),
+//                    String.valueOf(telephonyDataRecord.getLTESignalStrength_dbm()),
+//                    String.valueOf(telephonyDataRecord.getCdmaSignalStrenthLevel()),
+//                    "",
+//                    connectivityDataRecord.getNetworkType(),
+//                    String.valueOf(connectivityDataRecord.getIsNetworkAvailable()),
+//                    String.valueOf(connectivityDataRecord.getIsConnected()),
+//                    String.valueOf(connectivityDataRecord.getIsWifiAvailable()),
+//                    String.valueOf(connectivityDataRecord.getIsMobileAvailable()),
+//                    String.valueOf(connectivityDataRecord.getIsWifiConnected()),
+//                    String.valueOf(connectivityDataRecord.getIsMobileConnected()),
+//                    "",
+//                    String.valueOf(ActivityRecognitionService.toOthermProbableActivities),
+//                    String.valueOf(ActivityRecognitionService.toOthermMostProbableActivity),
+//            });
+//
+//            csv_writer.writeAll(data);
+//
+//            csv_writer.close();
+//
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//    }
 
     public void StoreToCSV(long timestamp, long random, long walktotal, long walkfirst, long walksecond, long walkthird){
 
