@@ -63,6 +63,7 @@ public class BackgroundService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
 
+        runMainThread();
 //        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
 //        alarm.set(
 //                AlarmManager.RTC_WAKEUP,     //
@@ -87,8 +88,8 @@ public class BackgroundService extends Service {
 
 
         /**read test file**/
-        FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
-        FileHelper.readTestFile();
+//        FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
+//        FileHelper.readTestFile();
 
 
         /*MinukuDAOManager daoManager = MinukuDAOManager.getInstance();

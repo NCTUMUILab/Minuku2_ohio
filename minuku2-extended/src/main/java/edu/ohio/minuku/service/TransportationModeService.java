@@ -149,7 +149,7 @@ public class TransportationModeService extends Service {
     private Context mContext;
 
     private ScheduledExecutorService mScheduledExecutorService;
-    public static final int TransportationMode_REFRESH_FREQUENCY = 5; //1s, 1000ms
+    public static final int TransportationMode_REFRESH_FREQUENCY = 10; //1s, 1000ms
     public static final int BACKGROUND_RECORDING_INITIAL_DELAY = 0;
 
     private SharedPreferences sharedPrefs;
@@ -271,7 +271,7 @@ public class TransportationModeService extends Service {
                 if (record!=null) {
 
 //                    Log.d(TAG, "test replay] examining Transportation...");
-                    Log.d("ARService", "[test replay] inside if null the AR record to examine is " +  record.getDetectedtime() + " : " +  record.getProbableActivities().toString());
+                    Log.d("TMService", "[test replay] inside if null the AR record to examine is " +  record.getDetectedtime() + " : " +  record.getProbableActivities().toString());
 
 
                     //getting latest Transportation based on the incoming record
@@ -305,7 +305,8 @@ public class TransportationModeService extends Service {
                     StoreToCSV(new Date().getTime(), record.getMostProbableActivity().getConfidence(), 0);
                 }
 
-                StoreToCSV(new Date().getTime(), record, latest_activityRecognitionDataRecord, getConfirmedActvitiyString(), mCurrentState);
+                //write transportation mode record
+                StoreToCSV(new Date().getTime(), latest_activityRecognitionDataRecord, getConfirmedActvitiyString(), mCurrentState);
 
                 if(record.getMostProbableActivity().getConfidence()!=999){ //conf == 999 means it didn't receive anything from AR
 //                    latest_activityRecognitionDataRecord = "";
@@ -329,14 +330,14 @@ public class TransportationModeService extends Service {
         String sFileName = "TransportationMode.csv";
 
         try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
             if (!root.exists()) {
                 root.mkdirs();
             }
 
             Log.d(TAG, "root : " + root);
 
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
 
             List<String[]> data = new ArrayList<String[]>();
 
@@ -424,14 +425,14 @@ public class TransportationModeService extends Service {
         String sFileName = "receive_latest.csv";
 
         try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
             if (!root.exists()) {
                 root.mkdirs();
             }
 
             Log.d(TAG, "root : " + root);
 
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
 
             List<String[]> data = new ArrayList<String[]>();
 
@@ -450,22 +451,36 @@ public class TransportationModeService extends Service {
         }
     }
 
-    public void StoreToCSV(long timestamp,ActivityRecognitionDataRecord rec_AR, ActivityRecognitionDataRecord latest_AR, String transportation, int currentstate){
+    public void StoreToCSV(long timestamp, ActivityRecognitionDataRecord latest_AR, String transportation, int currentstate){
         Log.d(TAG,"StoreToCSV");
 
         String sFileName = "TransportationMode.csv";
 
+
+        //get location record
+        float lat=0;
+        float lng = 0;
+        float accuracy = 0;
+
+
+        if (MinukuStreamManager.getInstance().getLocationDataRecord()!=null) {
+            lat = MinukuStreamManager.getInstance().getLocationDataRecord().getLatitude();
+            lng = MinukuStreamManager.getInstance().getLocationDataRecord().getLongitude();
+            accuracy = MinukuStreamManager.getInstance().getLocationDataRecord().getAccuracy();
+        }
+
+
         Boolean TransportationModefirstOrNot = sharedPrefs.getBoolean("TransportationModefirstOrNot", true);
 
         try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
             if (!root.exists()) {
                 root.mkdirs();
             }
 
             Log.d(TAG, "root : " + root);
 
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
 
             List<String[]> data = new ArrayList<String[]>();
 
@@ -485,7 +500,8 @@ public class TransportationModeService extends Service {
                 state = "STATE_SUSPECTING_STOP";
             }
 
-            String rec_AR_String = rec_AR.getMostProbableActivity().toString();
+//            String rec_AR_String = rec_AR.getMostProbableActivity().toString();
+            String rec_AR_String = "";
             String latest_AR_String = "";
             try {
                 latest_AR_String = latest_AR.getMostProbableActivity().toString();
@@ -494,15 +510,12 @@ public class TransportationModeService extends Service {
             }
 
             if(TransportationModefirstOrNot) {
-                data.add(new String[]{"timestamp", "timeString", "received_AR", "latest_AR", "transportation", "state"});
+                data.add(new String[]{"timestamp", "timeString", "received_AR", "latest_AR", "transportation", "state", "lat", "lng", "accuracy"});
                 sharedPrefs.edit().putBoolean("TransportationModefirstOrNot", false).apply();
             }
 
-            if(rec_AR.getMostProbableActivity().getConfidence()!=999) {
-                data.add(new String[]{String.valueOf(timestamp), timeString, rec_AR_String, latest_AR_String, transportation, state});
-            }else{
-                data.add(new String[]{String.valueOf(timestamp), timeString, "", latest_AR_String, transportation, state});
-            }
+            //write transportation mode
+            data.add(new String[]{String.valueOf(timestamp), timeString, rec_AR_String, latest_AR_String, transportation, state, String.valueOf(lat), String.valueOf(lng), String.valueOf(accuracy)});
 
             csv_writer.writeAll(data);
 
@@ -520,14 +533,14 @@ public class TransportationModeService extends Service {
         String sFileName = "Static.csv";
 
         try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
             if (!root.exists()) {
                 root.mkdirs();
             }
 
             Log.d(TAG, "root : " + root);
 
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
 
             List<String[]> data = new ArrayList<String[]>();
 
