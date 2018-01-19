@@ -28,6 +28,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import edu.ohio.minuku.Utilities.FileHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuStreamManager;
@@ -72,6 +73,11 @@ public class BackgroundService extends Service {
             InstanceManager.getInstance(this);
             TripManager.getInstance(this);
         }
+
+
+        /**read test file**/
+        FileHelper.readTestFile();
+
 
         /*MinukuDAOManager daoManager = MinukuDAOManager.getInstance();
 
