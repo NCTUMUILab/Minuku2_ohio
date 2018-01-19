@@ -232,9 +232,7 @@ public class MinukuStreamManager implements StreamManager {
             this.transportationModeDataRecord = transportationModeDataRecord;
         }
 
-<<<<<<< HEAD
         //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which means its not trip
-=======
         else {
 
             //detecting stop of the trip
@@ -250,7 +248,6 @@ public class MinukuStreamManager implements StreamManager {
                     TripManager.getInstance().removeOngoingSessionid(id);
                 }
             }
->>>>>>> 7f12408eab3303ee5756ac1db5c675a8ffd0f78b
 
             //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which menas its not trip
 
