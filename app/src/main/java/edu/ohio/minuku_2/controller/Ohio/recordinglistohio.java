@@ -49,9 +49,8 @@ public class recordinglistohio extends Activity {
         setContentView(R.layout.recordinglist_ohio);
         liststr = new ArrayList<String>();
         mlocationDataRecords = new ArrayList<String>();
+
         Trip_size = 0;
-//        liststr.add("2017/7/5 10:00");
-//        liststr.add("2017/7/6 11:00");
     }
 
     private void startAnnotateActivity(int position) {
@@ -65,7 +64,8 @@ public class recordinglistohio extends Activity {
         Log.d(TAG, "the location trip at " + position + " being selected is " + key);
 
         Bundle bundle = new Bundle();
-        bundle.putString("timekey_id", key);
+//        bundle.putString("timekey_id", key);
+        bundle.putString("sessionkey_id", key);
         bundle.putInt("position_id", position);
         Intent intent = new Intent(recordinglistohio.this, annotateohio.class);
         intent.putExtras(bundle);
@@ -138,6 +138,12 @@ public class recordinglistohio extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
+                /*if(!OhioListAdapter.dataPos.contains(position)) {
+
+                    startAnnotateActivity(position);
+
+                }*/
+
                 if(!OhioListAdapter.dataPos.contains(position)) {
 
                     startAnnotateActivity(position);
@@ -181,6 +187,7 @@ public class recordinglistohio extends Activity {
 //            this.dialog.show();
         }
 
+    /*
         @Override
         protected ArrayList<String> doInBackground(String... params) {
 
@@ -212,8 +219,41 @@ public class recordinglistohio extends Activity {
             return locationDataRecords;
 
         }
+*/
+        @Override
+        protected ArrayList<String> doInBackground(String... params) {
+
+            Log.d(TAG, "listRecordAsyncTask going to list recording");
+
+            ArrayList<String> locationDataRecords = new ArrayList<String>();
+
+            try {
+
+                locationDataRecords = TripManager.getTripData();
+//                locationDataRecords = TripManager.getInstance().getTripDatafromSQLite();
+//                Trip_size = TripManager.getInstance().getSessionidForTripSize();
+                Trip_size = TripManager.getInstance().getTrip_size();
+
+//                Log.d(TAG,"locationDataRecords(0) : " + locationDataRecords.get(0));
+//                Log.d(TAG,"locationDataRecords(max) : " + locationDataRecords.get(locationDataRecords.size()-1));
+
+//                if(locationDataRecords.isEmpty())
+//                    ;
+
+                Log.d(TAG,"try locationDataRecords");
+            }catch (Exception e) {
+                locationDataRecords = new ArrayList<String>();
+                Log.d(TAG,"Exception");
+                e.printStackTrace();
+            }
+//            return locationDataRecords;
+
+            return locationDataRecords;
+
+        }
 
         // onPostExecute displays the results of the AsyncTask.
+        /*
         @Override
         protected void onPostExecute(ArrayList<String> result) {
 
@@ -223,7 +263,7 @@ public class recordinglistohio extends Activity {
                 this.dialog.dismiss();
             }
         }
-
+        */
     }
 
 

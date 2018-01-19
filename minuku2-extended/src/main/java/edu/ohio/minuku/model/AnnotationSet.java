@@ -1,5 +1,9 @@
 package edu.ohio.minuku.model;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 public class AnnotationSet {
@@ -48,6 +52,39 @@ public class AnnotationSet {
 
     }
 
+	public JSONObject toJSONObject(){
+
+		JSONObject obj  = new JSONObject();
+
+		try{
+
+			if (mAnnotations!=null && mAnnotations.size()>0){
+
+				obj.put("", mId);
+				obj.put("", (Object) getAnnotationsInJSONArray());
+
+			}
+
+		}catch(JSONException e){
+
+		}
+		return obj;
+
+
+	}
+
+	public JSONArray getAnnotationsInJSONArray() {
+
+		JSONArray array = new JSONArray() ;
+
+		//get all the annotaitons and put their JSONObject format into the array
+		for (int i=0; i<mAnnotations.size(); i++){
+//			array.put(mAnnotations.get(i).toJSONObject());
+		}
+
+		return array;
+
+	}
 
     /*public JSONObject toJSONObject(){
 

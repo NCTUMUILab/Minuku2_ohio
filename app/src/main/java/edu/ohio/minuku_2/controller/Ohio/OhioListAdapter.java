@@ -35,6 +35,8 @@ public class OhioListAdapter extends ArrayAdapter<String> {
     private static final String TAG = "OhioListAdapter";
     private Context mContext;
     private ArrayList<String> data;
+//    private ArrayList<ArrayList<String>> data;
+
     public static ArrayList<Integer> dataPos;
 
     private long startTime = -9999;
@@ -50,7 +52,7 @@ public class OhioListAdapter extends ArrayAdapter<String> {
         this.data = locationDataRecords;
         dataPos = new ArrayList<Integer>();
         status = false;
-        decideThePosFontType();
+//        decideThePosFontType();
     }
 
     @Override
@@ -61,8 +63,30 @@ public class OhioListAdapter extends ArrayAdapter<String> {
 
         TextView textView = (TextView) view.findViewById(R.id.ListText);
 
-        Log.d(TAG, "dataPos outside : " + dataPos.size());
+//        Log.d(TAG, "dataPos outside : " + dataPos.size());
 
+        //only one
+        String dataFromSessionId = DBHelper.querySession(Integer.valueOf(data.get(position))).get(0);
+
+        String[] dataFromSessionIds = dataFromSessionId.split(Constants.DELIMITER);
+
+        if(dataFromSessionIds[4]==""){
+            String time = "Trip "+(position+1)+": "+dataFromSessionIds[2];
+            Log.d(TAG, " time : " + time);
+//                textView.setText(Html.fromHtml(time));
+            textView.setText(time);
+            textView.setTextColor(Color.RED);
+            status = true;
+        }else {
+            String time = "Trip "+(position+1)+": "+dataFromSessionIds[2];
+            Log.d(TAG, " time : " + time);
+//                textView.setText(Html.fromHtml(time));
+            textView.setText(time);
+            textView.setTextColor(Color.GRAY);
+            dataPos.add(position);
+        }
+
+/*
         if(dataPos.size()>0){
 
             int pos = position; //data.size()-1 -
@@ -113,6 +137,7 @@ public class OhioListAdapter extends ArrayAdapter<String> {
             textView.setTextColor(Color.RED);
             status = true;
         }
+*/
 
 
         return view;
