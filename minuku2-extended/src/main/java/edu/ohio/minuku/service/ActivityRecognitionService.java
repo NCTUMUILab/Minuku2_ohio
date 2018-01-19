@@ -119,6 +119,8 @@ public class ActivityRecognitionService extends IntentService {
 
                         Log.d("ARService", "[test replay] going to feed " +   activityRecognitionDataRecord.getDetectedtime() +  " :"  +  activityRecognitionDataRecord.getProbableActivities()  +  " : " +activityRecognitionDataRecord.getMostProbableActivity()    + " at index " + activityRecordCurIndex  + " to the AR streamgenerator");
 
+                        Log.d("ARService", "[test replay] going to feed " +   activityRecognitionDataRecord.getDetectedtime() +  " :"  +  activityRecognitionDataRecord.getProbableActivities()  +  " : " +activityRecognitionDataRecord.getMostProbableActivity()    + " at index " + activityRecordCurIndex  + " to the AR streamgenerator");
+
                         MinukuStreamManager.getInstance().setActivityRecognitionDataRecord(activityRecognitionDataRecord);
 
                         //move on to the next activity Record
