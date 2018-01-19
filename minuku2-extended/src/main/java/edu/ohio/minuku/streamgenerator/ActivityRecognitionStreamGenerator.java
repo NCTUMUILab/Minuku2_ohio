@@ -201,16 +201,18 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
 
     @Override
     public boolean updateStream() {
-        Log.e(TAG, "Update stream called.");
+//        Log.e(TAG, "Update stream called.");
 
 //        ActivityRecognitionDataRecord activityRecognitionDataRecord
 //               = new ActivityRecognitionDataRecord(sMostProbableActivity,sProbableActivities);
+
+        Log.d(TAG, "[test replay] inside update stream " +  activityRecognitionDataRecord.getDetectedtime() + " : " +  activityRecognitionDataRecord.getProbableActivities().toString());
 
         MinukuStreamManager.getInstance().setActivityRecognitionDataRecord(activityRecognitionDataRecord);
 
         if(activityRecognitionDataRecord!=null) {
             mStream.add(activityRecognitionDataRecord);
-            Log.e(TAG, "Activity to be sent to event bus" + activityRecognitionDataRecord);
+//            Log.e(TAG, "Activity to be sent to event bus" + activityRecognitionDataRecord);
 
             EventBus.getDefault().post(activityRecognitionDataRecord);
             try {
@@ -363,7 +365,7 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
         activityRecognitionDataRecord.setID(id);
         Log.e(TAG,"CreateTime:" + activityRecognitionDataRecord.getCreationTime()+ " MostProbableActivity:"+activityRecognitionDataRecord.getMostProbableActivity());
 
-//        Log.e("mLocalRecordPool ", String.valueOf(mLocalRecordPool));
+        Log.e("mLocalRecordPool ", String.valueOf(mLocalRecordPool));
         mLocalRecordPool.add(activityRecognitionDataRecord); //it's working.
         Log.e(TAG, "[test logging]add record " + "logged at " + activityRecognitionDataRecord.getTimeString() );
         //Log.e(TAG, String.valueOf(mLocalRecordPool.size()));
@@ -380,7 +382,7 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
         this.activityRecognitionDataRecord = activityRecognitionDataRecord;
 
         //TODO check we need this function or not
-//        updateStream();
+        updateStream();
 
     }
 

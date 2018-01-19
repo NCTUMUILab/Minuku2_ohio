@@ -431,6 +431,7 @@ public class TripManager {
             notiQuerySessions();
 
 
+
         }
 
         //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which menas its not trip
@@ -639,6 +640,90 @@ public class TripManager {
         Log.d(TAG,"getTripDatafromSQLite total time : "+(new Date().getTime() - funcStartTime)/1000);
 
         return times;
+    }
+
+    public static ArrayList<String> getTripData() {
+        Log.d(TAG, "getTripData");
+
+        long funcStartTime = new Date().getTime();
+
+        ArrayList<String> times = new ArrayList<String>();
+
+        ArrayList<String> results = new ArrayList<String>();
+
+        //setting today date.
+        Calendar cal = Calendar.getInstance();
+        Date date = new Date();
+        cal.setTime(date);
+        int Year = cal.get(Calendar.YEAR);
+        int Month = cal.get(Calendar.MONTH)+1;
+        int Day = cal.get(Calendar.DAY_OF_MONTH);
+
+        long startTime = -999;
+        long endTime = -999;
+
+        startTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day));
+        endTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day+1));
+
+        SQLiteDatabase db = DBManager.getInstance().openDatabase();
+        ArrayList<String> res =  DBHelper.querySessionsBetweenTimes(startTime, endTime);
+
+        ArrayList<Session> sessions = new ArrayList<Session>();
+
+        //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
+        for (int i=0; i<res.size() ; i++) {
+
+            String sessionStr = res.get(i);
+
+            //split each row into columns
+            String[] separated = sessionStr.split(Constants.DELIMITER);
+
+            /** get properties of the session **/
+            int id = Integer.parseInt(separated[DBHelper.COL_INDEX_SESSION_ID]);
+            long sessionStartTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_START_TIME]);
+
+            /** 1. create sessions from the properies obtained **/
+            Session session = new Session(id, sessionStartTime, 0);
+
+            /**2. get end time (or time of the last record) of the session**/
+
+            long sessionEndTime = 0;
+            //the session could be still ongoing..so we need to check where's endTime
+            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null")){
+                sessionEndTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
+            }
+            //there 's no end time of the session, we take the time of the last record
+            else {
+                sessionEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+                Log.d(TAG, "[test get session time] testgetdata the last record time is  " + ScheduleAndSampleManager.getTimeString(sessionEndTime));
+            }
+
+            //set end time
+            session.setEndTime(sessionEndTime);
+
+            sessions.add(session);
+        }
+
+        for(int index = 0 ; index < sessions.size() ; index ++){
+
+            Session session = sessions.get(index);
+            int sessionid = session.getId();
+
+//            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.location_table, sessionid);
+
+            //notification
+            notiQuerySessions();
+
+            results.add(String.valueOf(sessionid));
+
+        }
+
+        trip_size = times.size();
+        editor.putInt("trip_size",trip_size);
+
+        Log.d(TAG,"getTripData total time : "+(new Date().getTime() - funcStartTime)/1000);
+
+        return results;
     }
 
     private static void notiQuerySessions(){

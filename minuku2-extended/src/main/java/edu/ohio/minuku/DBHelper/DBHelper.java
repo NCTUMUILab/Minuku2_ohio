@@ -593,7 +593,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Log.d(TAG, "put session " + session.getId() + " to table " + SESSION_TABLE_NAME);
 
-        long rowId=0;
+        long rowId = 0;
 
         try{
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
@@ -631,7 +631,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
-            String sql = "SELECT *"  +" FROM " + "Session_Table" +
+            String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME +
                     //condition with session id
                     " where " + COL_ID + " = " + sessionId + "";
 
@@ -661,7 +661,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public static  ArrayList<String> querySessionsBetweenTimes(long startTime, long endTime) {
+    public static ArrayList<String> querySessionsBetweenTimes(long startTime, long endTime) {
 
         ArrayList<String> rows = new ArrayList<String>();
 
@@ -909,4 +909,28 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     }
+
+    public static void updateSessionTable(Session session){
+
+        String where = COL_ID + " = " +  session.getId();
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            //TODO get the col name after complete the annotate part.
+            values.put(COL_SESSION_END_TIME, session.getEndTime());
+            //beacuse only one data(annotation) exist.
+            values.put(COL_SESSION_ANNOTATION_SET, session.getAnnotationsSet().getAnnotations().get(0).getContent());
+
+            db.update(SESSION_TABLE_NAME, values, where, null);
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
 }

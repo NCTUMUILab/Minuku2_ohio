@@ -226,49 +226,64 @@ public class MinukuStreamManager implements StreamManager {
 
     public void setTransportationModeDataRecord(TransportationModeDataRecord transportationModeDataRecord){
 
-        //detecting stop of the trip
-        //if last transportation is moving
-        if(!this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
-                && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)) {
 
-            //different from the last transportation, stop the ongoing session.
-            if (!this.transportationModeDataRecord.getConfirmedActivityString().equals(transportationModeDataRecord.getConfirmedActivityString())) {
-                int id = (int) DBHelper.querySessionCount();
-                Log.d(TAG, "testgetdata query session from LocalDB is " + id);
+        if (this.transportationModeDataRecord==null){
 
-                TripManager.getInstance().removeOngoingSessionid(id);
-            }
+            this.transportationModeDataRecord = transportationModeDataRecord;
         }
 
+<<<<<<< HEAD
         //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which means its not trip
+=======
+        else {
+
+            //detecting stop of the trip
+            //if last transportation is moving
+            if(!this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                    && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)) {
+
+                //different from the last transportation, stop the ongoing session.
+                if (!this.transportationModeDataRecord.getConfirmedActivityString().equals(transportationModeDataRecord.getConfirmedActivityString())) {
+                    int id = (int) DBHelper.querySessionCount();
+                    Log.d(TAG, "testgetdata query session from LocalDB is " + id);
+
+                    TripManager.getInstance().removeOngoingSessionid(id);
+                }
+            }
+>>>>>>> 7f12408eab3303ee5756ac1db5c675a8ffd0f78b
+
+            //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which menas its not trip
 
 
-        //TODO filter < 100m trip its isTrip to 0
+            //TODO filter < 100m trip its isTrip to 0
 
 
-        this.transportationModeDataRecord = transportationModeDataRecord;
+            this.transportationModeDataRecord = transportationModeDataRecord;
 
-        //detecting start of the trip
-        //ongoing session, detecting new travel activity
-        //add ongoing session if the travel activity is not static
-        if(!transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
-                && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
+            //detecting start of the trip
+            //ongoing session, detecting new travel activity
+            //add ongoing session if the travel activity is not static
+            if(!transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                    && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
 
-            //insert into the session table
-            long count =  DBHelper.querySessionCount();
-            Log.d(TAG, "testgetdata query session from LocalDB is " + count);
+                //insert into the session table
+                long count =  DBHelper.querySessionCount();
+                Log.d(TAG, "testgetdata query session from LocalDB is " + count);
 
-            int id = (int) count + 1;
+                int id = (int) count + 1;
 
-            Session session = new Session(id);
-            session.setStartTime(getCurrentTimeInMilli());
+                Session session = new Session(id);
+                session.setStartTime(getCurrentTimeInMilli());
 
-            DBHelper.insertSessionTable(session);
+                DBHelper.insertSessionTable(session);
 
-            //InstanceManager add ongoing session for the new activity
-            TripManager.getInstance().addOngoingSessionid(id);
+                //InstanceManager add ongoing session for the new activity
+                TripManager.getInstance().addOngoingSessionid(id);
+
+            }
 
         }
+
 
     }
 
