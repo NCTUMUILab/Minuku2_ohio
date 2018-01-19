@@ -21,10 +21,19 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="edu.umich.si.inteco.minuku">
+    package="edu.ohio.minuku"
+    android:versionCode="1"
+    android:versionName="1.0" >
 
+    <uses-sdk
+        android:minSdkVersion="16"
+        android:targetSdkVersion="24" />
+
+    <!--<uses-permission android:name="android.permission.INTERNET" />-->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
     <application
@@ -33,6 +42,25 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <service
+            android:name=".service.TransportationModeService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
+        <service
+            android:name=".service.ActivityRecognitionService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
+        <!--<service-->
+            <!--android:name=".service.MyLocationService"-->
+            <!--android:enabled="true"-->
+            <!--android:exported="true">-->
+        <!--</service>-->
     </application>
+
+
 
 </manifest>

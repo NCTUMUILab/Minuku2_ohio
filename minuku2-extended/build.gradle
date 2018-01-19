@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         minSdkVersion 16
@@ -33,6 +33,8 @@ dependencies {
     /* Firebase UI */
     compile 'com.firebaseui:firebase-ui:0.2.2'
 
+    /*CSV*/
+    compile project(':opencsv-3.10')
 
     /* For Google Play Services */
     compile 'com.google.android.gms:play-services-safetynet:9.2.1'

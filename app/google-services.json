@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:578867820113:android:54cb1fe984020452",
         "android_client_info": {
-          "package_name": "edu.umich.si.inteco.minuku_2"
+          "package_name": "edu.ohio.minuku_2"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "578867820113-7huln7ojap137gf1rqf829cr92ip1lpm.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "edu.umich.si.inteco.minuku_2",
+            "package_name": "edu.ohio.minuku_2",
             "certificate_hash": "192EF9871DF9A12FEC6388323DD12CA4356CB53F"
           }
         },
@@ -26,7 +26,7 @@
           "client_id": "578867820113-odncph5miou46rrui1g8i1ncrphi9s0d.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "edu.umich.si.inteco.minuku_2",
+            "package_name": "edu.ohio.minuku_2",
             "certificate_hash": "F210D62E0D0D5CB71151BA8D7151976CED466FEE"
           }
         },

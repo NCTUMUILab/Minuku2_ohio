@@ -13,20 +13,29 @@
         android:textSize="24sp"
         android:paddingTop="16dp" />
 
+    <TextView
+        android:text="(The app won't trigger the notification at your sleeping time.)"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/description2"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp" />
+
     <Space
         android:layout_width="match_parent"
-        android:layout_height="28dp" />
+        android:layout_height="wrap_content" />
 
     <TextView
-        android:text="Start time"
+        android:text="When do you usually go to sleep?"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/Start_time"
         android:paddingLeft="16dp"
-        android:textSize="30sp" />
+        android:textSize="24sp"
+        android:paddingTop="16dp" />
 
     <Button
-        android:text="Please select your start time"
+        android:text="Please select your sleeping time"
         android:layout_width="278dp"
         android:layout_height="37dp"
         android:id="@+id/starttime"
@@ -37,15 +46,15 @@
         android:layout_height="28dp" />
 
     <TextView
-        android:text="End time"
+        android:text="When do you usually wake up?"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/End_time"
         android:paddingLeft="16dp"
-        android:textSize="30sp" />
+        android:textSize="24sp" />
 
     <Button
-        android:text="Please select your end time"
+        android:text="Please select your wake up time"
         android:layout_width="278dp"
         android:layout_height="37dp"
         android:id="@+id/endtime"
@@ -53,7 +62,7 @@
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="189dp" />
+        android:layout_height="145dp" />
 
     <Button
         android:text="confirm"

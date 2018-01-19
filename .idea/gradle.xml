@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/minuku2-extended" />
             <option value="$PROJECT_DIR$/minukucore" />
+            <option value="$PROJECT_DIR$/opencsv-3.10" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
