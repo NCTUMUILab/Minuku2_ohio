@@ -16,6 +16,7 @@ import java.util.List;
 
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
+import edu.ohio.minuku.service.ActivityRecognitionService;
 import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator;
 import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
@@ -158,10 +159,10 @@ public class FileHelper {
             ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
             record.setProbableActivities(activityList);
             record.setTimestamp(time);
-            //  Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
+            Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
 
             //also add to the transportationModeDetector
-           TransportationModeService.addActivityRecognitionRecord(record);
+           ActivityRecognitionService.addActivityRecognitionRecord(record);
 
         }
 

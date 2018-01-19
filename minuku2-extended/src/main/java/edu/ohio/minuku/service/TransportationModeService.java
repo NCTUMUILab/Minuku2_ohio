@@ -266,7 +266,9 @@ public class TransportationModeService extends Service {
 
                 if (record!=null) {
 
-                    Log.d(TAG, "examining Transportation...");
+                    Log.d(TAG, "test replay] examining Transportation...");
+                    Log.d("ARService", "[test replay] the AR record to examine is " +   record.toString());
+
 
                     //getting latest Transportation based on the incoming record
                     examineTransportation(record);
