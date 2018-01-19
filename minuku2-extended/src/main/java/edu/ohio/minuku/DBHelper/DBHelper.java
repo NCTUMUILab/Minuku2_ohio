@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -173,6 +174,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String session_table = "Session";
     public static final String SESSION_TABLE_NAME = "Session_Table";
 
+    public static Context mContext;
 
     public static final String DATABASE_NAME = "MySQLite.db";
     public static int DATABASE_VERSION = 1;
@@ -181,6 +183,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+
+        mContext = context;
 
         initiateDBManager();
 
@@ -566,6 +570,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public void createSessionTable(SQLiteDatabase db){
 
+        Log.d(TAG, "createSessionTable");
+
+        Toast.makeText(mContext, "SessionTable created", Toast.LENGTH_LONG).show();
+
         String cmd = "CREATE TABLE" + " " +
                 SESSION_TABLE_NAME + " ( "+
                 COL_ID + " " + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -601,6 +609,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
             rowId = db.insert(SESSION_TABLE_NAME, null, values);
 
+            Toast.makeText(mContext,"inserting sessionid : "+ session.getId(),Toast.LENGTH_SHORT).show();
 
         }catch(Exception e){
             e.printStackTrace();
