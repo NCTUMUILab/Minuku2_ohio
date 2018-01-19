@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.opencsv.CSVWriter;
@@ -51,9 +52,7 @@ public class TripManager {
 
     private ArrayList<LocationDataRecord> LocationToTrip;
 
-
     private static Context mContext;
-
     private static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
     private CSVWriter csv_writer = null;
     private static CSVWriter csv_writer2 = null;
@@ -127,11 +126,17 @@ public class TripManager {
     }
 
     public void addOngoingSessionid(int id) {
-        this.ongoingSessionidList.add((id));
+        this.ongoingSessionidList.add(id);
+
+        Toast.makeText(mContext,"add ongoing session : "+id,Toast.LENGTH_SHORT).show();
+
     }
 
     public void removeOngoingSessionid(int id) {
         this.ongoingSessionidList.remove(id);
+
+        Toast.makeText(mContext,"remove ongoing session : "+id,Toast.LENGTH_SHORT).show();
+
     }
 
     public void setTrip(LocationDataRecord entity) {
