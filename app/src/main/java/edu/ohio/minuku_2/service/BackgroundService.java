@@ -28,22 +28,34 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import edu.ohio.minuku.Utilities.FileHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.manager.TripManager;
+import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
+import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
+import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
 import edu.ohio.minuku_2.manager.InstanceManager;
+import edu.ohio.minukucore.exception.StreamNotFoundException;
 
 public class BackgroundService extends Service {
 
     private static final String TAG = "BackgroundService";
 
     MinukuStreamManager streamManager;
+    private ScheduledExecutorService mScheduledExecutorService;
+
 
     public BackgroundService() {
         super();
         streamManager = MinukuStreamManager.getInstance();
+        mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_FREQUENCY);
 
     }
 
@@ -51,13 +63,12 @@ public class BackgroundService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
 
-        streamManager.updateStreamGenerators();
-        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
-        alarm.set(
-                AlarmManager.RTC_WAKEUP,     //
-                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
-                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
-        );
+//        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+//        alarm.set(
+//                AlarmManager.RTC_WAKEUP,     //
+//                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+//                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
+//        );
 /*
         Notification note  = new Notification.Builder(getBaseContext())
                 .setContentTitle(Constants.APP_NAME)
@@ -76,6 +87,7 @@ public class BackgroundService extends Service {
 
 
         /**read test file**/
+        FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
         FileHelper.readTestFile();
 
 
@@ -91,6 +103,25 @@ public class BackgroundService extends Service {
         //TODO Keep eye on the service is working or not.
 //        return START_STICKY;
     }
+
+    private void runMainThread(){
+
+        mScheduledExecutorService.scheduleAtFixedRate(
+                updateStreamManagerRunnable,
+                0,
+                Constants.STREAM_UPDATE_FREQUENCY,
+                TimeUnit.SECONDS);
+    }
+
+    Runnable updateStreamManagerRunnable = new Runnable() {
+        @Override
+        public void run() {
+
+            streamManager.updateStreamGenerators();
+
+        }
+    };
+
 
     @Override
     public void onDestroy() {

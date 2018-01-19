@@ -1,0 +1,47 @@
+
+
+要開始測試Test File的話
+
+1.開始service的時候要讀activity資料
+
+ Background Service裡的 StartCommand()
+
+ uncomment以下兩行就可以一開始讀資料
+
+ FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
+ FileHelper.readTestFile();
+
+
+2. AR Service用timer來Feed AR資料
+
+要跑RePlayActivityRecordTimerTask 要在startTimer()裡面 uncomment  RePlayActivityRecordTimerTask();
+
+
+
+
+3. 在AR Service裡面的onHandleIntent收到資料以後不更新
+
+把以下給註解掉
+
+//            mProbableActivities = result.getProbableActivities();
+//            mMostProbableActivity = result.getMostProbableActivity();
+//            detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
+
+//            Log.d(TAG, "[test ActivityRecognition]" +   mMostProbableActivity.toString());
+//            try {
+//                if (mProbableActivities != null && mMostProbableActivity != null)
+//
+//                    /*  cancel setting because we want to directly feed activity data in the test file */
+//                    //mActivityRecognitionStreamGenerator.setActivitiesandDetectedtime(mProbableActivities, mMostProbableActivity, detectedtime);
+//
+//
+//            }catch(Exception e){
+//                e.printStackTrace();
+//            }
+
+
+
+transportationModeService
+
+ActivityRecognitionStreamGenerator
+
