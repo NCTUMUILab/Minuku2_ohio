@@ -57,6 +57,8 @@ public class ActivityRecognitionService extends IntentService {
         serviceInstance = this;
 
         //mActivityRecognitionManager = ContextManager.getActivityRecognitionManager();
+
+        startTimer();
     }
 
     @Override
@@ -70,9 +72,9 @@ public class ActivityRecognitionService extends IntentService {
                 e.printStackTrace();
             }
             ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
-            mProbableActivities = result.getProbableActivities();
-            mMostProbableActivity = result.getMostProbableActivity();
-            detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
+//            mProbableActivities = result.getProbableActivities();
+//            mMostProbableActivity = result.getMostProbableActivity();
+//            detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
 
 //            Log.d(TAG, "[test ActivityRecognition]" +   mMostProbableActivity.toString());
 //            try {
@@ -88,14 +90,6 @@ public class ActivityRecognitionService extends IntentService {
 
             toOthermMostProbableActivity = mMostProbableActivity;
             toOthermProbableActivities = mProbableActivities;
-
-            //when receiving a new AR label we reset the timer of initializeTimerTask
-            stoptimer();
-
-            //start counting the time to check how much time do the AR service isn't got anything.
-            startTimer();
-
-
         }
     }
 
@@ -119,7 +113,13 @@ public class ActivityRecognitionService extends IntentService {
 
                         ActivityRecognitionDataRecord activityRecognitionDataRecord = mActivityRecognitionRecords.get(activityRecordCurIndex);
 
-                        Log.d("ARService", "[test replay] going to feed " +   activityRecognitionDataRecord.toString()  + " at index " + activityRecordCurIndex  + " to the AR streamgenerator");
+                        mProbableActivities = activityRecognitionDataRecord.getProbableActivities();
+                        mMostProbableActivity = activityRecognitionDataRecord.getMostProbableActivity();
+                        detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
+
+                        Log.d("ARService", "[test replay] going to feed " +   activityRecognitionDataRecord.getDetectedtime() +  " :"  +  activityRecognitionDataRecord.getProbableActivities()  +  " : " +activityRecognitionDataRecord.getMostProbableActivity()    + " at index " + activityRecordCurIndex  + " to the AR streamgenerator");
+
+                        Log.d("ARService", "[test replay] going to feed " +   activityRecognitionDataRecord.getDetectedtime() +  " :"  +  activityRecognitionDataRecord.getProbableActivities()  +  " : " +activityRecognitionDataRecord.getMostProbableActivity()    + " at index " + activityRecordCurIndex  + " to the AR streamgenerator");
 
                         MinukuStreamManager.getInstance().setActivityRecognitionDataRecord(activityRecognitionDataRecord);
 
@@ -157,22 +157,22 @@ public class ActivityRecognitionService extends IntentService {
                 sec++;
 
                 //if counting until ten minutes
-                if(sec == 10 * 60){
-
-                    try {
-                        mActivityRecognitionStreamGenerator = (ActivityRecognitionStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(ActivityRecognitionDataRecord.class);
-                    }catch (StreamNotFoundException e){
-                        e.printStackTrace();
-                    }
-
-//                    DetectedActivity detectedActivity = new DetectedActivity(,100);
-
-                    ActivityRecognitionDataRecord activityRecognitionDataRecord
-                            = new ActivityRecognitionDataRecord();
-                    //update the empty AR to MinukuStreamManager
-                    MinukuStreamManager.getInstance().setActivityRecognitionDataRecord(activityRecognitionDataRecord);
-
-                }
+//                if(sec == 10 * 60){
+//
+//                    try {
+//                        mActivityRecognitionStreamGenerator = (ActivityRecognitionStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(ActivityRecognitionDataRecord.class);
+//                    }catch (StreamNotFoundException e){
+//                        e.printStackTrace();
+//                    }
+//
+////                    DetectedActivity detectedActivity = new DetectedActivity(,100);
+//
+//                    ActivityRecognitionDataRecord activityRecognitionDataRecord
+//                            = new ActivityRecognitionDataRecord();
+//                    //update the empty AR to MinukuStreamManager
+//                    MinukuStreamManager.getInstance().setActivityRecognitionDataRecord(activityRecognitionDataRecord);
+//
+//                }
 
             }
         };
@@ -185,6 +185,10 @@ public class ActivityRecognitionService extends IntentService {
 
         //initialize the TimerTask's job
         initializeTimerTask();
+
+        //start the timertask for replay
+        RePlayActivityRecordTimerTask();
+
         //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
         timer.schedule(timerTask,0,1000);
 
