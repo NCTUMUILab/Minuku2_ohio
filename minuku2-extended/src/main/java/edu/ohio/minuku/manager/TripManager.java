@@ -51,7 +51,7 @@ public class TripManager {
 
     private ArrayList<LocationDataRecord> LocationToTrip;
 
-    private Context mContext;
+    private static Context mContext;
     private static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
     private CSVWriter csv_writer = null;
     private static CSVWriter csv_writer2 = null;
