@@ -63,7 +63,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
     private int sessionid;
 
-    private String timekey;
+    private String sessionkey;
     private TextView time, question3, question4;
     private RadioButton ans3_1, ans3_2, ans3_3;
     private RadioButton ans4_1, ans4_2, ans4_3;
@@ -140,16 +140,17 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
     public void initannotateohio(){
 
-        timekey = bundle.getString("timekey_id");
-        Log.d(TAG,"timekey_id : " +timekey);
+//        sessionkey = bundle.getString("timekey_id");
+        sessionkey = bundle.getString("sessionkey_id");
+        Log.d(TAG,"timekey_id : " + sessionkey);
         try{
 
             Log.d(TAG,"ListRecordAsyncTask");
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                latLngs = new AnnotateRecordAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, timekey).get();
+                latLngs = new AnnotateRecordAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionkey).get();
             else
-                latLngs = new AnnotateRecordAsyncTask().execute(timekey).get();
+                latLngs = new AnnotateRecordAsyncTask().execute(sessionkey).get();
 
             Log.d(TAG,"locationDataRecords = new ListRecordAsyncTask().execute().get();");
 
@@ -167,7 +168,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
         time = (TextView)findViewById(R.id.Time);
         String timeketForShow = null;
-        String[] timekeys = timekey.split("-");
+        String[] timekeys = sessionkey.split("-");
         String start = timekeys[0];
         String end = timekeys[1];
         start = getmillisecondToDateWithTime(Long.valueOf(start));
@@ -304,7 +305,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         });
 
         //checking its ongoing or not
-        String sessionid = getSessionIdByTimekey(timekey);
+        String sessionid = getSessionIdByTimekey(sessionkey);
         ongoing = "";
         try {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
@@ -798,13 +799,13 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
                     e.printStackTrace();
                 }
 
-                String[] timekeys = timekey.split("-");
+                String[] timekeys = sessionkey.split("-");
                 String start = timekeys[0];
                 String end = timekeys[1];
                 start = TripManager.getmillisecondToDateWithTime(Long.valueOf(start));
                 end = TripManager.getmillisecondToDateWithTime(Long.valueOf(end));
 
-                Log.d(TAG, "timekey : "+timekey);
+                Log.d(TAG, "sessionkey : "+ sessionkey);
 
                 addToDB(start, end,
                         ans1, ans2, ans3, ans4, latdata, lngdata);
@@ -836,7 +837,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
         try{
-            String startimekey[] = timekey.split("-");
+            String startimekey[] = sessionkey.split("-");
             db.delete(DBHelper.annotate_table,DBHelper.Trip_startTime+" = '"+startimekey[0]+"' ",null);
         }catch (NullPointerException e){
             Log.d(TAG,"No data yet.");
@@ -844,7 +845,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         }
 
         try {
-            values.put(DBHelper.TIME, timekey);
+            values.put(DBHelper.TIME, sessionkey);
             values.put(DBHelper.Trip_id, sessionid);
             values.put(DBHelper.Trip_startTime, starttime);
             values.put(DBHelper.Trip_endTime, endtime);
@@ -874,7 +875,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
         try{
-            String startimekey[] = timekey.split("-");
+            String startimekey[] = sessionkey.split("-");
             db.delete(DBHelper.annotate_table,DBHelper.Trip_startTime+" = '"+startimekey[0]+"' ",null);
         }catch (NullPointerException e){
             Log.d(TAG,"No data yet.");
@@ -882,7 +883,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         }
 
         try {
-            values.put(DBHelper.TIME, timekey);
+            values.put(DBHelper.TIME, sessionkey);
 //            values.put(DBHelper.USERID, sessionid);
 //            values.put(DBHelper.DEVICE, Constants.DEVICE_ID);
             values.put(DBHelper.Trip_id, sessionid);
@@ -959,7 +960,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         try {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
-            values.put(DBHelper.TIME, timekey);
+            values.put(DBHelper.TIME, sessionkey);
 //            values.put(DBHelper.USERID, sessionid);
 //            values.put(DBHelper.DEVICE, Constants.DEVICE_ID);
             values.put(DBHelper.Trip_id, sessionid);
@@ -992,14 +993,14 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         protected ArrayList<LatLng> doInBackground(String... params) {
             String timekey = params[0];
 
-            Log.d(TAG,"timekey : " + timekey);
+            Log.d(TAG,"sessionkey : " + timekey);
 
             String timedata[] = timekey.split("-");
             String startTime = timedata[0];
 
             Log.d(TAG,"startTime : " + startTime);
 
-            //TODO use freaking timekey to get data. First, get the session id by the timekey.
+            //TODO use freaking sessionkey to get data. First, get the session id by the sessionkey.
 
             Log.d(TAG, "listRecordAsyncTask going to list recording");
 
@@ -1008,7 +1009,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
             try {
                 sessionid = Integer.valueOf(getSessionIdByTimekey(startTime));
 //                sessionid = Integer.valueOf(getSessionIdByTimekey(TripManager.getSpecialTimeInMillis(startTime)));
-//                locationDataRecords = LocationDataRecordDAO.getTripLocToDrawOnMap(timekey);
+//                locationDataRecords = LocationDataRecordDAO.getTripLocToDrawOnMap(sessionkey);
 //                sessionid = bundle.getInt("position_id");
                 locationDataRecords = TripManager.getInstance().getTripLocToDrawOnMap(sessionid);
 

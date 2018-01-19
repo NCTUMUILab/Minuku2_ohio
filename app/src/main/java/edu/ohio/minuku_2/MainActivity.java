@@ -73,7 +73,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.ohio.minuku.DBHelper.DBHelper;
@@ -428,6 +427,7 @@ public class MainActivity extends AppCompatActivity {
             long startTime = getSpecialTimeInMillis(startTimeString);
             long endTime = getSpecialTimeInMillis(endTimeString);
             //get all data in cursor
+            //TODO notice !! Convert the function into getTripData
             data = TripManager.getTripDatafromSQLite();
             ArrayList<String> dataInCursor = new ArrayList<String>();
             try {
