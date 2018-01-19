@@ -214,51 +214,42 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                 (float)longitude.get());
         Log.e(TAG,"locationDataRecord latitude : "+latitude.get()+" longitude : "+longitude.get());
 
-//        Log.d(TAG, "updateStream location "+location);
-//        if(location!=null) {
-            LocationDataRecord newlocationDataRecord = new LocationDataRecord(
-                (float) latitude.get(),
-                (float) longitude.get(),
-                accuracy,
-
-                    //TODO improve it to ArrayList, ex. the session id should be "0, 10".
-                    String.valueOf(TripManager.getInstance().getOngoingSessionidList().get(0)));
-
-            /*LocationDataRecord newlocationDataRecord = new LocationDataRecord(
+        LocationDataRecord newlocationDataRecord = null;
+        try {
+            newlocationDataRecord = new LocationDataRecord(
                     (float) latitude.get(),
                     (float) longitude.get(),
                     accuracy,
-                    (float) location.getAltitude(),
-                    location.getSpeed(),
-                    location.getBearing(),
-                    location.getProvider());*/
+                    //TODO improve it to ArrayList, ex. the session id should be "0, 10".
+                    String.valueOf(TripManager.getInstance().getOngoingSessionidList().get(0)));
+        }catch (IndexOutOfBoundsException e){
+            e.printStackTrace();
+            //no session now
+            newlocationDataRecord = new LocationDataRecord(
+                    (float) latitude.get(),
+                    (float) longitude.get(),
+                    accuracy);
+        }
+        Log.e(TAG,"newlocationDataRecord latitude : "+latitude.get()+" longitude : "+longitude.get());
 
-            Log.e(TAG,"newlocationDataRecord latitude : "+latitude.get()+" longitude : "+longitude.get());
+        MinukuStreamManager.getInstance().setLocationDataRecord(newlocationDataRecord);
+        toCheckFamiliarOrNotLocationDataRecord = newlocationDataRecord;
 
-            MinukuStreamManager.getInstance().setLocationDataRecord(newlocationDataRecord);
-            toCheckFamiliarOrNotLocationDataRecord = newlocationDataRecord;
+        mStream.add(newlocationDataRecord);
+        Log.d(TAG, "Location to be sent to event bus" + newlocationDataRecord);
 
-            mStream.add(newlocationDataRecord);
-            Log.d(TAG, "Location to be sent to event bus" + newlocationDataRecord);
-
-            // also post an event.
-            EventBus.getDefault().post(newlocationDataRecord);
-            try {
-
-//            mDAO.add(locationDataRecord);
-                mDAO.add(newlocationDataRecord);
-                //TODO notice it
+        // also post an event.
+        EventBus.getDefault().post(newlocationDataRecord);
+        try {
+            mDAO.add(newlocationDataRecord);
+            //TODO notice it
 //                TripManager.getInstance().setTrip(newlocationDataRecord);
 
-//                mDAO.query_counting();
-//                mDAO.query_getAll();
 
-
-            } catch (DAOException e) {
-                e.printStackTrace();
-                return false;
-            }
-//        }
+        } catch (DAOException e) {
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 
