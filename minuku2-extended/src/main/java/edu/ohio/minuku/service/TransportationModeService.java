@@ -124,6 +124,9 @@ public class TransportationModeService extends Service {
     public static final int STILL = DetectedActivity.STILL;
     public static final int TILTING = DetectedActivity.TILTING;
 
+    private static ArrayList<ActivityRecognitionDataRecord> mActivityRecognitionRecords;
+
+
     /**Constant **/
     private static int mSuspectedStartActivityType = NO_ACTIVITY_TYPE;
     private static int mSuspectedStopActivityType = NO_ACTIVITY_TYPE;
@@ -1407,6 +1410,20 @@ public class TransportationModeService extends Service {
             return false;
 
     }
+
+    public static void addActivityRecognitionRecord(ActivityRecognitionDataRecord record) {
+        getActivityRecognitionRecords().add(record);
+    }
+
+    public static ArrayList<ActivityRecognitionDataRecord> getActivityRecognitionRecords() {
+
+        if (mActivityRecognitionRecords==null){
+            mActivityRecognitionRecords = new ArrayList<ActivityRecognitionDataRecord>();
+        }
+        return mActivityRecognitionRecords;
+
+    }
+
 
     private static float getConfirmStopThreshold(int activityType) {
 

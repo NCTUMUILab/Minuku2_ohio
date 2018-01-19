@@ -465,6 +465,30 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
         }
     }
 
+    public static int getActivityTypeFromName(String activityName) {
+
+        if (activityName.equals(STRING_DETECTED_ACTIVITY_IN_VEHICLE)) {
+            return DetectedActivity.IN_VEHICLE;
+        }else if(activityName.equals(STRING_DETECTED_ACTIVITY_ON_BICYCLE)) {
+            return DetectedActivity.ON_BICYCLE;
+        }else if(activityName.equals(STRING_DETECTED_ACTIVITY_ON_FOOT)) {
+            return DetectedActivity.ON_FOOT;
+        }else if(activityName.equals(STRING_DETECTED_ACTIVITY_STILL)) {
+            return DetectedActivity.STILL;
+        }else if(activityName.equals(STRING_DETECTED_ACTIVITY_UNKNOWN)) {
+            return DetectedActivity.UNKNOWN ;
+        }else if(activityName.equals(STRING_DETECTED_ACTIVITY_RUNNING)) {
+            return DetectedActivity.RUNNING ;
+        }else if (activityName.equals(STRING_DETECTED_ACTIVITY_WALKING)){
+            return DetectedActivity.WALKING;
+        }else if(activityName.equals(STRING_DETECTED_ACTIVITY_TILTING)) {
+            return DetectedActivity.TILTING;
+        }else {
+            return NO_ACTIVITY_TYPE;
+        }
+
+    }
+
     public static String getActivityNameFromType(int activityType) {
         switch(activityType) {
             case DetectedActivity.IN_VEHICLE:
