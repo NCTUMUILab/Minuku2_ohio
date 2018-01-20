@@ -277,7 +277,7 @@ public class TransportationModeService extends Service {
                     //getting latest Transportation based on the incoming record
                     examineTransportation(record);
 
-//                    Log.d("ARService", "[test replay] after examine transportation");
+                    Log.d("ARService", "[test replay] test trip: after examine transportation the current activity is  is " + getConfirmedActvitiyString() + " the status is " + getCurrentState());
 
 
                    // showTransportation(getConfirmedActvitiyString());
@@ -358,7 +358,27 @@ public class TransportationModeService extends Service {
                 state = "STATE_SUSPECTING_STOP";
             }
 
-            data.add(new String[]{String.valueOf(timestamp), timeString, transportation, "", state, String.valueOf(activityTime), String.valueOf(mostProbableActivity), String.valueOf(probableActivities)});
+
+            String latest_AR_String = "";
+
+            if (probableActivities!=null){
+
+                for (int i=0; i<probableActivities.size(); i++){
+
+                    if (i!=0){
+                        latest_AR_String+=Constants.ACTIVITY_DELIMITER;
+                    }
+                    DetectedActivity activity =  probableActivities.get(i);
+                    latest_AR_String += ActivityRecognitionStreamGenerator.getActivityNameFromType(activity.getType());
+                    latest_AR_String += Constants.ACTIVITY_CONFIDENCE_CONNECTOR;
+                    latest_AR_String += activity.getConfidence();
+
+                }
+
+                Log.d("TMService", "[test replay] StoreToCSV writing receive AR CSV " +  latest_AR_String);
+            }
+
+            data.add(new String[]{String.valueOf(timestamp), timeString, transportation, "", state, String.valueOf(activityTime), String.valueOf(mostProbableActivity), latest_AR_String});
 
             csv_writer.writeAll(data);
 
@@ -503,10 +523,20 @@ public class TransportationModeService extends Service {
 //            String rec_AR_String = rec_AR.getMostProbableActivity().toString();
             String rec_AR_String = "";
             String latest_AR_String = "";
-            try {
-                latest_AR_String = latest_AR.getMostProbableActivity().toString();
-            }catch (Exception e){
-                e.printStackTrace();
+
+            if (latest_AR!=null){
+                for (int i=0; i<latest_AR.getProbableActivities().size(); i++){
+
+                    if (i!=0){
+                        latest_AR_String+=Constants.ACTIVITY_DELIMITER;
+                    }
+                    DetectedActivity activity =  latest_AR.getProbableActivities().get(i);
+                    latest_AR_String += ActivityRecognitionStreamGenerator.getActivityNameFromType(activity.getType());
+                    latest_AR_String += Constants.ACTIVITY_CONFIDENCE_CONNECTOR;
+                    latest_AR_String += activity.getConfidence();
+
+                }
+                Log.d("TMService", "[test replay] StoreToCSV writing latest AR data to CSV " + latest_AR_String);
             }
 
             if(TransportationModefirstOrNot) {
@@ -820,7 +850,7 @@ public class TransportationModeService extends Service {
         }
         else if (getCurrentState()==STATE_SUSPECTING_START) {
 
-            Log.d(TAG,"[test replay] in Suspect start");
+            Log.d(TAG,"[test replay] in Suspect start, the suspected AR is " +getActivityNameFromType(getSuspectedStartActivityType()) );
             boolean isTimeToConfirm = checkTimeElapseOfLatestActivityFromSuspectPoint(detectionTime, getSuspectTime(), getWindowLengh(getSuspectedStartActivityType(), getCurrentState()) );
 
             StoreToCSV(isTimeToConfirm, detectionTime);
@@ -879,7 +909,7 @@ public class TransportationModeService extends Service {
         //if in the confirmed state, we suspect whether users exit the activity
         else if (getCurrentState()==STATE_CONFIRMED) {
 
-            Log.d(TAG,"[test replay] in confirm");
+            Log.d(TAG,"[test replay] in confirm, the confirm AR is " + getActivityNameFromType(getConfirmedActivityType()));
             /** if the detected activity is vehicle, bike or on foot, then we suspect the activity from now**/
 
             //if the latest activity is not the currently confirmed activity nor tilting nor unkown
@@ -905,7 +935,7 @@ public class TransportationModeService extends Service {
         }
         else if (getCurrentState()==STATE_SUSPECTING_STOP) {
 
-            Log.d(TAG,"[test replay] in suspect stop");
+            Log.d(TAG,"[test replay] in suspect stop, the suspect stop activiti is " + getActivityNameFromType(getSuspectedStopActivityType()));
             //TODO change to the new constants.
             //TODO for "getTransitionWindowLength"
             //TODO If it is changing from unstatic to unstatic.

@@ -59,7 +59,7 @@ public class TripManager {
 
     private static TripManager instance;
 
-    private ArrayList<Integer> ongoingSessionidList;
+    private ArrayList<String> ongoingSessionidList;
 
     private SharedPreferences sharedPrefs;
     private static SharedPreferences.Editor editor;
@@ -76,7 +76,7 @@ public class TripManager {
         sessionid = "0";
 //        sessionid_unStatic = 0;
 
-        ongoingSessionidList = new ArrayList<Integer>();
+        ongoingSessionidList = new ArrayList<String>();
 
 
         sessionid_unStatic = sharedPrefs.getInt("sessionid_unStatic",0);
@@ -117,26 +117,22 @@ public class TripManager {
         return TripManager.instance;
     }
 
-    public ArrayList<Integer> getOngoingSessionidList() {
+    public ArrayList<String> getOngoingSessionidList() {
         return ongoingSessionidList;
     }
 
-    public void setOngoingSessionidList(ArrayList<Integer> ongoingSessionidList) {
+    public void setOngoingSessionidList(ArrayList<String> ongoingSessionidList) {
         this.ongoingSessionidList = ongoingSessionidList;
     }
 
-    public void addOngoingSessionid(int id) {
+    public void addOngoingSessionid(String id) {
         this.ongoingSessionidList.add(id);
-
-        Toast.makeText(mContext,"add ongoing session : "+id,Toast.LENGTH_SHORT).show();
-
     }
 
-    public void removeOngoingSessionid(int id) {
+    public void removeOngoingSessionid(String id) {
+        edu.ohio.minuku.logger.Log.d(TAG, "test trip: inside removeongogint seesion renove " + id );
         this.ongoingSessionidList.remove(id);
-
-        Toast.makeText(mContext,"remove ongoing session : "+id,Toast.LENGTH_SHORT).show();
-
+        edu.ohio.minuku.logger.Log.d(TAG, "test trip: inside removeongogint seesion the ongoiong list is  " + ongoingSessionidList.toString() );
     }
 
     public void setTrip(LocationDataRecord entity) {

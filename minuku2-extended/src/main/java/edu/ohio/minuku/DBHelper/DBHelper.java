@@ -590,8 +590,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static long insertSessionTable(Session session){
 
         //TODO: the user should be able to specify the database because each study may have a different database.
-
-        Log.d(TAG, "put session " + session.getId() + " to table " + SESSION_TABLE_NAME);
+        Log.d(TAG, "test trip put session " + session.getId() + " to table " + SESSION_TABLE_NAME);
 
         long rowId = 0;
 
@@ -604,12 +603,12 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(COL_SESSION_START_TIME, session.getStartTime());
 
             //get row number after the insertion
-            Log.d(TAG, "[testing sav and load session] Inserting session id: " + session.getId() + ": Session-" + session.getStartTime() +
+            Log.d(TAG, "[testing sav and load session] test trip Inserting session id: " + session.getId() + ": Session-" + session.getStartTime() +
                     " to the session table " + SESSION_TABLE_NAME);
 
             rowId = db.insert(SESSION_TABLE_NAME, null, values);
 
-            Toast.makeText(mContext,"inserting sessionid : "+ session.getId(),Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext,"test trip inserting sessionid : "+ session.getId(),Toast.LENGTH_SHORT).show();
 
         }catch(Exception e){
             e.printStackTrace();
@@ -908,6 +907,29 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return rows;
 
+
+    }
+
+    public static void updateSessionTable(int session_id, long endTime){
+
+        String where = COL_ID + " = " +  session_id;
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            //TODO get the col name after complete the annotate part.
+            values.put(COL_SESSION_END_TIME, endTime);
+
+            db.update(SESSION_TABLE_NAME, values, where, null);
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        edu.ohio.minuku.logger.Log.d(TAG, "test trip: completing updating end time for sesssion" + id );
 
     }
 

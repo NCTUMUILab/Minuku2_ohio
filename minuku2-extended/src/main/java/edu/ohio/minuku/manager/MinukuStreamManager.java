@@ -226,60 +226,75 @@ public class MinukuStreamManager implements StreamManager {
 
     public void setTransportationModeDataRecord(TransportationModeDataRecord transportationModeDataRecord){
 
+        Log.d(TAG, "test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString());
 
+
+        //the first time we see incoming transportation mode data
         if (this.transportationModeDataRecord==null){
-
             this.transportationModeDataRecord = transportationModeDataRecord;
+            Log.d(TAG, "test trip original null updated to " + this.transportationModeDataRecord.getConfirmedActivityString());
         }
-
-        //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which means its not trip
         else {
 
-            //detecting stop of the trip
-            //if last transportation is moving
-            if(!this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
-                    && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)) {
+            Log.d(TAG, "test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString() + " vs original " + this.transportationModeDataRecord.getConfirmedActivityString());
 
-                //different from the last transportation, stop the ongoing session.
-                if (!this.transportationModeDataRecord.getConfirmedActivityString().equals(transportationModeDataRecord.getConfirmedActivityString())) {
+
+            //checkf if the new activity is different from the previous activity
+            if (!this.transportationModeDataRecord.getConfirmedActivityString().equals(transportationModeDataRecord.getConfirmedActivityString())) {
+
+
+                Log.d(TAG, "test trip: the new acitivty is different from the previous!");
+
+
+                /**1. first check if the previous activity is a session, if the previous is moving, we should remove the session and call it an end**/
+                if(!this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                        && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
+
+                    //remove the session
                     int id = (int) DBHelper.querySessionCount();
-                    Log.d(TAG, "testgetdata query session from LocalDB is " + id);
+                    Log.d(TAG, "test trip: the previous acitivty is movnig, we're going to  remove the session id " + id );
+                    TripManager.getInstance().removeOngoingSessionid(String.valueOf(id));
+                    Log.d(TAG, "test trip: the previous acitivty is movnig, we remove the session id " + id );
 
-                    TripManager.getInstance().removeOngoingSessionid(id);
+                    //tODO: update the session with end time
+                    long endTime = getCurrentTimeInMilli();
+                    DBHelper.updateSessionTable(id, endTime);
+                    Log.d(TAG, "test trip: the previous acitivty is movnig,after update "  );
+                }
+
+                /**2 if the new activity is moving, we should add a session **/
+                if(!transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                        && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
+
+//                    Log.d(TAG, "test trip: the new activit is moving");
+
+                    //insert into the session table
+                    long count =  DBHelper.querySessionCount();
+                    int session_id = (int) count + 1;
+//                    Log.d(TAG, "test trip: adding new session id " + session_id);
+
+                    Session session = new Session(session_id);
+                    session.setStartTime(getCurrentTimeInMilli());
+                    DBHelper.insertSessionTable(session);
+
+
+                    //InstanceManager add ongoing session for the new activity
+                    TripManager.getInstance().addOngoingSessionid(String.valueOf(session_id));
+
                 }
             }
+
+
 
             //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which menas its not trip
 
 
             //TODO filter < 100m trip its isTrip to 0
 
-
-            this.transportationModeDataRecord = transportationModeDataRecord;
-
-            //detecting start of the trip
-            //ongoing session, detecting new travel activity
-            //add ongoing session if the travel activity is not static
-            if(!transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
-                    && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
-
-                //insert into the session table
-                long count =  DBHelper.querySessionCount();
-                Log.d(TAG, "testgetdata query session from LocalDB is " + count);
-
-                int id = (int) count + 1;
-
-                Session session = new Session(id);
-                session.setStartTime(getCurrentTimeInMilli());
-
-                DBHelper.insertSessionTable(session);
-
-                //InstanceManager add ongoing session for the new activity
-                TripManager.getInstance().addOngoingSessionid(id);
-
-            }
-
         }
+
+        this.transportationModeDataRecord = transportationModeDataRecord;
+//        Log.d(TAG, "test trip after update::: " + transportationModeDataRecord.getConfirmedActivityString() + "  the original beocomes " + this.transportationModeDataRecord.getConfirmedActivityString());
 
 
     }
