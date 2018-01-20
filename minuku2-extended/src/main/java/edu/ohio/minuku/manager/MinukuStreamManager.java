@@ -233,6 +233,7 @@ public class MinukuStreamManager implements StreamManager {
 
         Log.d(TAG, "test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString());
 
+        Boolean addSessionFlag = false;
 
         //the first time we see incoming transportation mode data
         if (this.transportationModeDataRecord==null){
@@ -243,14 +244,14 @@ public class MinukuStreamManager implements StreamManager {
 
         else {
 
-            Log.d(TAG, "test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString() + " vs original " + this.transportationModeDataRecord.getConfirmedActivityString());
+            Log.d(TAG, "test combine test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString() + " vs original " + this.transportationModeDataRecord.getConfirmedActivityString());
 
 
             //checkf if the new activity is different from the previous activity
             if (!this.transportationModeDataRecord.getConfirmedActivityString().equals(transportationModeDataRecord.getConfirmedActivityString())) {
 
 
-                Log.d(TAG, "test trip: the new acitivty is different from the previous!");
+                Log.d(TAG, "test combine test trip: the new acitivty is different from the previous!");
 
 
                 /**1. first check if the previous activity is a session, if the previous is moving, we should remove the session and call it an end**/
@@ -276,61 +277,81 @@ public class MinukuStreamManager implements StreamManager {
 
                     /** check if the new actviity should be combine: if the new transportaiotn mode  is the same as the mode of the previous sessison and the time is 5 minuts*/
 
+                    //see if there's existing session
+                    long count =  DBHelper.querySessionCount();
+                    Log.d(TAG,"[test combine] session count is " + count );
 
                     //first query session of the previous activity
-                    String lastSessionStr = DBHelper.queryLastSession().get(0);
+                    if (count>0){
 
-                    //get session and obtain its annotation
-                    String[] sessionCol = lastSessionStr.split(Constants.DELIMITER);
-                    String annotationSetStr =  sessionCol[4];
+                        String lastSessionStr = DBHelper.queryLastSession().get(0);
 
-                    Log.d(TAG,"[test combine] annotation string " + annotationSetStr );
+                        //get session and obtain its annotation
+                        String[] sessionCol = lastSessionStr.split(Constants.DELIMITER);
+                        String annotationSetStr =  sessionCol[4];
 
-                    JSONObject annotationSetJSON = null;
-                    JSONArray annotateionSetJSONArray = null;
-                    AnnotationSet annotationSet = null;
+                        Log.d(TAG,"[test combine] annotation string " + annotationSetStr );
 
-                    try {
-                        if (!annotationSetStr.equals("null")){
-                            annotationSetJSON = new JSONObject(annotationSetStr);
-                            annotateionSetJSONArray = annotationSetJSON.getJSONArray(SessionManager.ANNOTATION_PROPERTIES_ANNOTATION);
+                        JSONObject annotationSetJSON = null;
+                        JSONArray annotateionSetJSONArray = null;
+                        AnnotationSet annotationSet = null;
+
+                        try {
+                            if (!annotationSetStr.equals("null")){
+                                annotationSetJSON = new JSONObject(annotationSetStr);
+                                annotateionSetJSONArray = annotationSetJSON.getJSONArray(SessionManager.ANNOTATION_PROPERTIES_ANNOTATION);
+                                Log.d(TAG,"[test combine] annotateionSetJSONArray " + annotateionSetJSONArray.toString() );
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+
+                        if (annotateionSetJSONArray!=null){
+                            annotationSet =  SessionManager.toAnnorationSet(annotateionSetJSONArray);
+                        }
+
+                        Log.d(TAG,"[test combine] annotationSet " + annotationSet.toJSONObject().toString() );
+                        //get annotaitons that has the transportation mode tag
+                        ArrayList<Annotation>  annotations = annotationSet.getAnnotationByContent(transportationModeDataRecord.getConfirmedActivityString());
+                        Log.d(TAG,"[test combine] get annotaitons with TM " + annotations.toString() );
+
+
+                        //if the previous session does not have any annotation of which transportation is of the same tag, we should add a new session
+                        if (annotations.size()==0){
+                            addSessionFlag = true;
+                        }
+
                     }
 
-                    if (annotateionSetJSONArray!=null){
-                        annotationSet =  SessionManager.toAnnorationSet(annotateionSetJSONArray);
+                    //there's no session yet, we should just create a new session
+                    else {
+
+                        addSessionFlag = true;
+
                     }
 
-                    //get annotaitons that has the transportation mode tag
-                    ArrayList<Annotation>  annotations = annotationSet.getAnnotationByTag(transportationModeDataRecord.getConfirmedActivityString());
-                    Log.d(TAG,"[test combine] get annotaitons with TM " + annotations.toString() );
+
+                    //if we need to add a session
+                    if (addSessionFlag){
+
+                        //insert into the session table;
+                        int session_id = (int) count + 1;
+                        Session session = new Session(session_id);
+                        session.setStartTime(getCurrentTimeInMilli());
+                        Annotation annotation = new Annotation();
+                        annotation.setContent(transportationModeDataRecord.getConfirmedActivityString());
+                        annotation.addTag(Constants.ANNOTATION_TAG_DETECTED_TRANSPORTATOIN_ACTIVITY);
+                        session.addAnnotation(annotation);
+
+                        Log.d(TAG, "[test combine] insert the session is with annotation " +session.getAnnotationsSet().toJSONObject().toString());
+
+                        DBHelper.insertSessionTable(session);
+                        //InstanceManager add ongoing session for the new activity
+                        SessionManager.getInstance().addOngoingSessionid(String.valueOf(session_id));
+                    }
 
 
-                    //insert into the session table
-                    long count =  DBHelper.querySessionCount();
-                    int session_id = (int) count + 1;
-                    Log.d(TAG, "[test combine] test trip: adding new session id " + session_id);
 
-                    Session session = new Session(session_id);
-                    session.setStartTime(getCurrentTimeInMilli());
-
-
-                    //add mobility label as an annotaiton to the session
-                    Annotation annotation = new Annotation();
-                    annotation.setContent(transportationModeDataRecord.getConfirmedActivityString());
-                    annotation.addTag(Constants.ANNOTATION_TAG_DETECTED_TRANSPORTATOIN_ACTIVITY);
-                    session.addAnnotation(annotation);
-
-                    Log.d(TAG, "[test combine] the session is with annotation " +session.getAnnotationsSet().toJSONObject().toString());
-
-
-                    DBHelper.insertSessionTable(session);
-
-
-                    //InstanceManager add ongoing session for the new activity
-                    SessionManager.getInstance().addOngoingSessionid(String.valueOf(session_id));
 
                 }
             }

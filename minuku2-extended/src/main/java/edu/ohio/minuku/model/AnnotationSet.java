@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.SessionManager;
 
@@ -55,17 +56,22 @@ public class AnnotationSet {
 
     }
 
-    public ArrayList<Annotation> getAnnotationByTag(String tag){
+    public ArrayList<Annotation> getAnnotationByContent(String content){
+
+		Log.d("AnntationSet","[test combine] searching " + content + " inside annotationset" + this.mAnnotations.toString() );
 
     	ArrayList<Annotation> annotations = new ArrayList<Annotation>();
 
-		if (mAnnotations!=null){
+		if (this.mAnnotations!=null){
 
 			for (Annotation annotation : mAnnotations){
 
-				if (annotation.getTags().contains(tag)){
+				Log.d("AnntationSet","[test combine] now it's annotation " + annotation.toJSONObject().toString() );
+				Log.d("AnntationSet","[test combine] and it's content is " +annotation.getContent() );
 
-					Log.d("Anntation", "get annotation " + annotation.toJSONObject().toString());
+				if (annotation.getContent().equals(content)){
+
+					Log.d("AnntationSet", "[test combine] get annotation " + annotation.toJSONObject().toString());
 
 					annotations.add(annotation);
 				}
