@@ -6,6 +6,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import edu.ohio.minuku.config.Constants;
+import edu.ohio.minuku.logger.Log;
+import edu.ohio.minuku.manager.SessionManager;
+
 public class AnnotationSet {
 
     //the id of the annotationSet for raw data is 0
@@ -52,6 +56,36 @@ public class AnnotationSet {
 
     }
 
+    public ArrayList<Annotation> getAnnotationByContent(String content){
+
+		Log.d("AnntationSet","[test combine] searching " + content + " inside annotationset" + this.mAnnotations.toString() );
+
+    	ArrayList<Annotation> annotations = new ArrayList<Annotation>();
+
+		if (this.mAnnotations!=null){
+
+			for (Annotation annotation : mAnnotations){
+
+				Log.d("AnntationSet","[test combine] now it's annotation " + annotation.toJSONObject().toString() );
+				Log.d("AnntationSet","[test combine] and it's content is " +annotation.getContent() );
+
+				if (annotation.getContent().equals(content)){
+
+					Log.d("AnntationSet", "[test combine] get annotation " + annotation.toJSONObject().toString());
+
+					annotations.add(annotation);
+				}
+
+			}
+
+
+		}
+
+		return annotations;
+
+
+	}
+
 	public JSONObject toJSONObject(){
 
 		JSONObject obj  = new JSONObject();
@@ -60,8 +94,10 @@ public class AnnotationSet {
 
 			if (mAnnotations!=null && mAnnotations.size()>0){
 
-				obj.put("", mId);
-				obj.put("", (Object) getAnnotationsInJSONArray());
+				if (!mName.equals(""))
+					obj.put(SessionManager.ANNOTATION_PROPERTIES_NAME, mName);
+				obj.put(SessionManager.ANNOTATION_PROPERTIES_ID, mId);
+				obj.put(SessionManager.ANNOTATION_PROPERTIES_ANNOTATION, (Object) getAnnotationsInJSONArray());
 
 			}
 
@@ -73,43 +109,7 @@ public class AnnotationSet {
 
 	}
 
-	public JSONArray getAnnotationsInJSONArray() {
-
-		JSONArray array = new JSONArray() ;
-
-		//get all the annotaitons and put their JSONObject format into the array
-		for (int i=0; i<mAnnotations.size(); i++){
-//			array.put(mAnnotations.get(i).toJSONObject());
-		}
-
-		return array;
-
-	}
-
-    /*public JSONObject toJSONObject(){
-
-        JSONObject obj  = new JSONObject();
-
-        try{
-
-            if (mAnnotations!=null && mAnnotations.size()>0){
-
-                if (!mName.equals(""))
-                    obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_NAME, mName);
-                obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_ID, mId);
-                obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_ANNOTATION, (Object) getAnnotationsInJSONArray());
-
-            }
-
-        }catch(JSONException e){
-
-        }
-        return obj;
-
-
-    }*/
-
-    /*public JSONArray getAnnotationsInJSONArray() {
+   public JSONArray getAnnotationsInJSONArray() {
 
         JSONArray array = new JSONArray() ;
 
@@ -120,7 +120,7 @@ public class AnnotationSet {
 
         return array;
 
-    }*/
+    }
 
 
 

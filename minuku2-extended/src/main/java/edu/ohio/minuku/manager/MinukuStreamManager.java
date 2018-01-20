@@ -23,6 +23,9 @@
 package edu.ohio.minuku.manager;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,6 +39,8 @@ import java.util.TimeZone;
 import edu.ohio.minuku.DBHelper.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
+import edu.ohio.minuku.model.Annotation;
+import edu.ohio.minuku.model.AnnotationSet;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
 import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
@@ -228,6 +233,7 @@ public class MinukuStreamManager implements StreamManager {
 
         Log.d(TAG, "test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString());
 
+        Boolean addSessionFlag = false;
 
         //the first time we see incoming transportation mode data
         if (this.transportationModeDataRecord==null){
@@ -236,14 +242,14 @@ public class MinukuStreamManager implements StreamManager {
         }
         else {
 
-            Log.d(TAG, "test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString() + " vs original " + this.transportationModeDataRecord.getConfirmedActivityString());
+            Log.d(TAG, "test combine test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString() + " vs original " + this.transportationModeDataRecord.getConfirmedActivityString());
 
 
             //checkf if the new activity is different from the previous activity
             if (!this.transportationModeDataRecord.getConfirmedActivityString().equals(transportationModeDataRecord.getConfirmedActivityString())) {
 
 
-                Log.d(TAG, "test trip: the new acitivty is different from the previous!");
+                Log.d(TAG, "test combine test trip: the new acitivty is different from the previous!");
 
 
                 /**1. first check if the previous activity is a session, if the previous is moving, we should remove the session and call it an end**/
@@ -262,24 +268,97 @@ public class MinukuStreamManager implements StreamManager {
                     Log.d(TAG, "test trip: the previous acitivty is movnig,after update "  );
                 }
 
-                /**2 if the new activity is moving, we should add a session **/
+                /**2 if the new activity is moving, we will first determine whether this is continuing the previosu activity or a new activity. If it is a continutous one we will not add a new sesssion but let the previous activity in the ongoing **/
                 if(!transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
                         && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
 
-//                    Log.d(TAG, "test trip: the new activit is moving");
 
-                    //insert into the session table
+                    /** check if the new actviity should be combine: if the new transportaiotn mode  is the same as the mode of the previous sessison and the time is 5 minuts*/
+
+                    //see if there's existing session
                     long count =  DBHelper.querySessionCount();
-                    int session_id = (int) count + 1;
-//                    Log.d(TAG, "test trip: adding new session id " + session_id);
+                    Log.d(TAG,"[test combine] session count is " + count );
 
-                    Session session = new Session(session_id);
-                    session.setStartTime(getCurrentTimeInMilli());
-                    DBHelper.insertSessionTable(session);
+                    //first query session of the previous activity
+                    if (count>0){
+
+                        String lastSessionStr = DBHelper.queryLastSession().get(0);
+
+                        //get session and obtain its annotation
+                        String[] sessionCol = lastSessionStr.split(Constants.DELIMITER);
+                        String annotationSetStr =  sessionCol[4];
+
+                        Log.d(TAG,"[test combine] annotation string " + annotationSetStr );
+
+                        JSONObject annotationSetJSON = null;
+                        JSONArray annotateionSetJSONArray = null;
+                        AnnotationSet annotationSet = null;
+
+                        try {
+                            if (!annotationSetStr.equals("null")){
+                                annotationSetJSON = new JSONObject(annotationSetStr);
+                                annotateionSetJSONArray = annotationSetJSON.getJSONArray(SessionManager.ANNOTATION_PROPERTIES_ANNOTATION);
+                                Log.d(TAG,"[test combine] annotateionSetJSONArray " + annotateionSetJSONArray.toString() );
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        if (annotateionSetJSONArray!=null){
+                            annotationSet =  SessionManager.toAnnorationSet(annotateionSetJSONArray);
+                        }
+
+                        Log.d(TAG,"[test combine] annotationSet " + annotationSet.toJSONObject().toString() );
+                        //get annotaitons that has the transportation mode tag
+                        ArrayList<Annotation>  annotations = annotationSet.getAnnotationByContent(transportationModeDataRecord.getConfirmedActivityString());
+
+                        //if the previous session does not have any annotation of which transportation is of the same tag, we should add a new session
+                        if (annotations.size()==0){
+                            addSessionFlag = true;
+                        }
+
+                        // the current activity is the same TM with the previous session mode
+                        else {
+
+                            //check its interval to see if it's within 5 minutes
 
 
-                    //InstanceManager add ongoing session for the new activity
-                    SessionManager.getInstance().addOngoingSessionid(String.valueOf(session_id));
+                            //if yes, we should make the previous session ongoing  
+
+
+                        }
+
+                    }
+
+                    //there's no session yet, we should just create a new session
+                    else {
+                        Log.d(TAG,"[test combine] the previous sessuin is the not same transporttion mode, we should create a session " );
+                        addSessionFlag = true;
+
+                    }
+
+
+                    //if we need to add a session
+                    if (addSessionFlag){
+
+                        //insert into the session table;
+                        int session_id = (int) count + 1;
+                        Session session = new Session(session_id);
+                        session.setStartTime(getCurrentTimeInMilli());
+                        Annotation annotation = new Annotation();
+                        annotation.setContent(transportationModeDataRecord.getConfirmedActivityString());
+                        annotation.addTag(Constants.ANNOTATION_TAG_DETECTED_TRANSPORTATOIN_ACTIVITY);
+                        session.addAnnotation(annotation);
+
+                        Log.d(TAG, "[test combine] insert the session is with annotation " +session.getAnnotationsSet().toJSONObject().toString());
+
+                        DBHelper.insertSessionTable(session);
+                        //InstanceManager add ongoing session for the new activity
+                        SessionManager.getInstance().addOngoingSessionid(String.valueOf(session_id));
+                    }
+
+
+
 
                 }
             }
