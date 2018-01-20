@@ -425,7 +425,7 @@ public class LocationNoGoogleStreamGenerator extends AndroidStreamGenerator<Loca
                     (float) latitude.get(),
                     (float) longitude.get(),
                     accuracy);
-//            TripManager.getInstance().setTrip(locationNoGoogleDataRecord);
+//            SessionManager.getInstance().setTrip(locationNoGoogleDataRecord);
 
 
             Log.d(TAG,"onLocationChanged latitude : "+latitude+" longitude : "+ longitude);

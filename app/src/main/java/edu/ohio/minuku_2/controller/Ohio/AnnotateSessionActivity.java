@@ -55,9 +55,9 @@ import edu.ohio.minuku_2.R;
  * Created by Lawrence on 2017/7/5.
  */
 
-public class annotateohio extends Activity implements OnMapReadyCallback {
+public class AnnotateSessionActivity extends Activity implements OnMapReadyCallback {
 
-    private final String TAG = "annotateohio";
+    private final String TAG = "AnnotateSessionActivity";
 
     public static float GOOGLE_MAP_DEFAULT_ZOOM_LEVEL = 13;
     public static LatLng GOOGLE_MAP_DEFAULT_CAMERA_CENTER = new LatLng(24, 120);
@@ -82,8 +82,6 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
     private GoogleMap mGoogleMap;
 
     private Button submit;
-
-    private ArrayList<LatLng> latLngs;
     private ArrayList<String> results;
 
     private Bundle bundle;
@@ -102,9 +100,6 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.annotate_activity_ohio);
-
-        latLngs = new ArrayList<LatLng>();
-
         error1 = false;
         error2 = false;
         error3 = false;
@@ -118,7 +113,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
             // do something on back.
             Log.d(TAG, " onKeyDown");
 
-            annotateohio.this.finish();
+            AnnotateSessionActivity.this.finish();
 
             return true;
         }
@@ -134,29 +129,31 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
         bundle = getIntent().getExtras();
 
-        initannotateohio();
+        initAnnotationView();
     }
 
-    public void initannotateohio(){
+    /**
+     * this function initialize the view of the annotation acitvity, including quesitonnaire and map
+     */
+    public void initAnnotationView(){
 
-//        sessionkey = bundle.getString("timekey_id");
         sessionkey = bundle.getString("sessionkey_id");
         Log.d(TAG,"timekey_id : " + sessionkey);
         try{
 
-            Log.d(TAG,"ListRecordAsyncTask");
+            Log.d(TAG,"trip data enter ninitanoateview ");
 
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-//                latLngs = new AnnotateRecordAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionkey).get();
+//                latLngs = new LoadRecordInSessionAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionkey).get();
 //            else
-//                latLngs = new AnnotateRecordAsyncTask().execute(sessionkey).get();
+//                latLngs = new LoadRecordInSessionAsyncTask().execute(sessionkey).get();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                results = new AnnotateRecordAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionkey).get();
+                results = new LoadRecordInSessionAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionkey).get();
             else
-                results = new AnnotateRecordAsyncTask().execute(sessionkey).get();
+                results = new LoadRecordInSessionAsyncTask().execute(sessionkey).get();
 
-            Log.d(TAG,"locationDataRecords = new ListRecordAsyncTask().execute().get();");
+            Log.d(TAG,"trip data after execution" + results.toString());
 
         }catch(InterruptedException e) {
             Log.d(TAG,"InterruptedException");
@@ -166,6 +163,10 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
             e.printStackTrace();
         }
 
+
+        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+
+        /** storing location records after we obain from the database*/
         for(int index = 0;index < results.size(); index++){
             String[] separated = results.get(index).split(Constants.DELIMITER);
             double lat = Double.valueOf(separated[2]);
@@ -177,7 +178,12 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
 
         Log.d(TAG,"latLngs : " + latLngs);
-        showRecordingVizualization();
+
+
+        /** showing location records on the map **/
+        showRecordingVizualization(latLngs);
+
+
 
         time = (TextView)findViewById(R.id.Time);
         String timeketForShow = null;
@@ -196,13 +202,13 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         preplanspinner = (Spinner)findViewById(R.id.preplanspinner);
         tripspinner = (Spinner)findViewById(R.id.tripspinner);
 
-        ArrayAdapter<String> activityList = new ArrayAdapter<String>(annotateohio.this,
+        ArrayAdapter<String> activityList = new ArrayAdapter<String>(AnnotateSessionActivity.this,
                 android.R.layout.simple_spinner_dropdown_item,
                 activityString);
-        ArrayAdapter<String> preplanList = new ArrayAdapter<String>(annotateohio.this,
+        ArrayAdapter<String> preplanList = new ArrayAdapter<String>(AnnotateSessionActivity.this,
                 android.R.layout.simple_spinner_dropdown_item,
                 preplanString);
-        ArrayAdapter<String> tripList = new ArrayAdapter<String>(annotateohio.this,
+        ArrayAdapter<String> tripList = new ArrayAdapter<String>(AnnotateSessionActivity.this,
                 android.R.layout.simple_spinner_dropdown_item,
                 tripString);
 
@@ -216,11 +222,11 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         submit = (Button)findViewById(R.id.submit);
         submit.setOnClickListener(submitting);
 
-        if(ongoing.equals("true")){
-            submit.setClickable(false);
-
-            Toast.makeText(getApplicationContext(), "This trip is still ongoing!", Toast.LENGTH_LONG).show();
-        }
+//        if(ongoing.equals("true")){
+//            submit.setClickable(false);
+//
+//            Toast.makeText(getApplicationContext(), "This trip is still ongoing!", Toast.LENGTH_LONG).show();
+//        }
 
     }
 
@@ -320,35 +326,35 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         });
 
         //checking its ongoing or not
-        String sessionid = getSessionIdByTimekey(sessionkey);
-        ongoing = "";
-        try {
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor tripCursor = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (sessionid) + "'", null); //cause sessionid start from 0.
-            Log.d(TAG,"SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (sessionid) + "'");
-            int rows = tripCursor.getCount();
-
-            if(rows!=0){
-                //get the first one is that it must be set with the accurate status
-                tripCursor.moveToFirst();
-                ongoing = tripCursor.getString(8);
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        Log.d(TAG, "ongoing : "+ ongoing);
-
-        if(ongoing.equals("true")){
-            setRG_notclickable(ques1);
-            setRG_notclickable(ques2_1);
-            setRG_notclickable(ques2_2);
-            setRG_notclickable(ques2_3);
-            setRG_notclickable(ques2_4);
-            setRG_notclickable(ques2_5);
-            setRG_notclickable(ques3);
-            setRG_notclickable(ques4);
-        }
+//        String sessionid = getSessionIdByTimekey(sessionkey);
+//        ongoing = "";
+//        try {
+//            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+//            Cursor tripCursor = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (sessionid) + "'", null); //cause sessionid start from 0.
+//            Log.d(TAG,"SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (sessionid) + "'");
+//            int rows = tripCursor.getCount();
+//
+//            if(rows!=0){
+//                //get the first one is that it must be set with the accurate status
+//                tripCursor.moveToFirst();
+//                ongoing = tripCursor.getString(8);
+//            }
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//
+//        Log.d(TAG, "ongoing : "+ ongoing);
+//
+//        if(ongoing.equals("true")){
+//            setRG_notclickable(ques1);
+//            setRG_notclickable(ques2_1);
+//            setRG_notclickable(ques2_2);
+//            setRG_notclickable(ques2_3);
+//            setRG_notclickable(ques2_4);
+//            setRG_notclickable(ques2_5);
+//            setRG_notclickable(ques3);
+//            setRG_notclickable(ques4);
+//        }
 
     }
 
@@ -667,46 +673,39 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
     }*/
 
-    private void showRecordingVizualization(){
+    private void showRecordingVizualization(final ArrayList<LatLng> latLngs){
 
-        Log.d(TAG,"showRecordingVizualization");
+        Log.d(TAG,"trip data showRecordingVizualization");
 
-//        setUpMapIfNeeded();
-
-        Log.d(TAG,"mGoogleMap"+ mGoogleMap);
 
         ((MapFragment) getFragmentManager().findFragmentById(R.id.Mapfragment)).getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
 
+                Log.d(TAG,"trip data showRecordingVizualization for latlngs " + latLngs.toString());
                 mGoogleMap = googleMap;
+                Log.d(TAG,"trip data safter google mao ");
 
-                LatLng nkut = latLngs.get(0);
-                LatLng end = latLngs.get(latLngs.size() - 1);
-                LatLng middle = latLngs.get(latLngs.size() / 2);
+                LatLng startLatLng = latLngs.get(0);
+                LatLng endLatLng = latLngs.get(latLngs.size() - 1);
+                LatLng middleLatLng = latLngs.get(latLngs.size() / 2);
 
-                Log.d(TAG, "nkut : "+nkut+"end : "+end+"middle : "+middle);
+                Log.d(TAG, "trip data startLatLng : "+startLatLng+"end : "+endLatLng+"middle : "+middleLatLng);
 
                 int i = 1;
 
                 for (LatLng latLng:latLngs) {
-                    Log.d(TAG, "latLng"+ i +" : "+latLng);
+                    Log.d(TAG, "trip data latLng"+ i +" : "+latLng);
                     i++;
                 }
-/*
-                ArrayList<LatLng> points = new ArrayList<LatLng>();
-                points.add(nkut);
-                points.add(middle);
-                points.add(end);
-*/
 
-                mGoogleMap.addMarker(new MarkerOptions().position(nkut).title("Start"))
+                /**after getting the start and ened point of location trace, we put a marker**/
+                mGoogleMap.addMarker(new MarkerOptions().position(startLatLng).title("Start"))
                         .setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                mGoogleMap.addMarker(new MarkerOptions().position(end).title("End"));
+                mGoogleMap.addMarker(new MarkerOptions().position(endLatLng).title("End"));
 
-//                mGoogleMap.addMarker(new MarkerOptions().position(nkut).title("Here you are."));
 //                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(middle,15.0f));
-                showMapWithPaths(mGoogleMap, latLngs, middle);
+                showMapWithPaths(mGoogleMap, latLngs, middleLatLng);
             }
         });
 
@@ -768,7 +767,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
     public void showMapWithPaths(GoogleMap map, ArrayList<LatLng> points, LatLng cameraCenter) {
 
-        Log.d(TAG, "showMapWithPaths");
+        Log.d(TAG, "trip data showMapWithPaths");
         //map option
         GoogleMapOptions options = new GoogleMapOptions();
         options.tiltGesturesEnabled(false);
@@ -802,32 +801,32 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
                 JSONArray lngdata = new JSONArray();
 
                 int i = 0;
-                try {
-                    for (LatLng latLng : latLngs) {
-                        Log.d(TAG, "latLng" + i + " : " + latLng);
-
-                        latdata.put(latLng.latitude);
-                        lngdata.put(latLng.longitude);
-                        i++;
-                    }
-                }catch (JSONException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    for (LatLng latLng : latLngs) {
+//                        Log.d(TAG, "latLng" + i + " : " + latLng);
+//
+//                        latdata.put(latLng.latitude);
+//                        lngdata.put(latLng.longitude);
+//                        i++;
+//                    }
+//                }catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
 
 //                String[] timekeys = sessionkey.split("-");
 //                String start = timekeys[0];
 //                String end = timekeys[1];
-//                start = TripManager.getmillisecondToDateWithTime(Long.valueOf(start));
-//                end = TripManager.getmillisecondToDateWithTime(Long.valueOf(end));
+//                start = SessionManager.getmillisecondToDateWithTime(Long.valueOf(start));
+//                end = SessionManager.getmillisecondToDateWithTime(Long.valueOf(end));
 
                 Log.d(TAG, "sessionkey : "+ sessionkey);
 
                 addToDB(start, end,
                         ans1, ans2, ans3, ans4, latdata, lngdata);
 
-                annotateohio.this.finish();
+                AnnotateSessionActivity.this.finish();
             }else
-                Toast.makeText(annotateohio.this,"Please complete all the questions!!",Toast.LENGTH_SHORT).show();
+                Toast.makeText(AnnotateSessionActivity.this,"Please complete all the questions!!",Toast.LENGTH_SHORT).show();
 
         }
     };
@@ -982,9 +981,9 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
         }
     }*/
 
-    private class AnnotateRecordAsyncTask extends AsyncTask<String, Void, ArrayList<String>> {
+    private class LoadRecordInSessionAsyncTask extends AsyncTask<String, Void, ArrayList<String>> {
 
-        private final ProgressDialog dialog = new ProgressDialog(annotateohio.this);
+        private final ProgressDialog dialog = new ProgressDialog(AnnotateSessionActivity.this);
 
         @Override
         protected void onPreExecute() {
@@ -1007,33 +1006,15 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
             //TODO use freaking sessionkey to get data. First, get the session id by the sessionkey.
 
-            Log.d(TAG, "listRecordAsyncTask going to list recording");
-
             ArrayList<LatLng> locationDataRecords = null;
 
             ArrayList<String> resultBySession = null;
 
             try {
-//                sessionid = Integer.valueOf(getSessionIdByTimekey(startTime));
-
                 sessionid = Integer.valueOf(sessionkey);
-
-//                sessionid = Integer.valueOf(getSessionIdByTimekey(TripManager.getSpecialTimeInMillis(startTime)));
-//                locationDataRecords = LocationDataRecordDAO.getTripLocToDrawOnMap(sessionkey);
-//                sessionid = bundle.getInt("position_id");
-
                 resultBySession = DBHelper.queryRecordsInSession(DBHelper.location_table, sessionid);
 
-                /*for(String eachrow : resultBySession){
-                    String[] separated = eachrow.split(Constants.DELIMITER);
-                    double lat = Double.valueOf(separated[2]);
-                    double lng = Double.valueOf(separated[3]);
-
-                    LatLng latLng = new LatLng(lat, lng);
-                    locationDataRecords.add(latLng);
-                }*/
-
-//                locationDataRecords = TripManager.getInstance().getTripLocToDrawOnMap(sessionid);
+//                Log.d(TAG,"result after query in doInBagrkound" + resultBySession.toString());
 
             }catch (Exception e) {
                 locationDataRecords = new ArrayList<LatLng>();
@@ -1041,12 +1022,12 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
                 e.printStackTrace();
             }
 
-            Log.d(TAG,"sessionid in doInBackground : " + sessionid);
-            Log.d(TAG,"AnnotateRecordAsyncTask : " + locationDataRecords);
 
             return resultBySession;
 
         }
+
+
 
         private String getSessionIdByTimekey(String timekey){
             String sessionid = null;

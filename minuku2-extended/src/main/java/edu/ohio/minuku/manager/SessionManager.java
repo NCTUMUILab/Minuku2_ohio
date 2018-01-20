@@ -10,7 +10,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.opencsv.CSVWriter;
@@ -36,9 +35,9 @@ import edu.ohio.minuku.model.Session;
  * Created by Lawrence on 2017/8/11.
  */
 
-public class TripManager {
+public class SessionManager {
 
-    private final static String TAG = "TripManager";
+    private final static String TAG = "SessionManager";
 
     public static int sessionid_unStatic;
     private static int trip_size;
@@ -57,7 +56,7 @@ public class TripManager {
     private CSVWriter csv_writer = null;
     private static CSVWriter csv_writer2 = null;
 
-    private static TripManager instance;
+    private static SessionManager instance;
 
     private ArrayList<String> ongoingSessionidList;
 
@@ -66,7 +65,7 @@ public class TripManager {
 
 //    private int testing_count;
 
-    public TripManager(Context context) {
+    public SessionManager(Context context) {
 
         this.mContext = context;
 
@@ -94,27 +93,27 @@ public class TripManager {
         lastSessionIDtime = sharedPrefs.getLong("lastSessionIDtime", -1);
     }
 
-    public static TripManager getInstance() {
-        if(TripManager.instance == null) {
+    public static SessionManager getInstance() {
+        if(SessionManager.instance == null) {
             try {
-//                TripManager.instance = new TripManager();
+//                SessionManager.instance = new SessionManager();
                 Log.d(TAG,"getInstance without mContext.");
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return TripManager.instance;
+        return SessionManager.instance;
     }
 
-    public static TripManager getInstance(Context context) {
-        if(TripManager.instance == null) {
+    public static SessionManager getInstance(Context context) {
+        if(SessionManager.instance == null) {
             try {
-                TripManager.instance = new TripManager(context);
+                SessionManager.instance = new SessionManager(context);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return TripManager.instance;
+        return SessionManager.instance;
     }
 
     public ArrayList<String> getOngoingSessionidList() {
@@ -638,8 +637,8 @@ public class TripManager {
         return times;
     }
 
-    public static ArrayList<String> getTripData() {
-        Log.d(TAG, "getTripData");
+    public static ArrayList<String> getSessions() {
+        Log.d(TAG, "getSessions");
 
         long funcStartTime = new Date().getTime();
 
@@ -719,7 +718,7 @@ public class TripManager {
         trip_size = times.size();
         editor.putInt("trip_size",trip_size);
 
-        Log.d(TAG,"getTripData total time : "+(new Date().getTime() - funcStartTime)/1000);
+        Log.d(TAG,"getSessions total time : "+(new Date().getTime() - funcStartTime)/1000);
 
         return results;
     }

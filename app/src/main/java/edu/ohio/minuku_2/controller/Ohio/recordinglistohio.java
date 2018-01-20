@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import edu.ohio.minuku.logger.Log;
-import edu.ohio.minuku.manager.TripManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku_2.R;
 
 /**
@@ -36,7 +36,7 @@ public class recordinglistohio extends Activity {
     private int Trip_size;
     String mReviewMode = "mReviewMode";
 
-    ArrayList<String> mlocationDataRecords;
+    ArrayList<String> mSessionIds;
 
     public recordinglistohio(){}
 
@@ -48,26 +48,20 @@ public class recordinglistohio extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.recordinglist_ohio);
         liststr = new ArrayList<String>();
-        mlocationDataRecords = new ArrayList<String>();
+        mSessionIds = new ArrayList<String>();
 
         Trip_size = 0;
     }
 
-    private void startAnnotateActivity(int position) {
+    private void startAnnotateActivity(int trip_position) {
 
-        Log.d(TAG, "Trip_size : " + Trip_size + " position : " + (position+1)); // (position+1) is caused from the index problem. At "List", it start from "0" but the Trip_size is started from "1";
-
-        position = Trip_size - (position+1);//reverse the order.
-
-        String key =  mlocationDataRecords.get(position); //reverse the order of Trip for showing.
-//        Session session =  mSessions.get(position);
-        Log.d(TAG, "the location trip at " + position + " being selected is " + key);
+        String sesionId =  mSessionIds.get(trip_position); //reverse the order of Trip for showing.
+        Log.d(TAG, "click on the session id " + sesionId + " at position " + trip_position);
 
         Bundle bundle = new Bundle();
-//        bundle.putString("timekey_id", key);
-        bundle.putString("sessionkey_id", key);
-        bundle.putInt("position_id", position);
-        Intent intent = new Intent(recordinglistohio.this, annotateohio.class);
+        bundle.putString("sessionkey_id", sesionId);
+        bundle.putInt("position_id", trip_position);
+        Intent intent = new Intent(recordinglistohio.this, AnnotateSessionActivity.class);
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -81,34 +75,34 @@ public class recordinglistohio extends Activity {
 
         Log.d(TAG,"onResume");
 
-        initrecordinglistohio();
+        initSessionList();
 
+        Log.d(TAG,"test trip result on resume "  );
     }
 
-    private void initrecordinglistohio(){
+    private void initSessionList(){
 
-        Log.d(TAG,"initrecordinglistohio");
+        Log.d(TAG,"initSessionList");
 
-        ArrayList<String> locationDataRecords = null;
+        ArrayList<String> sessionIds = null;
 
         listview = (ListView)findViewById(R.id.recording_list);
         listview.setEmptyView(findViewById(R.id.emptyView));
 
         try{
 
-            Log.d(TAG,"ListRecordAsyncTask");
-
-//            locationDataRecords = new ListRecordAsyncTask().execute(mReviewMode).get();
+//            locationDataRecords = new ListSessionAsyncTask().execute(mReviewMode).get();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                locationDataRecords = new ListRecordAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get();
+                sessionIds = new ListSessionAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get();
             else
-                locationDataRecords = new ListRecordAsyncTask().execute().get();
+                sessionIds = new ListSessionAsyncTask().execute().get();
 
 
-            Log.d(TAG,"locationDataRecords = new ListRecordAsyncTask().execute().get();");
+            Log.d(TAG,"test trip result after execute async " + sessionIds );
 
-            mlocationDataRecords = locationDataRecords;
+            mSessionIds = sessionIds;
+
 
         }catch(InterruptedException e) {
             Log.d(TAG,"InterruptedException");
@@ -118,31 +112,20 @@ public class recordinglistohio extends Activity {
             e.printStackTrace();
         }
 
-//        liststr.add(mlocationDataRecords.get());
-
-//        listAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,list);
-
         OhioListAdapter ohioListAdapter = new OhioListAdapter(
                 this,
                 R.id.recording_list,
-                mlocationDataRecords
+                mSessionIds
         );
 
-        /*listAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,mlocationDataRecords);
-
-        listview.setAdapter(listAdapter);*/
-
         listview.setAdapter(ohioListAdapter);
+
+        Log.d(TAG,"test trip result after setadatori " + sessionIds );
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                /*if(!OhioListAdapter.dataPos.contains(position)) {
-
-                    startAnnotateActivity(position);
-
-                }*/
 
                 if(!OhioListAdapter.dataPos.contains(position)) {
 
@@ -151,6 +134,9 @@ public class recordinglistohio extends Activity {
                 }
             }
         });
+
+
+        Log.d(TAG,"test trip result end of initSessionList" );
 
     }
 
@@ -172,20 +158,26 @@ public class recordinglistohio extends Activity {
     }
 
 
-    private class ListRecordAsyncTask extends AsyncTask<String, Void, ArrayList<String>> {
+    private class ListSessionAsyncTask extends AsyncTask<String, Void, ArrayList<String>> {
 
         private ProgressDialog dialog = null;
 
         @Override
         protected void onPreExecute() {
             Log.d(TAG,"onPreExecute");
-//            this.dialog = new ProgressDialog(recordinglistohio.this);
             this.dialog = ProgressDialog.show(recordinglistohio.this, "Working...","Loading...",true,false);
-
-//            this.dialog.setMessage("Loading...");
-//            this.dialog.setCancelable(false);
-//            this.dialog.show();
         }
+
+
+        @Override
+        protected void onPostExecute(ArrayList<String> result) {
+            super.onPostExecute(result);
+
+            if (this.dialog.isShowing()) {
+                this.dialog.dismiss();
+            }
+        }
+
 
     /*
         @Override
@@ -197,10 +189,10 @@ public class recordinglistohio extends Activity {
 
             try {
 
-                locationDataRecords = TripManager.getTripDatafromSQLite();
-//                locationDataRecords = TripManager.getInstance().getTripDatafromSQLite();
-//                Trip_size = TripManager.getInstance().getSessionidForTripSize();
-                Trip_size = TripManager.getInstance().getTrip_size();
+                locationDataRecords = SessionManager.getTripDatafromSQLite();
+//                locationDataRecords = SessionManager.getInstance().getTripDatafromSQLite();
+//                Trip_size = SessionManager.getInstance().getSessionidForTripSize();
+                Trip_size = SessionManager.getInstance().getTrip_size();
 
 //                Log.d(TAG,"locationDataRecords(0) : " + locationDataRecords.get(0));
 //                Log.d(TAG,"locationDataRecords(max) : " + locationDataRecords.get(locationDataRecords.size()-1));
@@ -221,49 +213,30 @@ public class recordinglistohio extends Activity {
         }
 */
         @Override
+        /*
+        this async task obtain a list of sessions
+         */
         protected ArrayList<String> doInBackground(String... params) {
 
             Log.d(TAG, "listRecordAsyncTask going to list recording");
 
-            ArrayList<String> locationDataRecords = new ArrayList<String>();
+            ArrayList<String> Sessions = new ArrayList<String>();
 
             try {
 
-                locationDataRecords = TripManager.getTripData();
-//                locationDataRecords = TripManager.getInstance().getTripDatafromSQLite();
-//                Trip_size = TripManager.getInstance().getSessionidForTripSize();
-                Trip_size = TripManager.getInstance().getTrip_size();
+                Sessions = SessionManager.getSessions();
+                Trip_size = SessionManager.getInstance().getTrip_size();
 
-//                Log.d(TAG,"locationDataRecords(0) : " + locationDataRecords.get(0));
-//                Log.d(TAG,"locationDataRecords(max) : " + locationDataRecords.get(locationDataRecords.size()-1));
+                Log.d(TAG," in doInBackground sessions :  " + Sessions.toString());
 
-//                if(locationDataRecords.isEmpty())
-//                    ;
-
-                Log.d(TAG,"try locationDataRecords");
             }catch (Exception e) {
-                locationDataRecords = new ArrayList<String>();
+                Sessions = new ArrayList<String>();
                 Log.d(TAG,"Exception");
                 e.printStackTrace();
             }
-//            return locationDataRecords;
-
-            return locationDataRecords;
+            return Sessions;
 
         }
-
-        // onPostExecute displays the results of the AsyncTask.
-        /*
-        @Override
-        protected void onPostExecute(ArrayList<String> result) {
-
-            super.onPostExecute(result);
-
-            if (this.dialog.isShowing()) {
-                this.dialog.dismiss();
-            }
-        }
-        */
     }
 
 

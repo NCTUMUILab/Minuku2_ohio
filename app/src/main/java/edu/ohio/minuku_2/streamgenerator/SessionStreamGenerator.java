@@ -18,7 +18,7 @@ import com.opencsv.CSVWriter;
 
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.MinukuStreamManager;
-import edu.ohio.minuku.manager.TripManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.streamgenerator.AndroidStreamGenerator;
 import edu.ohio.minuku_2.dao.SessionDataRecordDAO;
 import edu.ohio.minuku_2.model.SessionDataRecord;
@@ -72,7 +72,7 @@ public class SessionStreamGenerator extends AndroidStreamGenerator<SessionDataRe
     public boolean updateStream() {
         Log.e(TAG, "Update stream called.");
 
-        SessionDataRecord sessionDataRecord = new SessionDataRecord(TripManager.sessionid_unStatic);
+        SessionDataRecord sessionDataRecord = new SessionDataRecord(SessionManager.sessionid_unStatic);
 
         Log.d(TAG,"sessionid : " + sessionDataRecord.getSessionid());
 
