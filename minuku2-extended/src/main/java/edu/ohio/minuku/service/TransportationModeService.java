@@ -358,7 +358,27 @@ public class TransportationModeService extends Service {
                 state = "STATE_SUSPECTING_STOP";
             }
 
-            data.add(new String[]{String.valueOf(timestamp), timeString, transportation, "", state, String.valueOf(activityTime), String.valueOf(mostProbableActivity), String.valueOf(probableActivities)});
+
+            String latest_AR_String = "";
+
+            if (probableActivities!=null){
+
+                for (int i=0; i<probableActivities.size(); i++){
+
+                    if (i!=0){
+                        latest_AR_String+=Constants.ACTIVITY_DELIMITER;
+                    }
+                    DetectedActivity activity =  probableActivities.get(i);
+                    latest_AR_String += ActivityRecognitionStreamGenerator.getActivityNameFromType(activity.getType());
+                    latest_AR_String += Constants.ACTIVITY_CONFIDENCE_CONNECTOR;
+                    latest_AR_String += activity.getConfidence();
+
+                }
+
+                Log.d("TMService", "[test replay] StoreToCSV writing receive AR CSV " +  latest_AR_String);
+            }
+
+            data.add(new String[]{String.valueOf(timestamp), timeString, transportation, "", state, String.valueOf(activityTime), String.valueOf(mostProbableActivity), latest_AR_String});
 
             csv_writer.writeAll(data);
 
@@ -503,10 +523,20 @@ public class TransportationModeService extends Service {
 //            String rec_AR_String = rec_AR.getMostProbableActivity().toString();
             String rec_AR_String = "";
             String latest_AR_String = "";
-            try {
-                latest_AR_String = latest_AR.getMostProbableActivity().toString();
-            }catch (Exception e){
-                e.printStackTrace();
+
+            if (latest_AR!=null){
+                for (int i=0; i<latest_AR.getProbableActivities().size(); i++){
+
+                    if (i!=0){
+                        latest_AR_String+=Constants.ACTIVITY_DELIMITER;
+                    }
+                    DetectedActivity activity =  latest_AR.getProbableActivities().get(i);
+                    latest_AR_String += ActivityRecognitionStreamGenerator.getActivityNameFromType(activity.getType());
+                    latest_AR_String += Constants.ACTIVITY_CONFIDENCE_CONNECTOR;
+                    latest_AR_String += activity.getConfidence();
+
+                }
+                Log.d("TMService", "[test replay] StoreToCSV writing latest AR data to CSV " + latest_AR_String);
             }
 
             if(TransportationModefirstOrNot) {

@@ -1,387 +1,105 @@
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",static,STATE_STATIC,24.786793,120.99733,21.756
-1.51639E+12,"DetectedActivity [type=STILL, confidence=28]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=45]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",static,STATE_SUSPECTING_START,24.786793,120.99733,21.756
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=45]",static,STATE_SUSPECTING_START,24.786764,120.997345,21.617
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",static,STATE_STATIC,24.786781,120.99733,21.926
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",static,STATE_STATIC,24.786766,120.997345,22.309
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=34]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",static,STATE_STATIC,24.786766,120.997345,22.309
-1.51639E+12,"DetectedActivity [type=STILL, confidence=25]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=41]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=34]",static,STATE_STATIC,24.786766,120.997345,22.309
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=36]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",static,STATE_SUSPECTING_START,24.786774,120.99734,21.95
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=33]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=36]",static,STATE_STATIC,24.78677,120.997345,22.426
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=40]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=25]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",static,STATE_STATIC,24.78677,120.99734,18.221
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=28]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=25]",static,STATE_STATIC,24.78677,120.99733,21.9
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=35]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",static,STATE_STATIC,24.78677,120.99733,21.9
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=51]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",static,STATE_SUSPECTING_START,24.786776,120.99736,21.813
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=51]",static,STATE_SUSPECTING_START,24.786882,120.99736,22.367
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=49]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=92]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",on_foot,STATE_CONFIRMED,24.786955,120.99737,22.344
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=50]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=92]",on_foot,STATE_CONFIRMED,24.786983,120.99739,22.257
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=75]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=66]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=36]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=30]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=50]",on_foot,STATE_SUSPECTING_STOP,24.786993,120.9974,22.677
-1.51639E+12,"DetectedActivity [type=STILL, confidence=92]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=41]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=81]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=30]",on_foot,STATE_SUSPECTING_STOP,24.786991,120.9974,19.091
-1.51639E+12,"DetectedActivity [type=STILL, confidence=37]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=46]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=81]",on_foot,STATE_SUSPECTING_STOP,24.786991,120.9974,19.091
-1.51639E+12,"DetectedActivity [type=STILL, confidence=43]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=46]",on_foot,STATE_CONFIRMED,24.786991,120.9974,19.091
-1.51639E+12,"DetectedActivity [type=STILL, confidence=43]",on_foot,STATE_SUSPECTING_STOP,24.786896,120.99756,21.145
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=54]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=43]",on_foot,STATE_SUSPECTING_STOP,24.787298,120.99777,22.998
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=96]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=82]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=54]",on_foot,STATE_CONFIRMED,24.787416,120.99781,24.235
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",on_foot,STATE_CONFIRMED,24.787416,120.99781,24.235
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",on_foot,STATE_CONFIRMED,24.78749,120.9977,25.678
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",on_foot,STATE_CONFIRMED,24.78749,120.99755,22.62
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",on_foot,STATE_CONFIRMED,24.787529,120.997375,23.039
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=88]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",on_foot,STATE_CONFIRMED,24.787615,120.9973,23.019
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=53]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=66]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=63]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=32]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=88]",on_foot,STATE_CONFIRMED,24.78758,120.99744,25.273
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=21]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=24]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=32]",on_foot,STATE_SUSPECTING_STOP,24.78759,120.997246,21.656
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=30]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=24]",on_foot,STATE_SUSPECTING_STOP,24.787436,120.99734,22.089
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",on_foot,STATE_SUSPECTING_STOP,24.787312,120.99747,41.479
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",on_foot,STATE_CONFIRMED,24.787312,120.99747,41.479
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",on_foot,STATE_CONFIRMED,24.787422,120.99806,22.753
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",on_foot,STATE_CONFIRMED,24.787258,120.9979,29.068
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",on_foot,STATE_CONFIRMED,24.787077,120.99784,28.815
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",on_foot,STATE_CONFIRMED,24.786966,120.99763,23.129
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=93]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=96]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",on_foot,STATE_CONFIRMED,24.786688,120.99768,22.386
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=79]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=74]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=96]",on_foot,STATE_CONFIRMED,24.786785,120.99758,27.28
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=39]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=96]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=74]",on_foot,STATE_CONFIRMED,24.786785,120.99758,27.28
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=78]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=44]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=38]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=96]",on_foot,STATE_CONFIRMED,24.786955,120.997444,37.022
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=36]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=38]",on_foot,STATE_CONFIRMED,24.787052,120.99743,23.906
-1.51639E+12,"DetectedActivity [type=STILL, confidence=33]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=39]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=36]",on_foot,STATE_CONFIRMED,24.787004,120.99741,22.274
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=39]",on_foot,STATE_CONFIRMED,24.786861,120.99743,23.417
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",on_foot,STATE_CONFIRMED,24.786793,120.997345,21.787
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=44]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=38]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=32]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",on_foot,STATE_CONFIRMED,24.786795,120.99734,22.019
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=33]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=32]",on_foot,STATE_CONFIRMED,24.786793,120.99733,22.048
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_CONFIRMED,24.786793,120.99733,22.048
-1.51639E+12,"DetectedActivity [type=ON_BICYCLE, confidence=25]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=40]",on_foot,STATE_CONFIRMED,24.786793,120.99733,22.048
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_CONFIRMED,24.786793,120.99733,22.048
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_CONFIRMED,24.786793,120.99733,22.048
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=29]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=26]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=46]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=67]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_SUSPECTING_STOP,24.786783,120.99733,21.844
-1.51639E+12,"DetectedActivity [type=STILL, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=40]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=67]",on_foot,STATE_SUSPECTING_STOP,24.786783,120.99733,21.844
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=47]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=54]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=52]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=59]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=40]",on_foot,STATE_CONFIRMED,24.786783,120.99733,21.844
-1.51639E+12,"DetectedActivity [type=STILL, confidence=62]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=71]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=59]",on_foot,STATE_SUSPECTING_STOP,24.786776,120.99734,21.574
-1.51639E+12,"DetectedActivity [type=STILL, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=65]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=55]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=71]",on_foot,STATE_SUSPECTING_STOP,24.786776,120.99734,21.574
-1.51639E+12,"DetectedActivity [type=STILL, confidence=37]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=66]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=55]",on_foot,STATE_SUSPECTING_STOP,24.786776,120.99734,21.574
-1.51639E+12,"DetectedActivity [type=STILL, confidence=37]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=54]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=66]",on_foot,STATE_CONFIRMED,24.786776,120.99734,21.574
-1.51639E+12,"DetectedActivity [type=STILL, confidence=93]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=34]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=26]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=54]",on_foot,STATE_SUSPECTING_STOP,24.786776,120.99734,21.574
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=27]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=26]",on_foot,STATE_SUSPECTING_STOP,24.786776,120.99734,21.574
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_SUSPECTING_STOP,24.786776,120.99734,21.574
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_SUSPECTING_STOP,24.786776,120.99734,21.574
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=51]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_CONFIRMED,24.786776,120.99734,21.574
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=27]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=34]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=51]",on_foot,STATE_SUSPECTING_STOP,24.786776,120.99734,21.574
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=55]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=STILL, confidence=34]",on_foot,STATE_SUSPECTING_STOP,24.786762,120.99735,21.18
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=96]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",on_foot,STATE_SUSPECTING_STOP,24.78687,120.99737,22.345
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",on_foot,STATE_CONFIRMED,24.78694,120.99737,22.189
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",on_foot,STATE_CONFIRMED,24.786982,120.99739,22.13
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",on_foot,STATE_CONFIRMED,24.786982,120.99739,22.13
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",on_foot,STATE_CONFIRMED,24.786999,120.9974,20.571
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_CONFIRMED,24.78699,120.997406,19.264
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_CONFIRMED,24.786987,120.99741,22.265
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=62]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_CONFIRMED,24.786987,120.99741,22.265
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=62]",on_foot,STATE_CONFIRMED,24.786964,120.99772,23.009
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",on_foot,STATE_CONFIRMED,24.786875,120.99773,33.295
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",on_foot,STATE_CONFIRMED,24.787077,120.997696,25.041
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",on_foot,STATE_CONFIRMED,24.78725,120.99784,25.51
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",on_foot,STATE_CONFIRMED,24.787397,120.99782,24.342
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=96]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",on_foot,STATE_CONFIRMED,24.787481,120.99776,23.002
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",on_foot,STATE_CONFIRMED,24.787521,120.99769,22.43
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",on_foot,STATE_CONFIRMED,24.787521,120.99769,22.43
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",on_foot,STATE_CONFIRMED,24.787537,120.9971,21.12
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=89]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=55]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",on_foot,STATE_CONFIRMED,24.787537,120.9971,36.827
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=48]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=64]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=55]",on_foot,STATE_CONFIRMED,24.787525,120.9972,23.658
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=32]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=64]",on_foot,STATE_CONFIRMED,24.787607,120.997246,27.128
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=21]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=UNKNOWN, confidence=31]",on_foot,STATE_SUSPECTING_STOP,24.787607,120.997246,27.128
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",on_foot,STATE_SUSPECTING_STOP,24.787607,120.997246,27.128
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",on_foot,STATE_SUSPECTING_START,24.787607,120.997246,27.128
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",in_vehicle,STATE_CONFIRMED,24.787607,120.997246,27.128
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.789648,121.00054,68.4
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.789415,121.00051,40.09
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.789042,121.002426,7.504
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.788855,121.0032,3.9
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",in_vehicle,STATE_CONFIRMED,24.788855,121.0032,3.9
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",in_vehicle,STATE_CONFIRMED,24.789545,121.00392,4.288
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",in_vehicle,STATE_CONFIRMED,24.79046,121.004486,3.9
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=62]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=77]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.790663,121.004456,6.432
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=69]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=68]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=77]",in_vehicle,STATE_CONFIRMED,24.790665,121.004456,7.504
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=65]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=71]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.790667,121.00446,4.288
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=66]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=71]",in_vehicle,STATE_CONFIRMED,24.790668,121.004456,4.288
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=72]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=94]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.790668,121.004456,5.36
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=85]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=66]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=94]",in_vehicle,STATE_CONFIRMED,24.79067,121.004456,5.36
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=65]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=65]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=69]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=66]",in_vehicle,STATE_CONFIRMED,24.79067,121.004456,8.576
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=69]",in_vehicle,STATE_CONFIRMED,24.790907,121.00448,5.36
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.791412,121.004074,3.9
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",in_vehicle,STATE_CONFIRMED,24.791412,121.004074,3.9
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",in_vehicle,STATE_CONFIRMED,24.791412,121.004074,3.9
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=74]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",in_vehicle,STATE_CONFIRMED,24.791412,121.004074,3.9
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",in_vehicle,STATE_CONFIRMED,24.793657,121.00102,56.1
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.794842,120.99956,28.512
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",in_vehicle,STATE_CONFIRMED,24.795609,120.99862,31.334
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=100]",in_vehicle,STATE_CONFIRMED,24.79628,120.99809,27.66
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.796423,120.9985,42.18
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=69]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_CONFIRMED,24.796423,120.9985,42.18
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",in_vehicle,STATE_CONFIRMED,24.796751,120.99833,11.23805
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",,,,,
-1.51639E+12,"DetectedActivity [type=IN_VEHICLE, confidence=61]",in_vehicle,STATE_SUSPECTING_STOP,24.796751,120.99833,11.23805
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=99]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=95]",in_vehicle,STATE_SUSPECTING_START,24.791819,121.0035,199.028
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=93]",,,,,
-1.51639E+12,"DetectedActivity [type=TILTING, confidence=100]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",on_foot,STATE_CONFIRMED,24.796747,120.99831,43.524
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",on_foot,STATE_CONFIRMED,24.796747,120.99831,63.623
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=96]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=97]",on_foot,STATE_CONFIRMED,24.796747,120.99831,80.165
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=94]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=96]",on_foot,STATE_CONFIRMED,24.796747,120.99831,80.165
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=96]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=83]",,,,,
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=87]",on_foot,STATE_CONFIRMED,24.797262,120.998085,22.505
-1.51639E+12,"DetectedActivity [type=ON_FOOT, confidence=98]",,,,,
+1516419716943,on_foot:96;;walking:96;;unknown:3;;running:1;;on_bicycle:0,on_foot:96;;walking:96;;unknown:3;;running:1;;on_bicycle:0,,,,,
+1516419724855,,still:100,static,STATE_SUSPECTING_START,24.786972,120.997375,23.332
+1516419725535,on_foot:96;;walking:96;;unknown:2;;on_bicycle:1;;running:1,on_foot:96;;walking:96;;unknown:2;;on_bicycle:1;;running:1,,,,,
+1516419734848,,on_foot:96;;walking:96;;unknown:3;;running:1;;on_bicycle:0,static,STATE_SUSPECTING_START,24.786983,120.99738,22.174
+1516419742521,on_foot:43;;walking:43;;unknown:22;;in_vehicle:10;;still:10;;on_bicycle:5;;running:5,on_foot:43;;walking:43;;unknown:22;;in_vehicle:10;;still:10;;on_bicycle:5;;running:5,,,,,
+1516419744874,,on_foot:96;;walking:96;;unknown:2;;on_bicycle:1;;running:1,on_foot,STATE_CONFIRMED,24.786993,120.9974,21.961
+1516419747664,on_foot:36;;walking:36;;unknown:22;;still:13;;in_vehicle:11;;on_bicycle:6;;running:5,on_foot:36;;walking:36;;unknown:22;;still:13;;in_vehicle:11;;on_bicycle:6;;running:5,,,,,
+1516419752855,unknown:31;;on_foot:29;;walking:29;;still:9;;in_vehicle:8;;on_bicycle:8;;running:8,unknown:31;;on_foot:29;;walking:29;;still:9;;in_vehicle:8;;on_bicycle:8;;running:8,,,,,
+1516419754843,,on_foot:43;;walking:43;;unknown:22;;in_vehicle:10;;still:10;;on_bicycle:5;;running:5,on_foot,STATE_CONFIRMED,24.787,120.997406,22.178
+1516419757277,unknown:40;;in_vehicle:10;;on_bicycle:10;;on_foot:10;;still:10;;walking:10;;running:10,unknown:40;;in_vehicle:10;;on_bicycle:10;;on_foot:10;;still:10;;walking:10;;running:10,,,,,
+1516419762406,unknown:40;;in_vehicle:10;;on_bicycle:10;;on_foot:10;;still:10;;walking:10;;running:10,unknown:40;;in_vehicle:10;;on_bicycle:10;;on_foot:10;;still:10;;walking:10;;running:10,,,,,
+1516419764856,,unknown:31;;on_foot:29;;walking:29;;still:9;;in_vehicle:8;;on_bicycle:8;;running:8,on_foot,STATE_CONFIRMED,24.786995,120.99741,21.735
+1516419768712,on_foot:32;;walking:32;;unknown:31;;in_vehicle:8;;on_bicycle:8;;still:8;;running:8,on_foot:32;;walking:32;;unknown:31;;in_vehicle:8;;on_bicycle:8;;still:8;;running:8,,,,,
+1516419773787,on_foot:80;;walking:80;;in_vehicle:7;;still:6;;unknown:4,on_foot:80;;walking:80;;in_vehicle:7;;still:6;;unknown:4,,,,,
+1516419774846,,unknown:40;;in_vehicle:10;;on_bicycle:10;;on_foot:10;;still:10;;walking:10;;running:10,on_foot,STATE_CONFIRMED,24.786995,120.997406,22.284
+1516419779707,still:29;;on_foot:25;;walking:25;;unknown:21;;in_vehicle:8;;on_bicycle:6;;running:5,still:29;;on_foot:25;;walking:25;;unknown:21;;in_vehicle:8;;on_bicycle:6;;running:5,,,,,
+1516419784804,still:79;;in_vehicle:15;;unknown:3;;on_foot:1;;walking:1,still:79;;in_vehicle:15;;unknown:3;;on_foot:1;;walking:1,,,,,
+1516419784859,,on_foot:80;;walking:80;;in_vehicle:7;;still:6;;unknown:4,on_foot,STATE_SUSPECTING_STOP,24.786991,120.99741,18.707
+1516419788363,still:42;;unknown:22;;in_vehicle:12;;on_foot:6;;walking:6;;on_bicycle:5;;running:5,still:42;;unknown:22;;in_vehicle:12;;on_foot:6;;walking:6;;on_bicycle:5;;running:5,,,,,
+1516419793733,on_foot:52;;walking:52;;still:25;;unknown:12;;in_vehicle:3;;on_bicycle:3;;running:3,on_foot:52;;walking:52;;still:25;;unknown:12;;in_vehicle:3;;on_bicycle:3;;running:3,,,,,
+1516419794853,,still:79;;in_vehicle:15;;unknown:3;;on_foot:1;;walking:1,on_foot,STATE_SUSPECTING_STOP,24.786991,120.99741,18.707
+1516419798865,on_foot:97;;walking:97;;unknown:3,on_foot:97;;walking:97;;unknown:3,,,,,
+1516419804841,on_foot:97;;walking:97;;unknown:3,on_foot:97;;walking:97;;unknown:3,,,,,
+1516419804877,,on_foot:52;;walking:52;;still:25;;unknown:12;;in_vehicle:3;;on_bicycle:3;;running:3,on_foot,STATE_SUSPECTING_STOP,24.786991,120.99741,18.707
+1516419809928,on_foot:96;;walking:96;;unknown:3;;running:1,on_foot:96;;walking:96;;unknown:3;;running:1,,,,,
+1516419814849,,on_foot:97;;walking:97;;unknown:3,on_foot,STATE_SUSPECTING_STOP,24.786936,120.99749,23.699
+1516419815871,on_foot:96;;walking:96;;unknown:3;;running:1,on_foot:96;;walking:96;;unknown:3;;running:1,,,,,
+1516419821003,on_foot:96;;walking:96;;unknown:3;;running:1,on_foot:96;;walking:96;;unknown:3;;running:1,,,,,
+1516419824882,,on_foot:96;;walking:96;;unknown:3;;running:1,on_foot,STATE_CONFIRMED,24.786917,120.99753,23.211
+1516419826907,on_foot:98;;walking:98;;unknown:2,on_foot:98;;walking:98;;unknown:2,,,,,
+1516419834456,on_foot:98;;walking:98;;unknown:2,on_foot:98;;walking:98;;unknown:2,,,,,
+1516419834884,,on_foot:96;;walking:96;;unknown:3;;running:1,on_foot,STATE_CONFIRMED,24.787191,120.997734,24.326
+1516419840300,on_foot:96;;walking:96;;unknown:3;;on_bicycle:1,on_foot:96;;walking:96;;unknown:3;;on_bicycle:1,,,,,
+1516419844844,,on_foot:98;;walking:98;;unknown:2,on_foot,STATE_CONFIRMED,24.787191,120.997734,24.326
+1516419847904,on_foot:96;;walking:96;;unknown:3;;running:1,on_foot:96;;walking:96;;unknown:3;;running:1,,,,,
+1516419853008,on_foot:98;;walking:98;;unknown:2,on_foot:98;;walking:98;;unknown:2,,,,,
+1516419854884,,on_foot:96;;walking:96;;unknown:3;;on_bicycle:1,on_foot,STATE_CONFIRMED,24.787449,120.99784,22.819
+1516419858967,tilting:100,tilting:100,,,,,
+1516419859027,on_foot:90;;walking:90;;running:6;;unknown:3;;on_bicycle:1,on_foot:90;;walking:90;;running:6;;unknown:3;;on_bicycle:1,,,,,
+1516419864133,tilting:100,tilting:100,,,,,
+1516419864258,on_foot:98;;walking:98;;unknown:2,on_foot:98;;walking:98;;unknown:2,,,,,
+1516419864859,,on_foot:98;;walking:98;;unknown:2,on_foot,STATE_CONFIRMED,24.787497,120.99777,28.823
+1516419870005,on_foot:99;;walking:99;;unknown:1,on_foot:99;;walking:99;;unknown:1,,,,,
+1516419874857,,on_foot:98;;walking:98;;unknown:2,on_foot,STATE_CONFIRMED,24.787527,120.997574,25.762
+1516419875103,on_foot:53;;walking:53;;unknown:21;;on_bicycle:6;;running:6;;in_vehicle:5;;still:5,on_foot:53;;walking:53;;unknown:21;;on_bicycle:6;;running:6;;in_vehicle:5;;still:5,,,,,
+1516419881030,on_foot:81;;walking:81;;on_bicycle:9;;still:5;;unknown:3;;in_vehicle:1,on_foot:81;;walking:81;;on_bicycle:9;;still:5;;unknown:3;;in_vehicle:1,,,,,
+1516419884866,,on_foot:99;;walking:99;;unknown:1,on_foot,STATE_CONFIRMED,24.787502,120.997536,23.846
+1516419886213,on_foot:40;;walking:40;;unknown:27;;in_vehicle:7;;on_bicycle:7;;still:7;;running:7,on_foot:40;;walking:40;;unknown:27;;in_vehicle:7;;on_bicycle:7;;still:7;;running:7,,,,,
+1516419892077,on_foot:54;;walking:54;;unknown:21;;in_vehicle:5;;on_bicycle:5;;still:5;;running:5,on_foot:54;;walking:54;;unknown:21;;in_vehicle:5;;on_bicycle:5;;still:5;;running:5,,,,,
+1516419895669,,on_foot:81;;walking:81;;on_bicycle:9;;still:5;;unknown:3;;in_vehicle:1,on_foot,STATE_CONFIRMED,24.787535,120.997536,22.668
+1516419897240,on_foot:82;;walking:82;;on_bicycle:7;;still:4;;in_vehicle:3;;unknown:3,on_foot:82;;walking:82;;on_bicycle:7;;still:4;;in_vehicle:3;;unknown:3,,,,,
+1516419901604,tilting:100,tilting:100,,,,,
+1516419901681,on_foot:53;;walking:53;;unknown:22;;in_vehicle:6;;on_bicycle:5;;still:5;;running:5,on_foot:53;;walking:53;;unknown:22;;in_vehicle:6;;on_bicycle:5;;still:5;;running:5,,,,,
+1516419905690,,on_foot:54;;walking:54;;unknown:21;;in_vehicle:5;;on_bicycle:5;;still:5;;running:5,on_foot,STATE_CONFIRMED,24.787535,120.997536,22.668
+1516419906772,tilting:100,tilting:100,,,,,
+1516419906829,on_foot:31;;walking:31;;unknown:22;;still:17;;in_vehicle:11;;on_bicycle:7;;running:5,on_foot:31;;walking:31;;unknown:22;;still:17;;in_vehicle:11;;on_bicycle:7;;running:5,,,,,
+1516419913097,on_foot:40;;walking:40;;still:27;;in_vehicle:16;;on_bicycle:6;;unknown:3;;running:1,on_foot:40;;walking:40;;still:27;;in_vehicle:16;;on_bicycle:6;;unknown:3;;running:1,,,,,
+1516419915683,,on_foot:53;;walking:53;;unknown:22;;in_vehicle:6;;on_bicycle:5;;still:5;;running:5,on_foot,STATE_CONFIRMED,24.787535,120.997536,22.668
+1516419918187,still:33;;on_foot:32;;walking:32;;unknown:12;;in_vehicle:10;;on_bicycle:4;;running:3,still:33;;on_foot:32;;walking:32;;unknown:12;;in_vehicle:10;;on_bicycle:4;;running:3,,,,,
+1516419924128,still:42;;unknown:22;;in_vehicle:11;;on_foot:7;;walking:7;;on_bicycle:6;;running:5,still:42;;unknown:22;;in_vehicle:11;;on_foot:7;;walking:7;;on_bicycle:6;;running:5,,,,,
+1516419925688,,on_foot:40;;walking:40;;still:27;;in_vehicle:16;;on_bicycle:6;;unknown:3;;running:1,on_foot,STATE_SUSPECTING_STOP,24.787535,120.997536,22.668
+1516419935678,,still:42;;unknown:22;;in_vehicle:11;;on_foot:7;;walking:7;;on_bicycle:6;;running:5,on_foot,STATE_SUSPECTING_STOP,24.787533,120.99756,22.426
+1516419945687,,still:42;;unknown:22;;in_vehicle:11;;on_foot:7;;walking:7;;on_bicycle:6;;running:5,on_foot,STATE_SUSPECTING_STOP,24.787533,120.99756,22.426
+1516419951575,on_foot:76;;walking:76;;unknown:11;;in_vehicle:3;;on_bicycle:3;;still:3;;running:3,on_foot:76;;walking:76;;unknown:11;;in_vehicle:3;;on_bicycle:3;;still:3;;running:3,,,,,
+1516419955680,,still:42;;unknown:22;;in_vehicle:11;;on_foot:7;;walking:7;;on_bicycle:6;;running:5,on_foot,STATE_SUSPECTING_STOP,24.787533,120.99756,22.426
+1516419957132,on_foot:98;;walking:98;;unknown:2,on_foot:98;;walking:98;;unknown:2,,,,,
+1516419964791,on_foot:98;;walking:98;;unknown:2,on_foot:98;;walking:98;;unknown:2,,,,,
+1516419965681,,on_foot:76;;walking:76;;unknown:11;;in_vehicle:3;;on_bicycle:3;;still:3;;running:3,on_foot,STATE_CONFIRMED,24.787441,120.99786,22.638
+1516419969832,on_foot:97;;walking:97;;unknown:3,on_foot:97;;walking:97;;unknown:3,,,,,
+1516419975647,,on_foot:98;;walking:98;;unknown:2,on_foot,STATE_CONFIRMED,24.787426,120.99803,27.418
+1516419975778,on_foot:97;;walking:97;;unknown:2;;still:1,on_foot:97;;walking:97;;unknown:2;;still:1,,,,,
+1516419980847,on_foot:97;;walking:97;;unknown:2;;still:1,on_foot:97;;walking:97;;unknown:2;;still:1,,,,,
+1516419985654,,on_foot:97;;walking:97;;unknown:3,on_foot,STATE_CONFIRMED,24.787216,120.99772,26.122
+1516419986844,on_foot:98;;walking:98;;unknown:2,on_foot:98;;walking:98;;unknown:2,,,,,
+1516419992003,tilting:100,tilting:100,,,,,
+1516419992099,on_foot:78;;walking:78;;on_bicycle:10;;still:5;;in_vehicle:3;;unknown:3,on_foot:78;;walking:78;;on_bicycle:10;;still:5;;in_vehicle:3;;unknown:3,,,,,
+1516419996292,,on_foot:97;;walking:97;;unknown:2;;still:1,on_foot,STATE_CONFIRMED,24.78703,120.99778,20.95
+1516419997964,tilting:100,tilting:100,,,,,
+1516419998036,on_foot:86;;walking:86;;on_bicycle:11;;unknown:2;;running:1,on_foot:86;;walking:86;;on_bicycle:11;;unknown:2;;running:1,,,,,
+1516420003212,on_foot:96;;walking:96;;on_bicycle:2;;unknown:2,on_foot:96;;walking:96;;on_bicycle:2;;unknown:2,,,,,
+1516420006265,,on_foot:78;;walking:78;;on_bicycle:10;;still:5;;in_vehicle:3;;unknown:3,on_foot,STATE_CONFIRMED,24.78703,120.99778,20.95
+1516420009048,on_foot:53;;walking:53;;unknown:22;;on_bicycle:6;;in_vehicle:5;;still:5;;running:5,on_foot:53;;walking:53;;unknown:22;;on_bicycle:6;;in_vehicle:5;;still:5;;running:5,,,,,
+1516420014166,on_foot:53;;walking:53;;unknown:22;;on_bicycle:6;;still:6;;in_vehicle:5;;running:5,on_foot:53;;walking:53;;unknown:22;;on_bicycle:6;;still:6;;in_vehicle:5;;running:5,,,,,
+1516420016279,,on_foot:96;;walking:96;;on_bicycle:2;;unknown:2,on_foot,STATE_CONFIRMED,24.786852,120.99755,24.414
+1516420020071,on_foot:38;;walking:38;;unknown:28;;in_vehicle:7;;on_bicycle:7;;still:7;;running:7,on_foot:38;;walking:38;;unknown:28;;in_vehicle:7;;on_bicycle:7;;still:7;;running:7,,,,,
+1516420025236,on_foot:54;;walking:54;;still:11;;unknown:10;;in_vehicle:9;;on_bicycle:7;;running:2,on_foot:54;;walking:54;;still:11;;unknown:10;;in_vehicle:9;;on_bicycle:7;;running:2,,,,,
+1516420030022,,on_foot:53;;walking:53;;unknown:22;;on_bicycle:6;;still:6;;in_vehicle:5;;running:5,on_foot,STATE_CONFIRMED,24.786867,120.99749,23.16
+1516420031119,on_foot:94;;walking:94;;unknown:3;;on_bicycle:2;;still:1,on_foot:94;;walking:94;;unknown:3;;on_bicycle:2;;still:1,,,,,
+1516420036229,on_foot:90;;walking:90;;in_vehicle:3;;unknown:3;;still:2;;on_bicycle:1,on_foot:90;;walking:90;;in_vehicle:3;;unknown:3;;still:2;;on_bicycle:1,,,,,
+1516420040023,,on_foot:54;;walking:54;;still:11;;unknown:10;;in_vehicle:9;;on_bicycle:7;;running:2,on_foot,STATE_CONFIRMED,24.786951,120.99742,22.653
+1516420050016,,on_foot:90;;walking:90;;in_vehicle:3;;unknown:3;;still:2;;on_bicycle:1,on_foot,STATE_CONFIRMED,24.786951,120.99742,22.653
+1516420059464,tilting:100,tilting:100,,,,,
+1516420059526,unknown:40;;in_vehicle:10;;on_bicycle:10;;on_foot:10;;still:10;;walking:10;;running:10,unknown:40;;in_vehicle:10;;on_bicycle:10;;on_foot:10;;still:10;;walking:10;;running:10,,,,,
+1516420060015,,on_foot:90;;walking:90;;in_vehicle:3;;unknown:3;;still:2;;on_bicycle:1,on_foot,STATE_CONFIRMED,24.786951,120.99742,22.653
+1516420070219,,unknown:40;;in_vehicle:10;;on_bicycle:10;;on_foot:10;;still:10;;walking:10;;running:10,on_foot,STATE_CONFIRMED,24.786985,120.99742,45.6
+1516420080019,,unknown:40;;in_vehicle:10;;on_bicycle:10;;on_foot:10;;still:10;;walking:10;;running:10,on_foot,STATE_CONFIRMED,24.786985,120.99742,45.6
+1516420080804,on_foot:71;;walking:71;;unknown:12;;still:5;;in_vehicle:3;;on_bicycle:3;;running:3,on_foot:71;;walking:71;;unknown:12;;still:5;;in_vehicle:3;;on_bicycle:3;;running:3,,,,,
+1516420085921,on_foot:98;;walking:98;;unknown:2,on_foot:98;;walking:98;;unknown:2,,,,,
+1516420090013,,unknown:40;;in_vehicle:10;;on_bicycle:10;;on_foot:10;;still:10;;walking:10;;running:10,on_foot,STATE_CONFIRMED,24.786985,120.99742,45.6
+1516420091932,on_foot:99;;walking:99;;unknown:1,on_foot:99;;walking:99;;unknown:1,,,,,
+1516420097015,on_foot:97;;walking:97;;unknown:2;;still:1,on_foot:97;;walking:97;;unknown:2;;still:1,,,,,
+1516420100039,,on_foot:98;;walking:98;;unknown:2,on_foot,STATE_CONFIRMED,24.786806,120.997406,23.83
+1516420102974,on_foot:86;;walking:86;;in_vehicle:4;;unknown:4;;still:3;;on_bicycle:2,on_foot:86;;walking:86;;in_vehicle:4;;unknown:4;;still:3;;on_bicycle:2,,,,,
+1516420110039,,on_foot:97;;walking:97;;unknown:2;;still:1,on_foot,STATE_CONFIRMED,24.786777,120.99736,22.32
+1516420122987,,on_foot:86;;walking:86;;in_vehicle:4;;unknown:4;;still:3;;on_bicycle:2,on_foot,STATE_CONFIRMED,24.786793,120.99734,23.017

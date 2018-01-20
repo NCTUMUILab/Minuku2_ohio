@@ -68,7 +68,7 @@ public class ActivityRecognitionService extends IntentService {
 
         //mActivityRecognitionManager = ContextManager.getActivityRecognitionManager();
 
-        startReplayARRecordTimer();
+//        startReplayARRecordTimer();
 //        startARRecordExpirationTimer();
     }
 
@@ -87,35 +87,35 @@ public class ActivityRecognitionService extends IntentService {
             }
             ActivityRecognitionResult activity = ActivityRecognitionResult.extractResult(intent);
 
-//            mProbableActivities = activity.getProbableActivities();
-//            mMostProbableActivity = activity.getMostProbableActivity();
-//            detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
-//
-//
-//            ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
-//
-//            record.setProbableActivities(mProbableActivities);
-//            record.setMostProbableActivity(mMostProbableActivity);
-//            record.setDetectedtime(detectedtime);
-//
-//
-//            Log.d(TAG, "[test replay] [test ActivityRecognition]" +   mMostProbableActivity.toString());
-//            try {
-//                if (mProbableActivities != null && mMostProbableActivity != null){
-//
-//                     /*  cancel setting because we want to directly feed activity data in the test file */
-//                    mActivityRecognitionStreamGenerator.setActivitiesandDetectedtime(mProbableActivities, mMostProbableActivity, detectedtime);
-//
-//
-//                    Log.d(TAG, "[test replay] before store to CSV in AR Service");
-//                    //write transportation mode with the received activity data
-//                    StoreToCSV(new Date().getTime(), record, record);
-//
-//                }
-//
-//            }catch(Exception e){
-//                e.printStackTrace();
-//            }
+            mProbableActivities = activity.getProbableActivities();
+            mMostProbableActivity = activity.getMostProbableActivity();
+            detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
+
+
+            ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
+
+            record.setProbableActivities(mProbableActivities);
+            record.setMostProbableActivity(mMostProbableActivity);
+            record.setDetectedtime(detectedtime);
+
+
+            Log.d(TAG, "[test replay] [test ActivityRecognition]" +   mMostProbableActivity.toString());
+            try {
+                if (mProbableActivities != null && mMostProbableActivity != null){
+
+                     /*  cancel setting because we want to directly feed activity data in the test file */
+                    mActivityRecognitionStreamGenerator.setActivitiesandDetectedtime(mProbableActivities, mMostProbableActivity, detectedtime);
+
+
+                    Log.d(TAG, "[test replay] before store to CSV in AR Service");
+                    //write transportation mode with the received activity data
+                    StoreToCSV(new Date().getTime(), record, record);
+
+                }
+
+            }catch(Exception e){
+                e.printStackTrace();
+            }
 
 
 //            stopARRecordExpirationTimer();
@@ -300,12 +300,34 @@ public class ActivityRecognitionService extends IntentService {
             Log.d("ARService", "[test replay] StoreToCSV receive AR is " + received_AR.toString());
 
             if (received_AR!=null){
-                rec_AR_String = received_AR.getMostProbableActivity().toString();
+
+                for (int i=0; i<received_AR.getProbableActivities().size(); i++){
+
+                    if (i!=0){
+                        rec_AR_String+=Constants.ACTIVITY_DELIMITER;
+                    }
+                    DetectedActivity activity =  received_AR.getProbableActivities().get(i);
+                    rec_AR_String += ActivityRecognitionStreamGenerator.getActivityNameFromType(activity.getType());
+                    rec_AR_String += Constants.ACTIVITY_CONFIDENCE_CONNECTOR;
+                    rec_AR_String += activity.getConfidence();
+
+                }
+
                 Log.d("ARService", "[test replay] StoreToCSV writing receive AR CSV " +  rec_AR_String);
             }
 
-            if (latest_AR_String!=null){
-                latest_AR_String = latest_AR.getMostProbableActivity().toString();
+            if (latest_AR!=null){
+                for (int i=0; i<latest_AR.getProbableActivities().size(); i++){
+
+                    if (i!=0){
+                        latest_AR_String+=Constants.ACTIVITY_DELIMITER;
+                    }
+                    DetectedActivity activity =  latest_AR.getProbableActivities().get(i);
+                    latest_AR_String += ActivityRecognitionStreamGenerator.getActivityNameFromType(activity.getType());
+                    latest_AR_String += Constants.ACTIVITY_CONFIDENCE_CONNECTOR;
+                    latest_AR_String += activity.getConfidence();
+
+                }
                 Log.d("ARService", "[test replay] StoreToCSV writing latest AR data to CSV " + latest_AR_String);
             }
 

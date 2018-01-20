@@ -146,18 +146,37 @@ public class FileHelper {
         //testing postfiles
 
 
-        String string = loadFileFromAsset("testData.txt");
+        String string = loadFileFromAsset("testDataActivity.csv");
         String[] lines = string.split(System.getProperty("line.separator"));
         for (int i=0; i<lines.length; i++) {
 
-            if (lines[i].contains("Susp")){
-                continue;
-            }
-            long time = Long.parseLong(lines[i].split("\t")[0]);
-            String activitiesStr =  lines[i].split("\t")[1];
 
-            String [] activities = activitiesStr.split(";;");
-            Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
+//            Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
+
+            String[] col = lines[i].split(",");
+
+            //get columns
+            long time = Long.parseLong(col[0]);
+            String rec_activitiesStr =  col[1];
+            String latest_activitiesStr =  col[2];
+            String transportationStr = col[3];
+            String statusStr = col[4];
+
+            float lat = 0;
+            float lng = 0;
+            float accuracy =0;
+            if (!col[5].equals("") && !col[6].equals("") && !col[7].equals("")){
+                lat = Float.parseFloat(col[5]);
+                lng = Float.parseFloat(col[6]);
+                accuracy = Float.parseFloat(col[7]);
+            }
+
+            Log.d(LOG_TAG, "[readTestFile] " + latest_activitiesStr + " : " + " lat:" + lat + " lng " + lng);
+
+
+            String [] activities = latest_activitiesStr.split(";;");
+            Log.d(LOG_TAG, "[readTestFile] read activity " + activities);
+
             List<DetectedActivity> activityList = new ArrayList<DetectedActivity>();
 
             for (int j=0; j<activities.length; j++){
@@ -182,8 +201,6 @@ public class FileHelper {
 
         }
 
-
-        // TransportationModeManager.test();
     }
 
 

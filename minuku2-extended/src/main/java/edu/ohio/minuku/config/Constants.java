@@ -32,7 +32,7 @@ public class Constants {
     public static final String NO = "NO";
 
     public static final String DELIMITER = ";;;";
-
+    public static final String ACTIVITY_DELIMITER = ";;";
 
     //
     public static final String sharedPrefString = "edu.umich.minuku_2";
@@ -166,6 +166,6 @@ public class Constants {
 
     public static boolean tabpos = false;
 
-    public static final String ACTIVITY_DELIMITER = ":";
+    public static final String ACTIVITY_CONFIDENCE_CONNECTOR = ":";
 
 }
