@@ -685,6 +685,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 rows.add(curRow);
             }
             cursor.close();
+//            Log.d(TAG,"cursor.getCount : "+cursor.getCount());
 
             DBManager.getInstance().closeDatabase();
 

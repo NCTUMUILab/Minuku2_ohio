@@ -716,6 +716,8 @@ public class TripManager {
 
             results.add(String.valueOf(sessionid));
 
+            Log.d(TAG, "sessionid : "+sessionid);
+
         }
 
         trip_size = times.size();
