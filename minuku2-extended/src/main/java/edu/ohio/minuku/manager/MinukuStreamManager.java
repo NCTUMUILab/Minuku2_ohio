@@ -23,6 +23,9 @@
 package edu.ohio.minuku.manager;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,6 +40,7 @@ import edu.ohio.minuku.DBHelper.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.model.Annotation;
+import edu.ohio.minuku.model.AnnotationSet;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
 import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
@@ -270,14 +274,44 @@ public class MinukuStreamManager implements StreamManager {
                         && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
 
 
-                    /** check if the new actviity should be combine: if the transportaiotn mode is the same as the previous sessison and the time is 5 minuts*/
+                    /** check if the new actviity should be combine: if the new transportaiotn mode  is the same as the mode of the previous sessison and the time is 5 minuts*/
 
+
+                    //first query session of the previous activity
+                    String lastSessionStr = DBHelper.queryLastSession().get(0);
+
+                    //get session and obtain its annotation
+                    String[] sessionCol = lastSessionStr.split(Constants.DELIMITER);
+                    String annotationSetStr =  sessionCol[4];
+
+                    Log.d(TAG,"[test combine] annotation string " + annotationSetStr );
+
+                    JSONObject annotationSetJSON = null;
+                    JSONArray annotateionSetJSONArray = null;
+                    AnnotationSet annotationSet = null;
+
+                    try {
+                        if (!annotationSetStr.equals("null")){
+                            annotationSetJSON = new JSONObject(annotationSetStr);
+                            annotateionSetJSONArray = annotationSetJSON.getJSONArray(SessionManager.ANNOTATION_PROPERTIES_ANNOTATION);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (annotateionSetJSONArray!=null){
+                        annotationSet =  SessionManager.toAnnorationSet(annotateionSetJSONArray);
+                    }
+
+                    //get annotaitons that has the transportation mode tag
+                    ArrayList<Annotation>  annotations = annotationSet.getAnnotationByTag(transportationModeDataRecord.getConfirmedActivityString());
+                    Log.d(TAG,"[test combine] get annotaitons with TM " + annotations.toString() );
 
 
                     //insert into the session table
                     long count =  DBHelper.querySessionCount();
                     int session_id = (int) count + 1;
-//                    Log.d(TAG, "test trip: adding new session id " + session_id);
+                    Log.d(TAG, "[test combine] test trip: adding new session id " + session_id);
 
                     Session session = new Session(session_id);
                     session.setStartTime(getCurrentTimeInMilli());
@@ -288,6 +322,8 @@ public class MinukuStreamManager implements StreamManager {
                     annotation.setContent(transportationModeDataRecord.getConfirmedActivityString());
                     annotation.addTag(Constants.ANNOTATION_TAG_DETECTED_TRANSPORTATOIN_ACTIVITY);
                     session.addAnnotation(annotation);
+
+                    Log.d(TAG, "[test combine] the session is with annotation " +session.getAnnotationsSet().toJSONObject().toString());
 
 
                     DBHelper.insertSessionTable(session);

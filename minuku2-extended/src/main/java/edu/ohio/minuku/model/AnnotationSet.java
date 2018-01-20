@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.SessionManager;
 
 public class AnnotationSet {
@@ -54,6 +55,31 @@ public class AnnotationSet {
 
     }
 
+    public ArrayList<Annotation> getAnnotationByTag(String tag){
+
+    	ArrayList<Annotation> annotations = new ArrayList<Annotation>();
+
+		if (mAnnotations!=null){
+
+			for (Annotation annotation : mAnnotations){
+
+				if (annotation.getTags().contains(tag)){
+
+					Log.d("Anntation", "get annotation " + annotation.toJSONObject().toString());
+
+					annotations.add(annotation);
+				}
+
+			}
+
+
+		}
+
+		return annotations;
+
+
+	}
+
 	public JSONObject toJSONObject(){
 
 		JSONObject obj  = new JSONObject();
@@ -62,8 +88,10 @@ public class AnnotationSet {
 
 			if (mAnnotations!=null && mAnnotations.size()>0){
 
-				obj.put("", mId);
-				obj.put("", (Object) getAnnotationsInJSONArray());
+				if (!mName.equals(""))
+					obj.put(SessionManager.ANNOTATION_PROPERTIES_NAME, mName);
+				obj.put(SessionManager.ANNOTATION_PROPERTIES_ID, mId);
+				obj.put(SessionManager.ANNOTATION_PROPERTIES_ANNOTATION, (Object) getAnnotationsInJSONArray());
 
 			}
 
@@ -74,7 +102,6 @@ public class AnnotationSet {
 
 
 	}
-
 
    public JSONArray getAnnotationsInJSONArray() {
 
