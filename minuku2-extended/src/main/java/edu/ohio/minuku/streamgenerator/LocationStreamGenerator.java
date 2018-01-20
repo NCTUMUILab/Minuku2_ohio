@@ -61,7 +61,7 @@ import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
-import edu.ohio.minuku.manager.TripManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minuku.stream.LocationStream;
 import edu.ohio.minukucore.dao.DAOException;
@@ -116,7 +116,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     private static ArrayList<LocationDataRecord> mLocationDataRecords;
 
-//    private TripManager tripManager;
+//    private SessionManager tripManager;
 
     private Location location;
 
@@ -137,7 +137,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         this.latestLongitude = new AtomicDouble();
 
         this.context = applicationContext;
-//        tripManager = new TripManager();
+//        tripManager = new SessionManager();
 
 
         mLocationDataRecords = new ArrayList<LocationDataRecord>();
@@ -232,7 +232,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     (float) latestLongitude.get(),
                     latestAccuracy,
                     //TODO improve it to ArrayList, ex. the session id should be "0, 10".
-                    String.valueOf(TripManager.getInstance().getOngoingSessionidList().get(0)));
+                    String.valueOf(SessionManager.getInstance().getOngoingSessionidList().get(0)));
         }catch (IndexOutOfBoundsException e){
             e.printStackTrace();
             //no session now
@@ -254,7 +254,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         try {
             mDAO.add(newlocationDataRecord);
             //TODO notice it
-//                TripManager.getInstance().setTrip(newlocationDataRecord);
+//                SessionManager.getInstance().setTrip(newlocationDataRecord);
 
 
         } catch (DAOException e) {

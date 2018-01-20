@@ -255,7 +255,7 @@ public class MinukuStreamManager implements StreamManager {
                     //remove the session
                     int id = (int) DBHelper.querySessionCount();
                     Log.d(TAG, "test trip: the previous acitivty is movnig, we're going to  remove the session id " + id );
-                    TripManager.getInstance().removeOngoingSessionid(String.valueOf(id));
+                    SessionManager.getInstance().removeOngoingSessionid(String.valueOf(id));
                     Log.d(TAG, "test trip: the previous acitivty is movnig, we remove the session id " + id );
 
                     //tODO: update the session with end time
@@ -281,7 +281,7 @@ public class MinukuStreamManager implements StreamManager {
 
 
                     //InstanceManager add ongoing session for the new activity
-                    TripManager.getInstance().addOngoingSessionid(String.valueOf(session_id));
+                    SessionManager.getInstance().addOngoingSessionid(String.valueOf(session_id));
 
                 }
             }

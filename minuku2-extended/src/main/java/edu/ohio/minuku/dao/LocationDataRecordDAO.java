@@ -70,14 +70,14 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
     private ArrayList<LocationDataRecord> LocationToTrip;
     private int KEEPALIVE_MINUTE = 5;
     private long sKeepalive;
-//    private TripManager tripManager;
+//    private SessionManager tripManager;
 
     public LocationDataRecordDAO() {
         recordCount = 0;
         tripCount = 0;
         tripLocCount = 0;
         sKeepalive = KEEPALIVE_MINUTE * Constants.MILLISECONDS_PER_MINUTE;
-//        tripManager = new TripManager();
+//        tripManager = new SessionManager();
         LocationToTrip = new ArrayList<LocationDataRecord>();
         myUserEmail = UserPreferences.getInstance().getPreference(Constants.KEY_ENCODED_EMAIL);
     }
@@ -87,7 +87,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
         tripCount = 0;
         tripLocCount = 0;
         sKeepalive = KEEPALIVE_MINUTE * Constants.MILLISECONDS_PER_MINUTE;
-//        tripManager = new TripManager();
+//        tripManager = new SessionManager();
         LocationToTrip = new ArrayList<LocationDataRecord>();
         dBHelper = DBHelper.getInstance(applicationContext);
     }

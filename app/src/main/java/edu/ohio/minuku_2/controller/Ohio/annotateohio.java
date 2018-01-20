@@ -817,8 +817,8 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 //                String[] timekeys = sessionkey.split("-");
 //                String start = timekeys[0];
 //                String end = timekeys[1];
-//                start = TripManager.getmillisecondToDateWithTime(Long.valueOf(start));
-//                end = TripManager.getmillisecondToDateWithTime(Long.valueOf(end));
+//                start = SessionManager.getmillisecondToDateWithTime(Long.valueOf(start));
+//                end = SessionManager.getmillisecondToDateWithTime(Long.valueOf(end));
 
                 Log.d(TAG, "sessionkey : "+ sessionkey);
 
@@ -1018,7 +1018,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
 
                 sessionid = Integer.valueOf(sessionkey);
 
-//                sessionid = Integer.valueOf(getSessionIdByTimekey(TripManager.getSpecialTimeInMillis(startTime)));
+//                sessionid = Integer.valueOf(getSessionIdByTimekey(SessionManager.getSpecialTimeInMillis(startTime)));
 //                locationDataRecords = LocationDataRecordDAO.getTripLocToDrawOnMap(sessionkey);
 //                sessionid = bundle.getInt("position_id");
 
@@ -1033,7 +1033,7 @@ public class annotateohio extends Activity implements OnMapReadyCallback {
                     locationDataRecords.add(latLng);
                 }*/
 
-//                locationDataRecords = TripManager.getInstance().getTripLocToDrawOnMap(sessionid);
+//                locationDataRecords = SessionManager.getInstance().getTripLocToDrawOnMap(sessionid);
 
             }catch (Exception e) {
                 locationDataRecords = new ArrayList<LatLng>();

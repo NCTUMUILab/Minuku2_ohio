@@ -21,7 +21,7 @@ import edu.ohio.minuku.DBHelper.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
-import edu.ohio.minuku.manager.TripManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku_2.R;
 
 import static edu.ohio.minuku.config.Constants.sharedPrefString;
@@ -47,6 +47,7 @@ public class OhioListAdapter extends ArrayAdapter<String> {
     private SharedPreferences sharedPrefs;
 
     public OhioListAdapter(Context context, int resource, ArrayList<String> locationDataRecords) {
+
         super(context, resource, locationDataRecords);
         this.mContext = context;
         this.data = locationDataRecords;
@@ -56,8 +57,8 @@ public class OhioListAdapter extends ArrayAdapter<String> {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-
+    public View getView(int trip_pos, View convertView, ViewGroup parent) {
+        Log.d(TAG,"test trip result get view start"  );
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.recordinglistview_ohio, parent, false);
 
@@ -65,79 +66,44 @@ public class OhioListAdapter extends ArrayAdapter<String> {
 
 //        Log.d(TAG, "dataPos outside : " + dataPos.size());
 
-        //only one
-        String dataFromSessionId = DBHelper.querySession(Integer.valueOf(data.get(position))).get(0);
+        //the result is the first item in the result arraylist
+        String result = DBHelper.querySession(Integer.valueOf(data.get(trip_pos))).get(0);
 
-        String[] dataFromSessionIds = dataFromSessionId.split(Constants.DELIMITER);
+        String[] dataFromSessionIds = result.split(Constants.DELIMITER);
 
-        if(dataFromSessionIds[4]==""){
-            String time = "Trip "+(position+1)+": "+dataFromSessionIds[2];
-            Log.d(TAG, " time : " + time);
-//                textView.setText(Html.fromHtml(time));
-            textView.setText(time);
+
+        /**
+         * setting the style of the trip title
+         */
+
+        //if there's not annotation, put the text in red
+        if(dataFromSessionIds[4].equals("")){
+
+            //get time label
+            long time =  Long.parseLong(dataFromSessionIds[2]);
+            String timeLabel = formatconverting(time);
+
+            String sessionTitle = "Trip "+(trip_pos+1)+": "+ timeLabel;
+            Log.d(TAG, " time : " + sessionTitle);
+            textView.setText(sessionTitle);
             textView.setTextColor(Color.RED);
             status = true;
-        }else {
-            String time = "Trip "+(position+1)+": "+dataFromSessionIds[2];
-            Log.d(TAG, " time : " + time);
+
+        }
+        //if there's annotation, put the text in grey
+        else {
+            //get time label
+            long time =  Long.parseLong(dataFromSessionIds[2]);
+            String timeLabel = formatconverting(time);
+
+            String sessionTitle = "Trip "+(trip_pos+1)+": "+ timeLabel;
+
+            Log.d(TAG, " time : " + sessionTitle);;
 //                textView.setText(Html.fromHtml(time));
-            textView.setText(time);
+            textView.setText(sessionTitle);
             textView.setTextColor(Color.GRAY);
-            dataPos.add(position);
+            dataPos.add(trip_pos);
         }
-
-/*
-        if(dataPos.size()>0){
-
-            int pos = position; //data.size()-1 -
-
-            Log.d(TAG, "pos : " + pos);
-            Log.d(TAG, "dataPos : " + dataPos.size());
-            Log.d(TAG, "dataPos : " + dataPos.toString());
-
-            if(dataPos.contains(pos)) {
-                String dataFromlocal = data.get(data.size()-pos-1);//pos
-                String timedata[] = dataFromlocal.split("-");
-                String startTime = timedata[0];
-                startTime = TripManager.getmillisecondToDateWithTime(Long.valueOf(startTime));
-                startTime = formatconverting(startTime);
-                String time = "Trip "+(pos+1)+": "+startTime;
-                Log.d(TAG, " time : " + time);
-                textView.setText(time);
-                textView.setTextColor(Color.GRAY);
-            }else{
-                String dataFromlocal = data.get(data.size()-pos-1);
-                String timedata[] = dataFromlocal.split("-");
-                String startTime = timedata[0];
-                startTime = TripManager.getmillisecondToDateWithTime(Long.valueOf(startTime));
-                startTime = formatconverting(startTime);
-//                String time = startTime.replace(startTime, "<b>" + startTime + "</b>");
-//                String time = "Trip "+(data.size()-pos)+": "+startTime;
-                String time = "Trip "+(pos+1)+": "+startTime;
-                Log.d(TAG, " time : " + time);
-//                textView.setText(Html.fromHtml(time));
-                textView.setText(time);
-                textView.setTextColor(Color.RED);
-                status = true;
-            }
-
-        }else{
-            Log.d(TAG, "datapos==0");
-
-            String dataFromlocal = data.get(data.size()-position-1);
-            String timedata[] = dataFromlocal.split("-");
-            String startTime = timedata[0];
-            startTime = TripManager.getmillisecondToDateWithTime(Long.valueOf(startTime));
-            startTime = formatconverting(startTime);
-//            String time = startTime.replace(startTime, "<b>" + startTime + "</b>");
-            String time = "Trip "+(position+1)+": "+startTime;
-            Log.d(TAG, " time : " + time);
-//            textView.setText(Html.fromHtml(time));
-            textView.setText(time);
-            textView.setTextColor(Color.RED);
-            status = true;
-        }
-*/
 
 
         return view;
@@ -190,7 +156,7 @@ public class OhioListAdapter extends ArrayAdapter<String> {
             String timedata[] = datafromList.split("-");
             String startTime = timedata[0];
 
-            startTime = TripManager.getmillisecondToDateWithTime(Long.valueOf(startTime));
+            startTime = SessionManager.getmillisecondToDateWithTime(Long.valueOf(startTime));
             Log.d(TAG,"startTime : "+ startTime);
             Log.d(TAG,"dataInCursor : "+ dataInCursor);
             if(dataInCursor.contains(startTime))
@@ -212,8 +178,7 @@ public class OhioListAdapter extends ArrayAdapter<String> {
     }
 
     //Month-Date-Year Time(12hr am/pm)
-    private String formatconverting(String east){
-        long convertedTime = getSpecialTimeInMillis(east);
+    private String formatconverting(long time ){
 
 //        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
         /*SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a");
@@ -222,7 +187,7 @@ public class OhioListAdapter extends ArrayAdapter<String> {
 
         return  sdf.format(convertedTime);*/
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(convertedTime);
+        calendar.setTimeInMillis(time);
 
 //        int mYear = calendar.get(Calendar.YEAR);
 //        int mMonth = calendar.get(Calendar.MONTH)+1;
@@ -278,7 +243,7 @@ public class OhioListAdapter extends ArrayAdapter<String> {
             return String.valueOf(date);
     }
 
-    /*public String TripManager.getmillisecondToDateWithTime(long timeStamp){
+    /*public String SessionManager.getmillisecondToDateWithTime(long timeStamp){
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(timeStamp);
