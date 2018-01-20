@@ -222,11 +222,11 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         submit = (Button)findViewById(R.id.submit);
         submit.setOnClickListener(submitting);
 
-        if(ongoing.equals("true")){
-            submit.setClickable(false);
-
-            Toast.makeText(getApplicationContext(), "This trip is still ongoing!", Toast.LENGTH_LONG).show();
-        }
+//        if(ongoing.equals("true")){
+//            submit.setClickable(false);
+//
+//            Toast.makeText(getApplicationContext(), "This trip is still ongoing!", Toast.LENGTH_LONG).show();
+//        }
 
     }
 
@@ -326,35 +326,35 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         });
 
         //checking its ongoing or not
-        String sessionid = getSessionIdByTimekey(sessionkey);
-        ongoing = "";
-        try {
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor tripCursor = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (sessionid) + "'", null); //cause sessionid start from 0.
-            Log.d(TAG,"SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (sessionid) + "'");
-            int rows = tripCursor.getCount();
-
-            if(rows!=0){
-                //get the first one is that it must be set with the accurate status
-                tripCursor.moveToFirst();
-                ongoing = tripCursor.getString(8);
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        Log.d(TAG, "ongoing : "+ ongoing);
-
-        if(ongoing.equals("true")){
-            setRG_notclickable(ques1);
-            setRG_notclickable(ques2_1);
-            setRG_notclickable(ques2_2);
-            setRG_notclickable(ques2_3);
-            setRG_notclickable(ques2_4);
-            setRG_notclickable(ques2_5);
-            setRG_notclickable(ques3);
-            setRG_notclickable(ques4);
-        }
+//        String sessionid = getSessionIdByTimekey(sessionkey);
+//        ongoing = "";
+//        try {
+//            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+//            Cursor tripCursor = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (sessionid) + "'", null); //cause sessionid start from 0.
+//            Log.d(TAG,"SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (sessionid) + "'");
+//            int rows = tripCursor.getCount();
+//
+//            if(rows!=0){
+//                //get the first one is that it must be set with the accurate status
+//                tripCursor.moveToFirst();
+//                ongoing = tripCursor.getString(8);
+//            }
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//
+//        Log.d(TAG, "ongoing : "+ ongoing);
+//
+//        if(ongoing.equals("true")){
+//            setRG_notclickable(ques1);
+//            setRG_notclickable(ques2_1);
+//            setRG_notclickable(ques2_2);
+//            setRG_notclickable(ques2_3);
+//            setRG_notclickable(ques2_4);
+//            setRG_notclickable(ques2_5);
+//            setRG_notclickable(ques3);
+//            setRG_notclickable(ques4);
+//        }
 
     }
 
