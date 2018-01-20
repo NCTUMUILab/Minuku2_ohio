@@ -277,7 +277,7 @@ public class TransportationModeService extends Service {
                     //getting latest Transportation based on the incoming record
                     examineTransportation(record);
 
-//                    Log.d("ARService", "[test replay] after examine transportation");
+                    Log.d("ARService", "[test replay] test trip: after examine transportation the current activity is  is " + getConfirmedActvitiyString() + " the status is " + getCurrentState());
 
 
                    // showTransportation(getConfirmedActvitiyString());

@@ -148,7 +148,7 @@ public class ActivityRecognitionService extends IntentService {
                         mMostProbableActivity = activityRecognitionDataRecord.getMostProbableActivity();
                         detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
 
-                        Log.d("ARService", "[test replay] going to feed " +   activityRecognitionDataRecord.getDetectedtime() +  " :"  +  activityRecognitionDataRecord.getProbableActivities()  +  " : " +activityRecognitionDataRecord.getMostProbableActivity()    + " at index " + activityRecordCurIndex  + " to the AR streamgenerator");
+                        Log.d("ARService", "[test replay] test trip going to feed " +   activityRecognitionDataRecord.getDetectedtime() +  " :"  +  activityRecognitionDataRecord.getProbableActivities()  +  " : " +activityRecognitionDataRecord.getMostProbableActivity()    + " at index " + activityRecordCurIndex  + " to the AR streamgenerator");
 
                         //user the record from mActivityRecognitionRecords to update the  mActivityRecognitionStreamGenerator
                         mActivityRecognitionStreamGenerator.setActivitiesandDetectedtime(mProbableActivities, mMostProbableActivity, detectedtime);
