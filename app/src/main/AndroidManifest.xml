@@ -75,7 +75,7 @@
         <activity android:name=".controller.timer_site"></activity>
         <activity android:name=".controller.Ohio.sleepingohio"></activity>
         <activity android:name=".controller.Ohio.recordinglistohio"></activity>
-        <activity android:name=".controller.Ohio.annotateohio"></activity>
+        <activity android:name=".controller.Ohio.AnnotateSessionActivity"></activity>
         <activity android:name=".controller.Ohio.linkListohio"></activity>
 
         <activity android:name=".MainActivity"

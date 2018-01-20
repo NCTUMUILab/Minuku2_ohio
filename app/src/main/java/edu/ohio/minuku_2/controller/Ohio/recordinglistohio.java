@@ -53,21 +53,15 @@ public class recordinglistohio extends Activity {
         Trip_size = 0;
     }
 
-    private void startAnnotateActivity(int position) {
+    private void startAnnotateActivity(int trip_position) {
 
-        Log.d(TAG, "Trip_size : " + Trip_size + " position : " + (position+1)); // (position+1) is caused from the index problem. At "List", it start from "0" but the Trip_size is started from "1";
-
-        position = Trip_size - (position+1);//reverse the order.
-
-        String key =  mSessionIds.get(position); //reverse the order of Trip for showing.
-//        Session session =  mSessions.get(position);
-        Log.d(TAG, "the location trip at " + position + " being selected is " + key);
+        String sesionId =  mSessionIds.get(trip_position); //reverse the order of Trip for showing.
+        Log.d(TAG, "click on the session id " + sesionId + " at position " + trip_position);
 
         Bundle bundle = new Bundle();
-//        bundle.putString("timekey_id", key);
-        bundle.putString("sessionkey_id", key);
-        bundle.putInt("position_id", position);
-        Intent intent = new Intent(recordinglistohio.this, annotateohio.class);
+        bundle.putString("sessionkey_id", sesionId);
+        bundle.putInt("position_id", trip_position);
+        Intent intent = new Intent(recordinglistohio.this, AnnotateSessionActivity.class);
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -171,19 +165,12 @@ public class recordinglistohio extends Activity {
         @Override
         protected void onPreExecute() {
             Log.d(TAG,"onPreExecute");
-//            this.dialog = new ProgressDialog(recordinglistohio.this);
             this.dialog = ProgressDialog.show(recordinglistohio.this, "Working...","Loading...",true,false);
-
-
-//            this.dialog.setMessage("Loading...");
-//            this.dialog.setCancelable(false);
-//            this.dialog.show();
         }
 
 
         @Override
         protected void onPostExecute(ArrayList<String> result) {
-
             super.onPostExecute(result);
 
             if (this.dialog.isShowing()) {

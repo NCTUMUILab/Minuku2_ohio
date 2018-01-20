@@ -67,23 +67,25 @@ public class OhioListAdapter extends ArrayAdapter<String> {
 //        Log.d(TAG, "dataPos outside : " + dataPos.size());
 
         //the result is the first item in the result arraylist
-        String result = DBHelper.querySession(Integer.valueOf(data.get(trip_pos))).get(0);
+        String sessionStr = DBHelper.querySession(Integer.valueOf(data.get(trip_pos))).get(0);
 
-        String[] dataFromSessionIds = result.split(Constants.DELIMITER);
+        String[] sessionCol = sessionStr.split(Constants.DELIMITER);
 
+        Log.d(TAG,"test trip result: " + sessionCol.toString() );
 
         /**
          * setting the style of the trip title
          */
 
         //if there's not annotation, put the text in red
-        if(dataFromSessionIds[4].equals("")){
+        if(sessionCol[4]== null || sessionCol[4].equals("") || sessionCol[4].equals("null") ){
 
             //get time label
-            long time =  Long.parseLong(dataFromSessionIds[2]);
+            long time =  Long.parseLong(sessionCol[2]);
             String timeLabel = formatconverting(time);
 
-            String sessionTitle = "Trip "+(trip_pos+1)+": "+ timeLabel;
+            String sessionId =  sessionCol[0];
+            String sessionTitle = sessionId+ ":" + "Trip "+(trip_pos+1)+": "+ timeLabel;
             Log.d(TAG, " time : " + sessionTitle);
             textView.setText(sessionTitle);
             textView.setTextColor(Color.RED);
@@ -92,11 +94,13 @@ public class OhioListAdapter extends ArrayAdapter<String> {
         }
         //if there's annotation, put the text in grey
         else {
-            //get time label
-            long time =  Long.parseLong(dataFromSessionIds[2]);
-            String timeLabel = formatconverting(time);
 
-            String sessionTitle = "Trip "+(trip_pos+1)+": "+ timeLabel;
+            Log.d(TAG,"test trip result get view start annotation not null"  );
+            //get time label
+            long time =  Long.parseLong(sessionCol[2]);
+            String timeLabel = formatconverting(time);
+            String sessionId =  sessionCol[0];
+            String sessionTitle = sessionId+ ":" + "Trip "+(trip_pos+1)+": "+ timeLabel;
 
             Log.d(TAG, " time : " + sessionTitle);;
 //                textView.setText(Html.fromHtml(time));

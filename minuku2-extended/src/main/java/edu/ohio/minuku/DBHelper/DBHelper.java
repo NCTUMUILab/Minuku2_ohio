@@ -834,9 +834,9 @@ public class DBHelper extends SQLiteOpenHelper {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             String sql = "SELECT *"  +" FROM " + table_name  +
                     " where " + COL_SESSION_ID + " = " + sessionId + " and " +
-                    COL_TIMESTAMP_LONG + " > " + startTime + " and " +
-                    COL_TIMESTAMP_LONG + " < " + endTime  +
-                    " order by " + COL_TIMESTAMP_LONG;
+                    TIME + " > " + startTime + " and " +
+                    TIME + " < " + endTime  +
+                    " order by " + TIME;
 
 //            Log.d(TAG, "[queryRecordsInSession][testgetdata] the query statement is " +sql);
 
@@ -878,7 +878,7 @@ public class DBHelper extends SQLiteOpenHelper {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             String sql = "SELECT *"  +" FROM " + table_name  +
                     " where " + COL_SESSION_ID + " = " + sessionId +
-                    " order by " + COL_TIMESTAMP_LONG;
+                    " order by " + TIME;
 
 
             Log.d(TAG, "[queryRecordsInSession] the query statement is " +sql);
