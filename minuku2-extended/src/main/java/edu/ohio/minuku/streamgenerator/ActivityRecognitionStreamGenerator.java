@@ -201,7 +201,7 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
 
     @Override
     public boolean updateStream() {
-//        Log.e(TAG, "Update stream called.");
+        Log.e(TAG, "Update stream called.");
 
 //        ActivityRecognitionDataRecord activityRecognitionDataRecord
 //               = new ActivityRecognitionDataRecord(sMostProbableActivity,sProbableActivities);
@@ -365,7 +365,7 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
         activityRecognitionDataRecord.setID(id);
         Log.e(TAG,"CreateTime:" + activityRecognitionDataRecord.getCreationTime()+ " MostProbableActivity:"+activityRecognitionDataRecord.getMostProbableActivity());
 
-        Log.e("mLocalRecordPool ", String.valueOf(mLocalRecordPool));
+//        Log.e("mLocalRecordPool ", String.valueOf(mLocalRecordPool));
         mLocalRecordPool.add(activityRecognitionDataRecord); //it's working.
         Log.e(TAG, "[test logging]add record " + "logged at " + activityRecognitionDataRecord.getTimeString() );
         //Log.e(TAG, String.valueOf(mLocalRecordPool.size()));

@@ -608,7 +608,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
             rowId = db.insert(SESSION_TABLE_NAME, null, values);
 
-            Toast.makeText(mContext,"test trip inserting sessionid : "+ session.getId(),Toast.LENGTH_SHORT).show();
+//            Toast.makeText(mContext,"test trip inserting sessionid : "+ session.getId(),Toast.LENGTH_SHORT).show();
 
         }catch(Exception e){
             e.printStackTrace();
