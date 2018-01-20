@@ -313,19 +313,28 @@ public class MinukuStreamManager implements StreamManager {
                         Log.d(TAG,"[test combine] annotationSet " + annotationSet.toJSONObject().toString() );
                         //get annotaitons that has the transportation mode tag
                         ArrayList<Annotation>  annotations = annotationSet.getAnnotationByContent(transportationModeDataRecord.getConfirmedActivityString());
-                        Log.d(TAG,"[test combine] get annotaitons with TM " + annotations.toString() );
-
 
                         //if the previous session does not have any annotation of which transportation is of the same tag, we should add a new session
                         if (annotations.size()==0){
                             addSessionFlag = true;
                         }
 
+                        // the current activity is the same TM with the previous session mode
+                        else {
+
+                            //check its interval to see if it's within 5 minutes
+
+
+                            //if yes, we should make the previous session ongoing  
+
+
+                        }
+
                     }
 
                     //there's no session yet, we should just create a new session
                     else {
-
+                        Log.d(TAG,"[test combine] the previous sessuin is the not same transporttion mode, we should create a session " );
                         addSessionFlag = true;
 
                     }
