@@ -6,6 +6,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import edu.ohio.minuku.manager.SessionManager;
+
 public class AnnotationSet {
 
     //the id of the annotationSet for raw data is 0
@@ -73,43 +75,8 @@ public class AnnotationSet {
 
 	}
 
-	public JSONArray getAnnotationsInJSONArray() {
 
-		JSONArray array = new JSONArray() ;
-
-		//get all the annotaitons and put their JSONObject format into the array
-		for (int i=0; i<mAnnotations.size(); i++){
-//			array.put(mAnnotations.get(i).toJSONObject());
-		}
-
-		return array;
-
-	}
-
-    /*public JSONObject toJSONObject(){
-
-        JSONObject obj  = new JSONObject();
-
-        try{
-
-            if (mAnnotations!=null && mAnnotations.size()>0){
-
-                if (!mName.equals(""))
-                    obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_NAME, mName);
-                obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_ID, mId);
-                obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_ANNOTATION, (Object) getAnnotationsInJSONArray());
-
-            }
-
-        }catch(JSONException e){
-
-        }
-        return obj;
-
-
-    }*/
-
-    /*public JSONArray getAnnotationsInJSONArray() {
+   public JSONArray getAnnotationsInJSONArray() {
 
         JSONArray array = new JSONArray() ;
 
@@ -120,7 +87,7 @@ public class AnnotationSet {
 
         return array;
 
-    }*/
+    }
 
 
 

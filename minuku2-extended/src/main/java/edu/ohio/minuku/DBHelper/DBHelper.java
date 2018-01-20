@@ -601,6 +601,7 @@ public class DBHelper extends SQLiteOpenHelper {
 //            values.put(COL_TASK_ID, session.getTaskId());
             values.put(COL_TIMESTAMP_STRING, ScheduleAndSampleManager.getTimeString(session.getStartTime()));
             values.put(COL_SESSION_START_TIME, session.getStartTime());
+            values.put(COL_SESSION_ANNOTATION_SET, session.getAnnotationsSet().toString());
 
             //get row number after the insertion
             Log.d(TAG, "[testing sav and load session] test trip Inserting session id: " + session.getId() + ": Session-" + session.getStartTime() +
@@ -608,7 +609,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
             rowId = db.insert(SESSION_TABLE_NAME, null, values);
 
-            Toast.makeText(mContext,"test trip inserting sessionid : "+ session.getId(),Toast.LENGTH_SHORT).show();
 
         }catch(Exception e){
             e.printStackTrace();

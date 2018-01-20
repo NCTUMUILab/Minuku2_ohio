@@ -49,6 +49,15 @@ public class SessionManager {
     private String lasttime_transportation;
     private String lasttime_trip_transportation;
 
+    public static final String ANNOTATION_PROPERTIES_ANNOTATION = "Annotation";
+    public static final String ANNOTATION_PROPERTIES_ID = "Id";
+    public static final String ANNOTATION_PROPERTIES_NAME= "Name";
+    public static final String ANNOTATION_PROPERTIES_START_TIME = "Start_time";
+    public static final String ANNOTATION_PROPERTIES_END_TIME = "End_time";
+    public static final String ANNOTATION_PROPERTIES_IS_ENTIRE_SESSION = "Entire_session";
+    public static final String ANNOTATION_PROPERTIES_CONTENT = "Content";
+    public static final String ANNOTATION_PROPERTIES_TAG = "Tag";
+
     private ArrayList<LocationDataRecord> LocationToTrip;
 
     private static Context mContext;

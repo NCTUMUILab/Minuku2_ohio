@@ -36,6 +36,7 @@ import java.util.TimeZone;
 import edu.ohio.minuku.DBHelper.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
+import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
 import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
@@ -264,11 +265,14 @@ public class MinukuStreamManager implements StreamManager {
                     Log.d(TAG, "test trip: the previous acitivty is movnig,after update "  );
                 }
 
-                /**2 if the new activity is moving, we should add a session **/
+                /**2 if the new activity is moving, we will first determine whether this is continuing the previosu activity or a new activity. If it is a continutous one we will not add a new sesssion but let the previous activity in the ongoing **/
                 if(!transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
                         && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
 
-//                    Log.d(TAG, "test trip: the new activit is moving");
+
+                    /** check if the new actviity should be combine: if the transportaiotn mode is the same as the previous sessison and the time is 5 minuts*/
+
+
 
                     //insert into the session table
                     long count =  DBHelper.querySessionCount();
@@ -277,6 +281,15 @@ public class MinukuStreamManager implements StreamManager {
 
                     Session session = new Session(session_id);
                     session.setStartTime(getCurrentTimeInMilli());
+
+
+                    //add mobility label as an annotaiton to the session
+                    Annotation annotation = new Annotation();
+                    annotation.setContent(transportationModeDataRecord.getConfirmedActivityString());
+                    annotation.addTag(Constants.ANNOTATION_TAG_DETECTED_TRANSPORTATOIN_ACTIVITY);
+                    session.addAnnotation(annotation);
+
+
                     DBHelper.insertSessionTable(session);
 
 
