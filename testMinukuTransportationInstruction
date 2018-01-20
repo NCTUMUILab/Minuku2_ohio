@@ -25,6 +25,9 @@ comment掉
 
 
 
+1. 把transportation mode.csv整理一下格式讓他可以被minuku 讀
+
+
 
 REPLAY ACTIVITY
 1.開始service的時候要讀activity資料
@@ -67,7 +70,11 @@ ActivityRecognitionService() constructor裡 uncomment
 
 
 
-transportationModeService
 
-ActivityRecognitionStreamGenerator
+可使用的tag:
+
+test replay
+feed
+
+
 
