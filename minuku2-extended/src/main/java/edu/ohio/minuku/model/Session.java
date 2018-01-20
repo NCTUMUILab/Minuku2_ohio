@@ -16,8 +16,8 @@ public class Session {
     //TODO: this should be defined based on what's being activated.
     ArrayList<String> mContextSourceNames;
 
-	public Session (int taskId){
-        mTaskId = taskId;
+	public Session (int sessionId){
+        mId = sessionId;
         mAnnotationSet = new AnnotationSet();
 	}
 
@@ -26,16 +26,15 @@ public class Session {
         mAnnotationSet = new AnnotationSet();
     }
 
-	public Session (long timestamp, int taskId){		
+	public Session (long timestamp, int sessionId){
 		mStartTime = timestamp;
-		mTaskId = taskId;
+		mId = sessionId;
         mAnnotationSet = new AnnotationSet();
 	}
 
-    public Session (int id, long timestamp, int taskId){
+    public Session (int id, long timestamp){
         mId = id;
         mStartTime = timestamp;
-        mTaskId = taskId;
         mAnnotationSet = new AnnotationSet();
     }
 

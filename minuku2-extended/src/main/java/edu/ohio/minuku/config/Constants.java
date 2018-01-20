@@ -41,6 +41,9 @@ public class Constants {
     public static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
 
 
+    public static final String ANNOTATION_TAG_DETECTED_TRANSPORTATOIN_ACTIVITY = "detected-transportation";
+
+
     // Firebase config
     public static final String FIREBASE_URL = BuildConfig.UNIQUE_FIREBASE_ROOT_URL;
     public static final String FIREBASE_URL_USERS = FIREBASE_URL + "/users";

@@ -1,6 +1,12 @@
 package edu.ohio.minuku.model;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+
+import edu.ohio.minuku.manager.SessionManager;
 
 public class Annotation {
 
@@ -60,21 +66,21 @@ public class Annotation {
         this.mContent = content;
     }
 
-    /*public JSONObject toJSONObject(){
+    public JSONObject toJSONObject(){
 
         JSONObject obj  = new JSONObject();
 
         try {
             //whether the annotation is for the entire session
-            obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_IS_ENTIRE_SESSION, mEntireSession);
+            obj.put(SessionManager.ANNOTATION_PROPERTIES_IS_ENTIRE_SESSION, mEntireSession);
 
             //if the annotation is not for the entire session, there should be either starTime or endTime specified
             if (!mEntireSession){
-                obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_START_TIME, mStartTime);
-                obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_END_TIME, mEndTime);
+                obj.put(SessionManager.ANNOTATION_PROPERTIES_START_TIME, mStartTime);
+                obj.put(SessionManager.ANNOTATION_PROPERTIES_END_TIME, mEndTime);
             }
             if (mId!=-1)
-                obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_ID, mId);
+                obj.put(SessionManager.ANNOTATION_PROPERTIES_ID, mId);
 
             //if the annotation ahs tags
             if (mTags.size()>0){
@@ -85,12 +91,12 @@ public class Annotation {
                         tags.put(mTags.get(i));
                 }
 
-                obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_TAG, (Object) tags);
+                obj.put(SessionManager.ANNOTATION_PROPERTIES_TAG, (Object) tags);
 
             }
 
             //add content
-            obj.put(RecordingAndAnnotateManager.ANNOTATION_PROPERTIES_CONTENT, mContent);
+            obj.put(SessionManager.ANNOTATION_PROPERTIES_CONTENT, mContent);
 
 
         }catch(JSONException e){
@@ -99,7 +105,7 @@ public class Annotation {
 
         return obj;
 
-    }*/
+    }
 
     public void addTag(String tag){
         if (mTags==null){

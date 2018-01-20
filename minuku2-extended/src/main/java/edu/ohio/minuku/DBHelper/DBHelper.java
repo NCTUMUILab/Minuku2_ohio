@@ -601,14 +601,18 @@ public class DBHelper extends SQLiteOpenHelper {
 //            values.put(COL_TASK_ID, session.getTaskId());
             values.put(COL_TIMESTAMP_STRING, ScheduleAndSampleManager.getTimeString(session.getStartTime()));
             values.put(COL_SESSION_START_TIME, session.getStartTime());
+            values.put(COL_SESSION_ANNOTATION_SET, session.getAnnotationsSet().toJSONObject().toString());
 
             //get row number after the insertion
-            Log.d(TAG, "[testing sav and load session] test trip Inserting session id: " + session.getId() + ": Session-" + session.getStartTime() +
+            Log.d(TAG, "[test combine] insert session: " + session.getId() + ": Session-" + session.getStartTime() + " with annotaiton " + session.getAnnotationsSet().toJSONObject().toString() +
                     " to the session table " + SESSION_TABLE_NAME);
 
             rowId = db.insert(SESSION_TABLE_NAME, null, values);
 
+<<<<<<< HEAD
 //            Toast.makeText(mContext,"test trip inserting sessionid : "+ session.getId(),Toast.LENGTH_SHORT).show();
+=======
+>>>>>>> 16b28b4bbd7fc81f6c38deaae774778d7f390e1e
 
         }catch(Exception e){
             e.printStackTrace();
@@ -825,6 +829,46 @@ public class DBHelper extends SQLiteOpenHelper {
         return rows;
     }
 
+    public static ArrayList<String> queryLastSession() {
+
+        ArrayList<String> rows = new ArrayList<String>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME  +
+                    " order by " + COL_ID + " DESC LIMIT 1";
+            ;
+
+
+            Log.d(TAG, "[test combine queryLastSession] the query statement is " +sql);
+
+            //execute the query
+            Cursor cursor = db.rawQuery(sql, null);
+            int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+                }
+                Log.d(TAG, "[test combine queryLastRecord] get result row " +curRow);
+
+                rows.add(curRow);
+            }
+            cursor.close();
+
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+
+        return rows;
+
+    }
+
     public static ArrayList<String> queryRecordsInSession(String table_name, int sessionId, long startTime, long endTime) {
 
         ArrayList<String> rows = new ArrayList<String>();
@@ -943,7 +987,7 @@ public class DBHelper extends SQLiteOpenHelper {
             //TODO get the col name after complete the annotate part.
             values.put(COL_SESSION_END_TIME, session.getEndTime());
             //beacuse only one data(annotation) exist.
-            values.put(COL_SESSION_ANNOTATION_SET, session.getAnnotationsSet().getAnnotations().get(0).getContent());
+            values.put(COL_SESSION_ANNOTATION_SET, session.getAnnotationsSet().toJSONObject().toString());
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 
