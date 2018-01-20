@@ -14,6 +14,10 @@ import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import com.opencsv.CSVWriter;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -28,6 +32,8 @@ import edu.ohio.minuku.DBHelper.DBHelper;
 import edu.ohio.minuku.R;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
+import edu.ohio.minuku.model.Annotation;
+import edu.ohio.minuku.model.AnnotationSet;
 import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minuku.model.Session;
 
@@ -48,6 +54,15 @@ public class SessionManager {
     private String transportation;
     private String lasttime_transportation;
     private String lasttime_trip_transportation;
+
+    public static final String ANNOTATION_PROPERTIES_ANNOTATION = "Annotation";
+    public static final String ANNOTATION_PROPERTIES_ID = "Id";
+    public static final String ANNOTATION_PROPERTIES_NAME= "Name";
+    public static final String ANNOTATION_PROPERTIES_START_TIME = "Start_time";
+    public static final String ANNOTATION_PROPERTIES_END_TIME = "End_time";
+    public static final String ANNOTATION_PROPERTIES_IS_ENTIRE_SESSION = "Entire_session";
+    public static final String ANNOTATION_PROPERTIES_CONTENT = "Content";
+    public static final String ANNOTATION_PROPERTIES_TAG = "Tag";
 
     private ArrayList<LocationDataRecord> LocationToTrip;
 
@@ -373,7 +388,7 @@ public class SessionManager {
             long sessionStartTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_START_TIME]);
 
             /** 1. create sessions from the properies obtained **/
-            Session session = new Session(id, sessionStartTime, 0);
+            Session session = new Session(id, sessionStartTime);
 
             /**2. get end time (or time of the last record) of the session**/
 
@@ -678,7 +693,7 @@ public class SessionManager {
             long sessionStartTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_START_TIME]);
 
             /** 1. create sessions from the properies obtained **/
-            Session session = new Session(id, sessionStartTime, 0);
+            Session session = new Session(id, sessionStartTime);
 
             /**2. get end time (or time of the last record) of the session**/
 
@@ -860,4 +875,45 @@ public class SessionManager {
         return addZero(mYear)+"/"+addZero(mMonth)+"/"+addZero(mDay)+" "+addZero(mhour)+":"+addZero(mMin)+":"+addZero(mSec);
 
     }
+
+    public static AnnotationSet toAnnorationSet(JSONArray annotationJSONArray) {
+
+        AnnotationSet annotationSet = new AnnotationSet();
+        ArrayList<Annotation> annotations = new ArrayList<Annotation>();
+
+        for (int i=0 ; i<annotationJSONArray.length(); i++){
+
+            JSONObject annotationJSON = null;
+            try {
+                Annotation annotation = new Annotation();
+                annotationJSON = annotationJSONArray.getJSONObject(i);
+
+                String content = annotationJSON.getString(ANNOTATION_PROPERTIES_CONTENT);
+                annotation.setContent(content);
+
+                JSONArray tagsJSONArray = annotationJSON.getJSONArray(ANNOTATION_PROPERTIES_TAG);
+
+                for (int j=0; j<tagsJSONArray.length(); j++){
+
+                    String tag = tagsJSONArray.getString(j);
+                    annotation.addTag(tag);
+                    Log.d(TAG, "[toAnnorationSet] the content is " + content +  " tag " + tag);
+                }
+
+                annotations.add(annotation);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+        annotationSet.setAnnotations(annotations);
+
+        Log.d(TAG, "[toAnnorationSet] the annotationSet has  " + annotationSet.getAnnotations().size() + " annotations ");
+        return annotationSet;
+
+    }
+
 }
