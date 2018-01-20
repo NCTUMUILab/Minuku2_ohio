@@ -820,7 +820,7 @@ public class TransportationModeService extends Service {
         }
         else if (getCurrentState()==STATE_SUSPECTING_START) {
 
-            Log.d(TAG,"[test replay] in Suspect start");
+            Log.d(TAG,"[test replay] in Suspect start, the suspected AR is " +getActivityNameFromType(getSuspectedStartActivityType()) );
             boolean isTimeToConfirm = checkTimeElapseOfLatestActivityFromSuspectPoint(detectionTime, getSuspectTime(), getWindowLengh(getSuspectedStartActivityType(), getCurrentState()) );
 
             StoreToCSV(isTimeToConfirm, detectionTime);
@@ -879,7 +879,7 @@ public class TransportationModeService extends Service {
         //if in the confirmed state, we suspect whether users exit the activity
         else if (getCurrentState()==STATE_CONFIRMED) {
 
-            Log.d(TAG,"[test replay] in confirm");
+            Log.d(TAG,"[test replay] in confirm, the confirm AR is " + getActivityNameFromType(getConfirmedActivityType()));
             /** if the detected activity is vehicle, bike or on foot, then we suspect the activity from now**/
 
             //if the latest activity is not the currently confirmed activity nor tilting nor unkown
@@ -905,7 +905,7 @@ public class TransportationModeService extends Service {
         }
         else if (getCurrentState()==STATE_SUSPECTING_STOP) {
 
-            Log.d(TAG,"[test replay] in suspect stop");
+            Log.d(TAG,"[test replay] in suspect stop, the suspect stop activiti is " + getActivityNameFromType(getSuspectedStopActivityType()));
             //TODO change to the new constants.
             //TODO for "getTransitionWindowLength"
             //TODO If it is changing from unstatic to unstatic.
