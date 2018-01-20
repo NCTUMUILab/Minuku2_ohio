@@ -22,13 +22,10 @@
 
 package edu.ohio.minuku_2.service;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -37,12 +34,8 @@ import edu.ohio.minuku.Utilities.FileHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuStreamManager;
-import edu.ohio.minuku.manager.TripManager;
-import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
-import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
-import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku_2.manager.InstanceManager;
-import edu.ohio.minukucore.exception.StreamNotFoundException;
 
 public class BackgroundService extends Service {
 
@@ -83,13 +76,13 @@ public class BackgroundService extends Service {
 
         if(!InstanceManager.isInitialized()) {
             InstanceManager.getInstance(this);
-            TripManager.getInstance(this);
+            SessionManager.getInstance(this);
         }
 
 
         /**read test file**/
-        FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
-        FileHelper.readTestFile();
+//        FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
+//        FileHelper.readTestFile();
 
 
         /*MinukuDAOManager daoManager = MinukuDAOManager.getInstance();

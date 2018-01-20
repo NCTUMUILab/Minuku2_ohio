@@ -81,7 +81,6 @@ import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
-import edu.ohio.minuku.manager.TripManager;
 import edu.ohio.minuku_2.controller.Ohio.linkListohio;
 import edu.ohio.minuku_2.controller.Ohio.recordinglistohio;
 import edu.ohio.minuku_2.controller.Ohio.sleepingohio;
@@ -450,9 +449,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
             //get all data in cursor
-            //TODO notice !! Convert the function into getTripData
+            //TODO notice !! Convert the function into getSessions
             /*
-            data = TripManager.getTripDatafromSQLite();
+            data = SessionManager.getTripDatafromSQLite();
             ArrayList<String> dataInCursor = new ArrayList<String>();
             try {
                 SQLiteDatabase db = DBManager.getInstance().openDatabase();
@@ -481,7 +480,7 @@ public class MainActivity extends AppCompatActivity {
                 String datafromList = data.get(i);
                 String timedata[] = datafromList.split("-");
                 String tripstartTime = timedata[0];
-                tripstartTime = TripManager.getmillisecondToDateWithTime(Long.valueOf(tripstartTime));
+                tripstartTime = SessionManager.getmillisecondToDateWithTime(Long.valueOf(tripstartTime));
                 if (dataInCursor.contains(tripstartTime))
                     dataPos.add(i);
             }
