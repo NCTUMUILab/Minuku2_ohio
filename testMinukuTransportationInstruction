@@ -2,6 +2,31 @@
 
 要開始測試Test File的話
 
+
+
+REPLAY LOCATION
+
+1.開始service的時候要讀activity資料
+
+
+2. location stream generator 用timer來Feed AR資料
+
+LocationStreamGenerator() constructor裡 uncomment
+ startReplayARRecordTimer();
+
+
+3. 在LocationStreamGenerator裡面的Location收到資料以後不更新
+
+comment掉
+
+//                this.latestLatitude.set(location.getLatitude());
+//                this.latestLongitude.set(location.getLongitude());
+//                latestAccuracy = location.getAccuracy();
+
+
+
+
+REPLAY ACTIVITY
 1.開始service的時候要讀activity資料
 
  Background Service裡的 StartCommand()
@@ -14,7 +39,8 @@
 
 2. AR Service用timer來Feed AR資料
 
-要跑RePlayActivityRecordTimerTask 要在startTimer()裡面 uncomment  RePlayActivityRecordTimerTask();
+ActivityRecognitionService() constructor裡 uncomment
+ startReplayARRecordTimer();
 
 
 

@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -85,6 +87,10 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
 
+    //for the replay purpose
+    private Timer ReplayTimer;
+    private TimerTask ReplayTimerTask;
+
     /**Properties for Record**/
     public static final String RECORD_DATA_PROPERTY_LATITUDE = "Latitude";
     public static final String RECORD_DATA_PROPERTY_LONGITUDE = "Longitude";
@@ -97,15 +103,18 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     public static long lastposupdate = -99;
 
-    private AtomicDouble latitude;
-    private AtomicDouble longitude;
+    private static AtomicDouble latestLatitude;
+    private static AtomicDouble latestLongitude;
+    private static float latestAccuracy;
 
     private Context context;
 
-    private float accuracy;
+
 
     public static boolean startIndoorOutdoor;
     public static ArrayList<LatLng> locForIndoorOutdoor;
+
+    private static ArrayList<LocationDataRecord> mLocationDataRecords;
 
 //    private TripManager tripManager;
 
@@ -124,16 +133,22 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         super(applicationContext);
         this.mStream = new LocationStream(Constants.LOCATION_QUEUE_SIZE);
         this.mDAO = MinukuDAOManager.getInstance().getDaoFor(LocationDataRecord.class);
-        this.latitude = new AtomicDouble();
-        this.longitude = new AtomicDouble();
+        this.latestLatitude = new AtomicDouble();
+        this.latestLongitude = new AtomicDouble();
 
         this.context = applicationContext;
 //        tripManager = new TripManager();
+
+
+        mLocationDataRecords = new ArrayList<LocationDataRecord>();
 
         startIndoorOutdoor = false;
 
 //        createCSV();
         sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
+
+        //for replay location record
+        startReplayLocationRecordTimer();
 
         this.register();
     }
@@ -141,8 +156,8 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
     @Override
     public void onStreamRegistration() {
 
-        this.latitude.set(-999.0);
-        this.longitude.set(-999.0);
+        this.latestLatitude.set(-999.0);
+        this.latestLongitude.set(-999.0);
 
         if (GooglePlayServicesUtil.isGooglePlayServicesAvailable(mApplicationContext)
                 == ConnectionResult.SUCCESS) {
@@ -209,28 +224,24 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
     @Override
     public boolean updateStream() {
         Log.d(TAG, "Update stream called.");
-        LocationDataRecord locationDataRecord = new LocationDataRecord(
-                (float)latitude.get(),
-                (float)longitude.get());
-        Log.e(TAG,"locationDataRecord latitude : "+latitude.get()+" longitude : "+longitude.get());
 
-        LocationDataRecord newlocationDataRecord = null;
+        LocationDataRecord newlocationDataRecord;
         try {
             newlocationDataRecord = new LocationDataRecord(
-                    (float) latitude.get(),
-                    (float) longitude.get(),
-                    accuracy,
+                    (float) latestLatitude.get(),
+                    (float) latestLongitude.get(),
+                    latestAccuracy,
                     //TODO improve it to ArrayList, ex. the session id should be "0, 10".
                     String.valueOf(TripManager.getInstance().getOngoingSessionidList().get(0)));
         }catch (IndexOutOfBoundsException e){
             e.printStackTrace();
             //no session now
             newlocationDataRecord = new LocationDataRecord(
-                    (float) latitude.get(),
-                    (float) longitude.get(),
-                    accuracy);
+                    (float) latestLatitude.get(),
+                    (float) latestLongitude.get(),
+                    latestAccuracy);
         }
-        Log.e(TAG,"newlocationDataRecord latitude : "+latitude.get()+" longitude : "+longitude.get());
+        Log.e(TAG,"[test replay] newlocationDataRecord latestLatitude : "+ latestLatitude.get()+" latestLongitude : "+ latestLongitude.get());
 
         MinukuStreamManager.getInstance().setLocationDataRecord(newlocationDataRecord);
         toCheckFamiliarOrNotLocationDataRecord = newlocationDataRecord;
@@ -278,7 +289,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             Log.d(TAG, "GPS: "
                     + location.getLatitude() + ", "
                     + location.getLongitude() + ", "
-                    + "accuracy: " + location.getAccuracy()
+                    + "latestAccuracy: " + location.getAccuracy()
                     +"Extras : " + location.getExtras());
 
             // If the location is accurate to 30 meters, it's good enough for us.
@@ -287,13 +298,13 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             float[] results = new float[1];
 
             Log.d(TAG, "last time GPS : "
-                    + latitude.get() + ", "
-                    + longitude.get() + ", "
-                    + "accuracy: " + location.getAccuracy());
+                    + latestLatitude.get() + ", "
+                    + latestLongitude.get() + ", "
+                    + "latestAccuracy: " + location.getAccuracy());
 
-            Location.distanceBetween(location.getLatitude(),location.getLongitude(),latitude.get(),longitude.get(),results);
+//            Location.distanceBetween(location.getLatitude(),location.getLongitude(), latestLatitude.get(), latestLongitude.get(),results);
 
-            if(!(latitude.get() == -999.0 && longitude.get() == -999.0))
+            if(!(latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0))
                 dist = results[0];
             else
                 dist = 1000;
@@ -301,31 +312,24 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             Log.d(TAG, "dist : " + dist);
             //if the newest
             //TODO cancel the dist restriction
-//            if(dist < 100 || (latitude.get() == -999.0 && longitude.get() == -999.0)){
+//            if(dist < 100 || (latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0)){
                 // Log.d(TAG, "Location is accurate upto 50 meters");
-                this.latitude.set(location.getLatitude());
-                this.longitude.set(location.getLongitude());
-                accuracy = location.getAccuracy();
+//                this.latestLatitude.set(location.getLatitude());
+//                this.latestLongitude.set(location.getLongitude());
+//                latestAccuracy = location.getAccuracy();
 
                 //the lastposition update value timestamp
                 lastposupdate = new Date().getTime();
 
                 StoreToCSV(lastposupdate,location.getLatitude(),location.getLongitude(),location.getAccuracy());
 
-                LocationDataRecord locationDataRecord = new LocationDataRecord(
-                        (float) latitude.get(),
-                        (float) longitude.get(),
-                        accuracy);
-                //TODO notice
-//                TripManager.getInstance().setTrip(locationDataRecord);
-
-                Log.d(TAG,"onLocationChanged latitude : "+latitude+" longitude : "+ longitude);
+                Log.d(TAG,"onLocationChanged latestLatitude : "+ latestLatitude +" latestLongitude : "+ latestLongitude);
                 Log.d(TAG,"onLocationChanged location : "+this.location);
 
 //            }
 
             if(startIndoorOutdoor){
-                LatLng latLng = new LatLng(latitude.get(), longitude.get());
+                LatLng latLng = new LatLng(latestLatitude.get(), latestLongitude.get());
                 locForIndoorOutdoor.add(latLng);
             }else{
                 locForIndoorOutdoor = new ArrayList<LatLng>();
@@ -448,6 +452,72 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         String currentTimeString = sdf_now.format(time);
 
         return currentTimeString;
+    }
+
+    public static void addLocationDataRecord(LocationDataRecord record) {
+        getLocationDataRecords().add(record);
+        android.util.Log.d("LocationStreamGenerator", "[test replay] adding " +   record.toString()  + " to LocationRecords in LocationStreamGenerator");
+    }
+
+    public static ArrayList<LocationDataRecord> getLocationDataRecords() {
+
+        if (mLocationDataRecords==null){
+            mLocationDataRecords = new ArrayList<LocationDataRecord>();
+        }
+        return mLocationDataRecords;
+
+    }
+
+    public void startReplayLocationRecordTimer() {
+
+        //set a new Timer
+        ReplayTimer = new Timer();
+
+        //start the timertask for replay
+        RePlayActivityRecordTimerTask();
+
+        //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
+        ReplayTimer.schedule(ReplayTimerTask,0,1000);
+
+    }
+
+    public void RePlayActivityRecordTimerTask() {
+
+
+        ReplayTimerTask = new TimerTask() {
+
+            int locationRecordCurIndex = 0;
+            int sec = 0;
+            public void run() {
+
+                sec++;
+
+                //for every 5 seconds and if we still have more AR labels in the list to reply, we will set an AR label to the streamgeneratro
+                if(sec%5 == 0 && mLocationDataRecords.size()>0 && locationRecordCurIndex < mLocationDataRecords.size()-1){
+
+                    LocationDataRecord locationDataRecord =mLocationDataRecords.get(locationRecordCurIndex);
+
+                    latestLatitude.set(locationDataRecord.getLatitude());
+                    latestLongitude.set(locationDataRecord.getLongitude());
+                    latestAccuracy = locationDataRecord.getAccuracy();
+
+                    //the lastposition update value timestamp
+                    lastposupdate = new Date().getTime();
+
+                    android.util.Log.d(TAG, "[test replay] going to feed location " +   locationDataRecord.getLatitude()+  " :"  + locationDataRecord.getLongitude()  +" at index " + locationRecordCurIndex  + " in the location streamgenerator");
+
+
+                    //set Location
+
+                    //move on to the next activity Record
+                    locationRecordCurIndex++;
+
+                }
+
+            }
+        };
+
+
     }
 
     @Override

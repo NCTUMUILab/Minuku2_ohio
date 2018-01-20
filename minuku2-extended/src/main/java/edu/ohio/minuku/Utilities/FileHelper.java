@@ -17,9 +17,11 @@ import java.util.List;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
+import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minuku.service.ActivityRecognitionService;
 import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator;
+import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
 import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
 
 
@@ -151,11 +153,9 @@ public class FileHelper {
         for (int i=0; i<lines.length; i++) {
 
 
-//            Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
-
             String[] col = lines[i].split(",");
 
-            //get columns
+            //get columns from the transportation mode csv file
             long time = Long.parseLong(col[0]);
             String rec_activitiesStr =  col[1];
             String latest_activitiesStr =  col[2];
@@ -170,10 +170,10 @@ public class FileHelper {
                 lng = Float.parseFloat(col[6]);
                 accuracy = Float.parseFloat(col[7]);
             }
+//            Log.d(LOG_TAG, "[readTestFile] " + latest_activitiesStr + " : " + " lat:" + lat + " lng " + lng);
 
-            Log.d(LOG_TAG, "[readTestFile] " + latest_activitiesStr + " : " + " lat:" + lat + " lng " + lng);
 
-
+            //get activity from the activity string
             String [] activities = latest_activitiesStr.split(";;");
             Log.d(LOG_TAG, "[readTestFile] read activity " + activities);
 
@@ -189,6 +189,7 @@ public class FileHelper {
                   Log.d(LOG_TAG, "[readTestFile] activity " + activity + " : " + confidence);
             }
 
+            //create record for the activity
             ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
             record.setProbableActivities(activityList);
             record.setMostProbableActivity(activityList.get(0));
@@ -196,8 +197,20 @@ public class FileHelper {
             record.setTimestamp(time);
             Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
 
-            //also add to the transportationModeDetector
-           ActivityRecognitionService.addActivityRecognitionRecord(record);
+            //add to the AR service so that we can replay later
+            ActivityRecognitionService.addActivityRecognitionRecord(record);
+
+
+            //create location record for the location
+            LocationDataRecord locationDataRecord = new LocationDataRecord(
+                    lat,
+                    lng,
+                    accuracy);
+
+            //add to the location streamGenerator service so that we can replay later (only those with location valid value)
+            if (lat!=0 && lng !=0)
+                LocationStreamGenerator.addLocationDataRecord(locationDataRecord);
+
 
         }
 
