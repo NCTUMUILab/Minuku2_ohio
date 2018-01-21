@@ -162,7 +162,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String surveyLinkList_table = "SurveyLinkList";
 
     public static final String locationNoGoogle_table = "LocationNoGoogle";
-    public static final String location_table = "Location";
+    public static final String LOCATION_TABLE = "Location";
     public static final String activityRecognition_table = "ActivityRecognition";
     public static final String transportationMode_table = "TransportationMode";
     public static final String annotate_table = "Annotate";
@@ -485,7 +485,7 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.d(TAG,"create location table");
 
         String cmd = "CREATE TABLE " +
-                location_table + "(" +
+                LOCATION_TABLE + "(" +
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
 //                TaskDayCount+" TEXT NOT NULL,"+
 //                HOUR+" TEXT NOT NULL,"+
@@ -953,6 +953,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * this is called usally when we want to end a session.
+     * @param session_id
+     * @param endTime
+     * @param sessionLongEnoughFlag
+     */
     public static void updateSessionTable(int session_id, long endTime, boolean sessionLongEnoughFlag){
 
         String where = COL_ID + " = " +  session_id;
@@ -962,8 +968,6 @@ public class DBHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
 
             //TODO get the col name after complete the annotate part.
-
-            /**first check if the endtime is intentionally invalid**/
 
             values.put(COL_SESSION_END_TIME, endTime);
             values.put(COL_SESSION_LONG_ENOUGH_FLAG, sessionLongEnoughFlag);

@@ -1012,7 +1012,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
             try {
                 sessionid = Integer.valueOf(sessionkey);
-                resultBySession = DBHelper.queryRecordsInSession(DBHelper.location_table, sessionid);
+                resultBySession = DBHelper.queryRecordsInSession(DBHelper.LOCATION_TABLE, sessionid);
 
 //                Log.d(TAG,"result after query in doInBagrkound" + resultBySession.toString());
 

@@ -22,6 +22,10 @@
 
 package edu.ohio.minuku.manager;
 
+import android.location.Location;
+
+import com.google.android.gms.maps.model.LatLng;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -258,8 +262,8 @@ public class MinukuStreamManager implements StreamManager {
                 String lastSessionStr = DBHelper.queryLastSession().get(0);
 
                 //get session and obtain its information
-                String sessionIdOfLastSession = sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_ID];
                 String[] sessionColOfLastSession = lastSessionStr.split(Constants.DELIMITER);
+                String sessionIdOfLastSession = sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_ID];
                 String annotationSetStrOfLastSession =  sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET];
                 long endTimeOfLastSession = 0;
                 long startTimeOfLastSession = 0;
@@ -292,17 +296,58 @@ public class MinukuStreamManager implements StreamManager {
                     Log.d(TAG, "test trip: the previous acitivty is movnig, we remove the session id " + id );
 
 
-                    boolean isSessionLongEnoughFlag = true;
 
-                    //if the session is shorter than a threshold (now - start time < threshold), we should give it a flag, so that it wouldnot show up in the annotation list
-                    if (true){
+                    /** get the distance of the session **/
+                    //get location records from the session
+                    boolean isSessionLongEnoughFlag = true;
+                    ArrayList<String> resultBySession = null;
+                    resultBySession = SessionManager.getRecordsInSession(Integer.parseInt(sessionIdOfLastSession), DBHelper.LOCATION_TABLE);
+
+                    Log.d(TAG, "test combine: there are " + resultBySession.size() + " location records"  );
+
+
+                    //if there's no location points, it's not long enough
+                    if (resultBySession.size()==0){
                         isSessionLongEnoughFlag = false;
                     }
+                    //there are location records, we need to examine its distance
+                    else {
+                        //create arraylist for storing the latlng
+                        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+
+                        /** storing location records after we obain from the database*/
+                        for(int index = 0;index < resultBySession.size(); index++){
+                            String[] separated = resultBySession.get(index).split(Constants.DELIMITER);
+                            double lat = Double.valueOf(separated[2]);
+                            double lng = Double.valueOf(separated[3]);
+
+                            LatLng latLng = new LatLng(lat, lng);
+                            latLngs.add(latLng);
+                        }
+
+                        LatLng startLatLng = latLngs.get(0);
+                        LatLng endLatLng = latLngs.get(latLngs.size() - 1);
+
+                        //calculate the distance between the first and the last
+                        float[] results = new float[1];
+                        Location.distanceBetween(startLatLng.latitude,startLatLng.longitude, endLatLng.latitude, endLatLng.longitude,results);
+                        float distance = results[0];
+
+                        Log.d(TAG, " test combine the distance between start and end is " + distance  + " now we comapre with the threshold " + SessionManager.SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION );
+
+
+                        //if the session is shorter than a threshold (now - start time < threshold), we should give it a flag, so that it wouldnot show up in the annotation list
+                        if (distance<SessionManager.SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION){
+                            Log.d(TAG, " test combine the trip is too short  ");
+
+                            isSessionLongEnoughFlag = false;
+                        }
+                    }
+
 
                     long endTime = getCurrentTimeInMilli();
                     DBHelper.updateSessionTable(id, endTime, isSessionLongEnoughFlag);
                     Log.d(TAG, "test trip: the previous acitivty is movnig,after update "  );
-
 
                 }
 
