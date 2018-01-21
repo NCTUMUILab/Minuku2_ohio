@@ -264,7 +264,7 @@ public class MinukuStreamManager implements StreamManager {
                     SessionManager.getInstance().removeOngoingSessionid(String.valueOf(id));
                     Log.d(TAG, "test trip: the previous acitivty is movnig, we remove the session id " + id );
 
-                    //tODO: update the session with end time
+                    //update the session with end time
                     long endTime = getCurrentTimeInMilli();
                     DBHelper.updateSessionTable(id, endTime);
                     Log.d(TAG, "test trip: the previous acitivty is movnig,after update "  );
@@ -336,11 +336,15 @@ public class MinukuStreamManager implements StreamManager {
 
                             if (now - endTimeOfPreSession <= SessionManager.SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION){
 
-                                Log.d(TAG,"[test combine] the current truip is too close from the previous trip, the difference is "
+                                Log.d(TAG,"[test combine] the current truip is too close from the previous trip, continue the last session! the difference is "
                                  + (now - endTimeOfPreSession)/Constants.MILLISECONDS_PER_MINUTE  + " minutes");
 
                                 //we should put thre last session back
                                 SessionManager.getInstance().addOngoingSessionid(sessionIdOfPreSession);
+
+                                //modify the endTime of the previous session to empty (because we extend it!)
+                                DBHelper.updateSessionTable(Integer.parseInt(sessionIdOfPreSession), Constants.INVALID_TIME_VALUE);
+                                Log.d(TAG, "[test combine] extend the last session " +sessionIdOfPreSession  + ", make the end time of it "  + Constants.INVALID_TIME_VALUE );
 
 
                             }

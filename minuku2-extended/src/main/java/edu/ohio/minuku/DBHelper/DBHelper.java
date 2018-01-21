@@ -958,7 +958,16 @@ public class DBHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
 
             //TODO get the col name after complete the annotate part.
-            values.put(COL_SESSION_END_TIME, endTime);
+
+            /**first check if the endtime is intentionally invalid**/
+
+            //if not
+            if (endTime!=Constants.INVALID_TIME_VALUE){
+                values.put(COL_SESSION_END_TIME, endTime);
+            }
+            else{
+                values.put(COL_SESSION_END_TIME, "");
+            }
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 

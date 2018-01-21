@@ -95,7 +95,7 @@ public class Constants {
     public static final String FIREBASE_URL_DIARYSCREENSHOT = FIREBASE_URL + "/diary_screenshot";
 
 
-
+    public static final long INVALID_TIME_VALUE = -1;
 
     // Provider stuff
     public static final String GOOGLE_AUTH_PROVIDER = "google";
