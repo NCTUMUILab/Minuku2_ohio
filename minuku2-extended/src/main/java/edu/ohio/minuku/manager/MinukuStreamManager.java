@@ -244,7 +244,7 @@ public class MinukuStreamManager implements StreamManager {
 
         else {
 
-            Log.d(TAG, "test combine test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString() + " vs original " + this.transportationModeDataRecord.getConfirmedActivityString());
+            Log.d(TAG, "test combine. NEW: " + transportationModeDataRecord.getConfirmedActivityString() + " vs OLD:" + this.transportationModeDataRecord.getConfirmedActivityString());
 
 
             //checkf if the new activity is different from the previous activity
@@ -291,14 +291,14 @@ public class MinukuStreamManager implements StreamManager {
                         String[] sessionCol = lastSessionStr.split(Constants.DELIMITER);
                         String annotationSetStr =  sessionCol[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET];
                         long endTimeOfPreSession = 0;
-                        String sessionId = sessionCol[DBHelper.COL_INDEX_SESSION_ID];
+                        String sessionIdOfPreSession = sessionCol[DBHelper.COL_INDEX_SESSION_ID];
 
                         if (!sessionCol[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null")){
                             endTimeOfPreSession = Long.parseLong(sessionCol[DBHelper.COL_INDEX_SESSION_END_TIME]);
                         }
 
 
-                        Log.d(TAG,"[test combine] session " + sessionId + " with annotation string " + annotationSetStr + " end time " + endTimeOfPreSession );
+                        Log.d(TAG,"[test combine] session " + sessionIdOfPreSession + " with annotation string " + annotationSetStr + " end time " + endTimeOfPreSession );
 
                         JSONObject annotationSetJSON = null;
                         JSONArray annotateionSetJSONArray = null;
@@ -308,7 +308,7 @@ public class MinukuStreamManager implements StreamManager {
                             if (!annotationSetStr.equals("null")){
                                 annotationSetJSON = new JSONObject(annotationSetStr);
                                 annotateionSetJSONArray = annotationSetJSON.getJSONArray(SessionManager.ANNOTATION_PROPERTIES_ANNOTATION);
-                                Log.d(TAG,"[test combine] annotateionSetJSONArray " + annotateionSetJSONArray.toString() );
+//                                Log.d(TAG,"[test combine] annotateionSetJSONArray " + annotateionSetJSONArray.toString() );
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -318,18 +318,19 @@ public class MinukuStreamManager implements StreamManager {
                             annotationSet =  SessionManager.toAnnorationSet(annotateionSetJSONArray);
                         }
 
-                        Log.d(TAG,"[test combine] annotationSet " + annotationSet.toJSONObject().toString() );
+//                        Log.d(TAG,"[test combine] annotationSet " + annotationSet.toJSONObject().toString() );
                         //get annotaitons that has the transportation mode tag
                         ArrayList<Annotation>  annotations = annotationSet.getAnnotationByContent(transportationModeDataRecord.getConfirmedActivityString());
 
                         //if the previous session does not have any annotation of which transportation is of the same tag, we should add a new session
                         if (annotations.size()==0){
+                            Log.d(TAG,"[test combine] the last session is not the same activity" );
                             addSessionFlag = true;
                         }
 
                         // the current activity is the same TM with the previous session mode
                         else {
-
+                            Log.d(TAG,"[test combine] we found the last session with the same activity" );
                             //check its interval to see if it's within 5 minutes
                             long now = getCurrentTimeInMilli();
 
@@ -338,17 +339,17 @@ public class MinukuStreamManager implements StreamManager {
                                 Log.d(TAG,"[test combine] the current truip is too close from the previous trip, the difference is "
                                  + (now - endTimeOfPreSession)/Constants.MILLISECONDS_PER_MINUTE  + " minutes");
 
-                                //the previous session should continue
-                                SessionManager.getInstance().addOngoingSessionid(sessionId);
+                                //we should put thre last session back
+                                SessionManager.getInstance().addOngoingSessionid(sessionIdOfPreSession);
 
 
                             }
-
-
-
-                            //if yes, we should make the previous session ongoing  
-
-
+                            //the session is far from the previous one, it should be a new session
+                            else {
+                                Log.d(TAG,"[test combine] the current truip is far from the previous trip, the difference is "
+                                        + (now - endTimeOfPreSession)/Constants.MILLISECONDS_PER_MINUTE  + " minutes");
+                                addSessionFlag = true;
+                            }
                         }
 
                     }
@@ -365,8 +366,8 @@ public class MinukuStreamManager implements StreamManager {
                     if (addSessionFlag){
 
                         //insert into the session table;
-                        int session_id = (int) count + 1;
-                        Session session = new Session(session_id);
+                        int sessionId = (int) count + 1;
+                        Session session = new Session(sessionId);
                         session.setStartTime(getCurrentTimeInMilli());
                         Annotation annotation = new Annotation();
                         annotation.setContent(transportationModeDataRecord.getConfirmedActivityString());
@@ -377,7 +378,7 @@ public class MinukuStreamManager implements StreamManager {
 
                         DBHelper.insertSessionTable(session);
                         //InstanceManager add ongoing session for the new activity
-                        SessionManager.getInstance().addOngoingSessionid(String.valueOf(session_id));
+                        SessionManager.getInstance().addOngoingSessionid(String.valueOf(sessionId));
                     }
 
 
