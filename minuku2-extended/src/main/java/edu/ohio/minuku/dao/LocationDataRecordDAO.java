@@ -123,7 +123,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
             values.put(DBHelper.Provider_col, entity.getProvider());
             values.put(DBHelper.COL_SESSION_ID, entity.getSessionid());
 
-            db.insert(DBHelper.location_table, null, values);
+            db.insert(DBHelper.LOCATION_TABLE, null, values);
         }
         catch(NullPointerException e){
             e.printStackTrace();
@@ -136,9 +136,9 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
 
     public void query_counting(){
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
-        Cursor latitudeCursor = db.rawQuery("SELECT "+ DBHelper.latitude_col +" FROM "+ DBHelper.location_table, null);
-        Cursor longitudeCursor = db.rawQuery("SELECT "+ DBHelper.longitude_col +" FROM "+ DBHelper.location_table, null);
-        Cursor AccuracyCursor = db.rawQuery("SELECT "+ DBHelper.Accuracy_col +" FROM "+ DBHelper.location_table, null);
+        Cursor latitudeCursor = db.rawQuery("SELECT "+ DBHelper.latitude_col +" FROM "+ DBHelper.LOCATION_TABLE, null);
+        Cursor longitudeCursor = db.rawQuery("SELECT "+ DBHelper.longitude_col +" FROM "+ DBHelper.LOCATION_TABLE, null);
+        Cursor AccuracyCursor = db.rawQuery("SELECT "+ DBHelper.Accuracy_col +" FROM "+ DBHelper.LOCATION_TABLE, null);
 
         int latituderow    = latitudeCursor.getCount();
         int latitudecol    = latitudeCursor.getColumnCount();
@@ -154,7 +154,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
 
     public void query_getAll(){
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
-        Cursor latitudeCursor = db.rawQuery("SELECT * FROM "+ DBHelper.location_table, null);
+        Cursor latitudeCursor = db.rawQuery("SELECT * FROM "+ DBHelper.LOCATION_TABLE, null);
 
         Log.d(TAG, latitudeCursor.toString());
     }

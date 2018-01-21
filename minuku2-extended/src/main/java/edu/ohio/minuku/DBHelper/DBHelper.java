@@ -143,6 +143,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COL_SESSION_MODIFIED_FLAG = "session_modified_flag";
     public static final String COL_SESSION_START_TIME = "session_start_time";
     public static final String COL_SESSION_END_TIME = "session_end_time";
+    public static final String COL_SESSION_LONG_ENOUGH_FLAG = "session_long_enough";
     public static final String COL_SESSION_ID = "session_id";
     public static final String COL_TIMESTAMP_STRING = "timestamp_string";
     public static final String COL_TIMESTAMP_LONG = "timestamp_long";
@@ -152,6 +153,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final int COL_INDEX_SESSION_START_TIME = 2;
     public static final int COL_INDEX_SESSION_END_TIME= 3;
     public static final int COL_INDEX_SESSION_ANNOTATION_SET= 4;
+    public static final int COL_INDEX_SESSION_MODIFIED_FLAG= 5;
+    public static final int COL_INDEX_SESSION_LONG_ENOUGH_FLAG= 6;
     //table name
     public static final String checkFamiliarOrNot_table = "CheckFamiliarOrNot";
     public static final String checkFamiliarOrNotLinkList_table = "CheckFamiliarOrNotLinkList";
@@ -159,7 +162,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String surveyLinkList_table = "SurveyLinkList";
 
     public static final String locationNoGoogle_table = "LocationNoGoogle";
-    public static final String location_table = "Location";
+    public static final String LOCATION_TABLE = "Location";
     public static final String activityRecognition_table = "ActivityRecognition";
     public static final String transportationMode_table = "TransportationMode";
     public static final String annotate_table = "Annotate";
@@ -482,7 +485,7 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.d(TAG,"create location table");
 
         String cmd = "CREATE TABLE " +
-                location_table + "(" +
+                LOCATION_TABLE + "(" +
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
 //                TaskDayCount+" TEXT NOT NULL,"+
 //                HOUR+" TEXT NOT NULL,"+
@@ -581,7 +584,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 COL_SESSION_START_TIME + " INTEGER NOT NULL, " +
                 COL_SESSION_END_TIME + " INTEGER, " +
                 COL_SESSION_ANNOTATION_SET + " TEXT, " +
-                COL_SESSION_MODIFIED_FLAG + " INTEGER " +
+                COL_SESSION_MODIFIED_FLAG + " INTEGER, " +
+                COL_SESSION_LONG_ENOUGH_FLAG+ " INTEGER " +
                 ");" ;
 
         db.execSQL(cmd);
@@ -836,9 +840,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     " order by " + COL_ID + " DESC LIMIT 1";
             ;
 
-
             Log.d(TAG, "[test combine queryLastSession] the query statement is " +sql);
-//
+
             //execute the query
             Cursor cursor = db.rawQuery(sql, null);
             int columnCount = cursor.getColumnCount();
@@ -949,6 +952,37 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * this is called usally when we want to end a session.
+     * @param session_id
+     * @param endTime
+     * @param sessionLongEnoughFlag
+     */
+    public static void updateSessionTable(int session_id, long endTime, boolean sessionLongEnoughFlag){
+
+        String where = COL_ID + " = " +  session_id;
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            //TODO get the col name after complete the annotate part.
+
+            values.put(COL_SESSION_END_TIME, endTime);
+            values.put(COL_SESSION_LONG_ENOUGH_FLAG, sessionLongEnoughFlag);
+
+            db.update(SESSION_TABLE_NAME, values, where, null);
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        edu.ohio.minuku.logger.Log.d(TAG, "test trip: completing updating end time for sesssion" + id );
+
+    }
+
     public static void updateSessionTable(int session_id, long endTime){
 
         String where = COL_ID + " = " +  session_id;
@@ -958,7 +992,16 @@ public class DBHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
 
             //TODO get the col name after complete the annotate part.
-            values.put(COL_SESSION_END_TIME, endTime);
+
+            /**first check if the endtime is intentionally invalid**/
+
+            //if not
+            if (endTime!=Constants.INVALID_TIME_VALUE){
+                values.put(COL_SESSION_END_TIME, endTime);
+            }
+            else{
+                values.put(COL_SESSION_END_TIME, "");
+            }
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 
