@@ -841,7 +841,7 @@ public class DBHelper extends SQLiteOpenHelper {
             ;
 
 
-            Log.d(TAG, "[test combine queryLastSession] the query statement is " +sql);
+//            Log.d(TAG, "[test combine queryLastSession] the query statement is " +sql);
 
             //execute the query
             Cursor cursor = db.rawQuery(sql, null);
