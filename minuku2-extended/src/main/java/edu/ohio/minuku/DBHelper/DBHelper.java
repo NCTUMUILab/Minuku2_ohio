@@ -840,8 +840,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     " order by " + COL_ID + " DESC LIMIT 1";
             ;
 
-
-//            Log.d(TAG, "[test combine queryLastSession] the query statement is " +sql);
+            Log.d(TAG, "[test combine queryLastSession] the query statement is " +sql);
 
             //execute the query
             Cursor cursor = db.rawQuery(sql, null);
