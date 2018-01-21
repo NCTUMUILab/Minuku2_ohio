@@ -28,11 +28,40 @@ import edu.ohio.minuku.BuildConfig;
  * Created by shriti on 7/17/16.
  */
 public class Constants {
+
+    public static final long MILLISECONDS_PER_SECOND = 1000;
+    public static final int SECONDS_PER_MINUTE = 60;
+    public static final int MINUTES_PER_HOUR = 60;
+    public static final int HOURS_PER_DAY = 24;
+    public static final long MILLISECONDS_PER_DAY = HOURS_PER_DAY *MINUTES_PER_HOUR*SECONDS_PER_MINUTE*MILLISECONDS_PER_SECOND;
+    public static final long MILLISECONDS_PER_HOUR = MINUTES_PER_HOUR*SECONDS_PER_MINUTE*MILLISECONDS_PER_SECOND;
+    public static final long MILLISECONDS_PER_MINUTE = SECONDS_PER_MINUTE*MILLISECONDS_PER_SECOND;
+    public final static String DATE_FORMAT_NOW = "yyyy/MM/dd HH:mm:ss";
+    public static final String DATE_FORMAT_NOW_NO_ZONE = "yyyy-MM-dd HH:mm:ss";
+    public static final String DATE_FORMAT_NOW_DAY = "yyyy-MM-dd";
+    public static final String DATE_FORMAT_NOW_HOUR = "yyyy-MM-dd HH";
+    public static final String DATE_FORMAT_NOW_HOUR_MIN = "yyyy-MM-dd HH:mm";
+    public static final String DATE_FORMAT_HOUR_MIN_SECOND = "HH:mm:ss";
+    public static final String DATE_FORMAT_FOR_ID = "yyyyMMddHHmmss";
+    public static final String DATE_FORMAT_HOUR_MIN = "HH:mm";
+    public static final String DATE_FORMAT_HOUR = "HH";
+    public static final String DATE_FORMAT_MIN = "mm";
+    public static final String DATE_FORMAT_DATE_TEXT = "MMM dd";
+    public static final String DATE_FORMAT_DATE_TEXT_HOUR_MIN = "MMM dd HH:mm";
+    public static final String DATE_FORMAT_DATE_TEXT_HOUR_MIN_SEC = "MMM dd  HH:mm:ss";
+    public static final int DATA_FORMAT_TYPE_NOW=0;
+    public static final int DATA_FORMAT_TYPE_DAY=1;
+    public static final int DATA_FORMAT_TYPE_HOUR=2;
+
+
+
     public static final String YES = "YES";
     public static final String NO = "NO";
 
     public static final String DELIMITER = ";;;";
     public static final String ACTIVITY_DELIMITER = ";;";
+    public static final String CONTEXT_SOURCE_DELIMITER = ":";
+    public static final String DELIMITER_IN_COLUMN = "::";
 
     //
     public static final String sharedPrefString = "edu.umich.minuku_2";
@@ -111,8 +140,6 @@ public class Constants {
     public static final String EOD_DIARY_PROMPT_MESSAGE = "Tap here to complete today's diary.";
 
 
-
-
     //default queue size
     public static final int DEFAULT_QUEUE_SIZE = 20;
 
@@ -140,6 +167,8 @@ public class Constants {
     public static final long INTERNAL_LOCATION_UPDATE_FREQUENCY = 1 * 10 * 1000; // 1 * 300 * 1000
     public static final float LOCATION_MINUMUM_DISPLACEMENT_UPDATE_THRESHOLD = 50 ;
 
+
+
     public static final String DIABETES_LOG_NOTIFICATION_SOURCE = "DIABETES_LOG";
 
     /* from NCTU */
@@ -147,7 +176,6 @@ public class Constants {
 
     public static String current_timer_state = "home";
 
-    public final static String DATE_FORMAT_NOW = "yyyy/MM/dd HH:mm:ss";//yyyy-MM-dd HH:mm:ss Z
     public final static String DATE_FORMAT_for_storing = "yyyy-MM-dd HH:mm:ss";
 
     public final static String home_tag = "home";
@@ -159,13 +187,6 @@ public class Constants {
     public static int TaskDayCount = -1;
 
     public static String Interval_Sample = "Interval_Sample";
-
-    public static final int SECONDS_PER_MINUTE = 60;
-    public static final int MINUTES_PER_HOUR = 60;
-    public static final int HOURS_PER_DAY = 24;
-
-    public static long MILLISECONDS_PER_SECOND = 1000;
-    public static final long MILLISECONDS_PER_MINUTE = SECONDS_PER_MINUTE*MILLISECONDS_PER_SECOND;
 
     public static boolean tabpos = false;
 

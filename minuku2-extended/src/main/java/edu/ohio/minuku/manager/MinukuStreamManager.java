@@ -281,16 +281,24 @@ public class MinukuStreamManager implements StreamManager {
                     long count =  DBHelper.querySessionCount();
                     Log.d(TAG,"[test combine] session count is " + count );
 
+
                     //first query session of the previous activity
                     if (count>0){
 
                         String lastSessionStr = DBHelper.queryLastSession().get(0);
 
-                        //get session and obtain its annotation
+                        //get session and obtain its annotation and endtime
                         String[] sessionCol = lastSessionStr.split(Constants.DELIMITER);
-                        String annotationSetStr =  sessionCol[4];
+                        String annotationSetStr =  sessionCol[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET];
+                        long endTimeOfPreSession = 0;
+                        String sessionId = sessionCol[DBHelper.COL_INDEX_SESSION_ID];
 
-                        Log.d(TAG,"[test combine] annotation string " + annotationSetStr );
+                        if (!sessionCol[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null")){
+                            endTimeOfPreSession = Long.parseLong(sessionCol[DBHelper.COL_INDEX_SESSION_END_TIME]);
+                        }
+
+
+                        Log.d(TAG,"[test combine] session " + sessionId + " with annotation string " + annotationSetStr + " end time " + endTimeOfPreSession );
 
                         JSONObject annotationSetJSON = null;
                         JSONArray annotateionSetJSONArray = null;
@@ -323,6 +331,19 @@ public class MinukuStreamManager implements StreamManager {
                         else {
 
                             //check its interval to see if it's within 5 minutes
+                            long now = getCurrentTimeInMilli();
+
+                            if (now - endTimeOfPreSession <= SessionManager.SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION){
+
+                                Log.d(TAG,"[test combine] the current truip is too close from the previous trip, the difference is "
+                                 + (now - endTimeOfPreSession)/Constants.MILLISECONDS_PER_MINUTE  + " minutes");
+
+                                //the previous session should continue
+                                SessionManager.getInstance().addOngoingSessionid(sessionId);
+
+
+                            }
+
 
 
                             //if yes, we should make the previous session ongoing  
