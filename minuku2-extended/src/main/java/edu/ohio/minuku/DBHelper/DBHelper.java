@@ -143,6 +143,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COL_SESSION_MODIFIED_FLAG = "session_modified_flag";
     public static final String COL_SESSION_START_TIME = "session_start_time";
     public static final String COL_SESSION_END_TIME = "session_end_time";
+    public static final String COL_SESSION_LONG_ENOUGH_FLAG = "session_long_enough";
     public static final String COL_SESSION_ID = "session_id";
     public static final String COL_TIMESTAMP_STRING = "timestamp_string";
     public static final String COL_TIMESTAMP_LONG = "timestamp_long";
@@ -152,6 +153,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final int COL_INDEX_SESSION_START_TIME = 2;
     public static final int COL_INDEX_SESSION_END_TIME= 3;
     public static final int COL_INDEX_SESSION_ANNOTATION_SET= 4;
+    public static final int COL_INDEX_SESSION_MODIFIED_FLAG= 5;
+    public static final int COL_INDEX_SESSION_LONG_ENOUGH_FLAG= 6;
     //table name
     public static final String checkFamiliarOrNot_table = "CheckFamiliarOrNot";
     public static final String checkFamiliarOrNotLinkList_table = "CheckFamiliarOrNotLinkList";
@@ -581,7 +584,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 COL_SESSION_START_TIME + " INTEGER NOT NULL, " +
                 COL_SESSION_END_TIME + " INTEGER, " +
                 COL_SESSION_ANNOTATION_SET + " TEXT, " +
-                COL_SESSION_MODIFIED_FLAG + " INTEGER " +
+                COL_SESSION_MODIFIED_FLAG + " INTEGER, " +
+                COL_SESSION_LONG_ENOUGH_FLAG+ " INTEGER " +
                 ");" ;
 
         db.execSQL(cmd);
@@ -946,6 +950,33 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return rows;
 
+
+    }
+
+    public static void updateSessionTable(int session_id, long endTime, boolean sessionLongEnoughFlag){
+
+        String where = COL_ID + " = " +  session_id;
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            //TODO get the col name after complete the annotate part.
+
+            /**first check if the endtime is intentionally invalid**/
+
+            values.put(COL_SESSION_END_TIME, endTime);
+            values.put(COL_SESSION_LONG_ENOUGH_FLAG, sessionLongEnoughFlag);
+
+            db.update(SESSION_TABLE_NAME, values, where, null);
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        edu.ohio.minuku.logger.Log.d(TAG, "test trip: completing updating end time for sesssion" + id );
 
     }
 

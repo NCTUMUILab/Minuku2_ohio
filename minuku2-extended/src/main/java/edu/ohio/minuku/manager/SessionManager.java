@@ -65,6 +65,9 @@ public class SessionManager {
     public static final String ANNOTATION_PROPERTIES_TAG = "Tag";
 
     public static final long SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION = 2 * Constants.MILLISECONDS_PER_MINUTE;
+    public static final long SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION = 2 * Constants.MILLISECONDS_PER_MINUTE;
+    public static final long SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION = 100;  // meters;
+
 
     private ArrayList<LocationDataRecord> LocationToTrip;
 
