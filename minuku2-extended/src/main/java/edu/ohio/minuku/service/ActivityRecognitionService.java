@@ -86,7 +86,7 @@ public class ActivityRecognitionService extends IntentService {
                 e.printStackTrace();
             }
             ActivityRecognitionResult activity = ActivityRecognitionResult.extractResult(intent);
-            
+
 //            mProbableActivities = activity.getProbableActivities();
 //            mMostProbableActivity = activity.getMostProbableActivity();
 //            detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
