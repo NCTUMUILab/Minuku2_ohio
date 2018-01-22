@@ -504,7 +504,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     //the lastposition update value timestamp
                     lastposupdate = new Date().getTime();
 
-                    android.util.Log.d(TAG, "[test replay] going to feed location " +   locationDataRecord.getLatitude()+  " :"  + locationDataRecord.getLongitude()  +" at index " + locationRecordCurIndex  + " in the location streamgenerator");
+//                    android.util.Log.d(TAG, "[test replay] going to feed location " +   locationDataRecord.getLatitude()+  " :"  + locationDataRecord.getLongitude()  +" at index " + locationRecordCurIndex  + " in the location streamgenerator");
 
 
                     //set Location

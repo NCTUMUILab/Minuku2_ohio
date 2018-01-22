@@ -64,7 +64,10 @@ public class SessionManager {
     public static final String ANNOTATION_PROPERTIES_CONTENT = "Content";
     public static final String ANNOTATION_PROPERTIES_TAG = "Tag";
 
-    public static final int SESSION_COMBINATION_TIME_THRESHOLD = 5*60;
+    public static final long SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION = 2 * Constants.MILLISECONDS_PER_MINUTE;
+    public static final long SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION = 2 * Constants.MILLISECONDS_PER_MINUTE;
+    public static final long SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION = 100;  // meters;
+
 
     private ArrayList<LocationDataRecord> LocationToTrip;
 
@@ -437,7 +440,7 @@ public class SessionManager {
             Session session = sessions.get(index);
             int sessionid = session.getId();
 
-            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.location_table, sessionid);
+            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.LOCATION_TABLE, sessionid);
 
             //notification
             notiQuerySessions();
@@ -721,7 +724,7 @@ public class SessionManager {
             Session session = sessions.get(index);
             int sessionid = session.getId();
 
-//            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.location_table, sessionid);
+//            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.LOCATION_TABLE, sessionid);
 
             //notification
             notiQuerySessions();
@@ -763,6 +766,17 @@ public class SessionManager {
         note.flags = Notification.FLAG_AUTO_CANCEL;
 
     }
+
+    public static ArrayList<String> getRecordsInSession(int sessionId, String tableName) {
+
+        ArrayList<String> resultList = new ArrayList<String>();
+
+        resultList = DBHelper.queryRecordsInSession(tableName, sessionId);
+        Log.d(TAG, "[getRecordsInSession] test combine got " + resultList.size() + " of results from queryRecordsInSession");
+
+        return resultList;
+    }
+
 
     public static void StoreToCSV(long timestamp, int id, String sessionid, double latitude, double longitude, float accuracy, int TF){
 
