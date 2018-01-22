@@ -575,8 +575,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Log.d(TAG, "createSessionTable");
 
-        Toast.makeText(mContext, "SessionTable created", Toast.LENGTH_LONG).show();
-
         String cmd = "CREATE TABLE" + " " +
                 SESSION_TABLE_NAME + " ( "+
                 COL_ID + " " + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -802,7 +800,7 @@ public class DBHelper extends SQLiteOpenHelper {
             ;
 
 
-            Log.d(TAG, "[queryLastRecord] the query statement is " +sql);
+  //          Log.d(TAG, "[queryLastRecord] the query statement is " +sql);
 
             //execute the query
             Cursor cursor = db.rawQuery(sql, null);
@@ -840,7 +838,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     " order by " + COL_ID + " DESC LIMIT 1";
             ;
 
-            Log.d(TAG, "[test combine queryLastSession] the query statement is " +sql);
+ //           Log.d(TAG, "[test combine queryLastSession] the query statement is " +sql);
 
             //execute the query
             Cursor cursor = db.rawQuery(sql, null);
@@ -968,18 +966,21 @@ public class DBHelper extends SQLiteOpenHelper {
 
             //TODO get the col name after complete the annotate part.
 
+            int flag = (sessionLongEnoughFlag) ? 1 : 0;
             values.put(COL_SESSION_END_TIME, endTime);
-            values.put(COL_SESSION_LONG_ENOUGH_FLAG, sessionLongEnoughFlag);
+            values.put(COL_SESSION_LONG_ENOUGH_FLAG, flag);
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 
             DBManager.getInstance().closeDatabase();
 
+            edu.ohio.minuku.logger.Log.d(TAG, "test combine: completing updating end time for sesssion" + id );
+
         }catch(Exception e){
             e.printStackTrace();
         }
 
-        edu.ohio.minuku.logger.Log.d(TAG, "test trip: completing updating end time for sesssion" + id );
+
 
     }
 
