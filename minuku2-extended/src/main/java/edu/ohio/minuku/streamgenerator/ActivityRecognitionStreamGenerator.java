@@ -206,7 +206,7 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
 //        ActivityRecognitionDataRecord activityRecognitionDataRecord
 //               = new ActivityRecognitionDataRecord(sMostProbableActivity,sProbableActivities);
 
-        Log.d(TAG, "[test replay] inside update stream " +  activityRecognitionDataRecord.getDetectedtime() + " : " +  activityRecognitionDataRecord.getProbableActivities().toString());
+//        Log.d(TAG, "[test replay] inside update stream " +  activityRecognitionDataRecord.getDetectedtime() + " : " +  activityRecognitionDataRecord.getProbableActivities().toString());
 
         MinukuStreamManager.getInstance().setActivityRecognitionDataRecord(activityRecognitionDataRecord);
 

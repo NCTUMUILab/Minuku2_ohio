@@ -255,7 +255,7 @@ public class ActivityRecognitionService extends IntentService {
 
     public static void addActivityRecognitionRecord(ActivityRecognitionDataRecord record) {
         getActivityRecognitionRecords().add(record);
-        Log.d("ARService", "[test replay] adding " +   record.toString()  + " to ActivityRecognitionRecords in ActivityRecognitionService");
+//        Log.d("ARService", "[test replay] adding " +   record.toString()  + " to ActivityRecognitionRecords in ActivityRecognitionService");
     }
 
     public static ArrayList<ActivityRecognitionDataRecord> getActivityRecognitionRecords() {
