@@ -89,9 +89,9 @@ public class recordinglistohio extends Activity {
 //            locationDataRecords = new ListSessionAsyncTask().execute(mReviewMode).get();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                new ListSessionAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get();
+                new ListSessionAsyncTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get();
             else
-                new ListSessionAsyncTask().execute().get();
+                new ListSessionAsyncTask(this).execute().get();
 
 
         }catch(InterruptedException e) {
@@ -102,13 +102,6 @@ public class recordinglistohio extends Activity {
             e.printStackTrace();
         }
 
-        OhioListAdapter ohioListAdapter = new OhioListAdapter(
-                this,
-                R.id.recording_list,
-                mSessions
-        );
-
-        listview.setAdapter(ohioListAdapter);
 
         //clickListener on the session
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -149,6 +142,12 @@ public class recordinglistohio extends Activity {
 
 
         private ProgressDialog dialog = null;
+        private Context mContext = null;
+
+        public ListSessionAsyncTask(Context context){
+            mContext = context;
+        }
+
 
         @Override
         protected void onPreExecute() {
@@ -166,6 +165,18 @@ public class recordinglistohio extends Activity {
 
             mSessions = sessions;
 
+            Log.d(TAG, "[test show trip] on post return sessions " + mSessions);
+
+
+            OhioListAdapter ohioListAdapter = new OhioListAdapter(
+                    mContext,
+                    R.id.recording_list,
+                    mSessions
+            );
+
+            listview.setAdapter(ohioListAdapter);
+
+
         }
 
         /*
@@ -176,22 +187,20 @@ public class recordinglistohio extends Activity {
 
             Log.d(TAG, "[test show trip] listRecordAsyncTask going to list recording");
 
-            ArrayList<Session> Sessions = new ArrayList<Session>();
+            ArrayList<Session> sessions = new ArrayList<Session>();
 
             try {
 
-                Log.d(TAG,"[test show trip]  before reading essions:  " + Sessions.toString());
-                Sessions = SessionManager.getRecentSessions();
-                Log.d(TAG,"[test show trip]  after reading sessions:  " + Sessions.toString());
-
-                Log.d(TAG,"[test show trip]  after getting trip size :  " + Sessions.toString());
+                sessions = SessionManager.getRecentSessions();
 
             }catch (Exception e) {
-                Sessions = new ArrayList<Session>();
+                sessions = new ArrayList<Session>();
                 Log.d(TAG,"Exception");
                 e.printStackTrace();
             }
-            return Sessions;
+
+            Log.d(TAG, "[test show trip] do in background return sessions " + sessions);
+            return sessions;
 
         }
     }

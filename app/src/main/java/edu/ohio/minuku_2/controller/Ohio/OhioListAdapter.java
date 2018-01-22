@@ -60,7 +60,7 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
 
     @Override
     public View getView(int sessionPos, View convertView, ViewGroup parent) {
-        Log.d(TAG,"test show trip result get view start"  );
+//        Log.d(TAG,"test show trip result get view start"  );
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.recordinglistview_ohio, parent, false);
 
@@ -68,7 +68,7 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
 
         Session session = getItem(sessionPos);
 
-        Log.d(TAG,"test show trip: " + session.getId() );
+//        Log.d(TAG,"test show trip: " + session.getId() );
 
         /**
          * setting the style of the trip title
@@ -88,7 +88,7 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
             timeLabel = ScheduleAndSampleManager.getTimeString(session.getStartTime());
             sessionTitle = session.getId()+ ":" + "Trip "+(sessionPos+1)+": "+ timeLabel;
 
-            Log.d(TAG,  " test show trip session not null time, setting title " + sessionTitle);
+//            Log.d(TAG,  " test show trip session not null time, setting title " + sessionTitle);
 
             //if there's annotaiton in the session
             if (session.getAnnotationsSet()!=null && session.getAnnotationsSet().getAnnotations()!=null) {
@@ -112,13 +112,13 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
                 Log.d(TAG,  " test show trip session not null time, adding annotation to title, and become " + sessionTitle);
 
                 //if they've edited, put the text in green
-                textView.setTextColor(Color.GREEN);
+                textView.setTextColor(Color.RED);
 
             }
 
             //if there's no annotation, put the text in red
             else {
-                textView.setTextColor(Color.RED);
+                textView.setTextColor(Color.DKGRAY);
             }
 
             //set the title of the view
