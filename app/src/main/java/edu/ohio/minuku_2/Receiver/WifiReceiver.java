@@ -724,8 +724,8 @@ public class WifiReceiver extends BroadcastReceiver {
             JSONArray timestamps = new JSONArray();
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.location_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
-            Log.d(TAG,"SELECT * FROM "+DBHelper.location_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
+            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.LOCATION_TABLE +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
+            Log.d(TAG,"SELECT * FROM "+DBHelper.LOCATION_TABLE +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
 
             int rows = transCursor.getCount();
 
