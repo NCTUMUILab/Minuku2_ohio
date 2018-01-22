@@ -183,7 +183,6 @@ public class recordinglistohio extends Activity {
                 Log.d(TAG,"[test show trip]  before reading essions:  " + Sessions.toString());
                 Sessions = SessionManager.getRecentSessions();
                 Log.d(TAG,"[test show trip]  after reading sessions:  " + Sessions.toString());
-//                Trip_size = SessionManager.getInstance().getTrip_size();
 
                 Log.d(TAG,"[test show trip]  after getting trip size :  " + Sessions.toString());
 

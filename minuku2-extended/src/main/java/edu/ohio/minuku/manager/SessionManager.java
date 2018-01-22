@@ -713,10 +713,13 @@ public class SessionManager {
             /**2. get end time (or time of the last record) of the session**/
             long sessionEndTime = 0;
             //the session could be still ongoing..so we need to check where's endTime
-            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null")){
+            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("")){
+                Log.d(TAG, "[test show trip] before parse end time " );
+                Log.d(TAG, "[test show trip] before parse end time " + separated[DBHelper.COL_INDEX_SESSION_END_TIME] );
                 sessionEndTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
+                Log.d(TAG, "[test show trip] after parse end time " + sessionEndTime);
             }
-            //there 's no end time of the session, it's ongoing now, we should "now" as the end time.
+            //there 's no end time of the session, it's ongoing now, we should "now" as the end time. TODO: should be the time of the last record (or the start time of the previous session
             if (sessionEndTime==0) {
                 sessionEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
                 Log.d(TAG, "[test show trip] now end time yet, so the end time is now  " + ScheduleAndSampleManager.getTimeString(sessionEndTime));
@@ -724,25 +727,29 @@ public class SessionManager {
 
             //set end time
             session.setEndTime(sessionEndTime);
+            Log.d(TAG, "[test show trip] the session end time at the end is   " +  session.getEndTime());
 
 
             /** 3. get annotaitons associated with the session **/
             JSONObject annotationSetJSON = null;
             JSONArray annotateionSetJSONArray = null;
             try {
+                Log.d(TAG, "[test show trip]  before annotationSetJSON  " );
                 annotationSetJSON = new JSONObject(separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET]);
+                Log.d(TAG, "[test show trip]  before annotationSetJSON to Array  " + annotationSetJSON );
                 annotateionSetJSONArray = annotationSetJSON.getJSONArray(ANNOTATION_PROPERTIES_ANNOTATION);
+                Log.d(TAG, "[test show trip]  after annotationSetJSON to Array  " + annotateionSetJSONArray );
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
             //set annotationset if there is one
             if (annotateionSetJSONArray!=null){
+                Log.d(TAG, "[test show trip]  before annotationSetJSON to Set  " );
                 AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
+                Log.d(TAG, "[test show trip]  after annotationSetJSON to Set  " + annotationSet.toJSONObject().toString()  );
                 session.setAnnotationSet(annotationSet);
             }
-
-            Log.d(TAG, " ttest show trip  session " + id + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation:  " + session.getAnnotationsSet().toJSONObject().toString());
 
 
             sessions.add(session);
