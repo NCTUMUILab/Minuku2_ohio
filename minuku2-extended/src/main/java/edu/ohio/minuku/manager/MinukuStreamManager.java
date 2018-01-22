@@ -322,10 +322,12 @@ public class MinukuStreamManager implements StreamManager {
                         // the current activity is the same TM with the previous session mode
                         else {
 
-                            //check its interval to see if it's within 5 minutes
+                            /** check its interval to see if it's within 5 minutes **/
 
 
-                            //if yes, we should make the previous session ongoing  
+
+
+                            //if yes, we should make the previous session ongoing
 
 
                         }

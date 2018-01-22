@@ -64,6 +64,8 @@ public class SessionManager {
     public static final String ANNOTATION_PROPERTIES_CONTENT = "Content";
     public static final String ANNOTATION_PROPERTIES_TAG = "Tag";
 
+    public static final int SESSION_COMBINATION_TIME_THRESHOLD = 5*60;
+
     private ArrayList<LocationDataRecord> LocationToTrip;
 
     private static Context mContext;
