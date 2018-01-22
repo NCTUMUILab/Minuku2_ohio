@@ -68,6 +68,8 @@ public class SessionManager {
     public static final long SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION = 2 * Constants.MILLISECONDS_PER_MINUTE;
     public static final long SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION = 100;  // meters;
 
+    public static int SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR = 24;
+
 
     private ArrayList<LocationDataRecord> LocationToTrip;
 
@@ -657,33 +659,39 @@ public class SessionManager {
         return times;
     }
 
-    public static ArrayList<String> getSessions() {
-        Log.d(TAG, "getSessions");
-
-        long funcStartTime = new Date().getTime();
-
-        ArrayList<String> times = new ArrayList<String>();
-
-        ArrayList<String> results = new ArrayList<String>();
-
-        //setting today date.
-        Calendar cal = Calendar.getInstance();
-        Date date = new Date();
-        cal.setTime(date);
-        int Year = cal.get(Calendar.YEAR);
-        int Month = cal.get(Calendar.MONTH)+1;
-        int Day = cal.get(Calendar.DAY_OF_MONTH);
-
-        long startTime = -999;
-        long endTime = -999;
-
-        startTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day));
-        endTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day+1));
-
-        SQLiteDatabase db = DBManager.getInstance().openDatabase();
-        ArrayList<String> res =  DBHelper.querySessionsBetweenTimes(startTime, endTime);
+    public static ArrayList<Session> getRecentSessions() {
+        Log.d(TAG, "[test show trip] getRecentSessions");
 
         ArrayList<Session> sessions = new ArrayList<Session>();
+
+        long queryEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+        //start time = a specific hours ago
+        long queryStartTime = ScheduleAndSampleManager.getCurrentTimeInMillis() - Constants.MILLISECONDS_PER_HOUR * SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR;
+
+        Log.d(TAG, " [gtest show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
+
+
+        //query//get sessions between the starTime and endTime
+        ArrayList<String> res =  DBHelper.querySessionsBetweenTimes(queryStartTime, queryEndTime);
+
+
+//        //setting today date. //TODO: 3AM should be the boundary
+//        Calendar cal = Calendar.getInstance();
+//        Date date = new Date();
+//        cal.setTime(date);
+//        int Year = cal.get(Calendar.YEAR);
+//        int Month = cal.get(Calendar.MONTH)+1;
+//        int Day = cal.get(Calendar.DAY_OF_MONTH);
+//
+//        long startTime = -999;
+//        long endTime = -999;
+//
+//        //get start time and end time
+//        startTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day));
+//        endTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day+1));
+
+
+        Log.d(TAG, "[test show trip] getRecentSessions get res: " +  res);
 
         //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
         for (int i=0; i<res.size() ; i++) {
@@ -699,46 +707,48 @@ public class SessionManager {
 
             /** 1. create sessions from the properies obtained **/
             Session session = new Session(id, sessionStartTime);
+//            Log.d(TAG, "[test show trip] geernate swession  " +  session.getId());
+
 
             /**2. get end time (or time of the last record) of the session**/
-
             long sessionEndTime = 0;
             //the session could be still ongoing..so we need to check where's endTime
-            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null")){
+            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("")){
                 sessionEndTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
             }
-            //there 's no end time of the session, we take the time of the last record
-            else {
+            //there 's no end time of the session, it's ongoing now, we should "now" as the end time. TODO: should be the time of the last record (or the start time of the previous session
+            if (sessionEndTime==0) {
                 sessionEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
-                Log.d(TAG, "[test get session time] testgetdata the last record time is  " + ScheduleAndSampleManager.getTimeString(sessionEndTime));
+//                Log.d(TAG, "[test show trip] now end time yet, so the end time is now  " + ScheduleAndSampleManager.getTimeString(sessionEndTime));
             }
 
             //set end time
             session.setEndTime(sessionEndTime);
+//            Log.d(TAG, "[test show trip] the session end time at the end is   " +  session.getEndTime());
+
+
+            /** 3. get annotaitons associated with the session **/
+            JSONObject annotationSetJSON = null;
+            JSONArray annotateionSetJSONArray = null;
+            try {
+                annotationSetJSON = new JSONObject(separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET]);
+                annotateionSetJSONArray = annotationSetJSON.getJSONArray(ANNOTATION_PROPERTIES_ANNOTATION);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            //set annotationset if there is one
+            if (annotateionSetJSONArray!=null){
+                AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
+                session.setAnnotationSet(annotationSet);
+            }
+
 
             sessions.add(session);
-        }
-
-        for(int index = 0 ; index < sessions.size() ; index ++){
-
-            Session session = sessions.get(index);
-            int sessionid = session.getId();
-
-//            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.LOCATION_TABLE, sessionid);
-
-            //notification
-            notiQuerySessions();
-
-            results.add(String.valueOf(sessionid));
 
         }
 
-        trip_size = times.size();
-        editor.putInt("trip_size",trip_size);
-
-        Log.d(TAG,"getSessions total time : "+(new Date().getTime() - funcStartTime)/1000);
-
-        return results;
+        return sessions;
     }
 
     private static void notiQuerySessions(){

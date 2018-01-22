@@ -104,6 +104,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         error2 = false;
         error3 = false;
         error4 = false;
+        Log.d(TAG, "[test show trip] onCreate AnntoateSessionaACtivity");
 
     }
 
