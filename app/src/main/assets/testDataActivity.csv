@@ -4,6 +4,8 @@
 1516419734848,,on_foot:96;;walking:96;;unknown:3;;running:1;;on_bicycle:0,static,STATE_SUSPECTING_START,24.786983,120.99738,22.174
 1516419742521,on_foot:43;;walking:43;;unknown:22;;in_vehicle:10;;still:10;;on_bicycle:5;;running:5,on_foot:43;;walking:43;;unknown:22;;in_vehicle:10;;still:10;;on_bicycle:5;;running:5,,,,,
 1516419744874,,on_foot:96;;walking:96;;unknown:2;;on_bicycle:1;;running:1,on_foot,STATE_CONFIRMED,24.786993,120.9974,21.961
+1516419744874,,on_foot:96;;walking:96;;unknown:2;;on_bicycle:1;;running:1,on_foot,STATE_CONFIRMED,24.786993,120.9974,21.961
+1516419744874,,on_foot:96;;walking:96;;unknown:2;;on_bicycle:1;;running:1,on_foot,STATE_CONFIRMED,24.786993,120.9974,21.961
 1516419724855,,still:100,static,STATE_SUSPECTING_START,24.786972,120.997375,23.332
 1516419724855,,still:100,static,STATE_SUSPECTING_START,24.786972,120.997375,23.332
 1516419724855,,still:100,static,STATE_SUSPECTING_START,24.786972,120.997375,23.332
