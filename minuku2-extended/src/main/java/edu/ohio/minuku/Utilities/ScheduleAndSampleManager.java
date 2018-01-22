@@ -8,6 +8,11 @@ import edu.ohio.minuku.config.Constants;
 
 public class ScheduleAndSampleManager {
 
+	public static int bedStartTime = 0;
+	public static int bedEndTime = 5;
+	public static int bedMiddleTime = 2;
+	public static long time_base = 0;
+
 	/**convert long to timestring**/
 	public static String getTimeString(long time){
 
@@ -37,4 +42,15 @@ public class ScheduleAndSampleManager {
 		long t = cal.getTimeInMillis();
 		return t;
 	}
+
+	public static int getHourOfTimeOfDay (String TimeOfDay){
+
+		return Integer.parseInt(TimeOfDay.split(":")[0] ) ;
+	}
+
+	public static int getMinuteOfTimeOfDay (String TimeOfDay){
+
+		return Integer.parseInt(TimeOfDay.split(":")[1] );
+	}
+
 }
