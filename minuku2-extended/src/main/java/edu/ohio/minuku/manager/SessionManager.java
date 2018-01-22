@@ -12,7 +12,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.opencsv.CSVWriter;
+
 
 import org.json.JSONArray;
 import org.json.JSONException;
