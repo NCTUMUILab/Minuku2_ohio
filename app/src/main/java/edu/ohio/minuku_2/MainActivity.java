@@ -449,7 +449,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             //get all data in cursor
-            //TODO notice !! Convert the function into getSessions
+            //TODO notice !! Convert the function into getRecentSessions
             /*
             data = SessionManager.getTripDatafromSQLite();
             ArrayList<String> dataInCursor = new ArrayList<String>();
