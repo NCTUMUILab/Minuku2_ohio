@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -43,7 +42,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
     //checkFamiliarOrNot link list
     public static final String link_col = "link";
-    public static final String clickornot_col = "clickornot";
+    public static final String generateTime_col = "generateTime";
+    public static final String openTime_col = "openTime";
+    public static final String missedTime_col = "missedTime";
+    public static final String openFlag_col = "openFlag";
 
     //Location and Trip
     public static final String sessionid_col = "sessionid";
@@ -159,7 +161,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String checkFamiliarOrNot_table = "CheckFamiliarOrNot";
     public static final String checkFamiliarOrNotLinkList_table = "CheckFamiliarOrNotLinkList";
     public static final String intervalSampleLinkList_table = "intervalSampleLinkList";
-    public static final String surveyLinkList_table = "SurveyLinkList";
+    public static final String surveyLink_table = "SurveyLinkList";
 
     public static final String locationNoGoogle_table = "LocationNoGoogle";
     public static final String LOCATION_TABLE = "Location";
@@ -204,7 +206,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         Log.d("db","oncreate");
 
-        createSurveyLinkListTable(db);
+        createSurveyLinkTable(db);
 
         //deprecated but still keep for debugging
 //        createIntervalSampleLinkListTable(db);
@@ -236,15 +238,17 @@ public class DBHelper extends SQLiteOpenHelper {
         DBManager.initializeInstance(this);
     }
 
-    public void createSurveyLinkListTable(SQLiteDatabase db){
+    public void createSurveyLinkTable(SQLiteDatabase db){
         Log.d(TAG,"create SurveyLinkList table");
 
         String cmd = "CREATE TABLE " +
-                surveyLinkList_table + "(" +
+                surveyLink_table + "(" +
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
-                TIME + " TEXT NOT NULL," +
                 link_col+" TEXT," +
-                clickornot_col+" INTEGER" +
+                generateTime_col+" INTEGER NOT NULL," +
+                openTime_col+" INTEGER," +
+                missedTime_col+" INTEGER," +
+                openFlag_col +" INTEGER" +
                 ");";
 
         db.execSQL(cmd);
@@ -259,7 +263,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
                 TIME + " TEXT NOT NULL," +
                 link_col+" TEXT," +
-                clickornot_col+" INTEGER" +
+                openFlag_col +" INTEGER" +
                 ");";
 
         db.execSQL(cmd);
@@ -276,7 +280,7 @@ public class DBHelper extends SQLiteOpenHelper {
 //                HOUR+" TEXT NOT NULL,"+
                 TIME + " TEXT NOT NULL," +
                 link_col+" TEXT," +
-                clickornot_col+" INTEGER" +
+                openFlag_col +" INTEGER" +
                 ");";
 
         db.execSQL(cmd);
@@ -611,10 +615,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
             rowId = db.insert(SESSION_TABLE_NAME, null, values);
 
-<<<<<<< HEAD
 //            Toast.makeText(mContext,"test trip inserting sessionid : "+ session.getId(),Toast.LENGTH_SHORT).show();
-=======
->>>>>>> 16b28b4bbd7fc81f6c38deaae774778d7f390e1e
 
         }catch(Exception e){
             e.printStackTrace();
@@ -1043,4 +1044,129 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+    public static ArrayList<String> querySurveyLinkBetweenTimes(long startTime, long endTime) {
+
+        ArrayList<String> rows = new ArrayList<String>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + surveyLink_table +
+                    " where " + generateTime_col + " > " + startTime + " and " +
+                    generateTime_col + " < " + endTime +
+                    " order by " + generateTime_col;
+
+            Log.d(TAG, "[querySurveyLinkBetweenTimes] the query statement is " +sql);
+
+            Cursor cursor = db.rawQuery(sql, null);
+            int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+                }
+                rows.add(curRow);
+            }
+            cursor.close();
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+        return rows;
+
+    }
+
+    public static String queryLatestSurveyLink() {
+
+        String result = "";
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + surveyLink_table +
+                    " order by " + generateTime_col;
+
+            Log.d(TAG, "[querySurveyLinkBetweenTimes] the query statement is " +sql);
+
+            Cursor cursor = db.rawQuery(sql, null);
+            /*int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+                }
+                rows.add(curRow);
+            }*/
+
+            cursor.moveToLast();
+            int columnCount = cursor.getColumnCount();
+
+            for (int i=0; i<columnCount; i++){
+                result += cursor.getString(i)+ Constants.DELIMITER;
+            }
+
+            cursor.close();
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+        return result;
+
+    }
+
+    public static void updateSurveyMissTime(String _id, String colName){
+
+        //TODO: the user should be able to specify the database because each study may have a different database.
+        Log.d(TAG, "put survey " + _id + " to table " + surveyLink_table);
+
+        String where = id + " = " +  _id;
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            //missedTime_col
+            values.put(colName, ScheduleAndSampleManager.getCurrentTimeInMillis());
+            values.put(openFlag_col, 0);
+
+            db.update(surveyLink_table, values, where, null);
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        DBManager.getInstance().closeDatabase();
+
+    }
+
+    public static void updateSurveyOpenTime(String _id){
+
+        //TODO: the user should be able to specify the database because each study may have a different database.
+        Log.d(TAG, "put survey " + _id + " to table " + surveyLink_table);
+
+        String where = id + " = " +  _id;
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            //missedTime_col
+            values.put(openTime_col, ScheduleAndSampleManager.getCurrentTimeInMillis());
+            values.put(openFlag_col, 1);
+
+            db.update(surveyLink_table, values, where, null);
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        DBManager.getInstance().closeDatabase();
+
+    }
 }

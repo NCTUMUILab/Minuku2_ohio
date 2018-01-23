@@ -62,17 +62,15 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.DataHandler;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.model.DataRecord.ConnectivityDataRecord;
-import edu.ohio.minuku.model.DataRecord.TelephonyDataRecord;
-import edu.ohio.minuku.service.ActivityRecognitionService;
 import edu.ohio.minuku.streamgenerator.ConnectivityStreamGenerator;
 import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
-import edu.ohio.minuku.streamgenerator.TelephonyStreamGenerator;
 import edu.ohio.minuku_2.R;
-import edu.ohio.minuku_2.controller.Ohio.linkListohio;
+import edu.ohio.minuku_2.controller.Ohio.SurveyActivity;
 import edu.ohio.minuku_2.model.CheckFamiliarOrNotDataRecord;
 import edu.ohio.minuku_2.streamgenerator.CheckFamiliarOrNotStreamGenerator;
 import edu.ohio.minukucore.exception.StreamNotFoundException;
@@ -400,7 +398,7 @@ public class CheckFamiliarOrNotService extends Service {
     }
 
     private long getSpecialTimeInMillis(String givenDateFormat){
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE_Slash);
         long timeInMilliseconds = 0;
         try {
             Date mDate = sdf.parse(givenDateFormat);
@@ -433,8 +431,8 @@ public class CheckFamiliarOrNotService extends Service {
         Random random = new Random(now);
         int sample_period;
         //TODO set the start and end time.
-        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", "22:00"); //"22:00"
-        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", "08:00"); //"08:00"
+        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", "18:00"); //"22:00"
+        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", "17:00"); //"08:00"
 
         Log.d(TAG, "sleepingstartTime : " + yMdformat+" "+sleepingstartTime+":00");
 
@@ -596,8 +594,9 @@ public class CheckFamiliarOrNotService extends Service {
                 Log.d(TAG, "todayDate : " + todayDate);
 
                 //setting third of the day
-                String startSleepingTime = sharedPrefs.getString("SleepingStartTime","22:00");
-                String endSleepingTime = sharedPrefs.getString("SleepingEndTime","08:00");
+                //TODO set it back to startSleepingTime: 22:00 and endSleepingTime: 08:00
+                String startSleepingTime = sharedPrefs.getString("SleepingStartTime","18:00");
+                String endSleepingTime = sharedPrefs.getString("SleepingEndTime","17:00");
 
                 Log.d(TAG,"startSleepingTime : "+ startSleepingTime);
                 Log.d(TAG,"endSleepingTime : "+ endSleepingTime);
@@ -625,12 +624,6 @@ public class CheckFamiliarOrNotService extends Service {
 
                 //after a day
                 if (!lastTimeSend_today.equals(today)) {
-
-                    //setting the timing for the interval sampling.
-//                    if (Long.valueOf(todayDate) % 2 == 1) //run it at odd date
-//                        settingIntervalSampleing();
-//                    else  //TODO delete the interval sampling. checking the first time day ot not.
-//                        ;
 
                     walkoutdoor_sampled = 0;
                     sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
@@ -674,71 +667,10 @@ public class CheckFamiliarOrNotService extends Service {
                     dailyResponseNum = 0;
 
 
-
                     sharedPrefs.edit().putInt("TaskDayCount", TaskDayCount).apply();
                     sharedPrefs.edit().putInt("weekNum", weekNum).apply();
                     sharedPrefs.edit().putInt("dailySurveyNum", dailySurveyNum).apply();
                     sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
-
-                    //deprecated
-                    /*String tofilelastTimeSend_today = lastTimeSend_today;
-
-                    tofilelastTimeSend_today = tofilelastTimeSend_today.replace("/", "-");
-
-                    if (isExternalStorageWritable()) {
-
-                        String sFileName = "LogAt_" + tofilelastTimeSend_today + ".csv";
-
-                        try {
-                            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-                            if (!root.exists()) {
-                                root.mkdirs();
-                            }
-
-                            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH + sFileName, true));
-
-                            List<String[]> data = new ArrayList<String[]>();
-
-                            data.add(new String[]{"", "HomeMove", "HomeNotMove", "NearHomeMove", "NearHomeNotMove", "FarawayMove", "FarawayNotMove"});
-
-                            csv_writer.writeAll(data);
-
-                            csv_writer.close();
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            e.getMessage();
-                        }
-                    }
-                    daily_count_HomeMove = 0;
-                    daily_count_HomeNotMove = 0;
-                    daily_count_NearHomeMove = 0;
-                    daily_count_NearHomeNotMove = 0;
-                    daily_count_FarawayMove = 0;
-                    daily_count_FarawayNotMove = 0;
-
-                    sharedPrefs.edit().putInt("daily_count_HomeMove", daily_count_HomeMove).apply();
-                    sharedPrefs.edit().putInt("daily_count_HomeNotMove", daily_count_HomeNotMove).apply();
-                    sharedPrefs.edit().putInt("daily_count_NearHomeMove", daily_count_NearHomeMove).apply();
-                    sharedPrefs.edit().putInt("daily_count_NearHomeNotMove", daily_count_NearHomeNotMove).apply();
-                    sharedPrefs.edit().putInt("daily_count_FarawayMove", daily_count_FarawayMove).apply();
-                    sharedPrefs.edit().putInt("daily_count_FarawayNotMove", daily_count_FarawayNotMove).apply();
-
-                    interval_sampled = 0;
-                    sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
-
-                    countforResponsed = 0;
-
-                }
-
-                Log.d(TAG, "last_hour : " + String.valueOf(last_hour));
-
-                if ((last_hour != current_hour) && isExternalStorageWritable()) {
-                    last_hour = current_hour;
-                    sharedPrefs.edit().putInt("last_hour", last_hour).apply();
-
-                    storeToCSV(lastTimeSend_today);
-                }*/
 
                 }
 
@@ -883,9 +815,9 @@ public class CheckFamiliarOrNotService extends Service {
                                     walkoutdoor_sampled++;
                                     sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
 
-                                    //in order to show it in listlinkOhio.java
-                                    addToDB();
+                                    /* To Show it in SurveyActivity.java */
                                     notiQualtrics();
+                                    addSurveyLinkToDB();
 
                                     //update the last survey time
                                     last_Survey_Time = new Date().getTime();
@@ -947,68 +879,6 @@ public class CheckFamiliarOrNotService extends Service {
 
                 StoreToCSV(new Date().getTime(), interval_sampled, walkoutdoor_sampled, walk_first_sampled, walk_second_sampled, walk_third_sampled);
 
-
-                    //deprecated
-/*
-                    try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                            new HttpReadJsonFromUrlAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mcog).get();
-                        else
-                            new HttpReadJsonFromUrlAsyncTask().execute(mcog).get();
-
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
-
-
-                    JSONObject testobject = new JSONObject();
-                    testobject.put("userID", Constants.USER_ID);
-                    testobject.put("time", curr);
-                    testobject.put("inhomeornot :", inhome_test);
-
-                    try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                            new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                                    testUrl,
-                                    testobject.toString(),
-                                    "Trip",
-                                    curr).get();
-                        else
-                            new HttpAsyncPostJsonTask().execute(
-                                    testUrl,
-                                    testobject.toString(),
-                                    "Trip",
-                                    curr).get();
-
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
-
-                    Log.d(TAG, "Json runnable");
-
-
-                    if (testingserverThenFail) { //TODO check data on sqllite and server is working or not.
-
-
-                    } else {
-                        //TODO only trigger when they are walking.
-                        if (Long.valueOf(todayDate) % 2 == 0 && (!transportation.equals("in_vehicle")) && (daily_count_HomeMove + daily_count_HomeNotMove
-                                + daily_count_NearHomeMove + daily_count_NearHomeNotMove
-                                + daily_count_FarawayMove + daily_count_FarawayNotMove) < 6) //run it at 偶數天
-                            triggerQualtrics();
-
-                    }
-*/
-
-
-                //deprecated
-//                if (!transportation.equals("NA")) //transportation != null
-//                    showTransportationAndIsHome();
-
             }catch(Exception e){
                 e.printStackTrace();
 
@@ -1031,192 +901,6 @@ public class CheckFamiliarOrNotService extends Service {
         }
         return "";
     }
-
-    //deprecated
-/*
-
-    private class HttpReadJsonFromUrlAsyncTask extends AsyncTask<String, Void, String> {
-
-//        @Override
-//        protected void onPreExecute(){
-//            Log.d(TAG, "onPreExecute");
-//            StoreToCSV(new Date().getTime(), "preparetosend");
-//        }
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            String result = null;
-            String url = params[0];
-            try {
-
-                JSONObject json = readJsonFromUrl(url);
-                Log.d(TAG, json.toString());
-
-                Log.d(TAG, "inhome : " + json.get("inhome") + " distance : " + json.get("distance"));
-
-                home = Integer.valueOf(json.get("inhome").toString());
-                if (json.get("distance").toString().contains("E"))
-                    dist = 9999;
-                else
-                    dist = Float.valueOf(json.get("distance").toString());
-
-                Log.d(TAG, "inhome : " + home + " distance : " + dist);
-
-            } catch (JSONException e) {
-                Log.d(TAG, "JSONException");
-                e.printStackTrace();
-            }catch (IOException e) {
-                Log.d(TAG, "IOException");
-                testingserverThenFail = true;
-                e.printStackTrace();
-            }
-
-            return result;
-        }
-
-        // onPostExecute displays the results of the AsyncTask.
-        @Override
-        protected void onPostExecute(String result) {
-            Log.d(TAG, "onPostExecute");
-            if(testingserverThenFail){
-                //TODO add telephony connectivity AR
-                StoreToCSV(new Date().getTime(), "Fail");
-                inhome_test = "Fail";
-            }else {
-                String inhomeornot = null;
-                if(home==1)
-                    inhomeornot = "home";
-                else if(home!=1 && dist<=200)
-                    inhomeornot = "near home";
-                else if(home!=1 && dist>200)
-                    inhomeornot = "faraway";
-
-                inhome_test = inhomeornot;
-
-                //TODO add telephony connectivity AR
-                StoreToCSV(new Date().getTime(), inhomeornot);
-            }
-            Log.d(TAG, "get http post result " + result);
-        }
-
-    }
-
-    //use HTTPAsyncTask to poHttpAsyncPostJsonTaskst data
-    private class HttpAsyncPostJsonTask extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            String result=null;
-            String url = params[0];
-            String data = params[1];
-            String dataType = params[2];
-            String lastSyncTime = params[3];
-
-            postJSON(url, data, dataType, lastSyncTime);
-
-            return result;
-        }
-        // onPostExecute displays the results of the AsyncTask.
-        @Override
-        protected void onPostExecute(String result) {
-            Log.d(TAG, "onPostExecute");
-            if(testingserverThenFail) {
-                //TODO add telephony connectivity AR
-                StoreToCSV(new Date().getTime(), inhome_test, "mLab_ConnectToServerOrNot");
-            }else {
-                StoreToCSV(new Date().getTime(), inhome_test, "mLab_ConnectToServerOrNot");
-            }
-            Log.d(TAG, "get http post result " + result);
-        }
-
-    }
-
-    public HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
-
-        public boolean verify(String hostname, SSLSession session) {
-            return true;
-        }
-    };
-
-    public String postJSON (String address, String json, String dataType, String lastSyncTime) {
-
-        Log.d(TAG, "[postJSON] testbackend post data to " + address);
-
-        InputStream inputStream = null;
-        String result = "";
-
-        try {
-            //TODO if fail, send the new URL for conn.
-            URL url = new URL(address);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            Log.d(TAG, "[postJSON] testbackend connecting to " + address);
-
-
-            if (url.getProtocol().toLowerCase().equals("https")) {
-                Log.d(TAG, "[postJSON] [using https]");
-                trustAllHosts();
-                HttpsURLConnection https = (HttpsURLConnection) url.openConnection();
-                https.setHostnameVerifier(DO_NOT_VERIFY);
-                conn = https;
-            } else {
-                conn = (HttpURLConnection) url.openConnection();
-            }
-
-            SSLContext sc;
-            sc = SSLContext.getInstance("TLS");
-            sc.init(null, null, new java.security.SecureRandom());
-
-//            System.setProperty("http.keepAlive", "false");
-
-            conn.setReadTimeout(HTTP_TIMEOUT);
-            conn.setConnectTimeout(SOCKET_TIMEOUT);
-            conn.setRequestMethod("POST");
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type","application/json");
-            //conn.setRequestProperty("connection", "close");
-
-            conn.connect();
-
-            OutputStreamWriter wr= new OutputStreamWriter(conn.getOutputStream());
-            wr.write(json);
-            wr.close();
-
-            Log.d(TAG, "Post:\t" + dataType + "\t" + "for lastSyncTime:" + lastSyncTime);
-
-            int responseCode = conn.getResponseCode();
-
-            if(responseCode >= 400)
-                inputStream = conn.getErrorStream();
-            else
-                inputStream = conn.getInputStream();
-
-            result = convertInputStreamToString(inputStream);
-
-            Log.d(TAG, "[postJSON] the result response code is " + responseCode);
-            Log.d(TAG, "[postJSON] the result is " + result);
-
-            if (conn!=null)
-                conn.disconnect();
-
-        }
-        catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return  result;
-    }
-*/
 
     /** process result **/
     private String convertInputStreamToString(InputStream inputStream) throws IOException{
@@ -1276,232 +960,12 @@ public class CheckFamiliarOrNotService extends Service {
         }
     }
 
-//deprecated
-/*
-    private void triggerQualtrics(){
-
-        Log.e(TAG,"triggerQualtrics");
-
-        int homeorfaraway=0;
-        if(home==1)
-            homeorfaraway = 1;
-        else if(home!=1 && dist<=200)
-            homeorfaraway = 2;
-        else if(home!=1 && dist>200)
-            homeorfaraway = 3;
-
-        if(transportation != null) { //TODO restrict the count of each condition
-            determineByContextQualtrics(homeorfaraway, transportation);
-        }
-    }
-
-    public void determineByContextQualtrics(int homeorfaraway, String transportation){
-
-        Log.e(TAG,"determineByContextQualtrics");
-
-        String notiText = "Context is not existed."; //by default
-        nowtime = getCurrentTimeInMillis();
-        int hour = getCurrentHour();
-        //Log.d(TAG,"nowtime:"+nowtime);
-
-        if(homeorfaraway==1&&!transportation.equals("static")&&(daily_count_HomeMove + daily_count_HomeNotMove) < 2) {
-            notiText = "Trigger for home, moving";
-
-            diffTime_HomeMove = (float)((nowtime - lastTimeSend_HomeMove)/(60*60*1000.0));
-
-            if(diffTime_HomeMove > period_HomeMove) {
-
-                Log.d(TAG, notiText);
-
-                if(hour>=10&&hour<=18) {
-                    Random rand = new Random();
-                    int num = rand.nextInt(100) + 1;
-                    if (num >= 1 && num <= probability_normal_HomeMove) {
-                        daily_count_HomeMove++;
-                        sharedPrefs.edit().putInt("daily_count_HomeMove", daily_count_HomeMove).apply();
-                        addToDB(link);
-                        notiQualtrics(notiText);
-                    }
-                }else {
-                    Random rand = new Random();
-                    int num = rand.nextInt(100) + 1;
-                    if (num >= 1 && num <= probability_high_HomeMove) {
-                        daily_count_HomeMove++;
-                        sharedPrefs.edit().putInt("daily_count_HomeMove", daily_count_HomeMove).apply();
-                        addToDB(link);
-                        notiQualtrics(notiText);
-                    }
-
-                }
-                lastTimeSend_HomeMove = getCurrentTimeInMillis();
-
-            }
-        } //daily_count_NearHomeMove + daily_count_NearHomeNotMove + daily_count_FarawayMove + daily_count_FarawayNotMove
-        else if(homeorfaraway==1&&transportation.equals("static")&&(daily_count_HomeMove + daily_count_HomeNotMove) < 2) {
-            notiText = "Trigger for home, not moving";
-
-            diffTime_HomeNotMove = (float)((nowtime - lastTimeSend_HomeNotMove)/(60*60*1000.0));
-
-            if(diffTime_HomeNotMove > period_HomeNotMove) {
-
-                Log.d(TAG, notiText);
-                if(hour>=10&&hour<=18) {
-                    Random rand = new Random();
-                    int num = rand.nextInt(100) + 1;
-                    if (num >= 1 && num <= probability_normal_HomeNotMove) {
-                        daily_count_HomeNotMove++;
-                        sharedPrefs.edit().putInt("daily_count_HomeNotMove", daily_count_HomeNotMove).apply();
-                        addToDB(link);
-                        notiQualtrics(notiText);
-                    }
-                }else{
-                    Random rand = new Random();
-                    int num = rand.nextInt(100) + 1;
-                    if (num >= 1 && num <= probability_normal_HomeNotMove) {
-                        daily_count_HomeNotMove++;
-                        sharedPrefs.edit().putInt("daily_count_HomeNotMove", daily_count_HomeNotMove).apply();
-                        addToDB(link);
-                        notiQualtrics(notiText);
-                    }
-
-                }
-                lastTimeSend_HomeNotMove = getCurrentTimeInMillis();
-
-            }
-        }
-        else if(homeorfaraway==2&&!transportation.equals("static")&&(daily_count_NearHomeMove + daily_count_NearHomeNotMove) < 2) {
-            notiText = "Trigger for near home, moving";
-
-            diffTime_NearHomeMove = (float)((nowtime - lastTimeSend_NearHomeMove)/(60*60*1000.0));
-
-            if(diffTime_NearHomeMove > period_NearHomeMove) {
-
-                Log.d(TAG, notiText);
-
-                if(hour>=10&&hour<=18) {
-                    Random rand = new Random();
-                    int num = rand.nextInt(100) + 1;
-                    if (num >= 1 && num <= probability_high_NearHomeMove) {
-                        daily_count_NearHomeMove++;
-                        sharedPrefs.edit().putInt("daily_count_NearHomeMove", daily_count_NearHomeMove).apply();
-                        addToDB(link);
-                        notiQualtrics(notiText);
-                    }
-                }else{
-                    Random rand = new Random();
-                    int num = rand.nextInt(100) + 1;
-                    if (num >= 1 && num <= probability_normal_NearHomeMove) {
-                        daily_count_NearHomeMove++;
-                        sharedPrefs.edit().putInt("daily_count_NearHomeMove", daily_count_NearHomeMove).apply();
-                        addToDB(link);
-                        notiQualtrics(notiText);
-                    }
-                }
-                lastTimeSend_NearHomeMove = getCurrentTimeInMillis();
-
-            }
-        }
-        else if(homeorfaraway==2&&transportation.equals("static")&&(daily_count_NearHomeMove + daily_count_NearHomeNotMove) < 2) {
-            notiText = "Trigger for near home, not moving";
-
-            diffTime_NearHomeNotMove = (float)((nowtime - lastTimeSend_NearHomeNotMove)/(60*60*1000.0));
-
-            if(diffTime_NearHomeNotMove > period_NearHomeNotMove) {
-
-                Log.d(TAG, notiText);
-
-                if(hour>=10&&hour<=18) {
-                    Random rand = new Random();
-                    int num = rand.nextInt(100) + 1;
-                    if (num >= 1 && num <= probability_high_NearHomeNotMove) {
-                        daily_count_NearHomeNotMove++;
-                        sharedPrefs.edit().putInt("daily_count_NearHomeNotMove", daily_count_NearHomeNotMove).apply();
-                        addToDB(link);
-                        notiQualtrics(notiText);
-                    }
-                }else{
-                    Random rand = new Random();
-                    int num = rand.nextInt(100) + 1;
-                    if (num >= 1 && num <= probability_normal_NearHomeNotMove) {
-                        daily_count_NearHomeNotMove++;
-                        sharedPrefs.edit().putInt("daily_count_NearHomeNotMove", daily_count_NearHomeNotMove).apply();
-                        addToDB(link);
-                        notiQualtrics(notiText);
-                    }
-                }
-                lastTimeSend_NearHomeNotMove = getCurrentTimeInMillis();
-
-            }
-        }
-        else if(homeorfaraway==3&&!transportation.equals("static")&&(daily_count_FarawayMove + daily_count_FarawayNotMove) < 2) {
-            notiText = "Trigger for faraway, moving";
-
-            diffTime_FarawayMove = (float)((nowtime - lastTimeSend_FarawayMove)/(60*60*1000.0));
-
-            if(diffTime_FarawayMove > period_FarawayMove) {
-
-                Log.d(TAG, notiText);
-
-                Random rand = new Random();
-                int num = rand.nextInt(100) + 1;
-                if (num >= 1 && num <= probability_normal_FarawayMove) {
-                    daily_count_FarawayMove++;
-                    sharedPrefs.edit().putInt("daily_count_FarawayMove", daily_count_FarawayMove).apply();
-                    addToDB(link);
-                    notiQualtrics(notiText);
-                }
-                lastTimeSend_FarawayMove = getCurrentTimeInMillis();
-
-            }
-        }
-        else if(homeorfaraway==3&&transportation.equals("static")&&(daily_count_FarawayMove + daily_count_FarawayNotMove) < 2) {
-            notiText = "Trigger for faraway, not moving";
-
-            diffTime_FarawayNotMove = (float)((nowtime - lastTimeSend_FarawayNotMove)/(60*60*1000.0));
-
-            if(diffTime_FarawayNotMove > period_FarawayNotMove) {
-
-                Log.d(TAG, notiText);
-
-                Random rand = new Random();
-                int num = rand.nextInt(100) + 1;
-                if (num >= 1 && num <= probability_normal_FarawayNotMove) {
-                    daily_count_FarawayNotMove++;
-                    sharedPrefs.edit().putInt("daily_count_FarawayNotMove", daily_count_FarawayNotMove).apply();
-                    addToDB(link);
-                    notiQualtrics(notiText);
-                }
-                lastTimeSend_FarawayNotMove = getCurrentTimeInMillis();
-
-            }
-
-        }
-
-        //Log.d(TAG,notiText);
-
-
-
-        // need to roll
-        // notiQualtrics(notiText);
-
-    }
-*/
-
     //add to DB in order to display it in the linklistOhio.java
-    public void addToDB(){
-        Log.d(TAG, "addToDB");
+    public void addSurveyLinkToDB(){
+        Log.d(TAG, "addSurveyLinkToDB");
 
         dailyResponseNum++;
         sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
-
-        /*ConnectivityDataRecord connectivityDataRecord = ConnectivityStreamGenerator.toOtherconnectDataRecord;
-
-        String mob = "";
-        if(connectivityDataRecord.getIsMobileConnected()){
-            mob = "1";
-        }else {
-            mob = "0";
-        }*/
 
         String mob = "";
         try {
@@ -1524,12 +988,12 @@ public class CheckFamiliarOrNotService extends Service {
         try {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
-            values.put(DBHelper.TIME, new Date().getTime());
+            values.put(DBHelper.generateTime_col, new Date().getTime());
             values.put(DBHelper.link_col, linktoShow);
-            values.put(DBHelper.clickornot_col, 0); //they can't enter the link by the notification.
+//            values.put(DBHelper.openFlag_col, 0); //they can't enter the link by the notification.
 
 //            db.insert(DBHelper.checkFamiliarOrNotLinkList_table, null, values);
-            db.insert(DBHelper.surveyLinkList_table, null, values);
+            db.insert(DBHelper.surveyLink_table, null, values);
 
         }
         catch(NullPointerException e){
@@ -1545,10 +1009,22 @@ public class CheckFamiliarOrNotService extends Service {
 
         Log.d(TAG,"notiQualtrics");
 
+        //TODO if the last link haven't been opened, confirm it's missed, setting the missed time.
+        String latestLinkData = DataHandler.getLatestSurveyData();
+        //if there have data in DB
+        if(!latestLinkData.equals("")) {
+
+            String clickOrNot = latestLinkData.split(Constants.DELIMITER)[5];
+
+            String id = latestLinkData.split(Constants.DELIMITER)[0];
+
+            DataHandler.updateSurveyMissTime(id, DBHelper.missedTime_col);
+
+        }
         String notiText = "You have a new walking survey(Walking)"+"\r\n"
                 +"Walking : "+walkoutdoor_sampled+" ; Random : "+interval_sampled;
 
-        Intent resultIntent = new Intent(CheckFamiliarOrNotService.this, linkListohio.class);
+        Intent resultIntent = new Intent(CheckFamiliarOrNotService.this, SurveyActivity.class);
         PendingIntent pending = PendingIntent.getActivity(CheckFamiliarOrNotService.this, 0, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         mNotificationManager =
@@ -1565,8 +1041,6 @@ public class CheckFamiliarOrNotService extends Service {
                 .setSmallIcon(R.drawable.self_reflection)
                 .setAutoCancel(true)
                 .build();
-        //note.flags |= Notification.FLAG_NO_CLEAR;
-        //startForeground( 42, note );
 
         // using the same tag and Id causes the new notification to replace an existing one
         mNotificationManager.notify(qua_notifyID, note); //String.valueOf(System.currentTimeMillis()),
@@ -1638,7 +1112,7 @@ public class CheckFamiliarOrNotService extends Service {
         // pending implicit intent to view url
         /*Intent resultIntent = new Intent(Intent.ACTION_VIEW);
         resultIntent.setData(Uri.parse(link));*/
-//        Intent resultIntent = new Intent(CheckFamiliarOrNotService.this, linkListohio.class);
+//        Intent resultIntent = new Intent(CheckFamiliarOrNotService.this, SurveyActivity.class);
 //        PendingIntent pending = PendingIntent.getActivity(CheckFamiliarOrNotService.this, 0, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         NotificationManager mNotificationManager =
@@ -2141,12 +1615,25 @@ public class CheckFamiliarOrNotService extends Service {
 
     private void intervalQualtrics(){
 
+        //TODO if the last link haven't been opened, setting it into missed.
+        String latestLinkData = DataHandler.getLatestSurveyData();
+        //if there have data in DB
+        if(!latestLinkData.equals("")) {
+
+            String clickOrNot = latestLinkData.split(Constants.DELIMITER)[5];
+
+            String id = latestLinkData.split(Constants.DELIMITER)[0];
+
+            DataHandler.updateSurveyMissTime(id, DBHelper.missedTime_col);
+
+        }
+
         String notiText = "You have a new random survey(Random)"+"\r\n"
                 +"Walking : "+walkoutdoor_sampled+" ;Random : "+interval_sampled;
 
         Log.d(TAG,"intervalQualtrics");
 
-        Intent resultIntent = new Intent(CheckFamiliarOrNotService.this, linkListohio.class);
+        Intent resultIntent = new Intent(CheckFamiliarOrNotService.this, SurveyActivity.class);
         PendingIntent pending = PendingIntent.getActivity(CheckFamiliarOrNotService.this, 0, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         mNotificationManager =
@@ -2195,7 +1682,7 @@ public class CheckFamiliarOrNotService extends Service {
     }
 
     public void addToDB_interval(String link){
-        Log.d(TAG, "addToDB");
+        Log.d(TAG, "addSurveyLinkToDB");
 
         dailyResponseNum++;
         sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
@@ -2222,7 +1709,7 @@ public class CheckFamiliarOrNotService extends Service {
 
             values.put(DBHelper.TIME, new Date().getTime());
             values.put(DBHelper.link_col, linktoShow);
-            values.put(DBHelper.clickornot_col, 0); //they can't enter the link by the notification.
+            values.put(DBHelper.openFlag_col, 0); //they can't enter the link by the notification.
 
             db.insert(DBHelper.intervalSampleLinkList_table, null, values);
         }
@@ -2247,9 +1734,6 @@ public class CheckFamiliarOrNotService extends Service {
                     interval_sampled++;
                     sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
 
-//                    addToDB_interval(link);
-
-                    addToDB();
 
                     //cancel the walking survey if it exists
                     try{
@@ -2260,6 +1744,7 @@ public class CheckFamiliarOrNotService extends Service {
                     }
 
                     intervalQualtrics();
+                    addSurveyLinkToDB();
 
                     //update the last survey time
                     last_Survey_Time = new Date().getTime();

@@ -847,7 +847,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     private void addToDB(String starttime, String endtime, String ans1, String ans2, String ans3
             , String ans4, JSONArray latdata, JSONArray lngdata){
-        Log.d(TAG, "addToDB");
+        Log.d(TAG, "addSurveyLinkToDB");
 
         ContentValues values = new ContentValues();
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
@@ -956,9 +956,9 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     }
     
-    /*private void addToDB(JSONObject data){
+    /*private void addSurveyLinkToDB(JSONObject data){
 
-        Log.d(TAG, "addToDB");
+        Log.d(TAG, "addSurveyLinkToDB");
 
         ContentValues values = new ContentValues();
 
