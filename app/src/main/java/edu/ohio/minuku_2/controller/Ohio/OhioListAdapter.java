@@ -18,10 +18,13 @@ import java.util.Calendar;
 import java.util.Date;
 
 import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.SessionManager;
+import edu.ohio.minuku.model.Annotation;
+import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku_2.R;
 
 import static edu.ohio.minuku.config.Constants.sharedPrefString;
@@ -30,11 +33,11 @@ import static edu.ohio.minuku.config.Constants.sharedPrefString;
  * Created by Lawrence on 2017/8/29.
  */
 
-public class OhioListAdapter extends ArrayAdapter<String> {
+public class OhioListAdapter extends ArrayAdapter<Session> {
 
     private static final String TAG = "OhioListAdapter";
     private Context mContext;
-    private ArrayList<String> data;
+    private ArrayList<Session> data;
 //    private ArrayList<ArrayList<String>> data;
 
     public static ArrayList<Integer> dataPos;
@@ -43,232 +46,92 @@ public class OhioListAdapter extends ArrayAdapter<String> {
     private long endTime = -9999;
     private String startTimeString = "";
     private String endTimeString = "";
-    private Boolean status;
+
     private SharedPreferences sharedPrefs;
 
-    public OhioListAdapter(Context context, int resource, ArrayList<String> locationDataRecords) {
+    public OhioListAdapter(Context context, int resource, ArrayList<Session> sessions) {
 
-        super(context, resource, locationDataRecords);
+        super(context, resource, sessions);
         this.mContext = context;
-        this.data = locationDataRecords;
+        this.data = sessions;
         dataPos = new ArrayList<Integer>();
-        status = false;
 //        decideThePosFontType();
     }
 
     @Override
-    public View getView(int trip_pos, View convertView, ViewGroup parent) {
-        Log.d(TAG,"test trip result get view start"  );
+    public View getView(int sessionPos, View convertView, ViewGroup parent) {
+//        Log.d(TAG,"test show trip result get view start"  );
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.recordinglistview_ohio, parent, false);
 
         TextView textView = (TextView) view.findViewById(R.id.ListText);
 
-//        Log.d(TAG, "dataPos outside : " + dataPos.size());
+        Session session = getItem(sessionPos);
 
-        //the result is the first item in the result arraylist
-        String sessionStr = DBHelper.querySession(Integer.valueOf(data.get(trip_pos))).get(0);
-
-        String[] sessionCol = sessionStr.split(Constants.DELIMITER);
-
-        Log.d(TAG,"test trip result: " + sessionCol.toString() );
+//        Log.d(TAG,"test show trip: " + session.getId() );
 
         /**
          * setting the style of the trip title
          */
 
         //if there's not annotation, put the text in red
-        if(sessionCol[4]== null || sessionCol[4].equals("") || sessionCol[4].equals("null") ){
 
-            //get time label
-            long time =  Long.parseLong(sessionCol[2]);
-            String timeLabel = formatconverting(time);
+        if (session!=null){
 
-            String sessionId =  sessionCol[0];
-            String sessionTitle = sessionId+ ":" + "Trip "+(trip_pos+1)+": "+ timeLabel;
-            Log.d(TAG, " time : " + sessionTitle);
+            String content;
+            String sessionTitle = null;
+            String timeLabel=null;
+            String labelText = "No Label Yet";
+            String noteText = "No Content Yet";
+
+            //show the text of the session with annotation
+            timeLabel = ScheduleAndSampleManager.getTimeString(session.getStartTime());
+            sessionTitle = session.getId()+ ":" + "Trip "+(sessionPos+1)+": "+ timeLabel;
+
+//            Log.d(TAG,  " test show trip session not null time, setting title " + sessionTitle);
+
+            //if there's annotaiton in the session
+            if (session.getAnnotationsSet()!=null && session.getAnnotationsSet().getAnnotations()!=null) {
+                //get annotation
+                for (int j=0; j<session.getAnnotationsSet().getAnnotations().size(); j++) {
+
+                    Annotation annotation = session.getAnnotationsSet().getAnnotations().get(j);
+                    content = annotation.getContent();
+
+                    //the annotation is the label
+                    if (annotation.getTags().contains("Label")){
+                        labelText = content;
+                    }
+                    //the annotation is the note
+                    if (annotation.getTags().contains("Note")){
+                        noteText = content;
+                    }
+                }
+
+                sessionTitle += " : " + labelText;
+                Log.d(TAG,  " test show trip session not null time, adding annotation to title, and become " + sessionTitle);
+
+                //if they've edited, put the text in green
+                textView.setTextColor(Color.RED);
+
+            }
+
+            //if there's no annotation, put the text in red
+            else {
+                textView.setTextColor(Color.DKGRAY);
+            }
+
+            //set the title of the view
             textView.setText(sessionTitle);
-            textView.setTextColor(Color.RED);
-            status = true;
+
+
+            Log.d(TAG, "[test show trip] the session id is " + session.getId() + " start Time is " + session.getStartTime() + " session title " + textView.getText().toString() );
+            // My layout has only one TextView
+
 
         }
-        //if there's annotation, put the text in grey
-        else {
-
-            Log.d(TAG,"test trip result get view start annotation not null"  );
-            //get time label
-            long time =  Long.parseLong(sessionCol[2]);
-            String timeLabel = formatconverting(time);
-            String sessionId =  sessionCol[0];
-            String sessionTitle = sessionId+ ":" + "Trip "+(trip_pos+1)+": "+ timeLabel;
-
-            Log.d(TAG, " time : " + sessionTitle);;
-//                textView.setText(Html.fromHtml(time));
-            textView.setText(sessionTitle);
-            textView.setTextColor(Color.GRAY);
-            dataPos.add(trip_pos);
-        }
-
 
         return view;
     }
 
-    public void decideThePosFontType(){
-        Log.d(TAG, " decideThePosFontType");
-
-        Calendar cal = Calendar.getInstance();
-        Date date = new Date();
-        cal.setTime(date);
-        int Year = cal.get(Calendar.YEAR);
-        int Month = cal.get(Calendar.MONTH)+1;
-        int Day = cal.get(Calendar.DAY_OF_MONTH);
-
-        startTimeString = makingDataFormat(Year, Month, Day);
-        endTimeString = makingDataFormat(Year, Month, Day+1);
-        startTime = getSpecialTimeInMillis(startTimeString);
-        endTime = getSpecialTimeInMillis(endTimeString);
-
-        //get all data in cursor
-        ArrayList<String> dataInCursor = new ArrayList<String>();
-        try {
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-
-            Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.Trip_startTime + " , " + DBHelper.lat + " , " + DBHelper.lng +" FROM " + DBHelper.annotate_table + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
-                    +DBHelper.Trip_startTime+" BETWEEN"+" '"+startTimeString+"' "+"AND"+" '"+endTimeString+"' ORDER BY "+DBHelper.Trip_startTime+" ASC", null);
-
-            Log.d(TAG, "SELECT " + DBHelper.Trip_startTime + " , " + DBHelper.lat + " , " + DBHelper.lng + " FROM " + DBHelper.annotate_table + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
-                    +DBHelper.Trip_startTime+" BETWEEN"+" '"+startTimeString+"' "+"AND"+" '"+endTimeString+"' ORDER BY "+DBHelper.Trip_startTime+" ASC");
-
-            //get all data from cursor
-            if(tripCursor.moveToFirst()){
-                do{
-                    String eachdataInCursor = tripCursor.getString(0);
-
-                    dataInCursor.add(eachdataInCursor);
-                    Log.d(TAG, "eachdataInCursor : "+eachdataInCursor);
-                }while(tripCursor.moveToNext());
-            }else
-                Log.d(TAG, " tripCursor.moveToFirst() else");
-            tripCursor.close();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        int prepos = 0;
-        for(int i = data.size()-1 ; i >= 0;i--){
-            String datafromList = data.get(i);
-            String timedata[] = datafromList.split("-");
-            String startTime = timedata[0];
-
-            startTime = SessionManager.getmillisecondToDateWithTime(Long.valueOf(startTime));
-            Log.d(TAG,"startTime : "+ startTime);
-            Log.d(TAG,"dataInCursor : "+ dataInCursor);
-            if(dataInCursor.contains(startTime))
-                dataPos.add(prepos);
-            prepos++;
-        }
-
-
-        if(dataPos.size()!=data.size()){ // != mean there have some trip haven't been done.
-            sharedPrefs = mContext.getSharedPreferences(sharedPrefString, mContext.MODE_PRIVATE);
-            status = true;
-            sharedPrefs.edit().putBoolean("TripStatus",status).apply();
-
-        }else{
-            sharedPrefs = mContext.getSharedPreferences(sharedPrefString, mContext.MODE_PRIVATE);
-            status = false;
-            sharedPrefs.edit().putBoolean("TripStatus",status).apply();
-        }
-    }
-
-    //Month-Date-Year Time(12hr am/pm)
-    private String formatconverting(long time ){
-
-//        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
-        /*SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a");
-
-        sdf.format(convertedTime);
-
-        return  sdf.format(convertedTime);*/
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(time);
-
-//        int mYear = calendar.get(Calendar.YEAR);
-//        int mMonth = calendar.get(Calendar.MONTH)+1;
-//        int mDay = calendar.get(Calendar.DAY_OF_MONTH);
-        int mhour = calendar.get(Calendar.HOUR);
-        int mMin = calendar.get(Calendar.MINUTE);
-//        int mSec = calendar.get(Calendar.SECOND);
-        int ampm = calendar.get(Calendar.AM_PM);
-
-        String AMPM = "AM";
-
-        /*if(mhour>12)
-            mhour -= 12;*/
-
-        if(ampm == Calendar.AM){
-            AMPM = "AM";
-        }else{
-            AMPM = "PM";
-            if(mhour==0)
-                mhour = 12;
-        }
-
-        return addZero(mhour)+":"+addZero(mMin)+" "+AMPM;
-    }
-
-    private long getSpecialTimeInMillis(String givenDateFormat){
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
-        long timeInMilliseconds = 0;
-        try {
-            Date mDate = sdf.parse(givenDateFormat);
-            timeInMilliseconds = mDate.getTime();
-            Log.d(TAG,"Date in milli :: " + timeInMilliseconds);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return timeInMilliseconds;
-    }
-
-    public String makingDataFormat(int year,int month,int date){
-        String dataformat= "";
-
-//        dataformat = addZero(year)+"-"+addZero(month)+"-"+addZero(date)+" "+addZero(hour)+":"+addZero(min)+":00";
-        dataformat = addZero(year)+"/"+addZero(month)+"/"+addZero(date)+" "+"00:00:00";
-        Log.d(TAG,"dataformat : " + dataformat);
-
-        return dataformat;
-    }
-
-    private String addZero(int date){
-        if(date<10)
-            return String.valueOf("0"+date);
-        else
-            return String.valueOf(date);
-    }
-
-    /*public String SessionManager.getmillisecondToDateWithTime(long timeStamp){
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(timeStamp);
-
-        int mYear = calendar.get(Calendar.YEAR);
-        int mMonth = calendar.get(Calendar.MONTH)+1;
-        int mDay = calendar.get(Calendar.DAY_OF_MONTH);
-        int mhour = calendar.get(Calendar.HOUR);
-        int mMin = calendar.get(Calendar.MINUTE);
-        int mSec = calendar.get(Calendar.SECOND);
-        int ampm = calendar.get(Calendar.AM_PM);
-
-        String AMPM = "AM";
-
-        if(ampm == Calendar.AM){
-            AMPM = "AM";
-        }else{
-            AMPM = "PM";
-        }
-        return addZero(mhour)+":"+addZero(mMin)+" "+AMPM;
-//        return addZero(mYear)+"/"+addZero(mMonth)+"/"+addZero(mDay)+" "+addZero(mhour)+":"+addZero(mMin)+":"+addZero(mSec);
-
-    }*/
 }
