@@ -68,7 +68,7 @@ public class ActivityRecognitionService extends IntentService {
 
         //mActivityRecognitionManager = ContextManager.getActivityRecognitionManager();
 
-//        startReplayARRecordTimer();
+        startReplayARRecordTimer();
 //        startARRecordExpirationTimer();
     }
 

@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -981,24 +980,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 JSONArray lngdata = new JSONArray();
 
                 int i = 0;
-//                try {
-//                    for (LatLng latLng : latLngs) {
-//                        Log.d(TAG, "latLng" + i + " : " + latLng);
-//
-//                        latdata.put(latLng.latitude);
-//                        lngdata.put(latLng.longitude);
-//                        i++;
-//                    }
-//                }catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
 
-//                String[] timekeys = sessionkey.split("-");
-//                String start = timekeys[0];
-//                String end = timekeys[1];
-//                start = SessionManager.getmillisecondToDateWithTime(Long.valueOf(start));
-//                end = SessionManager.getmillisecondToDateWithTime(Long.valueOf(end));
-                addToDB(start, end,
+                updateSessionWithAnnotation(start, end,
                         ans1, ans2, ans3, ans4, latdata, lngdata);
 
                 AnnotateSessionActivity.this.finish();
@@ -1021,9 +1004,9 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         return timeInMilliseconds;
     }
 
-    private void addToDB(String starttime, String endtime, String ans1, String ans2, String ans3
+    private void updateSessionWithAnnotation(String starttime, String endtime, String ans1, String ans2, String ans3
             , String ans4, JSONArray latdata, JSONArray lngdata){
-        Log.d(TAG, "addToDB");
+        Log.d(TAG, "updateSessionWithAnnotation");
 
         ContentValues values = new ContentValues();
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
@@ -1044,53 +1027,18 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             e.printStackTrace();
         }
         annotation.setContent(toContent.toString());
+        annotation.addTag("ESM");
 
         Session session = new Session(mSessionId);
 
+        //add answer as annotation
         session.addAnnotation(annotation);
 
-        DBHelper.updateSessionTable(session);
+        Log.d(TAG,"[test show trip] session " + session.getId() +  " add annotation" + session.getAnnotationsSet());
 
-/*
+        //update session with its annotation to the session table
+        DBHelper.updateSessionTable(session.getId(), session.getEndTime(), session.getAnnotationsSet());
 
-        try{
-//            String startimekey[] = sessionkey.split("-");
-            db.delete(DBHelper.annotate_table,DBHelper.Trip_startTime+" = '"+starttime+"' ",null);
-        }catch (NullPointerException e){
-            Log.d(TAG,"No data yet.");
-            e.printStackTrace();
-        }
-
-        try {
-            values.put(DBHelper.TIME, sessionkey);
-//            values.put(DBHelper.USERID, sessionid);
-//            values.put(DBHelper.DEVICE, Constants.DEVICE_ID);
-            values.put(DBHelper.Trip_id, sessionid);
-//            values.put(DBHelper.Ques_Ans, latLngdata.toString());
-            values.put(DBHelper.Trip_startTime, starttime);
-            Log.d(TAG," starttime :" + starttime);
-            values.put(DBHelper.Trip_endTime, endtime);
-            Log.d(TAG," endtime :" + endtime);
-//            values.put(DBHelper.activityType, activityType);
-//            values.put(DBHelper.preplan, preplan);
-            values.put(DBHelper.ans1, ans1);
-            values.put(DBHelper.ans2, ans2);
-            values.put(DBHelper.ans3, ans3);
-            values.put(DBHelper.ans4, ans4);
-            values.put(DBHelper.lat, latdata.toString());
-            values.put(DBHelper.lng, lngdata.toString());
-//            values.put(DBHelper.Trip_startTimeSecond, starttime);
-
-            db.insert(DBHelper.annotate_table, null, values);
-        }
-        catch(NullPointerException e){
-            e.printStackTrace();
-        }
-        finally {
-            values.clear();
-            DBManager.getInstance().closeDatabase(); // Closing database connection
-        }
-*/
 
     }
 
@@ -1131,32 +1079,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 //        return addZero(mYear)+"/"+addZero(mMonth)+"/"+addZero(mDay)+" "+addZero(mhour)+":"+addZero(mMin)+":"+addZero(mSec);
 
     }
-
-    /*private void addToDB(JSONObject data){
-
-        Log.d(TAG, "addToDB");
-
-        ContentValues values = new ContentValues();
-
-        try {
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-
-            values.put(DBHelper.TIME, sessionkey);
-//            values.put(DBHelper.USERID, sessionid);
-//            values.put(DBHelper.DEVICE, Constants.DEVICE_ID);
-            values.put(DBHelper.Trip_id, sessionid);
-            values.put(DBHelper.Ques_Ans, data.toString());
-
-            db.insert(DBHelper.annotate_table, null, values);
-        }
-        catch(NullPointerException e){
-            e.printStackTrace();
-        }
-        finally {
-            values.clear();
-            DBManager.getInstance().closeDatabase(); // Closing database connection
-        }
-    }*/
 
     public ArrayList<LatLng> getLocationPointsToDrawOnMap(int sessionId) {
 

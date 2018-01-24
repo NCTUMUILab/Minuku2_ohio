@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -166,6 +167,10 @@ public class SessionManager {
         edu.ohio.minuku.logger.Log.d(TAG, "test replay: adding ongonig session " + id );
         this.mOngoingSessionIdList.add(id);
 
+    }
+
+    public ArrayList<String> getOngoingSessionList () {
+        return mOngoingSessionIdList;
     }
 
     public void removeOngoingSessionid(String id) {
@@ -832,8 +837,6 @@ public class SessionManager {
 
 
             sessions.add(session);
-
-            Log.d(TAG, "sessionid : "+sessionid);
 
         }
 
