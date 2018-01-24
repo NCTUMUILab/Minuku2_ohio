@@ -15,14 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
 import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minuku.service.ActivityRecognitionService;
-import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator;
 import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
-import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
 
 
 public class FileHelper {
@@ -171,6 +168,9 @@ public class FileHelper {
                 accuracy = Float.parseFloat(col[7]);
             }
 //            Log.d(LOG_TAG, "[readTestFile] " + latest_activitiesStr + " : " + " lat:" + lat + " lng " + lng);
+
+
+            Log.d(LOG_TAG, "[readTestFile] read latest_activitiesStr " + latest_activitiesStr);
 
 
             //get activity from the activity string

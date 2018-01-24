@@ -284,9 +284,9 @@ public class TransportationModeService extends Service {
                     try {
                         transportationModeStreamGenerator.setTransportationModeDataRecord(getConfirmedActvitiyString());
 
-                        TransportationModeDataRecord transportationModeDataRecord = new TransportationModeDataRecord(getConfirmedActvitiyString());
-
-                        MinukuStreamManager.getInstance().setTransportationModeDataRecord(transportationModeDataRecord);
+//                        TransportationModeDataRecord transportationModeDataRecord = new TransportationModeDataRecord(getConfirmedActvitiyString());
+//
+//                        MinukuStreamManager.getInstance().setTransportationModeDataRecord(transportationModeDataRecord);
                     }catch(Exception e){
                         e.printStackTrace();
                     }

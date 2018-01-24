@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -529,36 +528,36 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 //    }
 
     private RadioGroup.OnCheckedChangeListener ques2_1Listener = new RadioGroup.OnCheckedChangeListener() {
-         public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // TODO Auto-generated method stub
+        public void onCheckedChanged(RadioGroup group, int checkedId) {
+            // TODO Auto-generated method stub
 
-                if(checkedId==-1){
-                    error2=false;
+            if(checkedId==-1){
+                error2=false;
 
-                }else{
-                    error2=true;
+            }else{
+                error2=true;
 //                    ans2=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
-                    ques2_2.setOnCheckedChangeListener(null);
-                    ques2_2.clearCheck();
-                    ques2_2.setOnCheckedChangeListener(ques2_2Listener);
+                ques2_2.setOnCheckedChangeListener(null);
+                ques2_2.clearCheck();
+                ques2_2.setOnCheckedChangeListener(ques2_2Listener);
 
-                    ques2_3.setOnCheckedChangeListener(null);
-                    ques2_3.clearCheck();
-                    ques2_3.setOnCheckedChangeListener(ques2_3Listener);
+                ques2_3.setOnCheckedChangeListener(null);
+                ques2_3.clearCheck();
+                ques2_3.setOnCheckedChangeListener(ques2_3Listener);
 
-                    ques2_4.setOnCheckedChangeListener(null);
-                    ques2_4.clearCheck();
-                    ques2_4.setOnCheckedChangeListener(ques2_4Listener);
+                ques2_4.setOnCheckedChangeListener(null);
+                ques2_4.clearCheck();
+                ques2_4.setOnCheckedChangeListener(ques2_4Listener);
 
-                    ques2_5.setOnCheckedChangeListener(null);
-                    ques2_5.clearCheck();
-                    ques2_5.setOnCheckedChangeListener(ques2_5Listener);
+                ques2_5.setOnCheckedChangeListener(null);
+                ques2_5.clearCheck();
+                ques2_5.setOnCheckedChangeListener(ques2_5Listener);
 
-                    RadioButton radioButton = (RadioButton) findViewById(checkedId);
-                    ans2 = radioButton.getText().toString();
-                }
-
+                RadioButton radioButton = (RadioButton) findViewById(checkedId);
+                ans2 = radioButton.getText().toString();
             }
+
+        }
     };
 
     private RadioGroup.OnCheckedChangeListener ques2_2Listener = new RadioGroup.OnCheckedChangeListener() {
@@ -1067,7 +1066,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         else
             return String.valueOf(date);
     }
-    
+
     public String getmillisecondToDateWithTime(long timeStamp){
 
         Calendar calendar = Calendar.getInstance();
@@ -1098,7 +1097,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 //        return addZero(mYear)+"/"+addZero(mMonth)+"/"+addZero(mDay)+" "+addZero(mhour)+":"+addZero(mMin)+":"+addZero(mSec);
 
     }
-    
+
     /*private void addToDB(JSONObject data){
 
         Log.d(TAG, "addToDB");

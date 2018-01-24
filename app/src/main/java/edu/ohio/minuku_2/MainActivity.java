@@ -81,7 +81,7 @@ import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
-import edu.ohio.minuku_2.controller.Ohio.linkListohio;
+import edu.ohio.minuku_2.controller.Ohio.SurveyActivity;
 import edu.ohio.minuku_2.controller.Ohio.recordinglistohio;
 import edu.ohio.minuku_2.controller.Ohio.sleepingohio;
 import edu.ohio.minuku_2.controller.home;
@@ -263,8 +263,8 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View view) {
-//                    startActivity(new Intent(MainActivity.this, linkListohio.class));
-                    startActivityForResult(new Intent(MainActivity.this, linkListohio.class), 2);
+//                    startActivity(new Intent(MainActivity.this, SurveyActivity.class));
+                    startActivityForResult(new Intent(MainActivity.this, SurveyActivity.class), 2);
 
                 }
             });
@@ -511,17 +511,17 @@ public class MainActivity extends AppCompatActivity {
             else
                 taskTable = DBHelper.intervalSampleLinkList_table;*/
 
-            taskTable = DBHelper.surveyLinkList_table;
+            taskTable = DBHelper.surveyLink_table;
 
             int tripCursorNum = -1;
 
             try {
                 SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
-                Cursor tripCursor = db.rawQuery("SELECT " + DBHelper.clickornot_col + ", " + DBHelper.link_col + " FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
+                Cursor tripCursor = db.rawQuery("SELECT " + DBHelper.openFlag_col + ", " + DBHelper.link_col + " FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
                         + DBHelper.TIME + " BETWEEN" + " '" + startTime + "' " + "AND" + " '" + endTime + "' ORDER BY " + DBHelper.TIME + " DESC", null);
 
-                Log.d(TAG, "SELECT " + DBHelper.clickornot_col + ", " + DBHelper.link_col + " FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
+                Log.d(TAG, "SELECT " + DBHelper.openFlag_col + ", " + DBHelper.link_col + " FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
                         + DBHelper.TIME + " BETWEEN" + " '" + startTime + "' " + "AND" + " '" + endTime + "' ORDER BY " + DBHelper.TIME + " DESC");
 
                 tripCursorNum = tripCursor.getCount()-1;

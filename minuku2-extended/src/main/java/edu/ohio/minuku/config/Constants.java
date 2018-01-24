@@ -37,6 +37,7 @@ public class Constants {
     public static final long MILLISECONDS_PER_HOUR = MINUTES_PER_HOUR*SECONDS_PER_MINUTE*MILLISECONDS_PER_SECOND;
     public static final long MILLISECONDS_PER_MINUTE = SECONDS_PER_MINUTE*MILLISECONDS_PER_SECOND;
     public final static String DATE_FORMAT_NOW = "yyyy/MM/dd HH:mm:ss Z";
+    public static final String DATE_FORMAT_NOW_NO_ZONE_Slash = "yyyy/MM/dd HH:mm:ss";
     public static final String DATE_FORMAT_NOW_NO_ZONE = "yyyy-MM-dd HH:mm:ss";
     public static final String DATE_FORMAT_NOW_DAY = "yyyy-MM-dd";
     public static final String DATE_FORMAT_NOW_HOUR = "yyyy-MM-dd HH";
