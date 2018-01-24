@@ -92,7 +92,7 @@ public class MyLocationService extends Service {
 
         public String getTimeString(long time){
 
-            SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+            SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
             String currentTimeString = sdf_now.format(time);
 
             return currentTimeString;

@@ -36,6 +36,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -85,13 +86,13 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     private Button submit;
     private ArrayList<String> results;
-
+    private ArrayList<RadioGroup> mRadioGroups;
     private Bundle bundle;
-
     private String ongoing;
 
-    private String start;
-    private String end;
+    private ArrayList<Long> mESMOpenTimes;
+    private long mESMSubmitTime = 0;
+
 
     private Spinner activityspinner, preplanspinner, tripspinner;
     final String[] activityString = {"Choose an activity", "Static", "Biking", "In a car. (I'm the driver)",
@@ -107,6 +108,10 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         error2 = false;
         error3 = false;
         error4 = false;
+
+        mESMOpenTimes  = new ArrayList<Long>();
+        mRadioGroups = new ArrayList<RadioGroup>();
+
         Log.d(TAG, "[test show trip] onCreate AnntoateSessionaACtivity");
 
         bundle = getIntent().getExtras();
@@ -119,6 +124,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 .findFragmentById(R.id.Mapfragment);
 
         mapFragment.getMapAsync(this);
+
+
     }
 
     @Override
@@ -139,6 +146,9 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     public void onResume() {
         super.onResume();
 
+        //open the ESM. record the time
+        mESMOpenTimes.add(ScheduleAndSampleManager.getCurrentTimeInMillis()) ;
+
         mSession=null;
         //get session
         mSession = SessionManager.getSession(mSessionId);
@@ -155,56 +165,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         initQuestionnaire();
 
-        submit = (Button)findViewById(R.id.submit);
-        submit.setOnClickListener(submitting);
-
-
-//        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
-//
-//        /** storing location records after we obain from the database*/
-//        for(int index = 0;index < results.size(); index++){
-//            String[] separated = results.get(index).split(Constants.DELIMITER);
-//            double lat = Double.valueOf(separated[2]);
-//            double lng = Double.valueOf(separated[3]);
-//
-//            LatLng latLng = new LatLng(lat, lng);
-//            latLngs.add(latLng);
-//        }
-//
-//
-//        Log.d(TAG,"latLngs : " + latLngs);
-
-
-        /** showing location records on the map **/
-//        showRecordingVizualization(latLngs);
-
-
-
-        /*
-        activityspinner = (Spinner)findViewById(R.id.activityspinner);
-        preplanspinner = (Spinner)findViewById(R.id.preplanspinner);
-        tripspinner = (Spinner)findViewById(R.id.tripspinner);
-
-        ArrayAdapter<String> activityList = new ArrayAdapter<String>(AnnotateSessionActivity.this,
-                android.R.layout.simple_spinner_dropdown_item,
-                activityString);
-        ArrayAdapter<String> preplanList = new ArrayAdapter<String>(AnnotateSessionActivity.this,
-                android.R.layout.simple_spinner_dropdown_item,
-                preplanString);
-        ArrayAdapter<String> tripList = new ArrayAdapter<String>(AnnotateSessionActivity.this,
-                android.R.layout.simple_spinner_dropdown_item,
-                tripString);
-
-        activityspinner.setAdapter(activityList);
-        preplanspinner.setAdapter(preplanList);
-        tripspinner.setAdapter(tripList);
-        */
-
-//        if(ongoing.equals("true")){
-//            submit.setClickable(false);
-//
-//            Toast.makeText(getApplicationContext(), "This trip is still ongoing!", Toast.LENGTH_LONG).show();
-//        }
 
     }
 
@@ -398,7 +358,32 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     }
 
-    private void initQuestionnaire(){
+    private void initQuestionnaire()  {
+
+
+
+        //tell if the session has been labeled. It is in the annotaiton with ESM tag
+        ArrayList<Annotation> annotations = mSession.getAnnotationsSet().getAnnotationByTag("ESM");
+        String labelStr = "No Label";
+
+        JSONObject ESMJSON=null;
+
+        //{"Entire_session":true,"Tag":["ESM"],"Content":"{\"ans1\":\"Walking outdoors.\",\"ans2\":\"Food\",\"ans3\":\"No\",\"ans4\":\"Right before\"}"}
+        if (annotations.size()>0){
+            try {
+                String content = annotations.get(0).getContent();
+                ESMJSON = new JSONObject(content);
+                Log.d(TAG, "[test show trip] the contentofJSON ESMJSONObject  is " + ESMJSON );
+                labelStr = ESMJSON.getString("ans1");
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        submit = (Button)findViewById(R.id.submit);
+        submit.setOnClickListener(submitting);
 
         ques1 = (RadioGroup)findViewById(R.id.ques1);
         ques2_1 = (RadioGroup)findViewById(R.id.ques2_1);
@@ -408,6 +393,17 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         ques2_5 = (RadioGroup)findViewById(R.id.ques2_5);
         ques3 = (RadioGroup)findViewById(R.id.ques3);
         ques4 = (RadioGroup)findViewById(R.id.ques4);
+
+
+        mRadioGroups.add(ques1);
+        mRadioGroups.add(ques2_1);
+        mRadioGroups.add(ques2_2);
+        mRadioGroups.add(ques2_3);
+        mRadioGroups.add(ques2_4);
+        mRadioGroups.add(ques2_5);
+        mRadioGroups.add(ques3);
+        mRadioGroups.add(ques4);
+
 
         ques4.setVisibility(View.GONE);
 
@@ -493,80 +489,104 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             }
         });
 
-        //checking its ongoing or not
-//        String sessionid = getSessionIdByTimekey(sessionkey);
-//        ongoing = "";
-//        try {
-//            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-//            Cursor tripCursor = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (sessionid) + "'", null); //cause sessionid start from 0.
-//            Log.d(TAG,"SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (sessionid) + "'");
-//            int rows = tripCursor.getCount();
-//
-//            if(rows!=0){
-//                //get the first one is that it must be set with the accurate status
-//                tripCursor.moveToFirst();
-//                ongoing = tripCursor.getString(8);
-//            }
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-//
-//        Log.d(TAG, "ongoing : "+ ongoing);
-//
-//        if(ongoing.equals("true")){
-//            setRG_notclickable(ques1);
-//            setRG_notclickable(ques2_1);
-//            setRG_notclickable(ques2_2);
-//            setRG_notclickable(ques2_3);
-//            setRG_notclickable(ques2_4);
-//            setRG_notclickable(ques2_5);
-//            setRG_notclickable(ques3);
-//            setRG_notclickable(ques4);
-//        }
+
+        /** if the session is ongoing or has been labeld.  we show the answer, and disable the buttons **/
+
+        if (SessionManager.isSessionOngoing(mSession.getId()) || !labelStr.equals("No Label")){
+
+            ArrayList<String > answers = new ArrayList<String>();
+            //show the answer
+            if (ESMJSON!=null){
+
+                try {
+                    answers.add(ESMJSON.getString("ans1"));
+                    answers.add(ESMJSON.getString("ans2"));
+                    answers.add(ESMJSON.getString("ans3"));
+                    answers.add(ESMJSON.getString("ans4"));
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                //show answer
+                showAnswersInRadioGroup(answers);
+
+
+            }
+
+
+
+            //disable button
+            setRadioGroupnotclickable();
+//            setRadioGroupnotclickable(ques1);
+//            setRadioGroupnotclickable(ques2_1);
+//            setRadioGroupnotclickable(ques2_2);
+//            setRadioGroupnotclickable(ques2_3);
+//            setRadioGroupnotclickable(ques2_4);
+//            setRadioGroupnotclickable(ques2_5);
+//            setRadioGroupnotclickable(ques3);
+//            setRadioGroupnotclickable(ques4);
+
+
+        }
+
 
     }
 
-    private void setRG_notclickable(RadioGroup ques){
-        for (int i = 0; i < ques.getChildCount(); i++) {
-            ques.getChildAt(i).setEnabled(false);
+
+    private void setRadioGroupnotclickable() {
+
+        for (RadioGroup radioGroup: mRadioGroups){
+            setRadioGroupnotclickable(radioGroup);
         }
     }
 
-//    private String getSessionIdByTimekey(String timekey){
-//        Log.d(TAG, "getSessionIdByTimekey");
-//
-//        timekey = timekey.split("-")[0];
-//
-//        String sessionid = null;
-//
-//        try {
-//            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-//            Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
-//                    " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'", null);
-//            Log.d(TAG,"SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
-//                    " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'");
-//            int rows = tripCursor.getCount();
-//
-//            tripCursor.moveToFirst();
-//
-//            if(rows!=0){
-//                Log.d(TAG,"tripCursor.getString(0) : "+ tripCursor.getString(0));
-//                sessionid = tripCursor.getString(0);
-//                Log.d(TAG, "sessionid : "+sessionid);
-//            }else
-//                Log.d(TAG, "rows==0");
-//
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-//
-//        Log.d(TAG, "sessionid : " + sessionid);
-//
-//        String sessionids[] = sessionid.split(", ");
-//
-//        Log.d(TAG, "sessionids 1 : " + sessionids[1]);
-//        return sessionids[1];
-//    }
+
+
+    private void showAnswersInRadioGroup(ArrayList<String > answers){
+
+        for (String answer: answers){
+
+            for (RadioGroup radioGroup: mRadioGroups){
+                showAnswerInRadioGroup(radioGroup,answer);
+            }
+//            showAnswerInRadioGroup(ques1,answer);
+//            showAnswerInRadioGroup(ques2_1,ans1);
+//            showAnswerInRadioGroup(ques2_2,ans1);
+//            showAnswerInRadioGroup(ques2_3,ans1);
+//            showAnswerInRadioGroup(ques2_4,ans1);
+//            showAnswerInRadioGroup(ques2_5,ans1);
+//            showAnswerInRadioGroup(ques3,ans3);
+//            showAnswerInRadioGroup(ques4,ans4);
+        }
+    }
+
+    private void showAnswerInRadioGroup(RadioGroup ques, String ans){
+
+        Log.d(TAG, "[test show trip] find radio button group " + ques.getChildCount());
+        Log.d(TAG, "[test show trip] find radio button having text " + ans );
+        //make them disabled
+        for (int i = 0; i < ques.getChildCount(); i++) {
+            RadioButton button =(RadioButton) ques.getChildAt(i);
+
+            if (button.getText().toString().equals(ans)){
+                Log.d(TAG, "[test show trip] find radio button we find the child " + button.getText());
+                button.setChecked(true);
+            }
+
+        }
+    }
+
+
+    private void setRadioGroupnotclickable(RadioGroup ques){
+
+        //make them disabled
+        for (int i = 0; i < ques.getChildCount(); i++) {
+            ques.getChildAt(i).setEnabled(false);
+        }
+        submit.setEnabled(false);
+    }
 
     private RadioGroup.OnCheckedChangeListener ques2_1Listener = new RadioGroup.OnCheckedChangeListener() {
         public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -945,8 +965,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             if (SessionManager.isSessionOngoing(mSessionId))
                 time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - Now"  );
             else
-                time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - Unkown"  );
-
+                time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + ScheduleAndSampleManager.getTimeString(endTime, sdf)  );
         }
 
         Log.d(TAG,"[test show trip] setting time label" + time.getText().toString());
@@ -975,6 +994,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     private Button.OnClickListener submitting = new Button.OnClickListener() {
         public void onClick(View v) {
+
+
             Log.e(TAG, "submit clicked");
 
             Log.d(TAG, "ans1 : "+ans1+" ans2 : "+ans2+" ans3 : "+ans3+" ans4 : "+ ans4 +" ans4_2 : "+ans4_2);
@@ -989,8 +1010,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                 int i = 0;
 
-                updateSessionWithAnnotation(start, end,
-                        ans1, ans2, ans3, ans4, latdata, lngdata);
+                updateSessionWithAnnotation(ans1, ans2, ans3, ans4, latdata, lngdata);
 
                 AnnotateSessionActivity.this.finish();
             }else
@@ -1000,7 +1020,10 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     };
 
     private long getSpecialTimeInMillis(String givenDateFormat){
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+
+        mESMSubmitTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
         long timeInMilliseconds = 0;
         try {
             Date mDate = sdf.parse(givenDateFormat);
@@ -1012,7 +1035,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         return timeInMilliseconds;
     }
 
-    private void updateSessionWithAnnotation(String starttime, String endtime, String ans1, String ans2, String ans3
+    private void updateSessionWithAnnotation(String ans1, String ans2, String ans3
             , String ans4, JSONArray latdata, JSONArray lngdata){
         Log.d(TAG, "updateSessionWithAnnotation");
 
@@ -1022,20 +1045,20 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         //create annoation from the ESM
         Annotation annotation = new Annotation();
 
-        JSONObject toContent = new JSONObject();
+        JSONObject esmContentJSON = new JSONObject();
 
         try {
-            toContent.put("starttime", starttime);
-            toContent.put("endtime", endtime);
-            toContent.put("ans1", ans1);
-            toContent.put("ans2", ans2);
-            toContent.put("ans3", ans3);
-            toContent.put("ans4", ans4);
+            esmContentJSON.put("openTimes", mESMOpenTimes.toString());
+            esmContentJSON.put("submitTime", mESMSubmitTime);
+            esmContentJSON.put("ans1", ans1);
+            esmContentJSON.put("ans2", ans2);
+            esmContentJSON.put("ans3", ans3);
+            esmContentJSON.put("ans4", ans4);
 
         }catch (JSONException e){
             e.printStackTrace();
         }
-        annotation.setContent(toContent.toString());
+        annotation.setContent(esmContentJSON.toString());
         annotation.addTag("ESM");
 
 
@@ -1106,12 +1129,10 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
             //TODO: need to get lat and lng from the Data JSON Object from LocationRecord
 
-//            get location parameters
             double lat = Double.parseDouble(record[2] );
             double lng = Double.parseDouble(record[3] );
 
             points.add(new LatLng(lat, lng));
-            // Log.d(LOG_TAG, "[showRecordingVizualization] lat ( " + lat + ", " + lng + " )"  );
 
         }
 
@@ -1128,8 +1149,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             int sessionId = params[0];
             ArrayList<LatLng> points = getLocationPointsToDrawOnMap(sessionId);
 
-//            Log.d(TAG, "[test show trip] in doInBackground, after query data using session id "+ sessionId);
-
             return points;
         }
 
@@ -1137,9 +1156,9 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         @Override
         protected void onPreExecute() {
             Log.d(TAG, "[test show trip] onPreExecute ");
-//
-//            this.dialog.setMessage("Loading...");
-//            this.dialog.show();
+
+            this.dialog.setMessage("Loading...");
+            this.dialog.show();
         }
 
         // onPostExecute displays the results of the AsyncTask.
@@ -1160,9 +1179,9 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 showMapWithPaths(mGoogleMap, points, middleLagLng, startLatLng, endLatLng);
             }
 
-//            if (this.dialog.isShowing()) {
-//                this.dialog.dismiss();
-//            }
+            if (this.dialog.isShowing()) {
+                this.dialog.dismiss();
+            }
         }
 
 
@@ -1171,97 +1190,5 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     }
 
 
-
-//    private class LoadRecordInSessionAsyncTask extends AsyncTask<String, Void, ArrayList<String>> {
-//
-//        private final ProgressDialog dialog = new ProgressDialog(AnnotateSessionActivity.this);
-//
-//        @Override
-//        protected void onPreExecute() {
-//            Log.d(TAG,"onPreExecute");
-//            this.dialog.setMessage("Loading...");
-//            this.dialog.setCancelable(false);
-//            this.dialog.show();
-//        }
-//
-//        @Override
-//        protected ArrayList<String> doInBackground(String... params) {
-//            String sessionkey = params[0];
-//
-//            Log.d(TAG,"sessionkey : " + sessionkey);
-//
-////            String timedata[] = sessionkey.split("-");
-////            String startTime = timedata[0];
-//
-////            Log.d(TAG,"startTime : " + startTime);
-//
-//            //TODO use freaking sessionkey to get data. First, get the session id by the sessionkey.
-//
-//            ArrayList<LatLng> locationDataRecords = null;
-//
-//            ArrayList<String> resultBySession = null;
-//
-//            try {
-//                sessionid = Integer.valueOf(sessionkey);
-//                resultBySession = DBHelper.queryRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, sessionid);
-//
-////                Log.d(TAG,"result after query in doInBagrkound" + resultBySession.toString());
-//
-//            }catch (Exception e) {
-//                locationDataRecords = new ArrayList<LatLng>();
-//                Log.d(TAG,"Exception");
-//                e.printStackTrace();
-//            }
-//
-//
-//            return resultBySession;
-//
-//        }
-//
-//
-//
-//        private String getSessionIdByTimekey(String timekey){
-//            String sessionid = null;
-//
-//            try {
-//                SQLiteDatabase db = DBManager.getInstance().openDatabase();
-//                Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
-//                        " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'", null);
-//                Log.d(TAG,"SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
-//                        " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'");
-//                int rows = tripCursor.getCount();
-//
-//                tripCursor.moveToFirst();
-//
-//                if(rows!=0){
-//                    Log.d(TAG,"tripCursor.getString(0) : "+ tripCursor.getString(0));
-//                    sessionid = tripCursor.getString(0);
-//                    Log.d(TAG, "sessionid : "+sessionid);
-//                }else
-//                    Log.d(TAG, "rows==0");
-//
-//            }catch (Exception e){
-//                e.printStackTrace();
-//            }
-//
-//            String sessionids[] = sessionid.split(", ");
-//
-//            Log.d(TAG, "sessionids 1 : " + sessionids[1]);
-//            return sessionids[1];
-//        }
-//
-//
-//        // onPostExecute displays the results of the AsyncTask.
-//        @Override
-//        protected void onPostExecute(ArrayList<String> result) {
-//
-//            super.onPostExecute(result);
-//
-//            if (this.dialog.isShowing()) {
-//                this.dialog.dismiss();
-//            }
-//        }
-//
-//    }
 
 }

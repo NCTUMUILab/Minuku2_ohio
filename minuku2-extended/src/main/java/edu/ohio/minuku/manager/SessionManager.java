@@ -1,7 +1,5 @@
 package edu.ohio.minuku.manager;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -11,7 +9,6 @@ import android.location.Location;
 import android.os.Environment;
 import android.util.Log;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.opencsv.CSVWriter;
 
 import org.json.JSONArray;
@@ -21,16 +18,13 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import edu.ohio.minuku.Data.DBHelper;
-import edu.ohio.minuku.R;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.model.Annotation;
@@ -369,7 +363,7 @@ public class SessionManager {
 
     public static String getTimeString(long time){
 
-        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
         String currentTimeString = sdf_now.format(time);
 
         return currentTimeString;
@@ -535,7 +529,7 @@ public class SessionManager {
     }
 
     public static long getSpecialTimeInMillis(String givenDateFormat){
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
         long timeInMilliseconds = 0;
         try {
             Date mDate = sdf.parse(givenDateFormat);
