@@ -240,7 +240,10 @@ public class MinukuStreamManager implements StreamManager {
                 int sessionCount =  (int)DBHelper.querySessionCount();
 
                 //if this is the first time seeing a session, we should just insert a session
-                if (sessionCount==0){
+                if (sessionCount==0
+                        && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                        && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
+
                     Log.d(TAG, "test combine addSessionFlag = true there's no session in the db");
                     addSessionFlag = true;
                 }

@@ -231,7 +231,7 @@ public class ActivityRecognitionService extends IntentService {
         ReplayTimer = new Timer();
 
         //start the timertask for replay
-//        RePlayActivityRecordTimerTask();
+        RePlayActivityRecordTimerTask();
 
         //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
         ReplayTimer.schedule(ReplayTimerTask,0,1000);

@@ -22,9 +22,14 @@
 
 package edu.ohio.minuku_2.service;
 
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,18 +41,21 @@ import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku_2.manager.InstanceManager;
+import edu.ohio.minuku.R;
 
 public class BackgroundService extends Service {
 
     private static final String TAG = "BackgroundService";
 
     MinukuStreamManager streamManager;
+    NotificationManager mNotificationManager;
     private ScheduledExecutorService mScheduledExecutorService;
 
 
     public BackgroundService() {
         super();
         streamManager = MinukuStreamManager.getInstance();
+//        mNotificationManager = new NotificationManager();
         mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_FREQUENCY);
 
     }
@@ -55,24 +63,38 @@ public class BackgroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+//        private void showNotification(){
+//            NotificationCompat.Builder builer = new NotificationCompat.Builder(this)
+//                    .setSmallIcon(R.drawable.self_reflection)
+//                    .setContentTitle("Service active")
+//                    .setContentText("Your service keeps running")
+//                    .setOngoing(true);
+//            mNotificationManager.notify(NOTIFICATION_ID, builer.build());
+//
+//        }
+
 
         runMainThread();
-//        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
-//        alarm.set(
-//                AlarmManager.RTC_WAKEUP,     //
-//                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
-//                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
-//        );
-/*
-        Notification note  = new Notification.Builder(getBaseContext())
-                .setContentTitle(Constants.APP_NAME)
-                .setContentText(Constants.RUNNING_APP_DECLARATION)
-                .setSmallIcon(R.drawable.self_reflection)
-                .setAutoCancel(false)
-                .build();
-        note.flags |= Notification.FLAG_NO_CLEAR;
-        startForeground( 42, note );
-*/
+
+        //we use an alerm to keep the service awake
+        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+        alarm.set(
+                AlarmManager.RTC_WAKEUP,     //
+                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
+        );
+
+        Log.d(TAG, "test combine the service is restarted!");
+
+//        Notification note  = new Notification.Builder(getBaseContext())
+//                .setContentTitle(Constants.APP_NAME)
+//                .setContentText(Constants.RUNNING_APP_DECLARATION)
+//                .setSmallIcon(R.drawable.self_reflection)
+//                .setAutoCancel(false)
+//                .build();
+//        note.flags |= Notification.FLAG_NO_CLEAR;
+//        startForeground( 42, note );
+
 
         if(!InstanceManager.isInitialized()) {
             InstanceManager.getInstance(this);
@@ -93,9 +115,9 @@ public class BackgroundService extends Service {
         LocationStreamGenerator locationStreamGenerator =
                 new LocationStreamGenerator(getApplicationContext());*/
 
-        return START_STICKY_COMPATIBILITY;
+//        return START_STICKY_COMPATIBILITY;
         //TODO Keep eye on the service is working or not.
-//        return START_STICKY;
+        return START_STICKY;
     }
 
     private void runMainThread(){
