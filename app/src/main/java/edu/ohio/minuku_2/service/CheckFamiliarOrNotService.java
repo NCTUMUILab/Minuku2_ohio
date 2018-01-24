@@ -75,8 +75,6 @@ import edu.ohio.minuku_2.model.CheckFamiliarOrNotDataRecord;
 import edu.ohio.minuku_2.streamgenerator.CheckFamiliarOrNotStreamGenerator;
 import edu.ohio.minukucore.exception.StreamNotFoundException;
 
-//import edu.ohio.minuku_2.R;
-
 /**
  * Created by Lawrence on 2017/4/23.
  */
