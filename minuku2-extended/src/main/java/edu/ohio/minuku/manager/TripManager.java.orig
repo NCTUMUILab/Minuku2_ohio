@@ -24,7 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.R;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
@@ -62,7 +62,7 @@ public class TripManager {
 
     private static TripManager instance;
 
-    private ArrayList<Integer> ongoingSessionidList;
+    private ArrayList<Integer> mOngoingSessionIdList;
 
     private SharedPreferences sharedPrefs;
     private static SharedPreferences.Editor editor;
@@ -79,7 +79,7 @@ public class TripManager {
         sessionid = "0";
 //        sessionid_unStatic = 0;
 
-        ongoingSessionidList = new ArrayList<Integer>();
+        mOngoingSessionIdList = new ArrayList<Integer>();
 
 
         sessionid_unStatic = sharedPrefs.getInt("sessionid_unStatic",0);
@@ -121,19 +121,19 @@ public class TripManager {
     }
 
     public ArrayList<Integer> getOngoingSessionidList() {
-        return ongoingSessionidList;
+        return mOngoingSessionIdList;
     }
 
-    public void setOngoingSessionidList(ArrayList<Integer> ongoingSessionidList) {
-        this.ongoingSessionidList = ongoingSessionidList;
+    public void setOngoingSessionidList(ArrayList<Integer> mOngoingSessionIdList) {
+        this.mOngoingSessionIdList = mOngoingSessionIdList;
     }
 
     public void addOngoingSessionid(int id) {
-        this.ongoingSessionidList.add((id));
+        this.mOngoingSessionIdList.add((id));
     }
 
     public void removeOngoingSessionid(int id) {
-        this.ongoingSessionidList.remove(id);
+        this.mOngoingSessionIdList.remove(id);
     }
 
     public void setTrip(LocationDataRecord entity) {
