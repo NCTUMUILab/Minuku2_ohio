@@ -121,17 +121,9 @@ public class AnnotationSet {
     }
 
 
-
     @Override
     public String toString(){
-
-        String s = null;
-
-
-
-
-        return s;
-
+        return this.toJSONObject().toString();
     }
 	
 	

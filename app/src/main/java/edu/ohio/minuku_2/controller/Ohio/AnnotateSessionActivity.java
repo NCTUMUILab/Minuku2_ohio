@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -66,7 +65,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     public static float GOOGLE_MAP_DEFAULT_ZOOM_LEVEL = 13;
     public static LatLng GOOGLE_MAP_DEFAULT_CAMERA_CENTER = new LatLng(24, 120);
 
-    private int mSessionId=-1;
+    private int mSessionId;
+    private Session mSession;
     private TextView time, question3, question4;
     private RadioButton ans3_1, ans3_2, ans3_3;
     private RadioButton ans4_1, ans4_2, ans4_3;
@@ -111,6 +111,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         bundle = getIntent().getExtras();
         mSessionId = Integer.parseInt(bundle.getString("sessionkey_id"));
+
         Log.d(TAG,"[test show trip]  on create session id: : " + mSessionId);
 
 
@@ -138,6 +139,11 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     public void onResume() {
         super.onResume();
 
+        mSession=null;
+        //get session
+        mSession = SessionManager.getSession(mSessionId);
+        Log.d(TAG,"[test show trip] loading session " + mSession.getId() +  " the annotaitons are " + mSession.getAnnotationsSet().toJSONObject().toString());
+
         initAnnotationView();
 
     }
@@ -146,6 +152,12 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
      * this function initialize the view of the annotation acitvity, including quesitonnaire and map
      */
     public void initAnnotationView(){
+
+        initQuestionnaire();
+
+        submit = (Button)findViewById(R.id.submit);
+        submit.setOnClickListener(submitting);
+
 
 //        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
 //
@@ -187,11 +199,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         preplanspinner.setAdapter(preplanList);
         tripspinner.setAdapter(tripList);
         */
-
-        initQuestionnaire();
-
-        submit = (Button)findViewById(R.id.submit);
-        submit.setOnClickListener(submitting);
 
 //        if(ongoing.equals("true")){
 //            submit.setClickable(false);
@@ -244,50 +251,84 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                 Log.d(TAG, "[test show trip] the session is in the currently recording session");
 
-                final Handler updateMapHandler = new Handler();
+                try{
 
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
+                    Log.d(TAG, "[test show trip] the session is in the currently recording session, update map!!! Get new points!");
 
-                        try{
+                    //get location points to draw on the map..
+                    ArrayList<LatLng> points = getLocationPointsToDrawOnMap(sessionId);
 
-                            Log.d(TAG, "[test show trip] the session is in the currently recording session, update map!!! Get new points!");
+                    LatLng startLatLng;
+                    //we use endLatLng, which is the user's current location as the center of the camera
+                    LatLng endLatLng;
 
-                            //get location points to draw on the map..
-                            ArrayList<LatLng> points = getLocationPointsToDrawOnMap(sessionId);
+                    //only has one point
+                    if (points.size()==1){
 
-                            LatLng startLatLng;
-                            //we use endLatLng, which is the user's current location as the center of the camera
-                            LatLng endLatLng;
+                        startLatLng  = points.get(0);
+                        endLatLng = points.get(0);
 
-                            //only has one point
-                            if (points.size()==1){
-
-                                startLatLng  = points.get(0);
-                                endLatLng = points.get(0);
-
-                                showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
-                            }
-                            //when have multiple locaiton points
-                            else if (points.size()>1) {
-
-                                startLatLng  = points.get(0);
-                                endLatLng = points.get(points.size()-1);
-
-                                showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
-                            }
-
-
-                        }catch (IllegalArgumentException e){
-                            //Log.e(LOG_TAG, "Could not unregister receiver " + e.getMessage()+"");
-                        }
-                        updateMapHandler.postDelayed(this, 5*1000);
+                        showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
                     }
-                };
+                    //when have multiple locaiton points
+                    else if (points.size()>1) {
+
+                        startLatLng  = points.get(0);
+                        endLatLng = points.get(points.size()-1);
+
+                        showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
+                    }
+
+
+                }catch (IllegalArgumentException e){
+                    //Log.e(LOG_TAG, "Could not unregister receiver " + e.getMessage()+"");
+                }
+
+
+//                final Handler updateMapHandler = new Handler();
+//
+//                Runnable runnable = new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//                        try{
+//
+//                            Log.d(TAG, "[test show trip] the session is in the currently recording session, update map!!! Get new points!");
+//
+//                            //get location points to draw on the map..
+//                            ArrayList<LatLng> points = getLocationPointsToDrawOnMap(sessionId);
+//
+//                            LatLng startLatLng;
+//                            //we use endLatLng, which is the user's current location as the center of the camera
+//                            LatLng endLatLng;
+//
+//                            //only has one point
+//                            if (points.size()==1){
+//
+//                                startLatLng  = points.get(0);
+//                                endLatLng = points.get(0);
+//
+//                                showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
+//                            }
+//                            //when have multiple locaiton points
+//                            else if (points.size()>1) {
+//
+//                                startLatLng  = points.get(0);
+//                                endLatLng = points.get(points.size()-1);
+//
+//                                showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
+//                            }
+//
+//
+//                        }catch (IllegalArgumentException e){
+//                            //Log.e(LOG_TAG, "Could not unregister receiver " + e.getMessage()+"");
+//                        }
+//                        updateMapHandler.postDelayed(this, 5*1000);
+//                    }
+//                };
 
                 /**start repeatedly store the extracted contextual information into Record objects**/
-                updateMapHandler.post(runnable);
+//                updateMapHandler.post(runnable);
 
             }
 
@@ -338,7 +379,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         float zoomlevel = map.getCameraPosition().zoom;
 
         //center the map
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, zoomlevel));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
 
         // Marker start = map.addMarker(new MarkerOptions().position(startLatLng));
         Marker me =  map.addMarker(new MarkerOptions()
@@ -947,24 +988,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 JSONArray lngdata = new JSONArray();
 
                 int i = 0;
-//                try {
-//                    for (LatLng latLng : latLngs) {
-//                        Log.d(TAG, "latLng" + i + " : " + latLng);
-//
-//                        latdata.put(latLng.latitude);
-//                        lngdata.put(latLng.longitude);
-//                        i++;
-//                    }
-//                }catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
 
-//                String[] timekeys = sessionkey.split("-");
-//                String start = timekeys[0];
-//                String end = timekeys[1];
-//                start = SessionManager.getmillisecondToDateWithTime(Long.valueOf(start));
-//                end = SessionManager.getmillisecondToDateWithTime(Long.valueOf(end));
-                addToDB(start, end,
+                updateSessionWithAnnotation(start, end,
                         ans1, ans2, ans3, ans4, latdata, lngdata);
 
                 AnnotateSessionActivity.this.finish();
@@ -987,13 +1012,14 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         return timeInMilliseconds;
     }
 
-    private void addToDB(String starttime, String endtime, String ans1, String ans2, String ans3
+    private void updateSessionWithAnnotation(String starttime, String endtime, String ans1, String ans2, String ans3
             , String ans4, JSONArray latdata, JSONArray lngdata){
-        Log.d(TAG, "addToDB");
+        Log.d(TAG, "updateSessionWithAnnotation");
 
         ContentValues values = new ContentValues();
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
+        //create annoation from the ESM
         Annotation annotation = new Annotation();
 
         JSONObject toContent = new JSONObject();
@@ -1010,53 +1036,19 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             e.printStackTrace();
         }
         annotation.setContent(toContent.toString());
+        annotation.addTag("ESM");
 
-        Session session = new Session(mSessionId);
 
-        session.addAnnotation(annotation);
+        Log.d(TAG,"[test show trip] session " + mSession.getId() +  " before add annotation the annotaitons are " + mSession.getAnnotationsSet());
 
-        DBHelper.updateSessionTable(session);
+        //add ESM response to annotation
+        mSession.addAnnotation(annotation);
 
-/*
+        Log.d(TAG,"[test show trip] session " + mSession.getId() +  "after add annotation now the annotaitons are " + mSession.getAnnotationsSet());
 
-        try{
-//            String startimekey[] = sessionkey.split("-");
-            db.delete(DBHelper.annotate_table,DBHelper.Trip_startTime+" = '"+starttime+"' ",null);
-        }catch (NullPointerException e){
-            Log.d(TAG,"No data yet.");
-            e.printStackTrace();
-        }
+        //update session with its annotation to the session table
+        DBHelper.updateSessionTable(mSession.getId(), mSession.getEndTime(), mSession.getAnnotationsSet());
 
-        try {
-            values.put(DBHelper.TIME, sessionkey);
-//            values.put(DBHelper.USERID, sessionid);
-//            values.put(DBHelper.DEVICE, Constants.DEVICE_ID);
-            values.put(DBHelper.Trip_id, sessionid);
-//            values.put(DBHelper.Ques_Ans, latLngdata.toString());
-            values.put(DBHelper.Trip_startTime, starttime);
-            Log.d(TAG," starttime :" + starttime);
-            values.put(DBHelper.Trip_endTime, endtime);
-            Log.d(TAG," endtime :" + endtime);
-//            values.put(DBHelper.activityType, activityType);
-//            values.put(DBHelper.preplan, preplan);
-            values.put(DBHelper.ans1, ans1);
-            values.put(DBHelper.ans2, ans2);
-            values.put(DBHelper.ans3, ans3);
-            values.put(DBHelper.ans4, ans4);
-            values.put(DBHelper.lat, latdata.toString());
-            values.put(DBHelper.lng, lngdata.toString());
-//            values.put(DBHelper.Trip_startTimeSecond, starttime);
-
-            db.insert(DBHelper.annotate_table, null, values);
-        }
-        catch(NullPointerException e){
-            e.printStackTrace();
-        }
-        finally {
-            values.clear();
-            DBManager.getInstance().closeDatabase(); // Closing database connection
-        }
-*/
 
     }
 
@@ -1097,32 +1089,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 //        return addZero(mYear)+"/"+addZero(mMonth)+"/"+addZero(mDay)+" "+addZero(mhour)+":"+addZero(mMin)+":"+addZero(mSec);
 
     }
-
-    /*private void addToDB(JSONObject data){
-
-        Log.d(TAG, "addToDB");
-
-        ContentValues values = new ContentValues();
-
-        try {
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-
-            values.put(DBHelper.TIME, sessionkey);
-//            values.put(DBHelper.USERID, sessionid);
-//            values.put(DBHelper.DEVICE, Constants.DEVICE_ID);
-            values.put(DBHelper.Trip_id, sessionid);
-            values.put(DBHelper.Ques_Ans, data.toString());
-
-            db.insert(DBHelper.annotate_table, null, values);
-        }
-        catch(NullPointerException e){
-            e.printStackTrace();
-        }
-        finally {
-            values.clear();
-            DBManager.getInstance().closeDatabase(); // Closing database connection
-        }
-    }*/
 
     public ArrayList<LatLng> getLocationPointsToDrawOnMap(int sessionId) {
 

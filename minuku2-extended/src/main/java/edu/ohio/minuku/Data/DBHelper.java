@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
+import edu.ohio.minuku.model.AnnotationSet;
 import edu.ohio.minuku.model.Session;
 
 
@@ -1003,14 +1004,14 @@ public class DBHelper extends SQLiteOpenHelper {
             //execute the query
             Cursor cursor = db.rawQuery(sql, null);
             int columnCount = cursor.getColumnCount();
-            Log.d(TAG, "[test show trip] columnCount " +columnCount);
+//            Log.d(TAG, "[test show trip] columnCount " +columnCount);
             while(cursor.moveToNext()){
-                Log.d(TAG, "[test show trip] cursor" +cursor.getCount());
+//                Log.d(TAG, "[test show trip] cursor" +cursor.getCount());
                 String curRow = "";
                 for (int i=0; i<columnCount; i++){
                     curRow += cursor.getString(i)+ Constants.DELIMITER;
                 }
-                Log.d(TAG, "[test show trip] get result row " +curRow);
+//                Log.d(TAG, "[test show trip] get result row " +curRow);
 
                 rows.add(curRow);
             }
@@ -1062,9 +1063,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public static void updateSessionTable(int session_id, long endTime){
+    public static void updateSessionTable(int sessionId, long endTime){
 
-        String where = COL_ID + " = " +  session_id;
+        String where = COL_ID + " = " +  sessionId;
 
         try{
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
@@ -1094,18 +1095,18 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public static void updateSessionTable(Session session){
+    public static void updateSessionTable(int sessionId, long endTime, AnnotationSet annotationSet){
 
-        String where = COL_ID + " = " +  session.getId();
+        String where = COL_ID + " = " +  sessionId;
 
         try{
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             ContentValues values = new ContentValues();
 
             //TODO get the col name after complete the annotate part.
-            values.put(COL_SESSION_END_TIME, session.getEndTime());
+            values.put(COL_SESSION_END_TIME, endTime);
             //beacuse only one data(annotation) exist.
-            values.put(COL_SESSION_ANNOTATION_SET, session.getAnnotationsSet().toJSONObject().toString());
+            values.put(COL_SESSION_ANNOTATION_SET, annotationSet.toString());
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 

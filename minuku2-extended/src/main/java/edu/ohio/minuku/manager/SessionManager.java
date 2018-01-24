@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -166,6 +167,10 @@ public class SessionManager {
         edu.ohio.minuku.logger.Log.d(TAG, "test replay: adding ongonig session " + id );
         this.mOngoingSessionIdList.add(id);
 
+    }
+
+    public ArrayList<String> getOngoingSessionList () {
+        return mOngoingSessionIdList;
     }
 
     public void removeOngoingSessionid(String id) {
@@ -370,104 +375,104 @@ public class SessionManager {
         return currentTimeString;
     }
 
-    public int getSessionidForTripSize(){
-        return sessionid_unStatic;
-    }
-
-    public static ArrayList<String> getTripDatafromSQLite() {
-        Log.d(TAG, "getTripDatafromSQLite");
-
-        long funcStartTime = new Date().getTime();
-
-        ArrayList<String> times = new ArrayList<String>();
-
-        //setting today date.
-        Calendar cal = Calendar.getInstance();
-        Date date = new Date();
-        cal.setTime(date);
-        int Year = cal.get(Calendar.YEAR);
-        int Month = cal.get(Calendar.MONTH)+1;
-        int Day = cal.get(Calendar.DAY_OF_MONTH);
-
-        long startTime = -999;
-        long endTime = -999;
-
-        startTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day));
-        endTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day+1));
-
-        SQLiteDatabase db = DBManager.getInstance().openDatabase();
-        ArrayList<String> res =  DBHelper.querySessionsBetweenTimes(startTime, endTime);
-
-        ArrayList<Session> sessions = new ArrayList<Session>();
-
-        //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
-        for (int i=0; i<res.size() ; i++) {
-
-            String sessionStr = res.get(i);
-
-            //split each row into columns
-            String[] separated = sessionStr.split(Constants.DELIMITER);
-
-            /** get properties of the session **/
-            int id = Integer.parseInt(separated[DBHelper.COL_INDEX_SESSION_ID]);
-            long sessionStartTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_START_TIME]);
-
-            /** 1. create sessions from the properies obtained **/
-            Session session = new Session(id, sessionStartTime);
-
-            /**2. get end time (or time of the last record) of the session**/
-
-            long sessionEndTime = 0;
-            //the session could be still ongoing..so we need to check where's endTime
-            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null")){
-                sessionEndTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
-            }
-            //there 's no end time of the session, we take the time of the last record
-            else {
-                sessionEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
-                Log.d(TAG, "[test get session time] testgetdata the last record time is  " + ScheduleAndSampleManager.getTimeString(sessionEndTime));
-            }
-
-            //set end time
-            session.setEndTime(sessionEndTime);
- /*
-           *//** 3. get annotaitons associated with the session **//*
-            JSONObject annotationSetJSON = null;
-            JSONArray annotateionSetJSONArray = null;
-            try {
-                annotationSetJSON = new JSONObject(separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET]);
-                annotateionSetJSONArray = annotationSetJSON.getJSONArray(ANNOTATION_PROPERTIES_ANNOTATION);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            Log.d(LOG_TAG, " testBackgroundLogging [testing load session][getSession]  testgetdata id " + id + " startTime " + sessionStartTime + " end time " + sessionEndTime + " contextsource " + session.getContextSourceNames());
-
-
-            //set annotationset if there is one
-            if (annotateionSetJSONArray!=null){
-                AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
-                session.setAnnotationSet(annotationSet);
-            }
-
-*/
-
-            sessions.add(session);
-        }
-
-        for(int index = 0 ; index < sessions.size() ; index ++){
-
-            Session session = sessions.get(index);
-            int sessionid = session.getId();
-
-            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, sessionid);
-
-            //notification
-            notiQuerySessions();
-
-
-
-        }
+//    public int getSessionidForTripSize(){
+//        return sessionid_unStatic;
+//    }
+//
+//    public static ArrayList<String> getTripDatafromSQLite() {
+//        Log.d(TAG, "getTripDatafromSQLite");
+//
+//        long funcStartTime = new Date().getTime();
+//
+//        ArrayList<String> times = new ArrayList<String>();
+//
+//        //setting today date.
+//        Calendar cal = Calendar.getInstance();
+//        Date date = new Date();
+//        cal.setTime(date);
+//        int Year = cal.get(Calendar.YEAR);
+//        int Month = cal.get(Calendar.MONTH)+1;
+//        int Day = cal.get(Calendar.DAY_OF_MONTH);
+//
+//        long startTime = -999;
+//        long endTime = -999;
+//
+//        startTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day));
+//        endTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day+1));
+//
+//        SQLiteDatabase db = DBManager.getInstance().openDatabase();
+//        ArrayList<String> res =  DBHelper.querySessionsBetweenTimes(startTime, endTime);
+//
+//        ArrayList<Session> sessions = new ArrayList<Session>();
+//
+//        //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
+//        for (int i=0; i<res.size() ; i++) {
+//
+//            String sessionStr = res.get(i);
+//
+//            //split each row into columns
+//            String[] separated = sessionStr.split(Constants.DELIMITER);
+//
+//            /** get properties of the session **/
+//            int id = Integer.parseInt(separated[DBHelper.COL_INDEX_SESSION_ID]);
+//            long sessionStartTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_START_TIME]);
+//
+//            /** 1. create sessions from the properies obtained **/
+//            Session session = new Session(id, sessionStartTime);
+//
+//            /**2. get end time (or time of the last record) of the session**/
+//
+//            long sessionEndTime = 0;
+//            //the session could be still ongoing..so we need to check where's endTime
+//            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null")){
+//                sessionEndTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
+//            }
+//            //there 's no end time of the session, we take the time of the last record
+//            else {
+//                sessionEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+//                Log.d(TAG, "[test get session time] testgetdata the last record time is  " + ScheduleAndSampleManager.getTimeString(sessionEndTime));
+//            }
+//
+//            //set end time
+//            session.setEndTime(sessionEndTime);
+// /*
+//           *//** 3. get annotaitons associated with the session **//*
+//            JSONObject annotationSetJSON = null;
+//            JSONArray annotateionSetJSONArray = null;
+//            try {
+//                annotationSetJSON = new JSONObject(separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET]);
+//                annotateionSetJSONArray = annotationSetJSON.getJSONArray(ANNOTATION_PROPERTIES_ANNOTATION);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//
+//            Log.d(LOG_TAG, " testBackgroundLogging [testing load session][getSession]  testgetdata id " + id + " startTime " + sessionStartTime + " end time " + sessionEndTime + " contextsource " + session.getContextSourceNames());
+//
+//
+//            //set annotationset if there is one
+//            if (annotateionSetJSONArray!=null){
+//                AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
+//                session.setAnnotationSet(annotationSet);
+//            }
+//
+//*/
+//
+//            sessions.add(session);
+//        }
+//
+//        for(int index = 0 ; index < sessions.size() ; index ++){
+//
+//            Session session = sessions.get(index);
+//            int sessionid = session.getId();
+//
+//            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, sessionid);
+//
+//            //notification
+//            notiQuerySessions();
+//
+//
+//
+//        }
 
         //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which menas its not trip
 /*
@@ -669,13 +674,13 @@ public class SessionManager {
             }
         }*/
 
-        trip_size = times.size();
-        editor.putInt("trip_size",trip_size);
-
-        Log.d(TAG,"getTripDatafromSQLite total time : "+(new Date().getTime() - funcStartTime)/1000);
-
-        return times;
-    }
+//        trip_size = times.size();
+//        editor.putInt("trip_size",trip_size);
+//
+//        Log.d(TAG,"getTripDatafromSQLite total time : "+(new Date().getTime() - funcStartTime)/1000);
+//
+//        return times;
+//    }
 
 
     public static Session getSession (int sessionId) {
@@ -731,15 +736,19 @@ public class SessionManager {
             }
 
 
-//            Log.d(LOG_TAG, " [testing load session][getSession] id " + id + " startTime " + startTime + " end time " + endTime + " annotateionSetJSONArray " + annotateionSetJSONArray);
-            Log.d(TAG, " test show trip  testgetdata id " + id + " startTime " + startTime + " end time " + endTime + " contextsource " + session.getContextSourceNames());
-
-
             //set annotationset if there is one
             if (annotateionSetJSONArray!=null){
                 AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
                 session.setAnnotationSet(annotationSet);
             }
+
+
+            Log.d(TAG, " test show trip  testgetdata id " + id + " startTime " + startTime + " end time " + endTime + " annotateionSetJSONArray " + annotateionSetJSONArray);
+
+
+            Log.d(TAG, " test show trip  testgetdata id " + id + " startTime " + startTime + " end time " + endTime + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
+
+
         }
 
 
@@ -830,10 +839,7 @@ public class SessionManager {
                 session.setAnnotationSet(annotationSet);
             }
 
-
             sessions.add(session);
-
-            Log.d(TAG, "sessionid : "+sessionid);
 
         }
 
