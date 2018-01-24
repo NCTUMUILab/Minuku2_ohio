@@ -61,8 +61,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
 import edu.ohio.minuku.DataHandler;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;

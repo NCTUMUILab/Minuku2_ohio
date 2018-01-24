@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku_2.model.SessionDataRecord;
 import edu.ohio.minukucore.dao.DAO;

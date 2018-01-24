@@ -18,13 +18,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
 import edu.ohio.minuku.DataHandler;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku_2.R;
-//import edu.ohio.minuku_2.R;
 
 /**
  * Created by Lawrence on 2017/9/16.

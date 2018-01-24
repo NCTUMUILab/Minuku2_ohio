@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.model.Annotation;
@@ -243,7 +243,7 @@ public class MinukuStreamManager implements StreamManager {
 
                 //if this is the first time seeing a session, we should just insert a session
                 if (sessionCount==0){
-                    Log.d(TAG, "test combine there's no session in the db");
+                    Log.d(TAG, "test combine addSessionFlag = true there's no session in the db");
 
                     addSessionFlag = true;
 
@@ -299,7 +299,7 @@ public class MinukuStreamManager implements StreamManager {
                         //get location records from the session
                         boolean isSessionLongEnoughFlag = true;
                         ArrayList<String> resultBySession = null;
-                        resultBySession = SessionManager.getRecordsInSession(Integer.parseInt(sessionIdOfLastSession), DBHelper.LOCATION_TABLE);
+                        resultBySession = SessionManager.getRecordsInSession(Integer.parseInt(sessionIdOfLastSession), DBHelper.STREAM_TYPE_LOCATION);
 
                         Log.d(TAG, "test combine: there are " + resultBySession.size() + " location records"  );
 
@@ -383,7 +383,7 @@ public class MinukuStreamManager implements StreamManager {
 
                         //if the previous session does not have any annotation of which transportation is of the same tag, we should add a new session
                         if (annotations.size() == 0) {
-                            Log.d(TAG, "[test combine] the last session is not the same activity");
+                            Log.d(TAG, "[test combine] addSessionFlag = true  the last session is not the same activity");
                             addSessionFlag = true;
                         }
 
@@ -409,7 +409,7 @@ public class MinukuStreamManager implements StreamManager {
                             }
                             //the session is far from the previous one, it should be a new session
                             else {
-                                Log.d(TAG, "[test combine] the current truip is far from the previous trip, the difference is "
+                                Log.d(TAG, "[test combine] addSessionFlag = true     the current truip is far from the previous trip, the difference is "
                                         + (now - endTimeOfLastSession) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
                                 addSessionFlag = true;
                             }
@@ -422,6 +422,7 @@ public class MinukuStreamManager implements StreamManager {
 
                 //if we need to add a session
                 if (addSessionFlag){
+                    Log.d(TAG, "[test combine] we should add session " + ((int) sessionCount + 1));
 
                     //insert into the session table;
                     int sessionId = (int) sessionCount + 1;
