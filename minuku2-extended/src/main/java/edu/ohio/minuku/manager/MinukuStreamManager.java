@@ -237,23 +237,20 @@ public class MinukuStreamManager implements StreamManager {
 
 
                 /** we firs get the last session in the database because we need to analyze it with the current activity **/
-                ArrayList<String> sessions = DBHelper.queryLastSession();
-                int sessionCount = sessions.size();
 
+                int sessionCount =  (int)DBHelper.querySessionCount();
 
                 //if this is the first time seeing a session, we should just insert a session
                 if (sessionCount==0){
                     Log.d(TAG, "test combine addSessionFlag = true there's no session in the db");
-
                     addSessionFlag = true;
-
                 }
 
                 //there's exizstint session
                 else {
 
-                    //first get the info of the last session
-                    String lastSessionStr = sessions.get(0);
+                    String lastSessionStr = DBHelper.queryLastSession().get(0);
+                    //first get the info of the last session (there is only one row in the result)
 
                     Log.d(TAG, "test combine lastsession str" + lastSessionStr);
 
@@ -265,14 +262,12 @@ public class MinukuStreamManager implements StreamManager {
                     long endTimeOfLastSession = 0;
                     long startTimeOfLastSession = 0;
 
-                    Log.d(TAG, "test combine lastsession str" + lastSessionStr);
-
                     //make string to Long
-                    if (!sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null")) {
+                    if (!sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null") && !sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_END_TIME].equals("")) {
                         endTimeOfLastSession = Long.parseLong(sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_END_TIME]);
                     }
 
-                    if (!sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_START_TIME].equals("null")) {
+                    if (!sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_START_TIME].equals("null") && !sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_START_TIME].equals("")) {
                         startTimeOfLastSession = Long.parseLong(sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_START_TIME]);
                     }
 
@@ -287,11 +282,11 @@ public class MinukuStreamManager implements StreamManager {
                         /** the session has ended remove the session from the ongoing list**/
 
                         //first get the last session id, which is the same as the count of the session in the database
-                        int id = (int) DBHelper.querySessionCount();
-                        Log.d(TAG, "test trip: the previous acitivty is movnig, we're going to  remove the session id " + id );
+                        int sesssionId = sessionCount;
+                        Log.d(TAG, "test combine: the previous acitivty is movnig, we're going to  remove the current session id " + sesssionId );
 
-                        SessionManager.getInstance().removeOngoingSessionid(String.valueOf(id));
-                        Log.d(TAG, "test trip: the previous acitivty is movnig, we remove the session id " + id );
+                        SessionManager.getInstance().removeOngoingSessionid(String.valueOf(sesssionId));
+                        Log.d(TAG, "test combine: the previous acitivty is movnig, we remove the current session id " + sesssionId );
 
 
 
@@ -339,14 +334,19 @@ public class MinukuStreamManager implements StreamManager {
                                 Log.d(TAG, " test combine the trip is too short  ");
 
                                 isSessionLongEnoughFlag = false;
+                            }else {
+                                Log.d(TAG, " test combine the trip is long enough ");
                             }
                         }
 
 
                         //
                         long endTime = getCurrentTimeInMilli();
-                        DBHelper.updateSessionTable(id, endTime, isSessionLongEnoughFlag);
-                        Log.d(TAG, "test trip: the previous acitivty is movnig,after update "  );
+                        DBHelper.updateSessionTable(sesssionId, endTime, isSessionLongEnoughFlag);
+
+                        lastSessionStr = DBHelper.queryLastSession().get(0);
+
+                        Log.d(TAG, "test combine: the previous acitivty is movnig,after update the session is: " +  lastSessionStr );
 
                     }
 

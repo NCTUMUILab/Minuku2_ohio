@@ -996,14 +996,14 @@ public class DBHelper extends SQLiteOpenHelper {
             //execute the query
             Cursor cursor = db.rawQuery(sql, null);
             int columnCount = cursor.getColumnCount();
-            Log.d(TAG, "[test show trip] columnCount " +columnCount);
+//            Log.d(TAG, "[test show trip] columnCount " +columnCount);
             while(cursor.moveToNext()){
-                Log.d(TAG, "[test show trip] cursor" +cursor.getCount());
+//                Log.d(TAG, "[test show trip] cursor" +cursor.getCount());
                 String curRow = "";
                 for (int i=0; i<columnCount; i++){
                     curRow += cursor.getString(i)+ Constants.DELIMITER;
                 }
-                Log.d(TAG, "[test show trip] get result row " +curRow);
+//                Log.d(TAG, "[test show trip] get result row " +curRow);
 
                 rows.add(curRow);
             }
