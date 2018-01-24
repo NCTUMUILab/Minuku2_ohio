@@ -46,7 +46,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
@@ -724,8 +724,8 @@ public class WifiReceiver extends BroadcastReceiver {
             JSONArray timestamps = new JSONArray();
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.LOCATION_TABLE +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
-            Log.d(TAG,"SELECT * FROM "+DBHelper.LOCATION_TABLE +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
+            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.STREAM_TYPE_LOCATION +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
+            Log.d(TAG,"SELECT * FROM "+DBHelper.STREAM_TYPE_LOCATION +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
 
             int rows = transCursor.getCount();
 

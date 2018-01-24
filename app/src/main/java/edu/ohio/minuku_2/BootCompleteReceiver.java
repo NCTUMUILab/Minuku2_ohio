@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku_2.service.BackgroundService;
 import edu.ohio.minuku_2.service.CheckFamiliarOrNotService;

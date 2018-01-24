@@ -33,7 +33,7 @@ import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.FileHelper;
 import edu.ohio.minuku.dao.ActivityRecognitionDataRecordDAO;
 import edu.ohio.minuku.dao.AppUsageDataRecordDAO;

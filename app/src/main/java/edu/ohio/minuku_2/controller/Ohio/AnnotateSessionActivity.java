@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -27,6 +28,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -43,10 +45,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.Data.DataHandler;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku_2.R;
@@ -62,9 +67,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     public static float GOOGLE_MAP_DEFAULT_ZOOM_LEVEL = 13;
     public static LatLng GOOGLE_MAP_DEFAULT_CAMERA_CENTER = new LatLng(24, 120);
 
-    private int sessionid;
-
-    private String sessionkey;
+    private int mSessionId=-1;
     private TextView time, question3, question4;
     private RadioButton ans3_1, ans3_2, ans3_3;
     private RadioButton ans4_1, ans4_2, ans4_3;
@@ -99,6 +102,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.annotate_activity_ohio);
         error1 = false;
         error2 = false;
@@ -106,6 +110,15 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         error4 = false;
         Log.d(TAG, "[test show trip] onCreate AnntoateSessionaACtivity");
 
+        bundle = getIntent().getExtras();
+        mSessionId = Integer.parseInt(bundle.getString("sessionkey_id"));
+        Log.d(TAG,"[test show trip]  on create session id: : " + mSessionId);
+
+
+        MapFragment mapFragment = (MapFragment) getFragmentManager()
+                .findFragmentById(R.id.Mapfragment);
+
+        mapFragment.getMapAsync(this);
     }
 
     @Override
@@ -126,11 +139,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     public void onResume() {
         super.onResume();
 
-        Log.d(TAG,"onResume");
-
-        bundle = getIntent().getExtras();
-
         initAnnotationView();
+
     }
 
     /**
@@ -138,65 +148,26 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
      */
     public void initAnnotationView(){
 
-        sessionkey = bundle.getString("sessionkey_id");
-        Log.d(TAG,"timekey_id : " + sessionkey);
-        try{
-
-            Log.d(TAG,"trip data enter ninitanoateview ");
-
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-//                latLngs = new LoadRecordInSessionAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionkey).get();
-//            else
-//                latLngs = new LoadRecordInSessionAsyncTask().execute(sessionkey).get();
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                results = new LoadRecordInSessionAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionkey).get();
-            else
-                results = new LoadRecordInSessionAsyncTask().execute(sessionkey).get();
-
-            Log.d(TAG,"trip data after execution" + results.toString());
-
-        }catch(InterruptedException e) {
-            Log.d(TAG,"InterruptedException");
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            Log.d(TAG,"ExecutionException");
-            e.printStackTrace();
-        }
-
-
-        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
-
-        /** storing location records after we obain from the database*/
-        for(int index = 0;index < results.size(); index++){
-            String[] separated = results.get(index).split(Constants.DELIMITER);
-            double lat = Double.valueOf(separated[2]);
-            double lng = Double.valueOf(separated[3]);
-
-            LatLng latLng = new LatLng(lat, lng);
-            latLngs.add(latLng);
-        }
-
-
-        Log.d(TAG,"latLngs : " + latLngs);
+//        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+//
+//        /** storing location records after we obain from the database*/
+//        for(int index = 0;index < results.size(); index++){
+//            String[] separated = results.get(index).split(Constants.DELIMITER);
+//            double lat = Double.valueOf(separated[2]);
+//            double lng = Double.valueOf(separated[3]);
+//
+//            LatLng latLng = new LatLng(lat, lng);
+//            latLngs.add(latLng);
+//        }
+//
+//
+//        Log.d(TAG,"latLngs : " + latLngs);
 
 
         /** showing location records on the map **/
-        showRecordingVizualization(latLngs);
+//        showRecordingVizualization(latLngs);
 
 
-
-        time = (TextView)findViewById(R.id.Time);
-        String timeketForShow = null;
-//        String[] timekeys = sessionkey.split("-");
-//        String start = timekeys[0];
-//        String end = timekeys[1];
-        start = results.get(0).split(Constants.DELIMITER)[1];
-        end = results.get(results.size()-1).split(Constants.DELIMITER)[1];
-        start = getmillisecondToDateWithTime(Long.valueOf(start));
-        end = getmillisecondToDateWithTime(Long.valueOf(end));
-        timeketForShow = start+"-"+end;
-        time.setText("Time : "+timeketForShow);
 
         /*
         activityspinner = (Spinner)findViewById(R.id.activityspinner);
@@ -228,6 +199,162 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 //
 //            Toast.makeText(getApplicationContext(), "This trip is still ongoing!", Toast.LENGTH_LONG).show();
 //        }
+
+    }
+
+
+    private void showRecordingVizualization(final int sessionId){
+
+        Log.d(TAG,"[test show trip] enter showRecordingVizualization ");
+        //validate map
+        setUpMapIfNeeded();
+
+        Log.d(TAG, "[test show trip] aftr setUpMapIfNeeded");
+
+        //draw map
+        if (mGoogleMap!=null){
+
+            Log.d(TAG, "[test show trip] Google Map is not null");
+//                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(VisualizationManager. GOOGLE_MAP_DEFAULT_CAMERA_CENTER, 13));
+
+            //if we're reviewing a previous session ( the trip is not ongoing), get session from the database (note that we have to use session id to check instead of a session instance)
+            if (!SessionManager.isSessionOngoing(sessionId)) {
+
+                Log.d(TAG, "[test show trip] the session is NOT in the currently recording session, we should query database");
+                //because there could be many points for already ended trace, so we use asynch to download the annotations
+
+                try{
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                        new LoadDataAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionId).get();
+                    else
+                        new LoadDataAsyncTask().execute(sessionId).get();
+
+                }catch(InterruptedException e) {
+                    Log.d(TAG,"InterruptedException");
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    Log.d(TAG,"ExecutionException");
+                    e.printStackTrace();
+                }
+
+
+            }
+            //the recording is ongoing, so we periodically query the database to show the latest path
+            //TODO: draw my current location from the starting point.
+            else {
+
+                Log.d(TAG, "[test show trip] the session is in the currently recording session");
+
+                final Handler updateMapHandler = new Handler();
+
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+
+                        try{
+
+                            Log.d(TAG, "[test show trip] the session is in the currently recording session, update map!!! Get new points!");
+
+                            //get location points to draw on the map..
+                            ArrayList<LatLng> points = getLocationPointsToDrawOnMap(sessionId);
+
+                            LatLng startLatLng;
+                            //we use endLatLng, which is the user's current location as the center of the camera
+                            LatLng endLatLng;
+
+                            //only has one point
+                            if (points.size()==1){
+
+                                startLatLng  = points.get(0);
+                                endLatLng = points.get(0);
+
+                                showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
+                            }
+                            //when have multiple locaiton points
+                            else if (points.size()>1) {
+
+                                startLatLng  = points.get(0);
+                                endLatLng = points.get(points.size()-1);
+
+                                showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
+                            }
+
+
+                        }catch (IllegalArgumentException e){
+                            //Log.e(LOG_TAG, "Could not unregister receiver " + e.getMessage()+"");
+                        }
+                        updateMapHandler.postDelayed(this, 5*1000);
+                    }
+                };
+
+                /**start repeatedly store the extracted contextual information into Record objects**/
+                updateMapHandler.post(runnable);
+
+            }
+
+        }
+
+    }
+
+    public void showMapWithPaths(GoogleMap map, ArrayList<LatLng> points, LatLng cameraCenter, LatLng startLatLng, LatLng endLatLng) {
+
+        Log.d(TAG, "[test show trips] in showMapWithPaths");
+
+        //map option
+        GoogleMapOptions options = new GoogleMapOptions();
+        options.tiltGesturesEnabled(false);
+        options.rotateGesturesEnabled(false);
+
+        //center the map
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(cameraCenter, 13));
+
+        // Marker start = map.addMarker(new MarkerOptions().position(startLatLng));
+
+        //draw linges between points and add end and start points
+        PolylineOptions pathPolyLineOption = new PolylineOptions().color(Color.RED).geodesic(true);
+        pathPolyLineOption.addAll(points);
+
+        //draw lines
+        Polyline path = map.addPolyline(pathPolyLineOption);
+
+        /**after getting the start and ened point of location trace, we put a marker**/
+        map.addMarker(new MarkerOptions().position(startLatLng).title("Start"))
+                .setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        map.addMarker(new MarkerOptions().position(endLatLng).title("End"));
+
+    }
+
+    public void showMapWithPathsAndCurLocation(GoogleMap map, ArrayList<LatLng> points, LatLng curLoc) {
+
+        Log.d(TAG, "[test show trips] in showMapWithPathssAndCurLocation");
+
+        map.clear();
+
+        //map option
+        GoogleMapOptions options = new GoogleMapOptions();
+        options.tiltGesturesEnabled(false);
+        options.rotateGesturesEnabled(false);
+
+        //get current zoom level
+        float zoomlevel = map.getCameraPosition().zoom;
+
+        //center the map
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, zoomlevel));
+
+        // Marker start = map.addMarker(new MarkerOptions().position(startLatLng));
+        Marker me =  map.addMarker(new MarkerOptions()
+                .position(curLoc)
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.mylocation))
+
+        );
+
+        //draw linges between points and add end and start points
+        PolylineOptions pathPolyLineOption = new PolylineOptions().color(Color.RED).geodesic(true);
+        pathPolyLineOption.addAll(points);
+
+        //draw lines
+        Polyline path = map.addPolyline(pathPolyLineOption);
+
 
     }
 
@@ -365,41 +492,41 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         }
     }
 
-    private String getSessionIdByTimekey(String timekey){
-        Log.d(TAG, "getSessionIdByTimekey");
-
-        timekey = timekey.split("-")[0];
-
-        String sessionid = null;
-
-        try {
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
-                    " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'", null);
-            Log.d(TAG,"SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
-                    " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'");
-            int rows = tripCursor.getCount();
-
-            tripCursor.moveToFirst();
-
-            if(rows!=0){
-                Log.d(TAG,"tripCursor.getString(0) : "+ tripCursor.getString(0));
-                sessionid = tripCursor.getString(0);
-                Log.d(TAG, "sessionid : "+sessionid);
-            }else
-                Log.d(TAG, "rows==0");
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        Log.d(TAG, "sessionid : " + sessionid);
-
-        String sessionids[] = sessionid.split(", ");
-
-        Log.d(TAG, "sessionids 1 : " + sessionids[1]);
-        return sessionids[1];
-    }
+//    private String getSessionIdByTimekey(String timekey){
+//        Log.d(TAG, "getSessionIdByTimekey");
+//
+//        timekey = timekey.split("-")[0];
+//
+//        String sessionid = null;
+//
+//        try {
+//            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+//            Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
+//                    " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'", null);
+//            Log.d(TAG,"SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
+//                    " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'");
+//            int rows = tripCursor.getCount();
+//
+//            tripCursor.moveToFirst();
+//
+//            if(rows!=0){
+//                Log.d(TAG,"tripCursor.getString(0) : "+ tripCursor.getString(0));
+//                sessionid = tripCursor.getString(0);
+//                Log.d(TAG, "sessionid : "+sessionid);
+//            }else
+//                Log.d(TAG, "rows==0");
+//
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//
+//        Log.d(TAG, "sessionid : " + sessionid);
+//
+//        String sessionids[] = sessionid.split(", ");
+//
+//        Log.d(TAG, "sessionids 1 : " + sessionids[1]);
+//        return sessionids[1];
+//    }
 
     private RadioGroup.OnCheckedChangeListener ques2_1Listener = new RadioGroup.OnCheckedChangeListener() {
          public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -674,69 +801,67 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     }*/
 
-    private void showRecordingVizualization(final ArrayList<LatLng> latLngs){
-
-        Log.d(TAG,"trip data showRecordingVizualization");
-
-
-        ((MapFragment) getFragmentManager().findFragmentById(R.id.Mapfragment)).getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap googleMap) {
-
-                Log.d(TAG,"trip data showRecordingVizualization for latlngs " + latLngs.toString());
-                mGoogleMap = googleMap;
-                Log.d(TAG,"trip data safter google mao ");
-
-                LatLng startLatLng = latLngs.get(0);
-                LatLng endLatLng = latLngs.get(latLngs.size() - 1);
-                LatLng middleLatLng = latLngs.get(latLngs.size() / 2);
-
-                Log.d(TAG, "trip data startLatLng : "+startLatLng+"end : "+endLatLng+"middle : "+middleLatLng);
-
-                int i = 1;
-
-                for (LatLng latLng:latLngs) {
-                    Log.d(TAG, "trip data latLng"+ i +" : "+latLng);
-                    i++;
-                }
-
-                /**after getting the start and ened point of location trace, we put a marker**/
-                mGoogleMap.addMarker(new MarkerOptions().position(startLatLng).title("Start"))
-                        .setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                mGoogleMap.addMarker(new MarkerOptions().position(endLatLng).title("End"));
-
-//                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(middle,15.0f));
-                showMapWithPaths(mGoogleMap, latLngs, middleLatLng);
-            }
-        });
-
-
-        /*if(mGoogleMap!=null) {
-//            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(GOOGLE_MAP_DEFAULT_CAMERA_CENTER, GOOGLE_MAP_DEFAULT_ZOOM_LEVEL));
-
-            LatLng nkut = latLngs.get(0);
-            LatLng end = latLngs.get(latLngs.size() - 1);
-            LatLng middle = latLngs.get(latLngs.size() / 2);
-
-            Log.d(TAG, "nkut : "+nkut+"end : "+end+"middle : "+middle);
-
-            ArrayList<LatLng> points = new ArrayList<LatLng>();
-            points.add(nkut);
-            points.add(middle);
-            points.add(end);
-            mGoogleMap.addMarker(new MarkerOptions().position(nkut).title("Here you are."));
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(nkut,15.0f));
-            showMapWithPaths(mGoogleMap, points, middle);
-
-        }*/
-    }
+//    private void showRecordingVizualization(final ArrayList<LatLng> latLngs){
+//
+//        Log.d(TAG,"trip data showRecordingVizualization");
+//
+//
+//        ((MapFragment) getFragmentManager().findFragmentById(R.id.Mapfragment)).getMapAsync(new OnMapReadyCallback() {
+//            @Override
+//            public void onMapReady(GoogleMap googleMap) {
+//
+//                Log.d(TAG,"trip data showRecordingVizualization for latlngs " + latLngs.toString());
+//                mGoogleMap = googleMap;
+//                Log.d(TAG,"trip data safter google mao ");
+//
+//                LatLng startLatLng = latLngs.get(0);
+//                LatLng endLatLng = latLngs.get(latLngs.size() - 1);
+//                LatLng middleLatLng = latLngs.get(latLngs.size() / 2);
+//
+//                Log.d(TAG, "trip data startLatLng : "+startLatLng+"end : "+endLatLng+"middle : "+middleLatLng);
+//
+//                int i = 1;
+//
+//                for (LatLng latLng:latLngs) {
+//                    Log.d(TAG, "trip data latLng"+ i +" : "+latLng);
+//                    i++;
+//                }
+//
+//                /**after getting the start and ened point of location trace, we put a marker**/
+//                mGoogleMap.addMarker(new MarkerOptions().position(startLatLng).title("Start"))
+//                        .setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+//                mGoogleMap.addMarker(new MarkerOptions().position(endLatLng).title("End"));
+//
+////                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(middle,15.0f));
+//                showMapWithPaths(mGoogleMap, latLngs, middleLatLng,startLatLng, middleLatLng );
+//            }
+//        });
+//
+//
+//        /*if(mGoogleMap!=null) {
+////            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(GOOGLE_MAP_DEFAULT_CAMERA_CENTER, GOOGLE_MAP_DEFAULT_ZOOM_LEVEL));
+//
+//            LatLng nkut = latLngs.get(0);
+//            LatLng end = latLngs.get(latLngs.size() - 1);
+//            LatLng middle = latLngs.get(latLngs.size() / 2);
+//
+//            Log.d(TAG, "nkut : "+nkut+"end : "+end+"middle : "+middle);
+//
+//            ArrayList<LatLng> points = new ArrayList<LatLng>();
+//            points.add(nkut);
+//            points.add(middle);
+//            points.add(end);
+//            mGoogleMap.addMarker(new MarkerOptions().position(nkut).title("Here you are."));
+//            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(nkut,15.0f));
+//            showMapWithPaths(mGoogleMap, points, middle);
+//
+//        }*/
+//    }
 
     private void setUpMapIfNeeded() {
 
-        Log.d(TAG,"setUpMapIfNeeded");
+        Log.d(TAG,"test show trip setUpMapIfNeeded");
 
-        if (mGoogleMap==null)
-            map = ((MapFragment) getFragmentManager().findFragmentById(R.id.Mapfragment));
 
 //        mGoogleMap = map.getMap();
 //        mGoogleMap.getMapAsync(this);
@@ -746,9 +871,50 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
+        Log.d(TAG,"test show trip onMapReady");
+
         mGoogleMap = googleMap;
 
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+
+        //setup map
+        Session session=null;
+
+
+        Log.d(TAG,"[test show trip] get session using id " + mSessionId);
+
+        //get session
+        session = SessionManager.getSession(mSessionId);
+
+        Log.d(TAG,"[test show trip] get session using id " + session.getId() + " starting at  " + session.getStartTime() + " and end at " + session.getEndTime());
+
+        //show trip time
+        time = (TextView)findViewById(R.id.Time);
+
+        long startTime = session.getStartTime();
+        long endTime = session.getEndTime();
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_DATE_TEXT_HOUR_MIN);
+        String timelabel = null;
+
+        if (endTime==0){
+            time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - " + ScheduleAndSampleManager.getTimeString(endTime, sdf) );
+        }
+        else {
+
+            if (SessionManager.isSessionOngoing(mSessionId))
+                time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - Now"  );
+            else
+                time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - Unkown"  );
+
+        }
+
+        Log.d(TAG,"[test show trip] setting time label" + time.getText().toString());
+
+        /** After we got a new session id, we retrieve and visualize data for the session**/
+        if (session!=null) {
+            showRecordingVizualization((int) session.getId());
+        }
 
 //        mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
 
@@ -766,26 +932,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     }
 
-    public void showMapWithPaths(GoogleMap map, ArrayList<LatLng> points, LatLng cameraCenter) {
-
-        Log.d(TAG, "trip data showMapWithPaths");
-        //map option
-        GoogleMapOptions options = new GoogleMapOptions();
-        options.tiltGesturesEnabled(false);
-        options.rotateGesturesEnabled(false);
-
-        //center the map
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(cameraCenter, 13));
-
-        // Marker start = map.addMarker(new MarkerOptions().position(startLatLng));
-
-        //draw linges between points and add end and start points
-        PolylineOptions pathPolyLineOption = new PolylineOptions().color(Color.RED).geodesic(true);
-        pathPolyLineOption.addAll(points);
-
-        //draw lines
-        Polyline path = map.addPolyline(pathPolyLineOption);
-    }
 
     private Button.OnClickListener submitting = new Button.OnClickListener() {
         public void onClick(View v) {
@@ -819,9 +965,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 //                String end = timekeys[1];
 //                start = SessionManager.getmillisecondToDateWithTime(Long.valueOf(start));
 //                end = SessionManager.getmillisecondToDateWithTime(Long.valueOf(end));
-
-                Log.d(TAG, "sessionkey : "+ sessionkey);
-
                 addToDB(start, end,
                         ans1, ans2, ans3, ans4, latdata, lngdata);
 
@@ -869,7 +1012,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         }
         annotation.setContent(toContent.toString());
 
-        Session session = new Session(Integer.valueOf(sessionkey));
+        Session session = new Session(mSessionId);
 
         session.addAnnotation(annotation);
 
@@ -982,96 +1125,178 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         }
     }*/
 
-    private class LoadRecordInSessionAsyncTask extends AsyncTask<String, Void, ArrayList<String>> {
+    public ArrayList<LatLng> getLocationPointsToDrawOnMap(int sessionId) {
 
+        Log.d(TAG, "[test show trip] getLocationPointsToDrawOnMap ");
+
+        ArrayList<LatLng> points = new ArrayList<LatLng>();
+
+        //get data from the database
+        ArrayList<String> data = DataHandler.getDataBySession(sessionId, DBHelper.STREAM_TYPE_LOCATION);
+        Log.d(TAG, "[test show trip] getLocationPointsToDrawOnMap  get data:" + data.size() + "rows");
+
+        for (int i=0; i<data.size(); i++){
+
+            String[] record = data.get(i).split(Constants.DELIMITER);
+
+            //TODO: need to get lat and lng from the Data JSON Object from LocationRecord
+
+//            get location parameters
+            double lat = Double.parseDouble(record[2] );
+            double lng = Double.parseDouble(record[3] );
+
+            points.add(new LatLng(lat, lng));
+            // Log.d(LOG_TAG, "[showRecordingVizualization] lat ( " + lat + ", " + lng + " )"  );
+
+        }
+
+        return points;
+    }
+
+    //use Asynk task to load sessions
+    private class LoadDataAsyncTask extends AsyncTask<Integer, Void, ArrayList<LatLng>> {
         private final ProgressDialog dialog = new ProgressDialog(AnnotateSessionActivity.this);
 
         @Override
-        protected void onPreExecute() {
-            Log.d(TAG,"onPreExecute");
-            this.dialog.setMessage("Loading...");
-            this.dialog.setCancelable(false);
-            this.dialog.show();
+        protected ArrayList<LatLng> doInBackground(Integer... params) {
+
+            int sessionId = params[0];
+            ArrayList<LatLng> points = getLocationPointsToDrawOnMap(sessionId);
+
+//            Log.d(TAG, "[test show trip] in doInBackground, after query data using session id "+ sessionId);
+
+            return points;
         }
 
+        // can use UI thread here
         @Override
-        protected ArrayList<String> doInBackground(String... params) {
-            String sessionkey = params[0];
-
-            Log.d(TAG,"sessionkey : " + sessionkey);
-
-//            String timedata[] = sessionkey.split("-");
-//            String startTime = timedata[0];
-
-//            Log.d(TAG,"startTime : " + startTime);
-
-            //TODO use freaking sessionkey to get data. First, get the session id by the sessionkey.
-
-            ArrayList<LatLng> locationDataRecords = null;
-
-            ArrayList<String> resultBySession = null;
-
-            try {
-                sessionid = Integer.valueOf(sessionkey);
-                resultBySession = DBHelper.queryRecordsInSession(DBHelper.LOCATION_TABLE, sessionid);
-
-//                Log.d(TAG,"result after query in doInBagrkound" + resultBySession.toString());
-
-            }catch (Exception e) {
-                locationDataRecords = new ArrayList<LatLng>();
-                Log.d(TAG,"Exception");
-                e.printStackTrace();
-            }
-
-
-            return resultBySession;
-
+        protected void onPreExecute() {
+            Log.d(TAG, "[test show trip] onPreExecute ");
+//
+//            this.dialog.setMessage("Loading...");
+//            this.dialog.show();
         }
-
-
-
-        private String getSessionIdByTimekey(String timekey){
-            String sessionid = null;
-
-            try {
-                SQLiteDatabase db = DBManager.getInstance().openDatabase();
-                Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
-                        " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'", null);
-                Log.d(TAG,"SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
-                        " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'");
-                int rows = tripCursor.getCount();
-
-                tripCursor.moveToFirst();
-
-                if(rows!=0){
-                    Log.d(TAG,"tripCursor.getString(0) : "+ tripCursor.getString(0));
-                    sessionid = tripCursor.getString(0);
-                    Log.d(TAG, "sessionid : "+sessionid);
-                }else
-                    Log.d(TAG, "rows==0");
-
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
-            String sessionids[] = sessionid.split(", ");
-
-            Log.d(TAG, "sessionids 1 : " + sessionids[1]);
-            return sessionids[1];
-        }
-
 
         // onPostExecute displays the results of the AsyncTask.
         @Override
-        protected void onPostExecute(ArrayList<String> result) {
+        protected void onPostExecute(ArrayList<LatLng> points) {
+            super.onPostExecute(points);
 
-            super.onPostExecute(result);
+            Log.d(TAG, "[test show trip] in onPostExecute, the poitns obtained are : " + points.size());
+            if (points.size()>0){
+                LatLng startLatLng  = points.get(0);
+                LatLng endLatLng = points.get(points.size()-1);
+                LatLng middleLagLng = points.get((points.size()/2));
 
-            if (this.dialog.isShowing()) {
-                this.dialog.dismiss();
+                Log.d(TAG, "[test show trips] the session is not in the currently recording session");
+                //we first need to know what visualization we want to use, then we get data for that visualization
+
+                //show maps with path (draw polylines)
+                showMapWithPaths(mGoogleMap, points, middleLagLng, startLatLng, endLatLng);
             }
+
+//            if (this.dialog.isShowing()) {
+//                this.dialog.dismiss();
+//            }
         }
 
+
+
+
     }
+
+
+
+//    private class LoadRecordInSessionAsyncTask extends AsyncTask<String, Void, ArrayList<String>> {
+//
+//        private final ProgressDialog dialog = new ProgressDialog(AnnotateSessionActivity.this);
+//
+//        @Override
+//        protected void onPreExecute() {
+//            Log.d(TAG,"onPreExecute");
+//            this.dialog.setMessage("Loading...");
+//            this.dialog.setCancelable(false);
+//            this.dialog.show();
+//        }
+//
+//        @Override
+//        protected ArrayList<String> doInBackground(String... params) {
+//            String sessionkey = params[0];
+//
+//            Log.d(TAG,"sessionkey : " + sessionkey);
+//
+////            String timedata[] = sessionkey.split("-");
+////            String startTime = timedata[0];
+//
+////            Log.d(TAG,"startTime : " + startTime);
+//
+//            //TODO use freaking sessionkey to get data. First, get the session id by the sessionkey.
+//
+//            ArrayList<LatLng> locationDataRecords = null;
+//
+//            ArrayList<String> resultBySession = null;
+//
+//            try {
+//                sessionid = Integer.valueOf(sessionkey);
+//                resultBySession = DBHelper.queryRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, sessionid);
+//
+////                Log.d(TAG,"result after query in doInBagrkound" + resultBySession.toString());
+//
+//            }catch (Exception e) {
+//                locationDataRecords = new ArrayList<LatLng>();
+//                Log.d(TAG,"Exception");
+//                e.printStackTrace();
+//            }
+//
+//
+//            return resultBySession;
+//
+//        }
+//
+//
+//
+//        private String getSessionIdByTimekey(String timekey){
+//            String sessionid = null;
+//
+//            try {
+//                SQLiteDatabase db = DBManager.getInstance().openDatabase();
+//                Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
+//                        " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'", null);
+//                Log.d(TAG,"SELECT "+ DBHelper.sessionid_col +" FROM " + DBHelper.trip_table +
+//                        " WHERE "+ DBHelper.TIME+ " ='"+ timekey + "'");
+//                int rows = tripCursor.getCount();
+//
+//                tripCursor.moveToFirst();
+//
+//                if(rows!=0){
+//                    Log.d(TAG,"tripCursor.getString(0) : "+ tripCursor.getString(0));
+//                    sessionid = tripCursor.getString(0);
+//                    Log.d(TAG, "sessionid : "+sessionid);
+//                }else
+//                    Log.d(TAG, "rows==0");
+//
+//            }catch (Exception e){
+//                e.printStackTrace();
+//            }
+//
+//            String sessionids[] = sessionid.split(", ");
+//
+//            Log.d(TAG, "sessionids 1 : " + sessionids[1]);
+//            return sessionids[1];
+//        }
+//
+//
+//        // onPostExecute displays the results of the AsyncTask.
+//        @Override
+//        protected void onPostExecute(ArrayList<String> result) {
+//
+//            super.onPostExecute(result);
+//
+//            if (this.dialog.isShowing()) {
+//                this.dialog.dismiss();
+//            }
+//        }
+//
+//    }
 
 }
