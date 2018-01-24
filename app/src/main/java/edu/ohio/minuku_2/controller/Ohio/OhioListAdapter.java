@@ -43,20 +43,17 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
         this.mContext = context;
         this.data = sessions;
         dataPos = new ArrayList<Integer>();
-//        decideThePosFontType();
     }
 
     @Override
     public View getView(int sessionPos, View convertView, ViewGroup parent) {
-//        Log.d(TAG,"test show trip result get view start"  );
+
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.recordinglistview_ohio, parent, false);
 
         TextView textView = (TextView) view.findViewById(R.id.ListText);
 
         Session session = getItem(sessionPos);
-
-//        Log.d(TAG,"test show trip: " + session.getId() );
 
         /**
          * setting the style of the trip title
@@ -73,7 +70,12 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
             String noteText = "No Content Yet";
 
             //show the text of the session with annotation
-            timeLabel = ScheduleAndSampleManager.getTimeString(session.getStartTime());
+
+            startTime = session.getStartTime();
+            endTime = session.getEndTime();
+
+
+            timeLabel = ScheduleAndSampleManager.getTimeString();
             sessionTitle = session.getId()+ ":" + "Trip "+(sessionPos+1)+": "+ timeLabel;
 
 //            Log.d(TAG,  " test show trip session not null time, setting title " + sessionTitle);

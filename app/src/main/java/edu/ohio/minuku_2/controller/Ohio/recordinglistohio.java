@@ -53,13 +53,12 @@ public class recordinglistohio extends Activity {
     private void startAnnotateActivity(int trip_position) {
 
         String sessionId = String.valueOf(mSessions.get(trip_position).getId());
-//        Log.d(TAG, "[test show trip] start AnnotateActivity the session " +sessionId );
         Bundle bundle = new Bundle();
         bundle.putString("sessionkey_id",sessionId);
         bundle.putInt("position_id", trip_position);
         Intent intent = new Intent(recordinglistohio.this, AnnotateSessionActivity.class);
         intent.putExtras(bundle);
-//        Log.d(TAG, "[test show trip] aftger adding extra");
+
         startActivity(intent);
 
     }
@@ -77,7 +76,6 @@ public class recordinglistohio extends Activity {
         listview.setEmptyView(findViewById(R.id.emptyView));
 
         try{
-
 //            locationDataRecords = new ListSessionAsyncTask().execute(mReviewMode).get();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -128,8 +126,10 @@ public class recordinglistohio extends Activity {
     }
 
 
+    /**
+     * Load Session Data from the SessionManager
+     */
     private class ListSessionAsyncTask extends AsyncTask<String, Void, ArrayList<Session> > {
-
 
         private ProgressDialog dialog = null;
         private Context mContext = null;
