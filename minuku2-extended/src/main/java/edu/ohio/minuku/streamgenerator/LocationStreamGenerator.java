@@ -148,9 +148,67 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
 
         //for replay location record
-            startReplayLocationRecordTimer();
+//            startReplayLocationRecordTimer();
 
         this.register();
+    }
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (location != null) {
+            Log.d(TAG, "GPS: "
+                    + location.getLatitude() + ", "
+                    + location.getLongitude() + ", "
+                    + "latestAccuracy: " + location.getAccuracy()
+                    +"Extras : " + location.getExtras());
+
+            // If the location is accurate to 30 meters, it's good enough for us.
+            // Post an update event and exit. //TODO maybe be
+            float dist = 0;
+            float[] results = new float[1];
+
+            Log.d(TAG, "last time GPS : "
+                    + latestLatitude.get() + ", "
+                    + latestLongitude.get() + ", "
+                    + "latestAccuracy: " + location.getAccuracy());
+
+//            Location.distanceBetween(location.getLatitude(),location.getLongitude(), latestLatitude.get(), latestLongitude.get(),results);
+
+            if(!(latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0))
+                dist = results[0];
+            else
+                dist = 1000;
+
+            Log.d(TAG, "dist : " + dist);
+            //if the newest
+            //TODO cancel the dist restriction
+//            if(dist < 100 || (latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0)){
+            // Log.d(TAG, "Location is accurate upto 50 meters");
+                this.latestLatitude.set(location.getLatitude());
+                this.latestLongitude.set(location.getLongitude());
+                latestAccuracy = location.getAccuracy();
+
+            //the lastposition update value timestamp
+            lastposupdate = new Date().getTime();
+
+            StoreToCSV(lastposupdate,location.getLatitude(),location.getLongitude(),location.getAccuracy());
+
+            Log.d(TAG,"onLocationChanged latestLatitude : "+ latestLatitude +" latestLongitude : "+ latestLongitude);
+            Log.d(TAG,"onLocationChanged location : "+this.location);
+
+//            }
+
+            if(startIndoorOutdoor){
+                LatLng latLng = new LatLng(latestLatitude.get(), latestLongitude.get());
+                locForIndoorOutdoor.add(latLng);
+            }else{
+                locForIndoorOutdoor = new ArrayList<LatLng>();
+            }
+
+            StoreToCSV(new Date().getTime(), locForIndoorOutdoor);
+
+        }
     }
 
     @Override
@@ -294,62 +352,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
      * Location Listener events start here.
      */
 
-    @Override
-    public void onLocationChanged(Location location) {
-        if (location != null) {
-            Log.d(TAG, "GPS: "
-                    + location.getLatitude() + ", "
-                    + location.getLongitude() + ", "
-                    + "latestAccuracy: " + location.getAccuracy()
-                    +"Extras : " + location.getExtras());
 
-            // If the location is accurate to 30 meters, it's good enough for us.
-            // Post an update event and exit. //TODO maybe be
-            float dist = 0;
-            float[] results = new float[1];
-
-            Log.d(TAG, "last time GPS : "
-                    + latestLatitude.get() + ", "
-                    + latestLongitude.get() + ", "
-                    + "latestAccuracy: " + location.getAccuracy());
-
-//            Location.distanceBetween(location.getLatitude(),location.getLongitude(), latestLatitude.get(), latestLongitude.get(),results);
-
-            if(!(latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0))
-                dist = results[0];
-            else
-                dist = 1000;
-
-            Log.d(TAG, "dist : " + dist);
-            //if the newest
-            //TODO cancel the dist restriction
-//            if(dist < 100 || (latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0)){
-                // Log.d(TAG, "Location is accurate upto 50 meters");
-//                this.latestLatitude.set(location.getLatitude());
-//                this.latestLongitude.set(location.getLongitude());
-//                latestAccuracy = location.getAccuracy();
-
-                //the lastposition update value timestamp
-                lastposupdate = new Date().getTime();
-
-                StoreToCSV(lastposupdate,location.getLatitude(),location.getLongitude(),location.getAccuracy());
-
-                Log.d(TAG,"onLocationChanged latestLatitude : "+ latestLatitude +" latestLongitude : "+ latestLongitude);
-                Log.d(TAG,"onLocationChanged location : "+this.location);
-
-//            }
-
-            if(startIndoorOutdoor){
-                LatLng latLng = new LatLng(latestLatitude.get(), latestLongitude.get());
-                locForIndoorOutdoor.add(latLng);
-            }else{
-                locForIndoorOutdoor = new ArrayList<LatLng>();
-            }
-
-            StoreToCSV(new Date().getTime(), locForIndoorOutdoor);
-
-        }
-    }
 
     public static void setStartIndoorOutdoor(boolean value){
         startIndoorOutdoor = value;
