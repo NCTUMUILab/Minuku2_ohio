@@ -65,7 +65,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     public static float GOOGLE_MAP_DEFAULT_ZOOM_LEVEL = 13;
     public static LatLng GOOGLE_MAP_DEFAULT_CAMERA_CENTER = new LatLng(24, 120);
 
-    private int mSessionId=-1;
+    private int mSessionId;
+    private Session mSession;
     private TextView time, question3, question4;
     private RadioButton ans3_1, ans3_2, ans3_3;
     private RadioButton ans4_1, ans4_2, ans4_3;
@@ -110,6 +111,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         bundle = getIntent().getExtras();
         mSessionId = Integer.parseInt(bundle.getString("sessionkey_id"));
+
         Log.d(TAG,"[test show trip]  on create session id: : " + mSessionId);
 
 
@@ -137,6 +139,11 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     public void onResume() {
         super.onResume();
 
+        mSession=null;
+        //get session
+        mSession = SessionManager.getSession(mSessionId);
+        Log.d(TAG,"[test show trip] loading session " + mSession.getId() +  " the annotaitons are " + mSession.getAnnotationsSet().toJSONObject().toString());
+
         initAnnotationView();
 
     }
@@ -145,6 +152,12 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
      * this function initialize the view of the annotation acitvity, including quesitonnaire and map
      */
     public void initAnnotationView(){
+
+        initQuestionnaire();
+
+        submit = (Button)findViewById(R.id.submit);
+        submit.setOnClickListener(submitting);
+
 
 //        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
 //
@@ -186,11 +199,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         preplanspinner.setAdapter(preplanList);
         tripspinner.setAdapter(tripList);
         */
-
-        initQuestionnaire();
-
-        submit = (Button)findViewById(R.id.submit);
-        submit.setOnClickListener(submitting);
 
 //        if(ongoing.equals("true")){
 //            submit.setClickable(false);
@@ -1011,6 +1019,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         ContentValues values = new ContentValues();
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
+        //create annoation from the ESM
         Annotation annotation = new Annotation();
 
         JSONObject toContent = new JSONObject();
@@ -1029,15 +1038,16 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         annotation.setContent(toContent.toString());
         annotation.addTag("ESM");
 
-        Session session = new Session(mSessionId);
 
-        //add answer as annotation
-        session.addAnnotation(annotation);
+        Log.d(TAG,"[test show trip] session " + mSession.getId() +  " before add annotation the annotaitons are " + mSession.getAnnotationsSet());
 
-        Log.d(TAG,"[test show trip] session " + session.getId() +  " add annotation" + session.getAnnotationsSet());
+        //add ESM response to annotation
+        mSession.addAnnotation(annotation);
+
+        Log.d(TAG,"[test show trip] session " + mSession.getId() +  "after add annotation now the annotaitons are " + mSession.getAnnotationsSet());
 
         //update session with its annotation to the session table
-        DBHelper.updateSessionTable(session.getId(), session.getEndTime(), session.getAnnotationsSet());
+        DBHelper.updateSessionTable(mSession.getId(), mSession.getEndTime(), mSession.getAnnotationsSet());
 
 
     }

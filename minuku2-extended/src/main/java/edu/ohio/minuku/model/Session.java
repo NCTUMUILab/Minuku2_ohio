@@ -1,5 +1,7 @@
 package edu.ohio.minuku.model;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 public class Session {
@@ -128,7 +130,6 @@ public class Session {
     }
 
     public void setAnnotationSet(AnnotationSet annotationSet){
-		
 		mAnnotationSet = annotationSet;
 	}
 

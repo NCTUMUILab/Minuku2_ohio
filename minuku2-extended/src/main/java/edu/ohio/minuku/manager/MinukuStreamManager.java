@@ -239,16 +239,16 @@ public class MinukuStreamManager implements StreamManager {
                 /** we first see if the this is the first session**/
                 int sessionCount =  (int)DBHelper.querySessionCount();
 
-                //if this is the first time seeing a session, we should just insert a session
+                //if this is the first time seeing a session and the new transportation is neither static nor NA, we should just insert a session
                 if (sessionCount==0
-                        && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
-                        && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
+                        && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                        && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
 
                     Log.d(TAG, "test combine addSessionFlag = true there's no session in the db");
                     addSessionFlag = true;
                 }
                 //there's exizstint sessions in the DB
-                else {
+                else if (sessionCount>0){
 
                     //get the latest session (Which should be the ongoing one)
                     String lastSessionStr = DBHelper.queryLastSession().get(0);

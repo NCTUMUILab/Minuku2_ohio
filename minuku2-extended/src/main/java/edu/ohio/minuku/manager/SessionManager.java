@@ -736,15 +736,19 @@ public class SessionManager {
             }
 
 
-//            Log.d(LOG_TAG, " [testing load session][getSession] id " + id + " startTime " + startTime + " end time " + endTime + " annotateionSetJSONArray " + annotateionSetJSONArray);
-            Log.d(TAG, " test show trip  testgetdata id " + id + " startTime " + startTime + " end time " + endTime + " contextsource " + session.getContextSourceNames());
-
-
             //set annotationset if there is one
             if (annotateionSetJSONArray!=null){
                 AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
                 session.setAnnotationSet(annotationSet);
             }
+
+
+            Log.d(TAG, " test show trip  testgetdata id " + id + " startTime " + startTime + " end time " + endTime + " annotateionSetJSONArray " + annotateionSetJSONArray);
+
+
+            Log.d(TAG, " test show trip  testgetdata id " + id + " startTime " + startTime + " end time " + endTime + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
+
+
         }
 
 
@@ -834,7 +838,6 @@ public class SessionManager {
                 AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
                 session.setAnnotationSet(annotationSet);
             }
-
 
             sessions.add(session);
 

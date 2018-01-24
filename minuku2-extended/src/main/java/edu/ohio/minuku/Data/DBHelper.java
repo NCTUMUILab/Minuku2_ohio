@@ -1106,7 +1106,7 @@ public class DBHelper extends SQLiteOpenHelper {
             //TODO get the col name after complete the annotate part.
             values.put(COL_SESSION_END_TIME, endTime);
             //beacuse only one data(annotation) exist.
-            values.put(COL_SESSION_ANNOTATION_SET, annotationSet.toJSONObject().toString());
+            values.put(COL_SESSION_ANNOTATION_SET, annotationSet.toString());
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 
