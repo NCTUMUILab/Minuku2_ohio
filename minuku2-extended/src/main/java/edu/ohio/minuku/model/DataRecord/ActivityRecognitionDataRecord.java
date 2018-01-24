@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import android.util.Log;
 
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minukucore.model.DataRecord;
@@ -134,7 +133,7 @@ public class ActivityRecognitionDataRecord implements DataRecord {
 
     public String getTimeString(){
 
-        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
         mTimestring = sdf_now.format(_timestamp);
 
         return mTimestring;

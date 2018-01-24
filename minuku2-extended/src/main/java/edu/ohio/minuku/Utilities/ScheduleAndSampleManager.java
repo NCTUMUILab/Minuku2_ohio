@@ -16,8 +16,16 @@ public class ScheduleAndSampleManager {
 	/**convert long to timestring**/
 	public static String getTimeString(long time){
 
-		SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+		SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
 		String currentTimeString = sdf_now.format(time);
+
+		return currentTimeString;
+	}
+
+
+	public static String getTimeString(long time, SimpleDateFormat sdf){
+
+		String currentTimeString = sdf.format(time);
 
 		return currentTimeString;
 	}
@@ -27,12 +35,6 @@ public class ScheduleAndSampleManager {
 		return getTimeString(getCurrentTimeInMillis());
 	}
 
-	public static String getTimeString(long time, SimpleDateFormat sdf){
-
-		String currentTimeString = sdf.format(time);
-
-		return currentTimeString;
-	}
 
 	/**get the current time in milliseconds**/
 	public static long getCurrentTimeInMillis(){

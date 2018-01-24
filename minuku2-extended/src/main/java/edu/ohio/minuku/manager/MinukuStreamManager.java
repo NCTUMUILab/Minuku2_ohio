@@ -498,7 +498,7 @@ public class MinukuStreamManager implements StreamManager {
     /**Generate a formated time string (in the format of "yyyy-MM-dd HH:mm:ss" **/
     private static String getTimeString(long time) {
 
-        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
         String timeString = sdf_now.format(time);
 
         return timeString;

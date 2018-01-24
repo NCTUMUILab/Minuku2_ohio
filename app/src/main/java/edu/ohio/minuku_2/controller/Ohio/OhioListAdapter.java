@@ -9,12 +9,18 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.Session;
+import edu.ohio.minuku_2.Constant;
 import edu.ohio.minuku_2.R;
 
 /**
@@ -60,13 +66,11 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
          */
 
         //if there's not annotation, put the text in red
-
         if (session!=null){
 
-            String content;
             String sessionTitle = null;
             String timeLabel=null;
-            String labelText = "No Label Yet";
+            String labelStr = "No Label";
             String noteText = "No Content Yet";
 
             //show the text of the session with annotation
@@ -74,46 +78,41 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
             startTime = session.getStartTime();
             endTime = session.getEndTime();
 
+            //format the time string
+            SimpleDateFormat sdf_minute = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_MINUTE_SLASH);
+            timeLabel = ScheduleAndSampleManager.getTimeString(startTime,sdf_minute);
 
-            timeLabel = ScheduleAndSampleManager.getTimeString();
-            sessionTitle = session.getId()+ ":" + "Trip "+(sessionPos+1)+": "+ timeLabel;
+            //try to the find the transportation mode provided by the user. It is in the annotaiton with ESM tag
+            ArrayList<Annotation> annotations = session.getAnnotationsSet().getAnnotationByTag("ESM");
 
-//            Log.d(TAG,  " test show trip session not null time, setting title " + sessionTitle);
+            //{"Entire_session":true,"Tag":["ESM"],"Content":"{\"ans1\":\"Walking outdoors.\",\"ans2\":\"Food\",\"ans3\":\"No\",\"ans4\":\"Right before\"}"}
+            if (annotations.size()>0){
+                try {
+                    String content = annotations.get(0).getContent();
+                    JSONObject contentJSON = new JSONObject(content);
+                    Log.d(TAG, "[test show trip] the contentofJSON ESMJSONObject  is " + contentJSON );
+                    labelStr = contentJSON.getString("ans1");
 
-            //if there's annotaiton in the session
-            if (session.getAnnotationsSet()!=null && session.getAnnotationsSet().getAnnotations()!=null) {
-                //get annotation
-                for (int j=0; j<session.getAnnotationsSet().getAnnotations().size(); j++) {
-
-                    Annotation annotation = session.getAnnotationsSet().getAnnotations().get(j);
-                    content = annotation.getContent();
-
-                    //the annotation is the label
-                    if (annotation.getTags().contains("Label")){
-                        labelText = content;
-                    }
-                    //the annotation is the note
-                    if (annotation.getTags().contains("Note")){
-                        noteText = content;
-                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-
-                sessionTitle += " : " + labelText;
-                Log.d(TAG,  " test show trip session not null time, adding annotation to title, and become " + sessionTitle);
-
-                //if they've edited, put the text in green
-                textView.setTextColor(Color.RED);
-
             }
 
-            //if there's no annotation, put the text in red
+
+            sessionTitle = timeLabel + " - " + labelStr;
+
+            //if there's annotaiton in the session
+            if (!labelStr.equals("No Label")) {
+                //if they've edited, put the text in green
+                textView.setTextColor(Color.RED);
+            }
+            //if there's no annotation
             else {
                 textView.setTextColor(Color.DKGRAY);
             }
 
             //set the title of the view
             textView.setText(sessionTitle);
-
 
             Log.d(TAG, "[test show trip] the session id is " + session.getId() + " start Time is " + session.getStartTime() + " session title " + textView.getText().toString() );
             // My layout has only one TextView
