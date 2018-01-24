@@ -28,7 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.R;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
@@ -64,8 +64,8 @@ public class SessionManager {
     public static final String ANNOTATION_PROPERTIES_CONTENT = "Content";
     public static final String ANNOTATION_PROPERTIES_TAG = "Tag";
 
-    public static final long SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION = 2 * Constants.MILLISECONDS_PER_MINUTE;
-    public static final long SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION = 2 * Constants.MILLISECONDS_PER_MINUTE;
+    public static final long SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION = 1 * Constants.MILLISECONDS_PER_MINUTE;
+    public static final long SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION = 1 * Constants.MILLISECONDS_PER_MINUTE;
     public static final long SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION = 100;  // meters;
 
     public static int SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR = 24;
@@ -80,7 +80,7 @@ public class SessionManager {
 
     private static SessionManager instance;
 
-    private ArrayList<String> ongoingSessionidList;
+    private static ArrayList<String> mOngoingSessionIdList;
 
     private SharedPreferences sharedPrefs;
     private static SharedPreferences.Editor editor;
@@ -97,7 +97,7 @@ public class SessionManager {
         sessionid = "0";
 //        sessionid_unStatic = 0;
 
-        ongoingSessionidList = new ArrayList<String>();
+        mOngoingSessionIdList = new ArrayList<String>();
 
 
         sessionid_unStatic = sharedPrefs.getInt("sessionid_unStatic",0);
@@ -138,22 +138,40 @@ public class SessionManager {
         return SessionManager.instance;
     }
 
-    public ArrayList<String> getOngoingSessionidList() {
-        return ongoingSessionidList;
+    public static boolean isSessionOngoing(int sessionId) {
+
+        Log.d(TAG, " [test show trips] tyring to see if the session is ongoing:" + sessionId);
+
+        for (int i = 0; i< mOngoingSessionIdList.size(); i++){
+            //       Log.d(LOG_TAG, " [getCurRecordingSession] looping to " + i + "th session of which the id is " + mCurRecordingSessions.get(i).getId());
+
+            if (mOngoingSessionIdList.get(i).equals(String.valueOf(sessionId))){
+                return true;
+            }
+        }
+        Log.d(TAG, " [test show trips] the session is not ongoing:" + sessionId);
+
+        return false;
     }
 
-    public void setOngoingSessionidList(ArrayList<String> ongoingSessionidList) {
-        this.ongoingSessionidList = ongoingSessionidList;
+    public ArrayList<String> getmOngoingSessionIdList() {
+        return mOngoingSessionIdList;
+    }
+
+    public void setmOngoingSessionIdList(ArrayList<String> mOngoingSessionIdList) {
+        mOngoingSessionIdList = mOngoingSessionIdList;
     }
 
     public void addOngoingSessionid(String id) {
-        this.ongoingSessionidList.add(id);
+        edu.ohio.minuku.logger.Log.d(TAG, "test replay: adding ongonig session " + id );
+        this.mOngoingSessionIdList.add(id);
+
     }
 
     public void removeOngoingSessionid(String id) {
-        edu.ohio.minuku.logger.Log.d(TAG, "test trip: inside removeongogint seesion renove " + id );
-        this.ongoingSessionidList.remove(id);
-        edu.ohio.minuku.logger.Log.d(TAG, "test trip: inside removeongogint seesion the ongoiong list is  " + ongoingSessionidList.toString() );
+        edu.ohio.minuku.logger.Log.d(TAG, "test replay: inside removeongogint seesion renove " + id );
+        this.mOngoingSessionIdList.remove(id);
+        edu.ohio.minuku.logger.Log.d(TAG, "test replay: inside removeongogint seesion the ongoiong list is  " + mOngoingSessionIdList.toString() );
     }
 
     public void setTrip(LocationDataRecord entity) {
@@ -442,7 +460,7 @@ public class SessionManager {
             Session session = sessions.get(index);
             int sessionid = session.getId();
 
-            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.LOCATION_TABLE, sessionid);
+            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, sessionid);
 
             //notification
             notiQuerySessions();
@@ -657,6 +675,75 @@ public class SessionManager {
         Log.d(TAG,"getTripDatafromSQLite total time : "+(new Date().getTime() - funcStartTime)/1000);
 
         return times;
+    }
+
+
+    public static Session getSession (int sessionId) {
+
+        ArrayList<String> res =  DBHelper.querySession(sessionId);
+        Log.d(TAG, "[test show trip]query session from LocalDB is " + res);
+        Session session = null;
+
+        for (int i=0; i<res.size() ; i++) {
+
+            String sessionStr = res.get(i);
+
+            //split each row into columns
+            String[] separated = sessionStr.split(Constants.DELIMITER);
+
+            /** get properties of the session **/
+            int id = Integer.parseInt(separated[DBHelper.COL_INDEX_SESSION_ID]);
+            long startTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_START_TIME]);
+
+
+            /** 1. create sessions from the properies obtained **/
+            session = new Session(id, startTime);
+
+            /**2. get end time (or time of the last record) of the sesison**/
+
+            long endTime = 0;
+            //the session could be still ongoing..so we need to check where's endTime
+            Log.d(TAG, "[test show trip] separated[DBHelper.COL_INDEX_SESSION_END_TIME] " + separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
+            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("")){
+                endTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
+            }
+            //there 's no end time of the session, we take the time of the last record
+            else {
+
+                //TODO this should be the last record of the session. For now, we just use the current time
+                endTime= ScheduleAndSampleManager.getCurrentTimeInMillis();
+                Log.d(TAG, "[test show trip] testgetdata the end time is now:  " + ScheduleAndSampleManager.getTimeString(endTime));
+            }
+
+            //set end time
+            session.setEndTime(endTime);
+
+            /** 3. get annotaitons associated with the session **/
+            JSONObject annotationSetJSON = null;
+            JSONArray annotateionSetJSONArray = null;
+            try {
+                if (!separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET].equals("null")){
+                    annotationSetJSON = new JSONObject(separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET]);
+                    annotateionSetJSONArray = annotationSetJSON.getJSONArray(ANNOTATION_PROPERTIES_ANNOTATION);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+//            Log.d(LOG_TAG, " [testing load session][getSession] id " + id + " startTime " + startTime + " end time " + endTime + " annotateionSetJSONArray " + annotateionSetJSONArray);
+            Log.d(TAG, " test show trip  testgetdata id " + id + " startTime " + startTime + " end time " + endTime + " contextsource " + session.getContextSourceNames());
+
+
+            //set annotationset if there is one
+            if (annotateionSetJSONArray!=null){
+                AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
+                session.setAnnotationSet(annotationSet);
+            }
+        }
+
+
+        return session;
     }
 
     public static ArrayList<Session> getRecentSessions() {

@@ -2,8 +2,6 @@ package edu.ohio.minuku_2.controller.Ohio;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,23 +9,13 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
-import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
-import edu.ohio.minuku.manager.DBManager;
-import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku_2.R;
-
-import static edu.ohio.minuku.config.Constants.sharedPrefString;
 
 /**
  * Created by Lawrence on 2017/8/29.

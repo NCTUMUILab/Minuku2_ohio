@@ -61,16 +61,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.model.DataRecord.ConnectivityDataRecord;
-import edu.ohio.minuku.model.DataRecord.TelephonyDataRecord;
-import edu.ohio.minuku.service.ActivityRecognitionService;
 import edu.ohio.minuku.streamgenerator.ConnectivityStreamGenerator;
 import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
-import edu.ohio.minuku.streamgenerator.TelephonyStreamGenerator;
 import edu.ohio.minuku_2.R;
 import edu.ohio.minuku_2.controller.Ohio.linkListohio;
 import edu.ohio.minuku_2.model.CheckFamiliarOrNotDataRecord;

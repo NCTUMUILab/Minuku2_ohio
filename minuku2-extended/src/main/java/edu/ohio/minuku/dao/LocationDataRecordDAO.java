@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.config.UserPreferences;
 import edu.ohio.minuku.logger.Log;
@@ -123,7 +123,10 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
             values.put(DBHelper.Provider_col, entity.getProvider());
             values.put(DBHelper.COL_SESSION_ID, entity.getSessionid());
 
-            db.insert(DBHelper.LOCATION_TABLE, null, values);
+            Log.e(TAG,"[test replay dao] to isnert LocationRecord session id"+ values.get(DBHelper.COL_SESSION_ID));
+
+
+            db.insert(DBHelper.STREAM_TYPE_LOCATION, null, values);
         }
         catch(NullPointerException e){
             e.printStackTrace();
@@ -136,9 +139,9 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
 
     public void query_counting(){
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
-        Cursor latitudeCursor = db.rawQuery("SELECT "+ DBHelper.latitude_col +" FROM "+ DBHelper.LOCATION_TABLE, null);
-        Cursor longitudeCursor = db.rawQuery("SELECT "+ DBHelper.longitude_col +" FROM "+ DBHelper.LOCATION_TABLE, null);
-        Cursor AccuracyCursor = db.rawQuery("SELECT "+ DBHelper.Accuracy_col +" FROM "+ DBHelper.LOCATION_TABLE, null);
+        Cursor latitudeCursor = db.rawQuery("SELECT "+ DBHelper.latitude_col +" FROM "+ DBHelper.STREAM_TYPE_LOCATION, null);
+        Cursor longitudeCursor = db.rawQuery("SELECT "+ DBHelper.longitude_col +" FROM "+ DBHelper.STREAM_TYPE_LOCATION, null);
+        Cursor AccuracyCursor = db.rawQuery("SELECT "+ DBHelper.Accuracy_col +" FROM "+ DBHelper.STREAM_TYPE_LOCATION, null);
 
         int latituderow    = latitudeCursor.getCount();
         int latitudecol    = latitudeCursor.getColumnCount();
@@ -154,7 +157,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
 
     public void query_getAll(){
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
-        Cursor latitudeCursor = db.rawQuery("SELECT * FROM "+ DBHelper.LOCATION_TABLE, null);
+        Cursor latitudeCursor = db.rawQuery("SELECT * FROM "+ DBHelper.STREAM_TYPE_LOCATION, null);
 
         Log.d(TAG, latitudeCursor.toString());
     }

@@ -148,7 +148,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
 
         //for replay location record
-        startReplayLocationRecordTimer();
+            startReplayLocationRecordTimer();
 
         this.register();
     }
@@ -223,25 +223,36 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     @Override
     public boolean updateStream() {
-        Log.d(TAG, "Update stream called.");
 
         LocationDataRecord newlocationDataRecord;
+        String session_id = "null";
+
+        int countOfOngoingSession = SessionManager.getInstance().getmOngoingSessionIdList().size();
+
+        //if there exists an ongoing session
+        if (countOfOngoingSession>0){
+            session_id = SessionManager.getInstance().getmOngoingSessionIdList().get(0);
+        }
+
+        Log.d(TAG, "[test replay] Update stream  ssession is " + session_id);
+
         try {
             newlocationDataRecord = new LocationDataRecord(
                     (float) latestLatitude.get(),
                     (float) latestLongitude.get(),
                     latestAccuracy,
                     //TODO improve it to ArrayList, ex. the session id should be "0, 10".
-                    String.valueOf(SessionManager.getInstance().getOngoingSessionidList().get(0)));
+                    session_id);
         }catch (IndexOutOfBoundsException e){
             e.printStackTrace();
             //no session now
             newlocationDataRecord = new LocationDataRecord(
                     (float) latestLatitude.get(),
                     (float) latestLongitude.get(),
-                    latestAccuracy);
+                    latestAccuracy,
+                    session_id);
         }
-        Log.e(TAG,"[test replay] newlocationDataRecord latestLatitude : "+ latestLatitude.get()+" latestLongitude : "+ latestLongitude.get());
+        Log.e(TAG,"[test replay] newlocationDataRecord latestLatitude : "+ latestLatitude.get()+" latestLongitude : "+ latestLongitude.get() + "  session_id " +  session_id);
 
         MinukuStreamManager.getInstance().setLocationDataRecord(newlocationDataRecord);
         toCheckFamiliarOrNotLocationDataRecord = newlocationDataRecord;
@@ -504,7 +515,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     //the lastposition update value timestamp
                     lastposupdate = new Date().getTime();
 
-//                    android.util.Log.d(TAG, "[test replay] going to feed location " +   locationDataRecord.getLatitude()+  " :"  + locationDataRecord.getLongitude()  +" at index " + locationRecordCurIndex  + " in the location streamgenerator");
+                    android.util.Log.d(TAG, "[test replay] going to feed location " +   locationDataRecord.getLatitude()+  " :"  + locationDataRecord.getLongitude()  +" at index " + locationRecordCurIndex  + " in the location streamgenerator");
 
 
                     //set Location
