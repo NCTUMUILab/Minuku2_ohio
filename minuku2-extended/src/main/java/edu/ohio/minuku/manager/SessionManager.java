@@ -833,6 +833,8 @@ public class SessionManager {
 
             sessions.add(session);
 
+            Log.d(TAG, "sessionid : "+sessionid);
+
         }
 
         return sessions;

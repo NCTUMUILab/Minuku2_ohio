@@ -8,8 +8,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,21 +18,23 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import edu.ohio.minuku.DataHandler;
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku_2.R;
-//import edu.ohio.minuku_2.R;
 
 /**
  * Created by Lawrence on 2017/9/16.
  */
 
-public class linkListohio extends Activity {
+public class SurveyActivity extends Activity {
 
-    private final static String TAG = "linkListohio";
+    private final static String TAG = "SurveyActivity";
 
+    private Button surveyButton, testButton;
+    private TextView totalView, missedView, openedView;
     private ListView listview;
     private ArrayList<String> data;
 
@@ -48,9 +51,6 @@ public class linkListohio extends Activity {
 
         Log.d(TAG,"onResume");
 
-        data = new ArrayList<String>();
-        data = getData();
-
         initlinkListohio();
 
     }
@@ -59,42 +59,76 @@ public class linkListohio extends Activity {
 
         Log.d(TAG,"initlinkListohio");
 
-        listview = (ListView) findViewById(R.id.linkList);
-        listview.setEmptyView(findViewById(R.id.emptyView));
+        /* preparing all the data for this page. */
+        long startTime = -9999;
+        long endTime = -9999;
+        String startTimeString = "";
+        String endTimeString = "";
 
-        OhioLinkListAdapter ohioLinkListAdapter = new OhioLinkListAdapter(
-                this,
-                R.id.recording_list,
-                data
-        );
+        Calendar cal = Calendar.getInstance();
+        Date date = new Date();
+        cal.setTime(date);
+        int Year = cal.get(Calendar.YEAR);
+        int Month = cal.get(Calendar.MONTH)+1;
+        int Day = cal.get(Calendar.DAY_OF_MONTH);
 
-        listview.setAdapter(ohioLinkListAdapter);
+        startTimeString = makingDataFormat(Year, Month, Day);
+        endTimeString = makingDataFormat(Year, Month, Day+1);
+        startTime = getSpecialTimeInMillis(startTimeString);
+        endTime = getSpecialTimeInMillis(endTimeString);
 
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        data = new ArrayList<String>();
+        data = DataHandler.getSurveyData(startTime, endTime);
+
+        Log.d(TAG, "SurveyData : "+ data.toString());
+
+
+        //setting the page view
+        surveyButton = (Button) findViewById(R.id.surveyButton);
+        surveyButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onClick(View view) {
 
-                String link = OhioLinkListAdapter.data.get(position);
+                //set opened time.
+                //if they click it, set the openFlag to 1.
+                String id = data.get(data.size()-1).split(Constants.DELIMITER)[0];
+                DataHandler.updateSurveyOpenFlagAndTime(id);
 
-                String posTime = getLinkTime(position);
+                //get the latest link in the surveyLink table.
+                String link = data.get(data.size()-1).split(Constants.DELIMITER)[1];
 
-                //TODO update the value in the DB.
-                SQLiteDatabase db = DBManager.getInstance().openDatabase();
+                Log.d(TAG, "the latest link is : "+link);
 
-                String strSQL = "UPDATE "+ OhioLinkListAdapter.taskTable +" SET "+DBHelper.clickornot_col
-                        +" = "+ 1 +" WHERE "+DBHelper.TIME+ " = "+ posTime;
+                Intent resultIntent = new Intent(Intent.ACTION_VIEW);
+                resultIntent.setData(Uri.parse(link)); //get the link from adapter
 
-                db.execSQL(strSQL);
+                startActivity(resultIntent);
 
-                if(OhioLinkListAdapter.dataPos.contains(position)) {
-
-                    Intent resultIntent = new Intent(Intent.ACTION_VIEW);
-                    resultIntent.setData(Uri.parse(link)); //get the link from adapter
-
-                    startActivity(resultIntent);
-                }
             }
         });
+
+        //parsing the data
+        int total = data.size();
+        int missCount = 0;
+        int openCount = 0;
+
+        for(String datapart : data){
+            //if the link havn't been opened.
+            if(datapart.split(Constants.DELIMITER)[5].equals("0"))
+                missCount++;
+            else if(datapart.split(Constants.DELIMITER)[5].equals("1"))
+                openCount++;
+        }
+
+
+        totalView = (TextView) findViewById(R.id.totalView);
+        missedView = (TextView) findViewById(R.id.missedView);
+        openedView = (TextView) findViewById(R.id.openedView);
+
+        totalView.setText(String.valueOf(total));
+        missedView.setText(String.valueOf(missCount));
+        openedView.setText(String.valueOf(openCount));
+
     }
 
     @Override
@@ -146,15 +180,15 @@ public class linkListohio extends Activity {
             taskTable = DBHelper.intervalSampleLinkList_table;
         */
 
-        String taskTable = DBHelper.surveyLinkList_table;
+        String taskTable = DBHelper.surveyLink_table;
 
         try {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
-            Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.clickornot_col+", "+ DBHelper.link_col +" FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
+            Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.openFlag_col +", "+ DBHelper.link_col +" FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
                     +DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ORDER BY "+DBHelper.TIME+" DESC", null);
 
-            Log.d(TAG, "SELECT "+ DBHelper.clickornot_col+", "+ DBHelper.link_col +" FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
+            Log.d(TAG, "SELECT "+ DBHelper.openFlag_col +", "+ DBHelper.link_col +" FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
                     +DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ORDER BY "+DBHelper.TIME+" DESC");
 
             //get all data from cursor
@@ -211,7 +245,7 @@ public class linkListohio extends Activity {
     }
 
     private long getSpecialTimeInMillis(String givenDateFormat){
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE_Slash);
         long timeInMilliseconds = 0;
         try {
             Date mDate = sdf.parse(givenDateFormat);

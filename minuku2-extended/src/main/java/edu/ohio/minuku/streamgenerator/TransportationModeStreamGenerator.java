@@ -187,6 +187,9 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
 
         mStream.add(transportationModeDataRecord);
         Log.d(TAG, "TransportationMode to be sent to event bus" + transportationModeDataRecord);
+
+        MinukuStreamManager.getInstance().setTransportationModeDataRecord(transportationModeDataRecord);
+
         // also post an event.
         EventBus.getDefault().post(transportationModeDataRecord);
         try {

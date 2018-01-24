@@ -141,17 +141,17 @@ public class OhioLinkListAdapter extends ArrayAdapter<String> {
 //        else
 //            taskTable = DBHelper.intervalSampleLinkList_table;
 
-        taskTable = DBHelper.surveyLinkList_table;
+        taskTable = DBHelper.surveyLink_table;
 
         //get all data in cursor
         ArrayList<Integer> dataInCursor = new ArrayList<Integer>();
         try {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
-            Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.clickornot_col+", "+ DBHelper.link_col +" FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
+            Cursor tripCursor = db.rawQuery("SELECT "+ DBHelper.openFlag_col +", "+ DBHelper.link_col +" FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
                     +DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ORDER BY "+DBHelper.TIME+" DESC", null);
 
-            Log.d(TAG, "SELECT "+ DBHelper.clickornot_col+", "+ DBHelper.link_col +" FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
+            Log.d(TAG, "SELECT "+ DBHelper.openFlag_col +", "+ DBHelper.link_col +" FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
                     +DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ORDER BY "+DBHelper.TIME+" DESC"); //TODO check its working or not.
 
             //get all data from cursor
