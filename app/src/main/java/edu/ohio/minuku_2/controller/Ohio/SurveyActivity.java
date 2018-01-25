@@ -114,6 +114,8 @@ public class SurveyActivity extends Activity {
 
         if(total == 0){
             surveyButton.setEnabled(false);
+        }else{
+            surveyButton.setEnabled(true);
         }
 
         for(String datapart : data){
