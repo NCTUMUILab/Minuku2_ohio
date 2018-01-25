@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Array;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -63,12 +64,18 @@ import javax.net.ssl.X509TrustManager;
 
 import edu.ohio.minuku.DataHandler;
 import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
+import edu.ohio.minuku.manager.SessionManager;
+import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.DataRecord.ConnectivityDataRecord;
+import edu.ohio.minuku.model.Session;
+import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku.streamgenerator.ConnectivityStreamGenerator;
 import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
+import edu.ohio.minuku_2.Constant;
 import edu.ohio.minuku_2.R;
 import edu.ohio.minuku_2.controller.Ohio.SurveyActivity;
 import edu.ohio.minuku_2.model.CheckFamiliarOrNotDataRecord;
@@ -580,34 +587,41 @@ public class CheckFamiliarOrNotService extends Service {
 
                 Log.d(TAG, "CheckFamiliarOrNotRunnable");
 
+                //check if the
                 Date curDate = new Date(System.currentTimeMillis());
                 String dateformat = "yyyy/MM/dd";
                 SimpleDateFormat df = new SimpleDateFormat(dateformat);
                 today = df.format(curDate);
 
-                String dateformat2 = "dd";
-                SimpleDateFormat df2 = new SimpleDateFormat(dateformat2);
-                String todayDate = df2.format(curDate);
 
-                Log.d(TAG, "todayDate : " + todayDate);
+                /** setting third of the day**/
 
-                //setting third of the day
+                //get sleep time and get up time from sharedpreference
                 //TODO set it back to startSleepingTime: 22:00 and endSleepingTime: 08:00
                 String startSleepingTime = sharedPrefs.getString("SleepingStartTime","22:00");
                 String endSleepingTime = sharedPrefs.getString("SleepingEndTime","08:00");
 
-                Log.d(TAG,"startSleepingTime : "+ startSleepingTime);
-                Log.d(TAG,"endSleepingTime : "+ endSleepingTime);
+                Log.d(TAG,"startSleepingTime : "+ startSleepingTime + "endSleepingTime : "+ endSleepingTime);
 
-                long endDay_settingthird = getSpecialTimeInMillis(today+" "+startSleepingTime+":00");
+                //calculate the bed time and gettime for today
+                long bedTime = getSpecialTimeInMillis(today+" "+startSleepingTime+":00");
                 long startDay_settingthird = getSpecialTimeInMillis(today+" "+endSleepingTime+":00");
 
-                long third_interval = (endDay_settingthird - startDay_settingthird)/3;
-                long first_third = startDay_settingthird + third_interval;
-                long second_third = startDay_settingthird + third_interval * 2;
-                long third_third = startDay_settingthird + third_interval * 3;
+                //get the initial point of each third
+
+                //awake time is between the time of gettuping and going to bed
+                long awakeTime = bedTime - startDay_settingthird;
+
+                //the amount for each third
+                long third_interval = (awakeTime)/3;
+
+                //the endtime of the first, second, third third
+                long endOfFirstThird = startDay_settingthird + third_interval;
+                long endOfSecondThird = startDay_settingthird + third_interval * 2;
+                long endOfThirdThird = startDay_settingthird + third_interval * 3;
 
                 current_hour = getCurrentHour();
+
 
                 Log.d(TAG, "today is " + today);
 
@@ -650,224 +664,80 @@ public class CheckFamiliarOrNotService extends Service {
                     settingIntervalSampleing(-9999);
 
 
-                    //Counting the day of the experiments
-                    int TaskDayCount = sharedPrefs.getInt("TaskDayCount", Constants.TaskDayCount);
-                    TaskDayCount++;
-
-                    if ((TaskDayCount - 1) % 7 == 0) { //1, 8, 15
-                        weekNum++;
-                    }
-
-                    dailySurveyNum = TaskDayCount % 7;
-                    if (dailySurveyNum == 0)
-                        dailySurveyNum = 7;
-
-                    dailyResponseNum = 0;
-
-
-                    sharedPrefs.edit().putInt("TaskDayCount", TaskDayCount).apply();
-                    sharedPrefs.edit().putInt("weekNum", weekNum).apply();
-                    sharedPrefs.edit().putInt("dailySurveyNum", dailySurveyNum).apply();
-                    sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
+                    //setting up the parameter for the surveu linkg
+                    setUpSurveyLink();
 
                 }
 
                 //temporaily remove the trigger limit
                 if (!checkSleepingTime()) {
 
-                    //get latitude and longitude from LocationStreamGenerator
-                    try {
+                    /** see if the user is walking in the last minute **/
+                    long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
+                    long lastminute = now - Constant.MILLISECONDS_PER_MINUTE;
 
-                        Log.d(TAG + " trying to get ", "latitude : " + latitude + " longitude : " + longitude);
-                        latitude = LocationStreamGenerator.toCheckFamiliarOrNotLocationDataRecord.getLatitude();
-                        longitude = LocationStreamGenerator.toCheckFamiliarOrNotLocationDataRecord.getLongitude();
-                        accuracy = LocationStreamGenerator.toCheckFamiliarOrNotLocationDataRecord.getAccuracy();
+                    //1. we get walking session
+                    String sessionId = SessionManager.getOngoingSessionIdList().get(0);
+                    Session session = SessionManager.getSession(sessionId);
 
-                        sharedPrefs.edit().putFloat("latestLatitude", latitude).apply();
-                        sharedPrefs.edit().putFloat("latestLongitude", longitude).apply();
+                    //see if the session is walking session
+                    ArrayList<Annotation> annotations = session.getAnnotationsSet().getAnnotationByContent(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT);
 
-                    } catch (Exception e) {
+                    //session startTime
+                    long sessionStarTime = session.getStartTime();
 
-                        Log.d(TAG + " before correcting Exception ", "latitude : " + latitude + " longitude : " + longitude);
 
-                        latitude = sharedPrefs.getFloat("latestLatitude", (float) -999.0);
-                        longitude = sharedPrefs.getFloat("latestLongitude", (float) -999.0);
+                    //if the session is on foot and has lasted for  one minute
+                    if (annotations.size() > 0  && sessionStarTime < lastminute && isWalkingOutdoor(lastminute, now)) {
+                        Log.d(TAG, "[test sampling] the user has been walking for a miunute");
 
-                        e.printStackTrace();
-                    }
 
-                    Log.d(TAG + " testing server", "latitude : " + latitude + " longitude : " + longitude);
+                        //the user is walking outdoor we need to trigger a survey
+                        if (walkoutdoor_sampled < 3 && sameTripPrevent == false
+                                && (now - last_Survey_Time) > Constants.MILLISECONDS_PER_HOUR
+                                && (now - last_Walking_Survey_Time) > 2 * Constants.MILLISECONDS_PER_HOUR) {
 
-                    StoreToCSV(new Date().getTime(), latitude, longitude, accuracy, userid);
+                            //determine whether to send a walking triggeted survey by checking whether there has triggered one survey before
+                           boolean sendSurveyFlag = true;
 
-                    Log.d(TAG, "getCurrentTimeInMillis : " + String.valueOf(getCurrentTimeInMillis()));
-                    Log.d(TAG, "getCurrentTimeInMillis/1000 : " + String.valueOf((getCurrentTimeInMillis() / 1000)));
-
-                    //check the server
-                    String mcog = "http://mcog.asc.ohio-state.edu/apps/pip?" +
-                            "lon=" + String.valueOf(longitude) +
-                            "&lat=" + String.valueOf(latitude) +
-                            "&posaccuracy=" + String.valueOf(accuracy) +
-                            "&currentposts=" + String.valueOf(new Date().getTime() / 1000) +
-                            "&userid=" + String.valueOf(Constants.USER_ID) +
-                            "&tsphone=" + String.valueOf((getCurrentTimeInMillis() / 1000)) +
-                            "&lastposupdate=" + String.valueOf(LocationStreamGenerator.lastposupdate / 1000) +
-                            "&format=json";
-
-                    Log.d(TAG, "link : " + mcog);
-
-//                    StoreToCSV(new Date().getTime(), "attend to send");
-
-                    try {
-
-                        Log.d(TAG, "going to collect transportation");
-
-                        if (MinukuStreamManager.getInstance().getTransportationModeDataRecord() != null) {
-                            transportation = MinukuStreamManager.getInstance().getTransportationModeDataRecord().getConfirmedActivityString();
-
-                            Log.d(TAG, "transportation : " + transportation);
-
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "No TransportationMode, yet.");
-                        e.printStackTrace();
-                    }
-
-//                    StoreToCSV(new Date().getTime(), transportation, countingTimeForIndoorOutdoor);
-
-                    //walking
-                    if(transportation.equals("on_foot")) {
-                        //TODO set the condition if the user is at outdoor, then trigger notification and reset the Broadcast Receiver.
-
-                        LocationStreamGenerator.setStartIndoorOutdoor(true);
-
-                        //counting the distance how long in one minute = 60 seconds.
-                        countingTimeForIndoorOutdoor++;
-//                        sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
-                        sharedPrefs.edit().putInt("countingTimeForIndoorOutdoor", countingTimeForIndoorOutdoor).apply();
-
-                        double dist = 0;
-
-                        if(countingTimeForIndoorOutdoor == 6){
-                            ArrayList<LatLng> latLngs = LocationStreamGenerator.locForIndoorOutdoor;
-
-                            //.........................because it will iterate two elements at one iteration.
-                            for(int index = 0; index < latLngs.size()-1; index++){
-                                LatLng latLng = latLngs.get(index);
-                                LatLng latLng2 = latLngs.get(index+1);
-                                float[] results = new float[1];
-                                Location.distanceBetween(latLng.latitude,latLng.longitude,latLng2.latitude,latLng2.longitude, results);
-                                dist += results[0];
+                            if (now <= endOfFirstThird) {
+                                if (walk_first_sampled >= 1)
+                                    sendSurveyFlag = false;
+                            } else if (now <= endOfSecondThird && now > endOfFirstThird) {
+                                if (walk_second_sampled >= 1)
+                                    sendSurveyFlag = false;
+                            } else if (now <= endOfThirdThird && now > endOfSecondThird) {
+                                if (walk_third_sampled >= 1)
+                                    sendSurveyFlag = false;
                             }
 
-                            countingTimeForIndoorOutdoor = 0;
-                            sharedPrefs.edit().putInt("countingTimeForIndoorOutdoor", countingTimeForIndoorOutdoor).apply();
+                            //send notification
+                            if (sendSurveyFlag){
+                                triggerSurvey(endOfFirstThird, endOfSecondThird, endOfFirstThird);
+                            }
+
                         }
+
+                    }
+
+                    //if the walking has ended, we should dismiss the notification
+//                    mNotificationManager.cancel(qua_notifyID);
+
+
+
+                    //reset the Interval Sampleing
+                    if (interval_sampled < 3) {
+                        settingIntervalSampleing(new Date().getTime());//TODO input time
+
+                    }else{ //cancel all the interval today if the number of the sample are enough.
+                        //TODO might not work
+                        cancelAlarmAll(mContext);
+                    }
+
 
                         //walking survey
-                        if(dist >= 50 && dist <= 150){
-
-                            long currentTime = new Date().getTime();
-
-                            walkoutdoor_sampled = sharedPrefs.getInt("walkoutdoor_sampled", 0);
-
-                            //TODO third of the day condition
-                            if (walkoutdoor_sampled < 3 && sameTripPrevent == false
-                                    && (currentTime - last_Survey_Time) > One_Hour_In_milliseconds
-                                    && (currentTime - last_Walking_Survey_Time) > 2 * One_Hour_In_milliseconds) {
-
-                                Boolean check = true;
-
-                                if (currentTime <= first_third) {
-                                    if (walk_first_sampled >= 1)
-                                        check = false;
-                                } else if (currentTime <= second_third && currentTime > first_third) {
-                                    if (walk_second_sampled >= 1)
-                                        check = false;
-                                } else if (currentTime <= third_third && currentTime > second_third) {
-                                    if (walk_third_sampled >= 1)
-                                        check = false;
-                                }
-
-                                //send notification
-                                if (check){
-                                    //cancel the random survey if it exists
-                                    try {
-                                        mNotificationManager.cancel(interval_notifyID);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        android.util.Log.e(TAG, "exception", e);
-                                    }
-
-                                    if (currentTime <= first_third) {
-                                        walk_first_sampled++;
-                                        sharedPrefs.edit().putInt("walk_first_sampled", walk_first_sampled).apply();
-                                    } else if (currentTime <= second_third && currentTime > first_third) {
-                                        walk_second_sampled++;
-                                        sharedPrefs.edit().putInt("walk_second_sampled", walk_second_sampled).apply();
-                                    } else if (currentTime <= third_third && currentTime > second_third) {
-                                        walk_third_sampled++;
-                                        sharedPrefs.edit().putInt("walk_third_sampled", walk_third_sampled).apply();
-                                    }
-
-                                    walkoutdoor_sampled++;
-                                    sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
-
-                                    /* To Show it in SurveyActivity.java */
-                                    notiQualtrics();
-                                    addSurveyLinkToDB();
-
-                                    //update the last survey time
-                                    last_Survey_Time = new Date().getTime();
-                                    sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
-
-                                    last_Walking_Survey_Time = new Date().getTime();
-                                    sharedPrefs.edit().putLong("last_Walking_Survey_Time", last_Walking_Survey_Time).apply();
-
-                                    //decrease the needed number for the interval_sample_number
-                                    interval_sample_number--;
-                                    sharedPrefs.edit().putInt("interval_sample_number", interval_sample_number).apply();
 
 
-                                    //preventing the same on_foot trip will trigger two notifications.
-                                    sameTripPrevent = true;
-                                    sharedPrefs.edit().putBoolean("sameTripPrevent", sameTripPrevent).apply();
-                                }
-
-                            }
-
-                            //reset the Interval Sampleing
-                            if (interval_sampled < 3) {
-                                settingIntervalSampleing(new Date().getTime());//TODO input time
-
-                            }else{ //cancel all the interval today if the number of the sample are enough.
-                                //TODO might not work
-                                cancelAlarmAll(mContext);
-                            }
-                        }
-
-                        //if not on_foot
-                    }else{
-
-                        LocationStreamGenerator.setStartIndoorOutdoor(false);
-                        LocationStreamGenerator.locForIndoorOutdoor = new ArrayList<LatLng>();
-
-//                        //dismiss the walking survey
-//                        mNotificationManager.cancel(qua_notifyID);
-
-                        //cancel the walking survey if it exists
-                        //cancel it when the walking is finished.
-//                        try{
-//                            mNotificationManager.cancel(qua_notifyID);
-//                        }catch (Exception e ){
-//                            e.printStackTrace();
-//                            android.util.Log.e(TAG, "exception", e);
-//                        }
-
-                        sameTripPrevent = false;
-                        sharedPrefs.edit().putBoolean("sameTripPrevent", sameTripPrevent).apply();
-
-                    }
 
                     if(interval_sampled >= 3){
                         //TODO might not work
@@ -884,6 +754,104 @@ public class CheckFamiliarOrNotService extends Service {
             }
         }
     };
+
+
+    /**
+     *
+     */
+    private void setUpSurveyLink() {
+
+        //Counting the day of the experiments
+        int TaskDayCount = sharedPrefs.getInt("TaskDayCount", Constants.TaskDayCount);
+        TaskDayCount++;
+
+        if ((TaskDayCount - 1) % 7 == 0) { //1, 8, 15
+            weekNum++;
+        }
+
+        dailySurveyNum = TaskDayCount % 7;
+        if (dailySurveyNum == 0)
+            dailySurveyNum = 7;
+
+        dailyResponseNum = 0;
+
+
+        sharedPrefs.edit().putInt("TaskDayCount", TaskDayCount).apply();
+        sharedPrefs.edit().putInt("weekNum", weekNum).apply();
+        sharedPrefs.edit().putInt("dailySurveyNum", dailySurveyNum).apply();
+        sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
+
+    }
+
+    private void triggerSurvey(long endOfFirstThird, long endOfSecondThird, long endOfThirdThird) {
+
+        long currentTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+
+        //cancel the random survey if it exists
+        triggerSurvey();
+
+        try {
+            mNotificationManager.cancel(interval_notifyID);
+        } catch (Exception e) {
+            e.printStackTrace();
+            android.util.Log.e(TAG, "exception", e);
+        }
+
+        if (currentTime <= endOfFirstThird) {
+            walk_first_sampled++;
+            sharedPrefs.edit().putInt("walk_first_sampled", walk_first_sampled).apply();
+        } else if (currentTime <= endOfSecondThird && currentTime > endOfFirstThird) {
+            walk_second_sampled++;
+            sharedPrefs.edit().putInt("walk_second_sampled", walk_second_sampled).apply();
+        } else if (currentTime <= endOfThirdThird && currentTime > endOfSecondThird) {
+            walk_third_sampled++;
+            sharedPrefs.edit().putInt("walk_third_sampled", walk_third_sampled).apply();
+        }
+
+        walkoutdoor_sampled++;
+        sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
+
+                                    /* To Show it in SurveyActivity.java */
+        notiQualtrics();
+        addSurveyLinkToDB();
+
+        //update the last survey time
+        last_Survey_Time = new Date().getTime();
+        sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
+
+        last_Walking_Survey_Time = new Date().getTime();
+        sharedPrefs.edit().putLong("last_Walking_Survey_Time", last_Walking_Survey_Time).apply();
+
+        //decrease the needed number for the interval_sample_number
+        interval_sample_number--;
+        sharedPrefs.edit().putInt("interval_sample_number", interval_sample_number).apply();
+
+
+        //preventing the same on_foot trip will trigger two notifications.
+        sameTripPrevent = true;
+        sharedPrefs.edit().putBoolean("sameTripPrevent", sameTripPrevent).apply();
+    }
+
+
+    public boolean isWalkingOutdoor(long walkingStarTime, long walkingEndtime) {
+
+
+        boolean isWalkingOutdoor = false;
+        //get locations in the last minute
+        ArrayList<LatLng> latlngs = getLocationRecordInLastMinute(walkingStarTime, walkingEndtime);
+
+        //get distance from the last minute
+        double dist = calculateTotalDistanceOfPath(latlngs);
+
+        //50 < dist < 150 means walking outdoor
+        if(dist >= 50 && dist <= 150){
+            return true;
+        }
+        else
+            return false;
+
+    }
+
 
     public String getDateCurrentTimeZone(long timestamp) {
         try{
@@ -958,7 +926,49 @@ public class CheckFamiliarOrNotService extends Service {
         }
     }
 
-    //add to DB in order to display it in the linklistOhio.java
+    private double calculateTotalDistanceOfPath(ArrayList<LatLng> latLngs){
+
+        double dist = -1;
+
+        for(int index = 0; index < latLngs.size()-1; index++){
+            LatLng latLng = latLngs.get(index);
+            LatLng latLng2 = latLngs.get(index+1);
+            float[] results = new float[1];
+            Location.distanceBetween(latLng.latitude,latLng.longitude,latLng2.latitude,latLng2.longitude, results);
+            dist += results[0];
+        }
+
+        return dist;
+
+    }
+
+        private ArrayList<LatLng> getLocationRecordInLastMinute(long lastminute, long now) {
+
+            ArrayList<LatLng> LatLngs = new ArrayList<LatLng>();
+
+            Log.d(TAG, "[test sampling] getLocationRecordInLastMinute ");
+
+            //get data from the database
+            ArrayList<String> data = DBHelper.queryRecordsBetweenTimes(DBHelper.STREAM_TYPE_LOCATION, lastminute, now);
+
+            Log.d(TAG, "[test sampling] getLocationRecordInLastMinute get data:" + data.size() + "rows");
+
+            for (int i = 0; i < data.size(); i++) {
+
+                String[] record = data.get(i).split(Constants.DELIMITER);
+                double lat = Double.parseDouble(record[2]);
+                double lng = Double.parseDouble(record[3]);
+
+                LatLngs.add(new LatLng(lat, lng));
+
+            }
+
+            return LatLngs;
+        }
+
+
+
+//add to DB in order to display it in the linklistOhio.java
     public void addSurveyLinkToDB(){
         Log.d(TAG, "addSurveyLinkToDB");
 
@@ -1002,6 +1012,11 @@ public class CheckFamiliarOrNotService extends Service {
             DBManager.getInstance().closeDatabase(); // Closing database connection
         }
     }
+
+
+
+    }
+
 
     private void notiQualtrics(){
 

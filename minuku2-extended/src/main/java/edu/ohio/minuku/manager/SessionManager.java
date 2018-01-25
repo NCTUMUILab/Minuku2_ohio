@@ -478,7 +478,6 @@ public class SessionManager {
         return sessions;
     }
 
-
     public static ArrayList<String> getRecordsInSession(int sessionId, String tableName) {
 
         ArrayList<String> resultList = new ArrayList<String>();

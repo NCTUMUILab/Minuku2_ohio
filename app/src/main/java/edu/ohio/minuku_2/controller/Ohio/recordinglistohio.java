@@ -50,6 +50,7 @@ public class recordinglistohio extends Activity {
         mSessions = new ArrayList<Session>();
     }
 
+
     private void startAnnotateActivity(int trip_position) {
 
         String sessionId = String.valueOf(mSessions.get(trip_position).getId());
