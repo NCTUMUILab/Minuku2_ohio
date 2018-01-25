@@ -947,6 +947,52 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+
+    public static ArrayList<String> queryRecordsBetweenTimes(String table_name, long startTime, long endTime) {
+
+        ArrayList<String> rows = new ArrayList<String>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + table_name  +
+                    " where " +  TIME + " > " + startTime + " and " +
+                    TIME + " < " + endTime  +
+                    " order by " + TIME;
+
+            Log.d(TAG, "[test sampling] the query statement is " +sql);
+
+            //execute the query
+            Cursor cursor = db.rawQuery(sql, null);
+            int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+//                    Log.d(TAG, "[queryRecordsInSession][testgetdata] column " + i + " content: " + cursor.getString(i));
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+
+                }
+                rows.add(curRow);
+            }
+            cursor.close();
+
+            DBManager.getInstance().closeDatabase();
+
+
+        }catch (Exception e){
+
+        }
+
+
+        Log.d(TAG, "[test sampling] the rsult is " +rows);
+        return rows;
+
+
+    }
+
+
+
+
     public static ArrayList<String> queryRecordsInSession(String table_name, int sessionId, long startTime, long endTime) {
 
         ArrayList<String> rows = new ArrayList<String>();

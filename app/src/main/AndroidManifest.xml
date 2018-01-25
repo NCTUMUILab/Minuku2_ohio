@@ -194,7 +194,7 @@
         <activity android:name="com.desmond.squarecamera.CameraActivity" />
 
         <service
-            android:name=".service.CheckFamiliarOrNotService"
+            android:name=".service.SurveyTriggerService"
             android:enabled="true"
             android:exported="true">
         </service>

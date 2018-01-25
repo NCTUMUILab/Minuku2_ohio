@@ -43,18 +43,14 @@ public class DataHandler {
     public static ArrayList<String> getDataBySession(int sessionId, String sourceName, long startTime, long endTime) {
 
         //for each record type get data
-        Log.d(TAG, "[test show trip][testgetdata] getting data from  sessiom " + sessionId + " - " + sourceName);
-
         ArrayList<String> resultList = new ArrayList<String>();
 
         //first know which table and column to query..
         String tableName= sourceName;
-        Log.d(TAG, "[test show trip][testgetdata] getting data from  " + tableName);
 
         //get data from the table
         if (tableName !=null) {
             resultList = DBHelper.queryRecordsInSession(tableName, sessionId, startTime, endTime);
-            Log.d(TAG, "[test show trip][testgetdata] the result from " + tableName + " is  " + resultList);
         }
 
         return resultList;
@@ -70,23 +66,20 @@ public class DataHandler {
                 sourceName,
                 sessionId);
 
-        Log.d(TAG, "[test show trip] testgetdata the last record is " + res);
-
         if (res!=null && res.size()>0){
 
             String lastRecord = res.get(0);
             long time = Long.parseLong(lastRecord.split(Constants.DELIMITER)[DBHelper.COL_INDEX_RECORD_TIMESTAMP_LONG] );
-            Log.d(TAG, "[test show trip] testgetdata the last record time is " + ScheduleAndSampleManager.getTimeString(time));
 
             //compare time
             if (time>latestTime){
                 latestTime = time;
-                Log.d(TAG, "[test show trip] update, latest time is changed to  " + ScheduleAndSampleManager.getTimeString(time));
+//                Log.d(TAG, "[test show trip] update, latest time is changed to  " + ScheduleAndSampleManager.getTimeString(time));
 
             }
         }
 
-        Log.d(TAG, "[test show trip]return the latest time: " + ScheduleAndSampleManager.getTimeString(latestTime));
+//        Log.d(TAG, "[test show trip]return the latest time: " + ScheduleAndSampleManager.getTimeString(latestTime));
 
         return latestTime;
 
