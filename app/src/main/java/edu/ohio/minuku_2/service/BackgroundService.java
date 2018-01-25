@@ -23,34 +23,35 @@
 package edu.ohio.minuku_2.service;
 
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import edu.ohio.minuku.Utilities.FileHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.manager.SessionManager;
+import edu.ohio.minuku_2.Receiver.WifiReceiver;
 import edu.ohio.minuku_2.manager.InstanceManager;
-import edu.ohio.minuku.R;
 
 public class BackgroundService extends Service {
 
     private static final String TAG = "BackgroundService";
 
+    final static String CONNECTIVITY_ACTION = "android.net.conn.CONNECTIVITY_CHANGE";
+    WifiReceiver mWifiReceiver;
+    IntentFilter intentFilter;
+
     MinukuStreamManager streamManager;
     NotificationManager mNotificationManager;
     private ScheduledExecutorService mScheduledExecutorService;
-
 
     public BackgroundService() {
         super();
@@ -58,21 +59,23 @@ public class BackgroundService extends Service {
 //        mNotificationManager = new NotificationManager();
         mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_FREQUENCY);
 
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(CONNECTIVITY_ACTION);
+        mWifiReceiver = new WifiReceiver();
+
+    }
+
+    @Override
+    public void onCreate() {
+        Log.d(TAG, "onCreate");
+        //make the WifiReceiver start sending data to the server.
+        registerReceiver(mWifiReceiver, intentFilter);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-//        private void showNotification(){
-//            NotificationCompat.Builder builer = new NotificationCompat.Builder(this)
-//                    .setSmallIcon(R.drawable.self_reflection)
-//                    .setContentTitle("Service active")
-//                    .setContentText("Your service keeps running")
-//                    .setOngoing(true);
-//            mNotificationManager.notify(NOTIFICATION_ID, builer.build());
-//
-//        }
-
+        Log.d(TAG, "onStartCommand");
 
         runMainThread();
 
@@ -120,6 +123,16 @@ public class BackgroundService extends Service {
         return START_STICKY;
     }
 
+    //        private void showNotification(){
+//            NotificationCompat.Builder builer = new NotificationCompat.Builder(this)
+//                    .setSmallIcon(R.drawable.self_reflection)
+//                    .setContentTitle("Service active")
+//                    .setContentText("Your service keeps running")
+//                    .setOngoing(true);
+//            mNotificationManager.notify(NOTIFICATION_ID, builer.build());
+//
+//        }
+
     private void runMainThread(){
 
         mScheduledExecutorService.scheduleAtFixedRate(
@@ -138,10 +151,10 @@ public class BackgroundService extends Service {
         }
     };
 
-
     @Override
     public void onDestroy() {
         Log.d(TAG, "Destroying service. Your state might be lost!");
+        unregisterReceiver(mWifiReceiver);
     }
 
     @Override
