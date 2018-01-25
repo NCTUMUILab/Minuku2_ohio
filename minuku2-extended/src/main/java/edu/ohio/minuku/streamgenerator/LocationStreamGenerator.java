@@ -285,11 +285,11 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         LocationDataRecord newlocationDataRecord;
         String session_id = "null";
 
-        int countOfOngoingSession = SessionManager.getInstance().getmOngoingSessionIdList().size();
+        int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
 
         //if there exists an ongoing session
         if (countOfOngoingSession>0){
-            session_id = SessionManager.getInstance().getmOngoingSessionIdList().get(0);
+            session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
         }
 
         Log.d(TAG, "[test replay] Update stream  ssession is " + session_id);

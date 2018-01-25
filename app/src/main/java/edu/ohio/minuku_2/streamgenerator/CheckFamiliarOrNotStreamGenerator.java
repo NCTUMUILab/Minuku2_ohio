@@ -15,7 +15,7 @@ import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.streamgenerator.AndroidStreamGenerator;
 import edu.ohio.minuku_2.dao.CheckFamiliarOrNotDAO;
 import edu.ohio.minuku_2.model.CheckFamiliarOrNotDataRecord;
-import edu.ohio.minuku_2.service.CheckFamiliarOrNotService;
+import edu.ohio.minuku_2.service.SurveyTriggerService;
 import edu.ohio.minuku_2.stream.CheckFamiliarOrNotStream;
 import edu.ohio.minukucore.dao.DAOException;
 import edu.ohio.minukucore.exception.StreamAlreadyExistsException;
@@ -81,8 +81,8 @@ public class CheckFamiliarOrNotStreamGenerator extends AndroidStreamGenerator<Ch
         Log.e(TAG,"onStreamRegistration");
 
         //startCheckFamiliarOrNotMainThread();
-        if(!CheckFamiliarOrNotService.isServiceRunning()) {
-            Intent intent = new Intent(mContext, CheckFamiliarOrNotService.class);
+        if(!SurveyTriggerService.isServiceRunning()) {
+            Intent intent = new Intent(mContext, SurveyTriggerService.class);
             mContext.startService(intent);
 
 //            mContext.startService(new Intent(mContext, MyLocationService.class));
