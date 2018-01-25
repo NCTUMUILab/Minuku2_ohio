@@ -78,20 +78,7 @@ public class WifiReceiver extends BroadcastReceiver {
     public static final int HTTP_TIMEOUT = 10000; // millisecond
     public static final int SOCKET_TIMEOUT = 20000; // millisecond
 
-    private boolean noDataFlag1 = false;
-    private boolean noDataFlag2 = false;
-    private boolean noDataFlag3 = false;
-    private boolean noDataFlag4 = false;
-    private boolean noDataFlag5 = false;
-    private boolean noDataFlag6 = false;
-    private boolean noDataFlag7 = false;
-
     private static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
-
-//    private static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";//  /Android/data/edu.ohio.minuku_2/wifi/
-
-//    private static final String postTripUrl = "http://ec2-52-14-68-199.us-east-2.compute.amazonaws.com/";
-//    private static final String postDumpUrl = "http://ec2-52-14-68-199.us-east-2.compute.amazonaws.com/";
 
     private static final String postTripUrl = "http://mcog.asc.ohio-state.edu/apps/tripdump/";
     private static final String postDumpUrl = "http://mcog.asc.ohio-state.edu/apps/devicedump/";
@@ -146,7 +133,8 @@ public class WifiReceiver extends BroadcastReceiver {
                 // connected to the mobile provider's data plan
                 Log.d(TAG, "MOBILE activeNetwork" ) ;
                 if(runnable!=null){
-//                    mMainThread.removeCallbacks(runnable);
+                    Log.d(TAG, "killing thread" ) ;
+                    mMainThread.removeCallbacks(runnable);
 
                 }
             }
@@ -154,7 +142,8 @@ public class WifiReceiver extends BroadcastReceiver {
             // not connected to the internet
             Log.d(TAG, "no Network" ) ;
             if(runnable!=null) {
-//                mMainThread.removeCallbacks(runnable);
+                Log.d(TAG, "killing thread" ) ;
+                mMainThread.removeCallbacks(runnable);
             }
         }
 
@@ -170,6 +159,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
             @Override
             public void run() {
+
+                Log.d(TAG, "loading Dump data");
 /*
                 //TODO at official min should replaced by 0.
 //                Trip_startTime = getSpecialTimeInMillis(year,month,day,hour,min);
@@ -246,6 +237,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 // Trip, isAlive
                 if(ConnectivityStreamGenerator.mIsWifiConnected && ConnectivityStreamGenerator.mIsMobileConnected) {
+
+                    Log.d(TAG, "loading IsAlive data");
 
                     sendingIsAliveData();
 
@@ -697,8 +690,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 data.put("TransportationMode",transportationAndtimestampsJson);
 
-            }else
-                noDataFlag1 = true;
+            }
 
         }catch (JSONException e){
             e.printStackTrace();
@@ -756,8 +748,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 data.put("Location",locationAndtimestampsJson);
 
-            }else
-                noDataFlag2 = true;
+            }
 
         }catch (JSONException e){
             e.printStackTrace();
@@ -852,8 +843,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 data.put("ActivityRecognition",arAndtimestampsJson);
 
-            }else
-                noDataFlag3 = true;
+            }
 
         }catch (JSONException e){
             e.printStackTrace();
@@ -930,8 +920,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 data.put("Ringer",ringerAndtimestampsJson);
 
-            }else
-                noDataFlag4 = true;
+            }
 
         }catch (JSONException e){
             e.printStackTrace();
@@ -1008,8 +997,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 data.put("Connectivity",connectivityAndtimestampsJson);
 
-            }else
-                noDataFlag5 = true;
+            }
 
         }catch (JSONException e){
             e.printStackTrace();
@@ -1072,8 +1060,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 data.put("Battery",batteryAndtimestampsJson);
 
-            }else
-                noDataFlag6 = true;
+            }
 
         }catch (JSONException e){
             e.printStackTrace();
@@ -1131,8 +1118,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 data.put("AppUsage",appUsageAndtimestampsJson);
 
-            }else
-                noDataFlag7 = true;
+            }
+
 
         }catch (JSONException e){
             e.printStackTrace();

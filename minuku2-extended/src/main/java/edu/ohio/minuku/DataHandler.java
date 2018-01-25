@@ -2,7 +2,7 @@ package edu.ohio.minuku;
 
 import java.util.ArrayList;
 
-import edu.ohio.minuku.DBHelper.DBHelper;
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.logger.Log;
 
 /**
