@@ -709,6 +709,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME +
+
 //                    " where " + COL_SESSION_START_TIME + " > " + startTime + " and " +
 //                    COL_SESSION_START_TIME + " < " + endTime +
                     " order by " + COL_SESSION_START_TIME + " " + order;
@@ -746,9 +747,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME +
+                    " where " + COL_SESSION_LONG_ENOUGH_FLAG + " = 1" +
 //                    " where " + COL_SESSION_START_TIME + " > " + startTime + " and " +
 //                    COL_SESSION_START_TIME + " < " + endTime +
-                    " order by " + COL_SESSION_START_TIME;
+                    " order by " + COL_SESSION_START_TIME + " DESC ";
 
             // Log.d(TAG, "[querySessionsBetweenTimes] the query statement is " +sql);
 
@@ -818,7 +820,9 @@ public class DBHelper extends SQLiteOpenHelper {
         try{
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            String sql = "SELECT *"  +" FROM " + DBHelper.SESSION_TABLE_NAME ;
+            String sql = "SELECT *"  +" FROM " + DBHelper.SESSION_TABLE_NAME;
+
+            Log.d(TAG, "[queryLastRecord] the query statement is " +sql);
 
             Cursor cursor = db.rawQuery(sql, null);
             int columnCount = cursor.getColumnCount();
@@ -836,7 +840,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }catch (Exception e){
 
         }
-
+        Log.d(TAG, "[test show trip] the sessions are" + " " +rows);
 
         return rows;
     }
