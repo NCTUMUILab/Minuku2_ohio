@@ -112,6 +112,10 @@ public class SurveyActivity extends Activity {
         int missCount = 0;
         int openCount = 0;
 
+        if(total == 0){
+            surveyButton.setEnabled(false);
+        }
+
         for(String datapart : data){
             //if the link havn't been opened.
             if(datapart.split(Constants.DELIMITER)[5].equals("0"))
@@ -172,14 +176,6 @@ public class SurveyActivity extends Activity {
         startTime = getSpecialTimeInMillis(startTimeString);
         endTime = getSpecialTimeInMillis(endTimeString);
 
-        /*String taskTable = null;
-
-        if(Day%2==0)
-            taskTable = DBHelper.checkFamiliarOrNotLinkList_table;
-        else
-            taskTable = DBHelper.intervalSampleLinkList_table;
-        */
-
         String taskTable = DBHelper.surveyLink_table;
 
         try {
@@ -200,10 +196,6 @@ public class SurveyActivity extends Activity {
 
                     Log.d(TAG, " 0 : "+ eachdataInCursor+ ", 1 : "+ link);
 
-                    /*if(eachdataInCursor==0){ //0 represent they haven't click into it.
-                        dataPos.add(i);
-                        i++;
-                    }*/
                     data.add(link);
                     Log.d(TAG, " link : "+ link);
 
