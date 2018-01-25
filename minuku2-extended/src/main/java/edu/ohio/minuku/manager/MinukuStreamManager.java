@@ -413,10 +413,15 @@ public class MinukuStreamManager implements StreamManager {
                                 //we should put thre last session back, and not add a new sesssion
                                 SessionManager.getInstance().addOngoingSessionid(sessionIdOfLastSession);
 
-                                //modify the endTime of the previous session to empty (because we extend it!)
-                                DBHelper.updateSessionTable(Integer.parseInt(sessionIdOfLastSession), Constants.INVALID_TIME_VALUE);
-                                Log.d(TAG, "[test combine] extend the last session " + sessionIdOfLastSession + ", make the end time of it " + Constants.INVALID_TIME_VALUE);
 
+                                boolean isSessionLongEnoughFlag = true;
+
+
+                                //modify the endTime of the previous session to empty (because we extend it!). we should also make the notlongenough field to be true.
+                                DBHelper.updateSessionTable(Integer.parseInt(sessionIdOfLastSession), 0, isSessionLongEnoughFlag) ;
+
+                                lastSessionStr = DBHelper.queryLastSession().get(0);
+                                Log.d(TAG, "test combine: the previous acitivty is movnig,after combine it the last session is: " +  lastSessionStr );
 
                             }
                             //the session is far from the previous one, it should be a new session
