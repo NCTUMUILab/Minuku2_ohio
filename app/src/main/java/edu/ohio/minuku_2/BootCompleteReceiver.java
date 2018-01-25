@@ -8,7 +8,7 @@ import android.util.Log;
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku_2.service.BackgroundService;
-import edu.ohio.minuku_2.service.CheckFamiliarOrNotService;
+import edu.ohio.minuku_2.service.SurveyTriggerService;
 
 /**
  * Created by Lawrence on 2017/7/19.
@@ -42,9 +42,9 @@ public class BootCompleteReceiver extends BroadcastReceiver {
                 Log.d(TAG, "Successfully receive reboot request");
 
                 //here we start the service
-                Intent cintent = new Intent(context, CheckFamiliarOrNotService.class);
+                Intent cintent = new Intent(context, SurveyTriggerService.class);
                 context.startService(cintent);
-                Log.d(TAG,"CheckFamiliarOrNotService is ok");
+                Log.d(TAG,"SurveyTriggerService is ok");
 
                 Intent tintent = new Intent(context, TransportationModeService.class);
                 context.startService(tintent);

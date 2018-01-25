@@ -149,7 +149,7 @@ public class SessionManager {
         return false;
     }
 
-    public ArrayList<String> getmOngoingSessionIdList() {
+    public static ArrayList<String> getOngoingSessionIdList() {
         return mOngoingSessionIdList;
     }
 
@@ -432,6 +432,24 @@ public class SessionManager {
 
         return session;
 
+    }
+
+    public static Session getSession (String id) {
+
+        int sessionId = Integer.parseInt(id);
+        ArrayList<String> res =  DBHelper.querySession(sessionId);
+        Log.d(TAG, "[test show trip]query session from LocalDB is " + res);
+        Session session = null;
+
+        for (int i=0; i<res.size() ; i++) {
+
+            session = convertStringToSession(res.get(i));
+            Log.d(TAG, " test show trip  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
+
+        }
+
+
+        return session;
     }
 
     public static Session getSession (int sessionId) {
