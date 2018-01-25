@@ -958,14 +958,14 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         String timelabel = null;
 
         if (endTime==0){
-            time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - " + ScheduleAndSampleManager.getTimeString(endTime, sdf) );
+            time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - Unknown" );
         }
         else {
 
             if (SessionManager.isSessionOngoing(mSessionId))
                 time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - Now"  );
             else
-                time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + ScheduleAndSampleManager.getTimeString(endTime, sdf)  );
+                time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - " + ScheduleAndSampleManager.getTimeString(endTime, sdf)  );
         }
 
         Log.d(TAG,"[test show trip] setting time label" + time.getText().toString());
