@@ -173,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static String getTimeString(long time){
 
-        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
         String currentTimeString = sdf_now.format(time);
 
         return currentTimeString;
@@ -782,7 +782,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private long getSpecialTimeInMillis(String givenDateFormat){
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
         long timeInMilliseconds = 0;
         try {
             Date mDate = sdf.parse(givenDateFormat);

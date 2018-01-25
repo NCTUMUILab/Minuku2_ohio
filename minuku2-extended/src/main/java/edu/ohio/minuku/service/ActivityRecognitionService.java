@@ -87,39 +87,38 @@ public class ActivityRecognitionService extends IntentService {
             }
             ActivityRecognitionResult activity = ActivityRecognitionResult.extractResult(intent);
 
-//            mProbableActivities = activity.getProbableActivities();
-//            mMostProbableActivity = activity.getMostProbableActivity();
-//            detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
-//
-//
-//            ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
-//
-//            record.setProbableActivities(mProbableActivities);
-//            record.setMostProbableActivity(mMostProbableActivity);
-//            record.setDetectedtime(detectedtime);
-//
-//
-//            Log.d(TAG, "[test replay] [test ActivityRecognition]" +   mMostProbableActivity.toString());
-//            try {
-//                if (mProbableActivities != null && mMostProbableActivity != null){
-//
-//                     /*  cancel setting because we want to directly feed activity data in the test file */
-//                    mActivityRecognitionStreamGenerator.setActivitiesandDetectedtime(mProbableActivities, mMostProbableActivity, detectedtime);
-//
-//
-//                    Log.d(TAG, "[test replay] before store to CSV in AR Service");
-//                    //write transportation mode with the received activity data
-//                    StoreToCSV(new Date().getTime(), record, record);
-//
-//                }
-//
-//            }catch(Exception e){
-//                e.printStackTrace();
-//            }
+            mProbableActivities = activity.getProbableActivities();
+            mMostProbableActivity = activity.getMostProbableActivity();
+            detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
 
 
+            ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
+
+            record.setProbableActivities(mProbableActivities);
+            record.setMostProbableActivity(mMostProbableActivity);
+            record.setDetectedtime(detectedtime);
+
+
+            Log.d(TAG, "[test replay] [test ActivityRecognition]" +   mMostProbableActivity.toString());
+            try {
+                if (mProbableActivities != null && mMostProbableActivity != null){
+
+                     /*  cancel setting because we want to directly feed activity data in the test file */
+                    mActivityRecognitionStreamGenerator.setActivitiesandDetectedtime(mProbableActivities, mMostProbableActivity, detectedtime);
+
+
+                    Log.d(TAG, "[test replay] before store to CSV in AR Service");
+                    //write transportation mode with the received activity data
+                    StoreToCSV(new Date().getTime(), record, record);
+
+                }
+
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+//
 //            stopARRecordExpirationTimer();
-
+//
 //            startARRecordExpirationTimer();
         }
     }
@@ -184,7 +183,7 @@ public class ActivityRecognitionService extends IntentService {
                 sec++;
 
                 //if counting until ten minutes
-                if(sec == 1 * 60){
+                if(sec == 10*60){
 
                     Log.d("ARService", "[test replay] it's time to create NA activity because not receiving for a long time"  );
                     try {
@@ -231,7 +230,7 @@ public class ActivityRecognitionService extends IntentService {
         ReplayTimer = new Timer();
 
         //start the timertask for replay
-//        RePlayActivityRecordTimerTask();
+        RePlayActivityRecordTimerTask();
 
         //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
         ReplayTimer.schedule(ReplayTimerTask,0,1000);

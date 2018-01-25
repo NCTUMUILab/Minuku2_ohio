@@ -410,7 +410,7 @@ public class CheckFamiliarOrNotService extends Service {
 
     public static String getTimeString(long time){
 
-        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
         String currentTimeString = sdf_now.format(time);
 
         return currentTimeString;
@@ -857,12 +857,12 @@ public class CheckFamiliarOrNotService extends Service {
 
                         //cancel the walking survey if it exists
                         //cancel it when the walking is finished.
-                        try{
-                            mNotificationManager.cancel(qua_notifyID);
-                        }catch (Exception e ){
-                            e.printStackTrace();
-                            android.util.Log.e(TAG, "exception", e);
-                        }
+//                        try{
+//                            mNotificationManager.cancel(qua_notifyID);
+//                        }catch (Exception e ){
+//                            e.printStackTrace();
+//                            android.util.Log.e(TAG, "exception", e);
+//                        }
 
                         sameTripPrevent = false;
                         sharedPrefs.edit().putBoolean("sameTripPrevent", sameTripPrevent).apply();

@@ -1,7 +1,5 @@
 package edu.ohio.minuku.manager;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -11,7 +9,6 @@ import android.location.Location;
 import android.os.Environment;
 import android.util.Log;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.opencsv.CSVWriter;
 
 import org.json.JSONArray;
@@ -24,12 +21,10 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import edu.ohio.minuku.Data.DBHelper;
-import edu.ohio.minuku.R;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.model.Annotation;
@@ -166,6 +161,10 @@ public class SessionManager {
         edu.ohio.minuku.logger.Log.d(TAG, "test replay: adding ongonig session " + id );
         this.mOngoingSessionIdList.add(id);
 
+    }
+
+    public ArrayList<String> getOngoingSessionList () {
+        return mOngoingSessionIdList;
     }
 
     public void removeOngoingSessionid(String id) {
@@ -364,319 +363,76 @@ public class SessionManager {
 
     public static String getTimeString(long time){
 
-        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
         String currentTimeString = sdf_now.format(time);
 
         return currentTimeString;
     }
 
-    public int getSessionidForTripSize(){
-        return sessionid_unStatic;
-    }
 
-    public static ArrayList<String> getTripDatafromSQLite() {
-        Log.d(TAG, "getTripDatafromSQLite");
+    /**
+     * This function convert Session String retrieved from the DB to Object Session
+     * @param sessionStr
+     * @return
+     */
+    private static Session convertStringToSession(String sessionStr) {
 
-        long funcStartTime = new Date().getTime();
+        Session session = null;
 
-        ArrayList<String> times = new ArrayList<String>();
+        //split each row into columns
+        String[] separated = sessionStr.split(Constants.DELIMITER);
 
-        //setting today date.
-        Calendar cal = Calendar.getInstance();
-        Date date = new Date();
-        cal.setTime(date);
-        int Year = cal.get(Calendar.YEAR);
-        int Month = cal.get(Calendar.MONTH)+1;
-        int Day = cal.get(Calendar.DAY_OF_MONTH);
+        /** get properties of the session **/
+        int id = Integer.parseInt(separated[DBHelper.COL_INDEX_SESSION_ID]);
+        long startTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_START_TIME]);
 
-        long startTime = -999;
-        long endTime = -999;
 
-        startTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day));
-        endTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day+1));
+        /** 1. create sessions from the properies obtained **/
+        session = new Session(id, startTime);
 
-        SQLiteDatabase db = DBManager.getInstance().openDatabase();
-        ArrayList<String> res =  DBHelper.querySessionsBetweenTimes(startTime, endTime);
+        /**2. get end time (or time of the last record) of the sesison**/
 
-        ArrayList<Session> sessions = new ArrayList<Session>();
+        long endTime = 0;
+        //the session could be still ongoing..so we need to check where's endTime
+        Log.d(TAG, "[test show trip] separated[DBHelper.COL_INDEX_SESSION_END_TIME] " + separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
+        if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("")){
+            endTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
+        }
+        //there 's no end time of the session, we take the time of the last record
+        else {
 
-        //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
-        for (int i=0; i<res.size() ; i++) {
+            //TODO this should be the last record of the session. For now, we just use the current time
+            endTime= ScheduleAndSampleManager.getCurrentTimeInMillis();
+            Log.d(TAG, "[test show trip] testgetdata the end time is now:  " + ScheduleAndSampleManager.getTimeString(endTime));
+        }
 
-            String sessionStr = res.get(i);
+        //set end time
+        session.setEndTime(endTime);
 
-            //split each row into columns
-            String[] separated = sessionStr.split(Constants.DELIMITER);
-
-            /** get properties of the session **/
-            int id = Integer.parseInt(separated[DBHelper.COL_INDEX_SESSION_ID]);
-            long sessionStartTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_START_TIME]);
-
-            /** 1. create sessions from the properies obtained **/
-            Session session = new Session(id, sessionStartTime);
-
-            /**2. get end time (or time of the last record) of the session**/
-
-            long sessionEndTime = 0;
-            //the session could be still ongoing..so we need to check where's endTime
-            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null")){
-                sessionEndTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
-            }
-            //there 's no end time of the session, we take the time of the last record
-            else {
-                sessionEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
-                Log.d(TAG, "[test get session time] testgetdata the last record time is  " + ScheduleAndSampleManager.getTimeString(sessionEndTime));
-            }
-
-            //set end time
-            session.setEndTime(sessionEndTime);
- /*
-           *//** 3. get annotaitons associated with the session **//*
-            JSONObject annotationSetJSON = null;
-            JSONArray annotateionSetJSONArray = null;
-            try {
+        /** 3. get annotaitons associated with the session **/
+        JSONObject annotationSetJSON = null;
+        JSONArray annotateionSetJSONArray = null;
+        try {
+            if (!separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET].equals("null")){
                 annotationSetJSON = new JSONObject(separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET]);
                 annotateionSetJSONArray = annotationSetJSON.getJSONArray(ANNOTATION_PROPERTIES_ANNOTATION);
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
-
-            Log.d(LOG_TAG, " testBackgroundLogging [testing load session][getSession]  testgetdata id " + id + " startTime " + sessionStartTime + " end time " + sessionEndTime + " contextsource " + session.getContextSourceNames());
-
-
-            //set annotationset if there is one
-            if (annotateionSetJSONArray!=null){
-                AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
-                session.setAnnotationSet(annotationSet);
-            }
-
-*/
-
-            sessions.add(session);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
-        for(int index = 0 ; index < sessions.size() ; index ++){
 
-            Session session = sessions.get(index);
-            int sessionid = session.getId();
-
-            ArrayList<String> result = DBHelper.queryRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, sessionid);
-
-            //notification
-            notiQuerySessions();
-
-
-
+        //set annotationset if there is one
+        if (annotateionSetJSONArray!=null){
+            AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
+            session.setAnnotationSet(annotationSet);
         }
 
-        //TODO do the Combination here, before the Combination, filter the isTrip col == 0 which menas its not trip
-/*
-        for(int i=sessionid_unStatic-1;i>=1;i--) {
-            try {
-//                SQLiteDatabase db = DBManager.getInstance().openDatabase();
-                Cursor tripCursor1 = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ i + "'"+ " AND "
-                        + DBHelper.TIME + " BETWEEN" + " '" + startTime + "' " + "AND" + " '" + endTime + "' "
-                        + "AND " + DBHelper.IsTrip_col + " = 1 " + "ORDER BY " + DBHelper.TIME + " ASC", null);
-                Log.d(TAG, "SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ i + "'"+ " AND "
-                        + DBHelper.TIME + " BETWEEN" + " '" + startTime + "' " + "AND" + " '" + endTime + "' "
-                        + "AND " + DBHelper.IsTrip_col + " = 1 " + "ORDER BY " + DBHelper.TIME + " ASC"); //+" ORDER BY "+DBHelper.TIME+" ASC"
-                int rows1 = tripCursor1.getCount();
-
-                Cursor tripCursor2 = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (i+1) + "'"+ " AND "
-                        + DBHelper.TIME + " BETWEEN" + " '" + startTime + "' " + "AND" + " '" + endTime + "' "
-                        + "AND " + DBHelper.IsTrip_col + " = 1 " + "ORDER BY " + DBHelper.TIME + " ASC", null);
-                Log.d(TAG, "SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (i+1) + "'"+ " AND "
-                        + DBHelper.TIME + " BETWEEN" + " '" + startTime + "' " + "AND" + " '" + endTime + "' "
-                        + "AND " + DBHelper.IsTrip_col + " = 1 " + "ORDER BY " + DBHelper.TIME + " ASC"); //+" ORDER BY "+DBHelper.TIME+" ASC"
-                int rows2 = tripCursor2.getCount();
-
-                if (rows1 != 0 && rows2 != 0) {
-                    tripCursor1.moveToLast();
-                    tripCursor2.moveToFirst();
-
-                    long diff = Long.valueOf(tripCursor2.getString(1)) - Long.valueOf(tripCursor1.getString(1));
-
-                    Log.d(TAG, "diff : "+ diff);
-
-                    long minforDiffTrips = 2;
-                    long maxforDiffTrips = 10;
-
-                    String lastTransportation = tripCursor1.getString(7);
-                    String currentTransportation = tripCursor2.getString(7);
-
-                   *//* if(lastTransportation.equals("in_vehicle")){
-                        minforDiffTrips = 5;
-                    }else{
-                        minforDiffTrips = 4;
-                    }*//*
-
-                    String latestsessionid = tripCursor1.getString(2);
-
-                    tripCursor2.moveToFirst();
-                    int first_id = tripCursor2.getInt(0);
-                    tripCursor2.moveToLast();
-                    int last_id = tripCursor2.getInt(0);
-
-                    //if the different times between the trips are < 10 min
-                    //and the transportation mode are same
-                    if(diff/60000 < maxforDiffTrips && lastTransportation.equals(currentTransportation)){
-                        ContentValues contentValues = new ContentValues();
-
-                        contentValues.put(DBHelper.sessionid_col, latestsessionid); //0 = False
-
-                        db.update(DBHelper.trip_table, contentValues, "_id >= ? AND _id <= ?" , new String[] {String.valueOf(first_id), String.valueOf(last_id)});
-                    }
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        */
-
-        //filter < 100m trip its isTrip to 0
-        /*
-        for(int i=sessionid_unStatic;i>=1;i--){
-            try {
-                Cursor tripCursor = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ i + "'"
-                        +" AND "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' "+"ORDER BY "+DBHelper.TIME+" ASC", null);
-                Log.d(TAG,"SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ i + "'"
-                        +" AND "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' "+"ORDER BY "+DBHelper.TIME+" ASC"); //+" ORDER BY "+DBHelper.TIME+" ASC"
-                int rows = tripCursor.getCount();
-
-                if(rows!=0){
-
-                    float dist = 0;
-                    float[] results = new float[1];
-
-                    tripCursor.moveToFirst();
-                    float lat = tripCursor.getFloat(3);
-                    float lng = tripCursor.getFloat(4);
-                    int first_id = tripCursor.getInt(0);
-
-                    //the displacement from start to end <100m trip
-                    tripCursor.moveToLast();
-                    float lat2 = tripCursor.getFloat(3);
-                    float lng2 = tripCursor.getFloat(4);
-                    int last_id = tripCursor.getInt(0);
-
-                    Location.distanceBetween(lat,lng,lat2,lng2,results);
-                    dist += results[0];
-
-                    //the whole path <100m trip
-*//*
-                    tripCursor.moveToNext();
-                    do{
-                        float lat2 = tripCursor.getFloat(3);
-                        float lng2 = tripCursor.getFloat(4);
-                        Location.distanceBetween(lat,lng,lat2,lng2,results);
-                        dist += results[0];
-                        lat = lat2;
-                        lng = lng2;
-                    }while (tripCursor.moveToNext());
-*//*
-
-                    //TODO filter < 100m trip
-                    Log.d(TAG, "dist : "+ dist);
-                    if(dist<100) {
-                        //set the IsTrip in table to False
-                        ContentValues contentValues = new ContentValues();
-
-                        contentValues.put(DBHelper.IsTrip_col, 0); //0 = False
-
-                        db.update(DBHelper.trip_table, contentValues, "_id >= ? AND _id <= ?" , new String[] {String.valueOf(first_id), String.valueOf(last_id)});
-//                        continue;
-                    }
-                    tripCursor.moveToFirst();
-                    String firstTime = tripCursor.getString(1);
-//                    String firstTime = getmillisecondToDateWithTime(Long.valueOf(tripCursor.getString(1))); //tripCursor.getString(1);
-                    tripCursor.moveToLast();
-                    String lastTime = tripCursor.getString(1);
-//                    String lastTime = getmillisecondToDateWithTime(Long.valueOf(tripCursor.getString(1))); //tripCursor.getString(1);
-
-                    Log.d(TAG, firstTime+"-"+lastTime);
-
-                }else
-                    Log.d(TAG, "rows==0");
 
 
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+        return session;
 
-        }*/
-
-        //add filter the isTrip == 0 ones, don't show it.
-        /*
-        for(int i=sessionid_unStatic;i>=1;i--){
-            try {
-//                SQLiteDatabase db = DBManager.getInstance().openDatabase();
-                Cursor tripCursor = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ i + "'"
-                        +" AND "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' "
-                        + "AND " + DBHelper.IsTrip_col + " = 1 "+"ORDER BY "+DBHelper.TIME+" ASC", null);
-                Log.d(TAG,"SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ i + "'"
-                        +" AND "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' "
-                        + "AND " + DBHelper.IsTrip_col + " = 1 "+"ORDER BY "+DBHelper.TIME+" ASC"); //+" ORDER BY "+DBHelper.TIME+" ASC"
-                int rows = tripCursor.getCount();
-
-                if(rows!=0){
-                    tripCursor.moveToFirst();
-                    String firstTime = tripCursor.getString(1);
-//                    String firstTime = getmillisecondToDateWithTime(Long.valueOf(tripCursor.getString(1))); //tripCursor.getString(1);
-                    tripCursor.moveToLast();
-                    String lastTime = tripCursor.getString(1);
-//                    String lastTime = getmillisecondToDateWithTime(Long.valueOf(tripCursor.getString(1))); //tripCursor.getString(1);
-
-                    Log.d(TAG, firstTime+"-"+lastTime);
-
-                    times.add(firstTime+"-"+lastTime);
-                }else{
-                    Log.d(TAG, "rows==0");
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }*/
-
-        //checking "isTrip" in the csv file
-        /*for(int i=sessionid_unStatic;i>=1;i--){
-            try {
-                SQLiteDatabase db = DBManager.getInstance().openDatabase();
-                Cursor tripCursor = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ i + "'"
-                        +" AND "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' "+"ORDER BY "+DBHelper.TIME+" ASC", null);
-                Log.d(TAG,"SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ i + "'"
-                        +" AND "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' "+"ORDER BY "+DBHelper.TIME+" ASC"); //+" ORDER BY "+DBHelper.TIME+" ASC"
-                int rows = tripCursor.getCount();
-
-                if(rows!=0){
-                    do{
-                        tripCursor.moveToFirst();
-
-                        StoreToCSV(
-                                Long.valueOf(tripCursor.getString(1)),
-                                tripCursor.getInt(0),
-                                tripCursor.getString(2),
-                                tripCursor.getDouble(3),
-                                tripCursor.getDouble(4),
-                                tripCursor.getFloat(5),
-                                tripCursor.getInt(6)
-                        );
-                    }while (tripCursor.moveToNext());
-                }
-
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }*/
-
-        trip_size = times.size();
-        editor.putInt("trip_size",trip_size);
-
-        Log.d(TAG,"getTripDatafromSQLite total time : "+(new Date().getTime() - funcStartTime)/1000);
-
-        return times;
     }
-
 
     public static Session getSession (int sessionId) {
 
@@ -686,60 +442,9 @@ public class SessionManager {
 
         for (int i=0; i<res.size() ; i++) {
 
-            String sessionStr = res.get(i);
+            session = convertStringToSession(res.get(i));
+            Log.d(TAG, " test show trip  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
 
-            //split each row into columns
-            String[] separated = sessionStr.split(Constants.DELIMITER);
-
-            /** get properties of the session **/
-            int id = Integer.parseInt(separated[DBHelper.COL_INDEX_SESSION_ID]);
-            long startTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_START_TIME]);
-
-
-            /** 1. create sessions from the properies obtained **/
-            session = new Session(id, startTime);
-
-            /**2. get end time (or time of the last record) of the sesison**/
-
-            long endTime = 0;
-            //the session could be still ongoing..so we need to check where's endTime
-            Log.d(TAG, "[test show trip] separated[DBHelper.COL_INDEX_SESSION_END_TIME] " + separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
-            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("")){
-                endTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
-            }
-            //there 's no end time of the session, we take the time of the last record
-            else {
-
-                //TODO this should be the last record of the session. For now, we just use the current time
-                endTime= ScheduleAndSampleManager.getCurrentTimeInMillis();
-                Log.d(TAG, "[test show trip] testgetdata the end time is now:  " + ScheduleAndSampleManager.getTimeString(endTime));
-            }
-
-            //set end time
-            session.setEndTime(endTime);
-
-            /** 3. get annotaitons associated with the session **/
-            JSONObject annotationSetJSON = null;
-            JSONArray annotateionSetJSONArray = null;
-            try {
-                if (!separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET].equals("null")){
-                    annotationSetJSON = new JSONObject(separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET]);
-                    annotateionSetJSONArray = annotationSetJSON.getJSONArray(ANNOTATION_PROPERTIES_ANNOTATION);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-
-//            Log.d(LOG_TAG, " [testing load session][getSession] id " + id + " startTime " + startTime + " end time " + endTime + " annotateionSetJSONArray " + annotateionSetJSONArray);
-            Log.d(TAG, " test show trip  testgetdata id " + id + " startTime " + startTime + " end time " + endTime + " contextsource " + session.getContextSourceNames());
-
-
-            //set annotationset if there is one
-            if (annotateionSetJSONArray!=null){
-                AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
-                session.setAnnotationSet(annotationSet);
-            }
         }
 
 
@@ -747,7 +452,6 @@ public class SessionManager {
     }
 
     public static ArrayList<Session> getRecentSessions() {
-        Log.d(TAG, "[test show trip] getRecentSessions");
 
         ArrayList<Session> sessions = new ArrayList<Session>();
 
@@ -762,107 +466,18 @@ public class SessionManager {
         ArrayList<String> res =  DBHelper.querySessionsBetweenTimes(queryStartTime, queryEndTime);
 
 
-//        //setting today date. //TODO: 3AM should be the boundary
-//        Calendar cal = Calendar.getInstance();
-//        Date date = new Date();
-//        cal.setTime(date);
-//        int Year = cal.get(Calendar.YEAR);
-//        int Month = cal.get(Calendar.MONTH)+1;
-//        int Day = cal.get(Calendar.DAY_OF_MONTH);
-//
-//        long startTime = -999;
-//        long endTime = -999;
-//
-//        //get start time and end time
-//        startTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day));
-//        endTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, Day+1));
-
-
         Log.d(TAG, "[test show trip] getRecentSessions get res: " +  res);
 
         //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
         for (int i=0; i<res.size() ; i++) {
 
-            String sessionStr = res.get(i);
-
-            //split each row into columns
-            String[] separated = sessionStr.split(Constants.DELIMITER);
-
-            /** get properties of the session **/
-            int id = Integer.parseInt(separated[DBHelper.COL_INDEX_SESSION_ID]);
-            long sessionStartTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_START_TIME]);
-
-            /** 1. create sessions from the properies obtained **/
-            Session session = new Session(id, sessionStartTime);
-//            Log.d(TAG, "[test show trip] geernate swession  " +  session.getId());
-
-
-            /**2. get end time (or time of the last record) of the session**/
-            long sessionEndTime = 0;
-            //the session could be still ongoing..so we need to check where's endTime
-            if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("")){
-                sessionEndTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
-            }
-            //there 's no end time of the session, it's ongoing now, we should "now" as the end time. TODO: should be the time of the last record (or the start time of the previous session
-            if (sessionEndTime==0) {
-                sessionEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
-//                Log.d(TAG, "[test show trip] now end time yet, so the end time is now  " + ScheduleAndSampleManager.getTimeString(sessionEndTime));
-            }
-
-            //set end time
-            session.setEndTime(sessionEndTime);
-//            Log.d(TAG, "[test show trip] the session end time at the end is   " +  session.getEndTime());
-
-
-            /** 3. get annotaitons associated with the session **/
-            JSONObject annotationSetJSON = null;
-            JSONArray annotateionSetJSONArray = null;
-            try {
-                annotationSetJSON = new JSONObject(separated[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET]);
-                annotateionSetJSONArray = annotationSetJSON.getJSONArray(ANNOTATION_PROPERTIES_ANNOTATION);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            //set annotationset if there is one
-            if (annotateionSetJSONArray!=null){
-                AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
-                session.setAnnotationSet(annotationSet);
-            }
-
-
+            Session session = convertStringToSession(res.get(i));
             sessions.add(session);
-
         }
 
         return sessions;
     }
 
-    private static void notiQuerySessions(){
-
-        Log.d(TAG,"notiQuerySessions");
-
-        String notiText = "You have queried the Sessions.";
-
-        NotificationManager mNotificationManager =
-                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);//Context.
-        Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
-        bigTextStyle.setBigContentTitle("DMS");
-        bigTextStyle.bigText(notiText);
-
-        Notification note = new Notification.Builder(mContext)
-                .setContentTitle(Constants.APP_NAME)
-                .setContentText(notiText)
-                .setStyle(bigTextStyle)
-                .setSmallIcon(R.drawable.self_reflection)
-                .setAutoCancel(true)
-                .build();
-
-        // using the same tag and Id causes the new notification to replace an existing one
-        mNotificationManager.notify(999, note); //String.valueOf(System.currentTimeMillis()),
-        note.flags = Notification.FLAG_AUTO_CANCEL;
-
-    }
 
     public static ArrayList<String> getRecordsInSession(int sessionId, String tableName) {
 
@@ -905,41 +520,6 @@ public class SessionManager {
         }
     }
 
-    public int getTrip_size(){
-        return trip_size;
-    }
-
-    public ArrayList<LatLng> getTripLocToDrawOnMap(int position) {
-        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
-        try {
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor tripCursor = db.rawQuery("SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (position) + "'", null); //cause pos start from 0.
-            Log.d(TAG,"SELECT * FROM " + DBHelper.trip_table + " WHERE "+ DBHelper.sessionid_col+ " ='0, "+ (position) + "'");
-            int rows = tripCursor.getCount();
-
-            if(rows!=0){
-                tripCursor.moveToFirst();
-                for(int i=0;i<rows;i++) {
-                    Float lat = tripCursor.getFloat(3);
-                    Float lng = tripCursor.getFloat(4);
-
-                    Log.d(TAG,"lat"+String.valueOf(lat)+", lng"+String.valueOf(lng));
-
-                    LatLng latLng = new LatLng(lat,lng);
-
-                    latLngs.add(latLng);
-
-                    tripCursor.moveToNext();
-                }
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        return latLngs;
-
-    }
 
     private static String addZero(int date){
         if(date<10)
@@ -949,7 +529,7 @@ public class SessionManager {
     }
 
     public static long getSpecialTimeInMillis(String givenDateFormat){
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW);
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
         long timeInMilliseconds = 0;
         try {
             Date mDate = sdf.parse(givenDateFormat);
@@ -971,23 +551,6 @@ public class SessionManager {
         return dataformat;
     }
 
-    public static String getmillisecondToDateWithTime(long timeStamp){
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(timeStamp);
-
-        int mYear = calendar.get(Calendar.YEAR);
-        int mMonth = calendar.get(Calendar.MONTH)+1;
-        int mDay = calendar.get(Calendar.DAY_OF_MONTH);
-        int mhour = calendar.get(Calendar.HOUR_OF_DAY);
-        int mMin = calendar.get(Calendar.MINUTE);
-        int mSec = calendar.get(Calendar.SECOND);
-        int ampm = calendar.get(Calendar.AM_PM);
-
-//        return addZero(mhour)+":"+addZero(mMin)+" "+ampm;
-        return addZero(mYear)+"/"+addZero(mMonth)+"/"+addZero(mDay)+" "+addZero(mhour)+":"+addZero(mMin)+":"+addZero(mSec);
-
-    }
 
     public static AnnotationSet toAnnorationSet(JSONArray annotationJSONArray) {
 
@@ -1019,7 +582,6 @@ public class SessionManager {
                 e.printStackTrace();
             }
 
-
         }
 
         annotationSet.setAnnotations(annotations);
@@ -1028,5 +590,32 @@ public class SessionManager {
         return annotationSet;
 
     }
+
+
+//    private static void notiQuerySessions(){
+//
+//        Log.d(TAG,"notiQuerySessions");
+//
+//        String notiText = "You have queried the Sessions.";
+//
+//        NotificationManager mNotificationManager =
+//                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);//Context.
+//        Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
+//        bigTextStyle.setBigContentTitle("DMS");
+//        bigTextStyle.bigText(notiText);
+//
+//        Notification note = new Notification.Builder(mContext)
+//                .setContentTitle(Constants.APP_NAME)
+//                .setContentText(notiText)
+//                .setStyle(bigTextStyle)
+//                .setSmallIcon(R.drawable.self_reflection)
+//                .setAutoCancel(true)
+//                .build();
+//
+//        // using the same tag and Id causes the new notification to replace an existing one
+//        mNotificationManager.notify(999, note); //String.valueOf(System.currentTimeMillis()),
+//        note.flags = Notification.FLAG_AUTO_CANCEL;
+//
+//    }
 
 }

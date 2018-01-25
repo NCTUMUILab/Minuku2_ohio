@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
+import edu.ohio.minuku.model.AnnotationSet;
 import edu.ohio.minuku.model.Session;
 
 
@@ -668,7 +669,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
             String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME +
                     //condition with session id
-                    " where " + COL_ID + " = " + sessionId + "";
+                    " where " + COL_ID + " = " + sessionId + " and " +
+                    COL_SESSION_LONG_ENOUGH_FLAG + " = 1"     ; //only long enough trip
 
             Log.d(TAG, "[test show trip querySession] the query statement is " +sql);
 
@@ -707,6 +709,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME +
+
 //                    " where " + COL_SESSION_START_TIME + " > " + startTime + " and " +
 //                    COL_SESSION_START_TIME + " < " + endTime +
                     " order by " + COL_SESSION_START_TIME + " " + order;
@@ -744,9 +747,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME +
+                    " where " + COL_SESSION_LONG_ENOUGH_FLAG + " = 1" +
 //                    " where " + COL_SESSION_START_TIME + " > " + startTime + " and " +
 //                    COL_SESSION_START_TIME + " < " + endTime +
-                    " order by " + COL_SESSION_START_TIME;
+                    " order by " + COL_SESSION_START_TIME + " DESC ";
 
             // Log.d(TAG, "[querySessionsBetweenTimes] the query statement is " +sql);
 
@@ -760,6 +764,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 rows.add(curRow);
             }
             cursor.close();
+//            Log.d(TAG,"cursor.getCount : "+cursor.getCount());
 
             DBManager.getInstance().closeDatabase();
 
@@ -815,7 +820,9 @@ public class DBHelper extends SQLiteOpenHelper {
         try{
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            String sql = "SELECT *"  +" FROM " + DBHelper.SESSION_TABLE_NAME ;
+            String sql = "SELECT *"  +" FROM " + DBHelper.SESSION_TABLE_NAME;
+
+            Log.d(TAG, "[queryLastRecord] the query statement is " +sql);
 
             Cursor cursor = db.rawQuery(sql, null);
             int columnCount = cursor.getColumnCount();
@@ -833,7 +840,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }catch (Exception e){
 
         }
-
+        Log.d(TAG, "[test show trip] the sessions are" + " " +rows);
 
         return rows;
     }
@@ -1002,14 +1009,14 @@ public class DBHelper extends SQLiteOpenHelper {
             //execute the query
             Cursor cursor = db.rawQuery(sql, null);
             int columnCount = cursor.getColumnCount();
-            Log.d(TAG, "[test show trip] columnCount " +columnCount);
+//            Log.d(TAG, "[test show trip] columnCount " +columnCount);
             while(cursor.moveToNext()){
-                Log.d(TAG, "[test show trip] cursor" +cursor.getCount());
+//                Log.d(TAG, "[test show trip] cursor" +cursor.getCount());
                 String curRow = "";
                 for (int i=0; i<columnCount; i++){
                     curRow += cursor.getString(i)+ Constants.DELIMITER;
                 }
-                Log.d(TAG, "[test show trip] get result row " +curRow);
+//                Log.d(TAG, "[test show trip] get result row " +curRow);
 
                 rows.add(curRow);
             }
@@ -1061,9 +1068,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public static void updateSessionTable(int session_id, long endTime){
+    public static void updateSessionTable(int sessionId, long endTime){
 
-        String where = COL_ID + " = " +  session_id;
+        String where = COL_ID + " = " +  sessionId;
 
         try{
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
@@ -1093,18 +1100,18 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public static void updateSessionTable(Session session){
+    public static void updateSessionTable(int sessionId, long endTime, AnnotationSet annotationSet){
 
-        String where = COL_ID + " = " +  session.getId();
+        String where = COL_ID + " = " +  sessionId;
 
         try{
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             ContentValues values = new ContentValues();
 
             //TODO get the col name after complete the annotate part.
-            values.put(COL_SESSION_END_TIME, session.getEndTime());
+            values.put(COL_SESSION_END_TIME, endTime);
             //beacuse only one data(annotation) exist.
-            values.put(COL_SESSION_ANNOTATION_SET, session.getAnnotationsSet().toJSONObject().toString());
+            values.put(COL_SESSION_ANNOTATION_SET, annotationSet.toString());
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 

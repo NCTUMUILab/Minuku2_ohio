@@ -56,6 +56,32 @@ public class AnnotationSet {
 
     }
 
+	public ArrayList<Annotation> getAnnotationByTag(String tag){
+
+		Log.d("AnntationSet","[test show trip] searching " + tag + " inside annotationset");
+
+		ArrayList<Annotation> annotations = new ArrayList<Annotation>();
+
+		if (this.mAnnotations!=null){
+
+			for (Annotation annotation : mAnnotations){
+
+				Log.d("AnntationSet","[test show trip] now it's annotation " + annotation.toJSONObject().toString() );
+
+				if (annotation.getTags().contains(tag)){
+					Log.d("AnntationSet", "[test show trip] found annotation containing tag " + tag + " : " + annotation.toJSONObject().toString());
+					annotations.add(annotation);
+				}
+
+			}
+
+		}
+
+		return annotations;
+
+	}
+
+
     public ArrayList<Annotation> getAnnotationByContent(String content){
 
 //		Log.d("AnntationSet","[test combine] searching " + content + " inside annotationset" + this.mAnnotations.toString() );
@@ -76,11 +102,9 @@ public class AnnotationSet {
 
 			}
 
-
 		}
 
 		return annotations;
-
 
 	}
 
@@ -121,17 +145,9 @@ public class AnnotationSet {
     }
 
 
-
     @Override
     public String toString(){
-
-        String s = null;
-
-
-
-
-        return s;
-
+        return this.toJSONObject().toString();
     }
 	
 	

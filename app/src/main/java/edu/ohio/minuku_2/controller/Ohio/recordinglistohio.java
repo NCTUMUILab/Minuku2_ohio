@@ -53,13 +53,12 @@ public class recordinglistohio extends Activity {
     private void startAnnotateActivity(int trip_position) {
 
         String sessionId = String.valueOf(mSessions.get(trip_position).getId());
-        Log.d(TAG, "[test show trip] start AnnotateActivity the session " +sessionId );
         Bundle bundle = new Bundle();
         bundle.putString("sessionkey_id",sessionId);
         bundle.putInt("position_id", trip_position);
         Intent intent = new Intent(recordinglistohio.this, AnnotateSessionActivity.class);
         intent.putExtras(bundle);
-        Log.d(TAG, "[test show trip] aftger adding extra");
+
         startActivity(intent);
 
     }
@@ -68,31 +67,21 @@ public class recordinglistohio extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-
-        Log.d(TAG,"onResume");
-
         initSessionList();
-
-        Log.d(TAG,"[test show trip] result on resume "  );
     }
 
     private void initSessionList(){
-
-        Log.d(TAG,"[test show trip] initSessionList");
-
 
         listview = (ListView)findViewById(R.id.recording_list);
         listview.setEmptyView(findViewById(R.id.emptyView));
 
         try{
-
 //            locationDataRecords = new ListSessionAsyncTask().execute(mReviewMode).get();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                 new ListSessionAsyncTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get();
             else
                 new ListSessionAsyncTask(this).execute().get();
-
 
         }catch(InterruptedException e) {
             Log.d(TAG,"InterruptedException");
@@ -107,7 +96,6 @@ public class recordinglistohio extends Activity {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
 
                 if(!OhioListAdapter.dataPos.contains(position)) {
                     Log.d(TAG, "[[test show trip]] click on the session position " + position);
@@ -138,8 +126,10 @@ public class recordinglistohio extends Activity {
     }
 
 
+    /**
+     * Load Session Data from the SessionManager
+     */
     private class ListSessionAsyncTask extends AsyncTask<String, Void, ArrayList<Session> > {
-
 
         private ProgressDialog dialog = null;
         private Context mContext = null;
@@ -185,8 +175,6 @@ public class recordinglistohio extends Activity {
         @Override
         protected ArrayList<Session> doInBackground(String... params) {
 
-            Log.d(TAG, "[test show trip] listRecordAsyncTask going to list recording");
-
             ArrayList<Session> sessions = new ArrayList<Session>();
 
             try {
@@ -198,8 +186,6 @@ public class recordinglistohio extends Activity {
                 Log.d(TAG,"Exception");
                 e.printStackTrace();
             }
-
-            Log.d(TAG, "[test show trip] do in background return sessions " + sessions);
             return sessions;
 
         }

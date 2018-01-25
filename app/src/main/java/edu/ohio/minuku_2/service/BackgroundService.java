@@ -22,6 +22,9 @@
 
 package edu.ohio.minuku_2.service;
 
+import android.app.AlarmManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -31,7 +34,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import edu.ohio.minuku.Utilities.FileHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuStreamManager;
@@ -48,11 +50,13 @@ public class BackgroundService extends Service {
     IntentFilter intentFilter;
 
     MinukuStreamManager streamManager;
+    NotificationManager mNotificationManager;
     private ScheduledExecutorService mScheduledExecutorService;
 
     public BackgroundService() {
         super();
         streamManager = MinukuStreamManager.getInstance();
+//        mNotificationManager = new NotificationManager();
         mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_FREQUENCY);
 
         intentFilter = new IntentFilter();
@@ -74,22 +78,26 @@ public class BackgroundService extends Service {
         Log.d(TAG, "onStartCommand");
 
         runMainThread();
-//        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
-//        alarm.set(
-//                AlarmManager.RTC_WAKEUP,     //
-//                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
-//                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
-//        );
-/*
-        Notification note  = new Notification.Builder(getBaseContext())
-                .setContentTitle(Constants.APP_NAME)
-                .setContentText(Constants.RUNNING_APP_DECLARATION)
-                .setSmallIcon(R.drawable.self_reflection)
-                .setAutoCancel(false)
-                .build();
-        note.flags |= Notification.FLAG_NO_CLEAR;
-        startForeground( 42, note );
-*/
+
+        //we use an alerm to keep the service awake
+        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+        alarm.set(
+                AlarmManager.RTC_WAKEUP,     //
+                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
+        );
+
+        Log.d(TAG, "test combine the service is restarted!");
+
+//        Notification note  = new Notification.Builder(getBaseContext())
+//                .setContentTitle(Constants.APP_NAME)
+//                .setContentText(Constants.RUNNING_APP_DECLARATION)
+//                .setSmallIcon(R.drawable.self_reflection)
+//                .setAutoCancel(false)
+//                .build();
+//        note.flags |= Notification.FLAG_NO_CLEAR;
+//        startForeground( 42, note );
+
 
         if(!InstanceManager.isInitialized()) {
             InstanceManager.getInstance(this);
@@ -98,8 +106,8 @@ public class BackgroundService extends Service {
 
 
         /**read test file**/
-        FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
-        FileHelper.readTestFile();
+//        FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
+//        FileHelper.readTestFile();
 
 
         /*MinukuDAOManager daoManager = MinukuDAOManager.getInstance();
@@ -114,6 +122,16 @@ public class BackgroundService extends Service {
         //TODO Keep eye on the service is working or not.
         return START_STICKY;
     }
+
+    //        private void showNotification(){
+//            NotificationCompat.Builder builer = new NotificationCompat.Builder(this)
+//                    .setSmallIcon(R.drawable.self_reflection)
+//                    .setContentTitle("Service active")
+//                    .setContentText("Your service keeps running")
+//                    .setOngoing(true);
+//            mNotificationManager.notify(NOTIFICATION_ID, builer.build());
+//
+//        }
 
     private void runMainThread(){
 
