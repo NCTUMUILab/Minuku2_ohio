@@ -429,8 +429,8 @@ public class CheckFamiliarOrNotService extends Service {
         Random random = new Random(now);
         int sample_period;
         //TODO set the start and end time.
-        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", "18:00"); //"22:00"
-        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", "17:00"); //"08:00"
+        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", "22:00"); //"22:00"
+        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", "08:00"); //"08:00"
 
         Log.d(TAG, "sleepingstartTime : " + yMdformat+" "+sleepingstartTime+":00");
 
@@ -593,8 +593,8 @@ public class CheckFamiliarOrNotService extends Service {
 
                 //setting third of the day
                 //TODO set it back to startSleepingTime: 22:00 and endSleepingTime: 08:00
-                String startSleepingTime = sharedPrefs.getString("SleepingStartTime","18:00");
-                String endSleepingTime = sharedPrefs.getString("SleepingEndTime","17:00");
+                String startSleepingTime = sharedPrefs.getString("SleepingStartTime","22:00");
+                String endSleepingTime = sharedPrefs.getString("SleepingEndTime","08:00");
 
                 Log.d(TAG,"startSleepingTime : "+ startSleepingTime);
                 Log.d(TAG,"endSleepingTime : "+ endSleepingTime);
