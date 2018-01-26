@@ -317,6 +317,7 @@ public class MinukuStreamManager implements StreamManager {
                         else {
                             //not continue
                             addSessionFlag = true;
+                            Log.d(TAG, "test combine: we shgould not combine but add a new session " );
                         }
 
                     }
