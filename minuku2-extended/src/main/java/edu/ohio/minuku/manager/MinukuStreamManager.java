@@ -311,13 +311,10 @@ public class MinukuStreamManager implements StreamManager {
                         shouldCombineWithLastSession = SessionManager.examineSessionCombinationByActivityAndTime(lastSession, transportationModeDataRecord.getConfirmedActivityString(),now );
 
                         if (shouldCombineWithLastSession){
-
                             //modify the endTime of the previous session to empty (because we extend it!). we should also make the notlongenough field to be true.
                             SessionManager.continueLastSession(lastSession);
-
                         }
                         else {
-
                             //not continue
                             addSessionFlag = true;
                         }
