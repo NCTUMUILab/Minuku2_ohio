@@ -361,7 +361,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     private void initQuestionnaire()  {
 
 
-
         //tell if the session has been labeled. It is in the annotaiton with ESM tag
         ArrayList<Annotation> annotations = mSession.getAnnotationsSet().getAnnotationByTag("ESM");
         String labelStr = "No Label";
