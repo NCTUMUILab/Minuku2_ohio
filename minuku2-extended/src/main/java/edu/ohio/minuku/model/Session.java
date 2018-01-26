@@ -15,6 +15,8 @@ public class Session {
     //we need to rememeber this number in order to cancel the ongoing notification when the current session is done.
     private int mOngoingNotificationId=-1;
 	protected AnnotationSet mAnnotationSet;
+	private boolean mIsLongEnough = true ;
+	private boolean mIsModified = false;
     //TODO: this should be defined based on what's being activated.
     ArrayList<String> mContextSourceNames;
 
@@ -61,6 +63,17 @@ public class Session {
         }
     }
 
+    public boolean isLongEnough() {
+        return mIsLongEnough;
+    }
+
+    public void setLongEnough(boolean longEnough){
+        mIsLongEnough = longEnough;
+    }
+
+    public void setModified(boolean isModified){
+        mIsModified = isModified;
+    }
 
     public boolean isPaused() {
         return mPaused;
