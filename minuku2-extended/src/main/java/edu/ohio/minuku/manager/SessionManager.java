@@ -62,8 +62,8 @@ public class SessionManager {
 
     public static final String SESSION_LONGENOUGH_THRESHOLD_DISTANCE = "distance";
 
-    public static final long SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION = 1 * Constants.MILLISECONDS_PER_MINUTE;
-    public static final long SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION = 1 * Constants.MILLISECONDS_PER_MINUTE;
+    public static final long SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION = 3 * Constants.MILLISECONDS_PER_MINUTE;
+    public static final long SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION = 3 * Constants.MILLISECONDS_PER_MINUTE;
     public static final long SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION = 100;  // meters;
 
     public static int SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR = 24;
@@ -373,6 +373,53 @@ public class SessionManager {
         SessionManager.getInstance().addOngoingSessionid(session.getId());
 
         DBHelper.insertSessionTable(session);
+
+    }
+
+    public static boolean examineSessionCombinationByActivityAndTime(Session lastSession, String activity, long time){
+
+        boolean combine = false;
+
+        //get annotaitons that has the transportation mode tag
+        ArrayList<Annotation> annotations = lastSession.getAnnotationsSet().getAnnotationByContent(activity);
+
+        //if the previous session does not have any annotation of which transportation is of the same tag, we should not combine
+        if (annotations.size() == 0) {
+            edu.ohio.minuku.logger.Log.d(TAG, "[test combine] addSessionFlag = true  the last session is not the same activity");
+            combine = false;
+        }
+
+        // the current activity is the same TM with the previous session mode, we check its time difference
+        else {
+            Log.d(TAG, "[test combine] we found the last session with the same activity");
+            //check its interval to see if it's within 5 minutes
+
+            Log.d(TAG, "[test combine] the previous session ends at " +  lastSession.getEndTime() + " and the current activity starts at " + time  +
+                    " the difference is " + (time - lastSession.getEndTime()) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
+
+            //if the current session is too close from the previous one in terms of time, we should combine
+            if (time - lastSession.getEndTime() <= SessionManager.SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION) {
+
+                edu.ohio.minuku.logger.Log.d(TAG, "[test combine] the current activity is too close from the previous trip, continue the last session! the difference is "
+                        + (time - lastSession.getEndTime()) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
+
+                combine = true;
+
+            }
+            //the session is far from the previous one, it should be a new session. we should not combine
+            else {
+                Log.d(TAG, "[test combine] addSessionFlag = true the current truip is far from the previous trip");
+                combine = false;
+            }
+        }
+
+
+        //debug...
+        String lastSessionStr = DBHelper.queryLastSession().get(0);
+        edu.ohio.minuku.logger.Log.d(TAG, "test combine: the previous acitivty is movnig,after combine it the last session is: " +  lastSessionStr );
+        return combine;
+
+
 
     }
 

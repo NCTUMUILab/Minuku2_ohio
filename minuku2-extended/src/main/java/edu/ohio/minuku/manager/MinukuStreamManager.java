@@ -306,45 +306,18 @@ public class MinukuStreamManager implements StreamManager {
 
                         /** check if the new actviity should be combine: if the new transportaiotn mode  is the same as the mode of the previous sessison and the time is 5 minuts*/
 
-                        //get annotaitons that has the transportation mode tag
-                        ArrayList<Annotation> annotations = lastSession.getAnnotationsSet().getAnnotationByContent(transportationModeDataRecord.getConfirmedActivityString());
+                        boolean shouldCombineWithLastSession = false;
+                        long now = getCurrentTimeInMilli();
+                        shouldCombineWithLastSession = SessionManager.examineSessionCombinationByActivityAndTime(lastSession, transportationModeDataRecord.getConfirmedActivityString(),now );
 
-                        //if the previous session does not have any annotation of which transportation is of the same tag, we should add a new session
-                        if (annotations.size() == 0) {
-                            Log.d(TAG, "[test combine] addSessionFlag = true  the last session is not the same activity");
-                            addSessionFlag = true;
+                        if (shouldCombineWithLastSession){
+                            //modify the endTime of the previous session to empty (because we extend it!). we should also make the notlongenough field to be true.
+                            SessionManager.continueLastSession(lastSession);
                         }
-
-                        // the current activity is the same TM with the previous session mode, we check its time difference
                         else {
-                            Log.d(TAG, "[test combine] we found the last session with the same activity");
-                            //check its interval to see if it's within 5 minutes
-                            long now = getCurrentTimeInMilli();
-
-                            Log.d(TAG, "[test combine] the previous session ends at " +  endTimeOfLastSession + " and the current activity starts at " + now  +
-                                    " the difference is " + (now - endTimeOfLastSession) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
-
-                            if (now - endTimeOfLastSession <= SessionManager.SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION) {
-
-                                Log.d(TAG, "[test combine] the current activity is too close from the previous trip, continue the last session! the difference is "
-                                        + (now - endTimeOfLastSession) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
-
-                                //we should put thre last session back, and not add a new sesssion
-                                SessionManager.getInstance().addOngoingSessionid(sessionIdOfLastSession);
-
-                                //modify the endTime of the previous session to empty (because we extend it!). we should also make the notlongenough field to be true.
-                                SessionManager.continueLastSession(lastSession);
-
-                                //debug...
-                                String lastSessionStr = DBHelper.queryLastSession().get(0);
-                                Log.d(TAG, "test combine: the previous acitivty is movnig,after combine it the last session is: " +  lastSessionStr );
-
-                            }
-                            //the session is far from the previous one, it should be a new session
-                            else {
-                                Log.d(TAG, "[test combine] addSessionFlag = true the current truip is far from the previous trip");
-                                addSessionFlag = true;
-                            }
+                            //not continue
+                            addSessionFlag = true;
+                            Log.d(TAG, "test combine: we shgould not combine but add a new session " );
                         }
 
                     }
