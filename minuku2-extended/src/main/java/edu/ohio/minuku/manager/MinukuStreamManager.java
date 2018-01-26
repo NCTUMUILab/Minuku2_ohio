@@ -508,4 +508,11 @@ public class MinukuStreamManager implements StreamManager {
 
         return timeString;
     }
+
+    public void startNewSession(){}
+
+    public void stopPreSession(){}
+
+    public void continuePreSession(){}
+
 }
