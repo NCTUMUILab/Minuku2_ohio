@@ -283,8 +283,13 @@ public class MinukuStreamManager implements StreamManager {
 
                         //if we end the current session, we should update its time and set a long enough flag
                         long endTime = getCurrentTimeInMilli();
-                        SessionManager.updateCurSessionEndInfo(lastSession.getId(), endTime, isSessionLongEnough);
+                        lastSession.setEndTime(endTime);
+                        lastSession.setLongEnough(isSessionLongEnough);
 
+                        //end the current session
+                        SessionManager.endCurSession(lastSession);
+
+                        //debug..
                         String lastSessionStr = DBHelper.queryLastSession().get(0);
                         Log.d(TAG, "test combine: the previous acitivty is movnig,after update the session is: " +  lastSessionStr );
 
@@ -328,8 +333,9 @@ public class MinukuStreamManager implements StreamManager {
                                 SessionManager.getInstance().addOngoingSessionid(sessionIdOfLastSession);
 
                                 //modify the endTime of the previous session to empty (because we extend it!). we should also make the notlongenough field to be true.
-                                SessionManager.updateCurSessionEndInfo(sessionIdOfLastSession, 0, true);
+                                SessionManager.continueLastSession(lastSession);
 
+                                //debug...
                                 String lastSessionStr = DBHelper.queryLastSession().get(0);
                                 Log.d(TAG, "test combine: the previous acitivty is movnig,after combine it the last session is: " +  lastSessionStr );
 
@@ -361,9 +367,9 @@ public class MinukuStreamManager implements StreamManager {
 
                     Log.d(TAG, "[test combine] insert the session is with annotation " +session.getAnnotationsSet().toJSONObject().toString());
 
-                    DBHelper.insertSessionTable(session);
-                    //InstanceManager add ongoing session for the new activity
-                    SessionManager.getInstance().addOngoingSessionid(sessionId);
+
+                    SessionManager.startNewSession(session);
+
                 }
 
 

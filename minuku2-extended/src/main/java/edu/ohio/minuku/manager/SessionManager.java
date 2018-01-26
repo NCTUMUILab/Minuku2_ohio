@@ -339,8 +339,10 @@ public class SessionManager {
     }
 
 
-    /**/
-
+    /**
+     *
+     * @return
+     */
     public static int getNumOfSession(){
         int num = 0;
 
@@ -350,10 +352,56 @@ public class SessionManager {
     }
 
 
-
-    public static void updateCurSessionEndInfo(int sessionId, long endTime, boolean isLongEnough){
+    /**
+     *
+     * @param sessionId
+     * @param endTime
+     * @param isLongEnough
+     */
+    public static void updateCurSessionEndInfoTo(int sessionId, long endTime, boolean isLongEnough){
 
         DBHelper.updateSessionTable(sessionId, endTime, isLongEnough);
+    }
+
+    /**
+     *
+     * @param session
+     */
+    public static void startNewSession(Session session) {
+
+        //InstanceManager add ongoing session for the new activity
+        SessionManager.getInstance().addOngoingSessionid(session.getId());
+
+        DBHelper.insertSessionTable(session);
+
+    }
+
+
+    /**
+     *
+     * @param session
+     */
+    public static void continueLastSession(Session session) {
+
+        //remove the ongoing session
+        getOngoingSessionIdList().add(session.getId());
+
+        //update session with end time and long enough flag.
+        updateCurSessionEndInfoTo(session.getId(),0,true);
+
+    }
+
+    /**
+     *
+     * @param session
+     */
+    public static void endCurSession(Session session) {
+
+        //remove the ongoing session
+        getOngoingSessionIdList().remove(session.getId());
+
+        //update session with end time and long enough flag.
+        updateCurSessionEndInfoTo(session.getId(),session.getEndTime(),session.isLongEnough());
 
     }
 
