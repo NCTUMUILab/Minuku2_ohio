@@ -283,7 +283,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
     public boolean updateStream() {
 
         LocationDataRecord newlocationDataRecord;
-        String session_id = "null";
+        int session_id = 0;
 
         int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
 
@@ -300,7 +300,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     (float) latestLongitude.get(),
                     latestAccuracy,
                     //TODO improve it to ArrayList, ex. the session id should be "0, 10".
-                    session_id);
+                    String.valueOf(session_id));
         }catch (IndexOutOfBoundsException e){
             e.printStackTrace();
             //no session now
@@ -308,7 +308,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     (float) latestLatitude.get(),
                     (float) latestLongitude.get(),
                     latestAccuracy,
-                    session_id);
+                    String.valueOf(session_id));
         }
         Log.e(TAG,"[test replay] newlocationDataRecord latestLatitude : "+ latestLatitude.get()+" latestLongitude : "+ latestLongitude.get() + "  session_id " +  session_id);
 

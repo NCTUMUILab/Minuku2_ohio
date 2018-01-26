@@ -237,7 +237,7 @@ public class MinukuStreamManager implements StreamManager {
                 Log.d(TAG, "test combine test trip: the new acitivty is different from the previous!");
 
                 /** we first see if the this is the first session**/
-                int sessionCount =  (int)DBHelper.querySessionCount();
+                int sessionCount =  SessionManager.getNumOfSession();
 
                 //if this is the first time seeing a session and the new transportation is neither static nor NA, we should just insert a session
                 if (sessionCount==0
@@ -251,30 +251,13 @@ public class MinukuStreamManager implements StreamManager {
                 else if (sessionCount>0){
 
                     //get the latest session (Which should be the ongoing one)
-                    String lastSessionStr = DBHelper.queryLastSession().get(0);
+                    Session lastSession = SessionManager.getLastSession();
+                    int sessionIdOfLastSession = lastSession.getId();
+                    AnnotationSet annotationSet = lastSession.getAnnotationsSet();
+                    long endTimeOfLastSession = lastSession.getEndTime();
+                    long startTimeOfLastSession = lastSession.getStartTime();
 
-                    Log.d(TAG, "test combine lastsession str" + lastSessionStr);
-
-                    //get session  information
-                    String[] sessionColOfLastSession = lastSessionStr.split(Constants.DELIMITER);
-
-                    String sessionIdOfLastSession = sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_ID];
-                    String annotationSetStrOfLastSession = sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_ANNOTATION_SET];
-                    long endTimeOfLastSession = 0;
-                    long startTimeOfLastSession = 0;
-
-                    //make timestring to Long
-                    if (!sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null") && !sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_END_TIME].equals("")) {
-                        endTimeOfLastSession = Long.parseLong(sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_END_TIME]);
-                    }
-
-                    if (!sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_START_TIME].equals("null") && !sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_START_TIME].equals("")) {
-                        startTimeOfLastSession = Long.parseLong(sessionColOfLastSession[DBHelper.COL_INDEX_SESSION_START_TIME]);
-                    }
-
-
-                    Log.d(TAG, "[test combine] session " + sessionIdOfLastSession + " with annotation string " + annotationSetStrOfLastSession + " end time " + endTimeOfLastSession + " startTime " + startTimeOfLastSession);
-
+                    Log.d(TAG, "[test combine] session " + sessionIdOfLastSession + " with annotation string " + annotationSet.toString() + " end time " + endTimeOfLastSession + " startTime " + startTimeOfLastSession);
 
 
                     /**
@@ -287,9 +270,8 @@ public class MinukuStreamManager implements StreamManager {
 
 
                         //first get the last session id, which is the same as the count of the session in the database (it should
-                        int sesssionId = sessionCount;
-                        Log.d(TAG, "test combine: the previous acitivty is movnig, we're going to remove the current session id " + sesssionId );
-                        SessionManager.getInstance().removeOngoingSessionid(String.valueOf(sesssionId));;
+                        Log.d(TAG, "test combine: the previous acitivty is movnig, we're going to remove the current session id " + sessionIdOfLastSession );
+                        SessionManager.getInstance().removeOngoingSessionid(String.valueOf(sessionIdOfLastSession));;
                         Log.d(TAG, "test combine: after revmove, now the sesssion manager session list has  " + SessionManager.getInstance().getOngoingSessionList());
 
 
@@ -297,62 +279,18 @@ public class MinukuStreamManager implements StreamManager {
                          * 3. Then we need to determine whether the session is long enough to be a session. We get the distance of the session to determine its isLongEnoughFlag *
                          * */
 
-                        //get location records from the session
-                        boolean isSessionLongEnoughFlag = true;
-                        ArrayList<String> resultBySession = null;
-                        resultBySession = SessionManager.getRecordsInSession(Integer.parseInt(sessionIdOfLastSession), DBHelper.STREAM_TYPE_LOCATION);
+                        boolean isSessionLongEnough = SessionManager.isSessionLongEnough(SessionManager.SESSION_LONGENOUGH_THRESHOLD_DISTANCE, sessionIdOfLastSession);
 
-                        Log.d(TAG, "test combine: there are " + resultBySession.size() + " location records"  );
-
-
-                        //if there's no location points, it's not long enough
-                        if (resultBySession.size()==0){
-                            isSessionLongEnoughFlag = false;
-                        }
-
-                        //there are location records, we need to examine its distance
-                        else {
-                            //create arraylist for storing the latlng
-                            ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
-
-                            /** storing location records after we obain from the database*/
-                            for(int index = 0;index < resultBySession.size(); index++){
-                                String[] separated = resultBySession.get(index).split(Constants.DELIMITER);
-                                double lat = Double.valueOf(separated[2]);
-                                double lng = Double.valueOf(separated[3]);
-
-                                LatLng latLng = new LatLng(lat, lng);
-                                latLngs.add(latLng);
-                            }
-
-                            LatLng startLatLng = latLngs.get(0);
-                            LatLng endLatLng = latLngs.get(latLngs.size() - 1);
-
-                            //calculate the distance between the first and the last
-                            float[] results = new float[1];
-                            Location.distanceBetween(startLatLng.latitude,startLatLng.longitude, endLatLng.latitude, endLatLng.longitude,results);
-                            float distance = results[0];
-
-                            Log.d(TAG, " test combine the distance between start and end is " + distance  + " now we comapre with the threshold " + SessionManager.SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION );
-
-
-                            //if the session is shorter than a threshold (now - start time < threshold), we should give it a flag, so that it wouldnot show up in the annotation list
-                            if (distance<SessionManager.SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION){
-                                Log.d(TAG, " test combine the trip is too short  ");
-
-                                isSessionLongEnoughFlag = false;
-                            }else {
-                                Log.d(TAG, " test combine the trip is long enough ");
-                            }
-                        }
-
-
-                        //
+                        //if we end the current session, we should update its time and set a long enough flag
                         long endTime = getCurrentTimeInMilli();
-                        DBHelper.updateSessionTable(sesssionId, endTime, isSessionLongEnoughFlag);
+                        lastSession.setEndTime(endTime);
+                        lastSession.setLongEnough(isSessionLongEnough);
 
-                        lastSessionStr = DBHelper.queryLastSession().get(0);
+                        //end the current session
+                        SessionManager.endCurSession(lastSession);
 
+                        //debug..
+                        String lastSessionStr = DBHelper.queryLastSession().get(0);
                         Log.d(TAG, "test combine: the previous acitivty is movnig,after update the session is: " +  lastSessionStr );
 
                     }
@@ -368,67 +306,18 @@ public class MinukuStreamManager implements StreamManager {
 
                         /** check if the new actviity should be combine: if the new transportaiotn mode  is the same as the mode of the previous sessison and the time is 5 minuts*/
 
-                        //first query session of the previous activity
-                        JSONObject annotationSetJSON = null;
-                        JSONArray annotateionSetJSONArray = null;
-                        AnnotationSet annotationSet = null;
+                        boolean shouldCombineWithLastSession = false;
+                        long now = getCurrentTimeInMilli();
+                        shouldCombineWithLastSession = SessionManager.examineSessionCombinationByActivityAndTime(lastSession, transportationModeDataRecord.getConfirmedActivityString(),now );
 
-                        try {
-                            if (!annotationSetStrOfLastSession.equals("null") && !annotationSetStrOfLastSession.equals("")) {
-                                annotationSetJSON = new JSONObject(annotationSetStrOfLastSession);
-                                annotateionSetJSONArray = annotationSetJSON.getJSONArray(SessionManager.ANNOTATION_PROPERTIES_ANNOTATION);
-                                //                                Log.d(TAG,"[test combine] annotateionSetJSONArray " + annotateionSetJSONArray.toString() );
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        if (shouldCombineWithLastSession){
+                            //modify the endTime of the previous session to empty (because we extend it!). we should also make the notlongenough field to be true.
+                            SessionManager.continueLastSession(lastSession);
                         }
-
-                        if (annotateionSetJSONArray != null) {
-                            annotationSet = SessionManager.toAnnorationSet(annotateionSetJSONArray);
-                        }
-                        ;
-                        //get annotaitons that has the transportation mode tag
-                        ArrayList<Annotation> annotations = annotationSet.getAnnotationByContent(transportationModeDataRecord.getConfirmedActivityString());
-
-                        //if the previous session does not have any annotation of which transportation is of the same tag, we should add a new session
-                        if (annotations.size() == 0) {
-                            Log.d(TAG, "[test combine] addSessionFlag = true  the last session is not the same activity");
-                            addSessionFlag = true;
-                        }
-
-                        // the current activity is the same TM with the previous session mode, we check its time difference
                         else {
-                            Log.d(TAG, "[test combine] we found the last session with the same activity");
-                            //check its interval to see if it's within 5 minutes
-                            long now = getCurrentTimeInMilli();
-
-                            Log.d(TAG, "[test combine] the previous session ends at " +  endTimeOfLastSession + " and the current activity starts at " + now  +
-                                    " the difference is " + (now - endTimeOfLastSession) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
-
-                            if (now - endTimeOfLastSession <= SessionManager.SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION) {
-
-                                Log.d(TAG, "[test combine] the current activity is too close from the previous trip, continue the last session! the difference is "
-                                        + (now - endTimeOfLastSession) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
-
-                                //we should put thre last session back, and not add a new sesssion
-                                SessionManager.getInstance().addOngoingSessionid(sessionIdOfLastSession);
-
-
-                                boolean isSessionLongEnoughFlag = true;
-
-
-                                //modify the endTime of the previous session to empty (because we extend it!). we should also make the notlongenough field to be true.
-                                DBHelper.updateSessionTable(Integer.parseInt(sessionIdOfLastSession), 0, isSessionLongEnoughFlag) ;
-
-                                lastSessionStr = DBHelper.queryLastSession().get(0);
-                                Log.d(TAG, "test combine: the previous acitivty is movnig,after combine it the last session is: " +  lastSessionStr );
-
-                            }
-                            //the session is far from the previous one, it should be a new session
-                            else {
-                                Log.d(TAG, "[test combine] addSessionFlag = true the current truip is far from the previous trip");
-                                addSessionFlag = true;
-                            }
+                            //not continue
+                            addSessionFlag = true;
+                            Log.d(TAG, "test combine: we shgould not combine but add a new session " );
                         }
 
                     }
@@ -451,9 +340,9 @@ public class MinukuStreamManager implements StreamManager {
 
                     Log.d(TAG, "[test combine] insert the session is with annotation " +session.getAnnotationsSet().toJSONObject().toString());
 
-                    DBHelper.insertSessionTable(session);
-                    //InstanceManager add ongoing session for the new activity
-                    SessionManager.getInstance().addOngoingSessionid(String.valueOf(sessionId));
+
+                    SessionManager.startNewSession(session);
+
                 }
 
 

@@ -671,7 +671,7 @@ public class SurveyTriggerService extends Service {
                 long lastminute = now - Constant.MILLISECONDS_PER_MINUTE;
 
                 //1. we get walking session
-                String sessionId = SessionManager.getOngoingSessionIdList().get(0);
+                int sessionId = SessionManager.getOngoingSessionIdList().get(0);
                 Session session = SessionManager.getSession(sessionId);
 
                 //see if the session is walking session
@@ -1057,7 +1057,7 @@ public class SurveyTriggerService extends Service {
             DBManager.getInstance().closeDatabase(); // Closing database connection
         }
     }
-    
+
 
     private void notiQualtrics(){
 
