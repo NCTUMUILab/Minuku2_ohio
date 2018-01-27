@@ -58,6 +58,8 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
     private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_IN_VEHICLE = (float)0.2;
     private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.2;
     private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.2;
+    private static final int CONFIRM_STOP_ACTIVITY_CONFIDENCE_THRESHOLD =20;
+
 
     /**label **/
     public static final String STRING_DETECTED_ACTIVITY_IN_VEHICLE = "in_vehicle";
@@ -725,10 +727,13 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
                 }
             }
 
-            for (int activityIndex = 0; activityIndex<detectedActivities.size(); activityIndex++) {
+            //if probable activities (not including the last one) contain the target activity, we count! (not simply see the most probable one)
+            for (int activityIndex = 0; activityIndex<detectedActivities.size()-1; activityIndex++) {
 
-                //if probable activities contain the target activity, we count! (not simply see the most probable one)
-                if (detectedActivities.get(activityIndex).getType()==activityType ) {
+                //if found the activity and the activyt confidence is still higher than a threshold (i.e. we're still think it's likely that the person is moving in that activity
+                if (detectedActivities.get(activityIndex).getType()==activityType &&
+                        detectedActivities.get(activityIndex).getConfidence()>=CONFIRM_STOP_ACTIVITY_CONFIDENCE_THRESHOLD) {
+
                     count +=1;
                     break;
                 }

@@ -60,6 +60,9 @@ public class SessionManager {
     public static final String ANNOTATION_PROPERTIES_CONTENT = "Content";
     public static final String ANNOTATION_PROPERTIES_TAG = "Tag";
 
+    public static final String SESSION_DISPLAY_ONGOING = "Ongoing...";
+    public static final String SESSION_DISPLAY_NO_ANNOTATION = "No Label";
+
     public static final String SESSION_LONGENOUGH_THRESHOLD_DISTANCE = "distance";
 
     public static final long SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION = 3 * Constants.MILLISECONDS_PER_MINUTE;
@@ -143,7 +146,7 @@ public class SessionManager {
         for (int i = 0; i< mOngoingSessionIdList.size(); i++){
             //       Log.d(LOG_TAG, " [getCurRecordingSession] looping to " + i + "th session of which the id is " + mCurRecordingSessions.get(i).getId());
 
-            if (mOngoingSessionIdList.get(i).equals(String.valueOf(sessionId))){
+            if (mOngoingSessionIdList.get(i)==sessionId){
                 return true;
             }
         }

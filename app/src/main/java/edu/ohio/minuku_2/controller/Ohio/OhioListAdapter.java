@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku_2.Constant;
@@ -70,13 +71,19 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
 
             String sessionTitle = null;
             String timeLabel=null;
-            String labelStr = "No Label";
+            String labelStr = SessionManager.SESSION_DISPLAY_NO_ANNOTATION;
             String noteText = "No Content Yet";
 
             //show the text of the session with annotation
 
             startTime = session.getStartTime();
             endTime = session.getEndTime();
+
+            boolean isSessionOngoing = SessionManager.isSessionOngoing(session.getId());
+            Log.d(TAG, "[test show trip] session ongoging flag:  " + isSessionOngoing );
+
+            if (isSessionOngoing)
+                labelStr = SessionManager.SESSION_DISPLAY_ONGOING;
 
             //format the time string
             SimpleDateFormat sdf_minute = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_MINUTE_SLASH);
@@ -101,14 +108,14 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
 
             sessionTitle = timeLabel + " - " + labelStr;
 
-            //if there's annotaiton in the session
-            if (!labelStr.equals("No Label")) {
+            //if there's annotaiton in the session and the session is not ongoing
+            if (!labelStr.equals(SessionManager.SESSION_DISPLAY_ONGOING) && !labelStr.equals(SessionManager.SESSION_DISPLAY_ONGOING)) {
                 //if they've edited, put the text in green
-                textView.setTextColor(Color.RED);
+                textView.setTextColor(Color.GRAY);
             }
-            //if there's no annotation
+            //if there's no annotation or the session is ongoing
             else {
-                textView.setTextColor(Color.DKGRAY);
+                textView.setTextColor(Color.BLACK);
             }
 
             //set the title of the view
