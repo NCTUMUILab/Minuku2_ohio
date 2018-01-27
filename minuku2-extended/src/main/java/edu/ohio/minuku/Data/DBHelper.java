@@ -638,10 +638,10 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(COL_TIMESTAMP_STRING, ScheduleAndSampleManager.getTimeString(session.getStartTime()));
             values.put(COL_SESSION_START_TIME, session.getStartTime());
             values.put(COL_SESSION_ANNOTATION_SET, session.getAnnotationsSet().toJSONObject().toString());
+            values.put(COL_SESSION_LONG_ENOUGH_FLAG, session.isLongEnough());
 
             //get row number after the insertion
-            Log.d(TAG, "[test combine] insert session: " + session.getId() + ": Session-" + session.getStartTime() + " with annotaiton " + session.getAnnotationsSet().toJSONObject().toString() +
-                    " to the session table " + SESSION_TABLE_NAME);
+            Log.d(TAG, "[test combine] insert session: " + values.toString());
 
             rowId = db.insert(SESSION_TABLE_NAME, null, values);
 
@@ -752,11 +752,12 @@ public class DBHelper extends SQLiteOpenHelper {
 //                    COL_SESSION_START_TIME + " < " + endTime +
                     " order by " + COL_SESSION_START_TIME + " DESC ";
 
-            // Log.d(TAG, "[querySessionsBetweenTimes] the query statement is " +sql);
+             Log.d(TAG, "test combine [querySessionsBetweenTimes] the query statement is " +sql);
 
             Cursor cursor = db.rawQuery(sql, null);
             int columnCount = cursor.getColumnCount();
             while(cursor.moveToNext()){
+
                 String curRow = "";
                 for (int i=0; i<columnCount; i++){
                     curRow += cursor.getString(i)+ Constants.DELIMITER;
@@ -1096,9 +1097,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
             //TODO get the col name after complete the annotate part.
 
-            int flag = (sessionLongEnoughFlag) ? 1 : 0;
             values.put(COL_SESSION_END_TIME, endTime);
-            values.put(COL_SESSION_LONG_ENOUGH_FLAG, flag);
+            values.put(COL_SESSION_LONG_ENOUGH_FLAG, sessionLongEnoughFlag);
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 

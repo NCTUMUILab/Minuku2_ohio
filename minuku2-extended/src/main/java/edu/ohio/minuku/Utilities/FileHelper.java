@@ -145,7 +145,7 @@ public class FileHelper {
         //testing postfiles
 
 
-        String string = loadFileFromAsset("testDataActivity6.csv");
+        String string = loadFileFromAsset("testDataActivity9.csv");
         String[] lines = string.split(System.getProperty("line.separator"));
         for (int i=0; i<lines.length; i++) {
 
@@ -166,6 +166,8 @@ public class FileHelper {
                 lat = Float.parseFloat(col[5]);
                 lng = Float.parseFloat(col[6]);
                 accuracy = Float.parseFloat(col[7]);
+
+
             }
 //            Log.d(LOG_TAG, "[readTestFile] " + latest_activitiesStr + " : " + " lat:" + lat + " lng " + lng);
 
@@ -179,26 +181,28 @@ public class FileHelper {
 
             List<DetectedActivity> activityList = new ArrayList<DetectedActivity>();
 
-            for (int j=0; j<activities.length; j++){
-                String activityStr = activities[j].split(":")[0];
-                int confidence = Integer.parseInt(activities[j].split(":")[1]);
+            if (activities!=null){
+                for (int j=0; j<activities.length; j++){
+                    String activityStr = activities[j].split(":")[0];
+                    int confidence = Integer.parseInt(activities[j].split(":")[1]);
 
-                DetectedActivity activity= new DetectedActivity(
-                    ActivityRecognitionStreamGenerator.getActivityTypeFromName(activityStr),confidence);
-                activityList.add(activity);
-                  Log.d(LOG_TAG, "[readTestFile] activity " + activity + " : " + confidence);
+                    DetectedActivity activity= new DetectedActivity(
+                            ActivityRecognitionStreamGenerator.getActivityTypeFromName(activityStr),confidence);
+                    activityList.add(activity);
+                    Log.d(LOG_TAG, "[readTestFile] activity " + activity + " : " + confidence);
+                }
+
+                //create record for the activity
+                ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
+                record.setProbableActivities(activityList);
+                record.setMostProbableActivity(activityList.get(0));
+                // Log.d("ARService", "[test replay] load activity is " + activityList.toString() + "  most probable activit is " + activityList.get(0));
+                record.setTimestamp(time);
+                Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
+
+                //add to the AR service so that we can replay later
+                ActivityRecognitionService.addActivityRecognitionRecord(record);
             }
-
-            //create record for the activity
-            ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
-            record.setProbableActivities(activityList);
-            record.setMostProbableActivity(activityList.get(0));
-           // Log.d("ARService", "[test replay] load activity is " + activityList.toString() + "  most probable activit is " + activityList.get(0));
-            record.setTimestamp(time);
-            Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
-
-            //add to the AR service so that we can replay later
-            ActivityRecognitionService.addActivityRecognitionRecord(record);
 
 
             //create location record for the location

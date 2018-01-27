@@ -116,10 +116,10 @@ public class ActivityRecognitionService extends IntentService {
             }catch(Exception e){
                 e.printStackTrace();
             }
-//
-//            stopARRecordExpirationTimer();
-//
-//            startARRecordExpirationTimer();
+
+            stopARRecordExpirationTimer();
+
+            startARRecordExpirationTimer();
         }
     }
 
