@@ -66,11 +66,16 @@ public class ActivityRecognitionService extends IntentService {
 
         Log.d("ARService", "[test AR service start]ActivityRecognitionService starts again! !");
 
-        serviceInstance = this;
-
         //mActivityRecognitionManager = ContextManager.getActivityRecognitionManager();
 
-        startReplayARRecordTimer();
+        if (!isServiceRunning()){
+            serviceInstance = this;
+            Log.d("ARService", "[test AR service start] the servic is not running, start replay");
+            startReplayARRecordTimer();
+        }else {
+            Log.d("ARService", "[test AR service start] the servic is arleady running, do not start replay");
+        }
+
 //        startARRecordExpirationTimer();
     }
 

@@ -652,7 +652,7 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
 
             float percentage = (float)count/windowData.size();
             //if the percentage > threshold
-            if ( threshold <= percentage || inRecentCount >= 2)
+            if ( threshold <= percentage || inRecentCount >= 3)
                 return true;
             else
                 return false;

@@ -54,6 +54,8 @@ public class BackgroundService extends Service {
     NotificationManager mNotificationManager;
     private ScheduledExecutorService mScheduledExecutorService;
 
+    private boolean mRunning;
+
     public BackgroundService() {
         super();
         streamManager = MinukuStreamManager.getInstance();
@@ -71,6 +73,7 @@ public class BackgroundService extends Service {
         Log.d(TAG, "onCreate");
         //make the WifiReceiver start sending data to the server.
         registerReceiver(mWifiReceiver, intentFilter);
+        mRunning = false;
     }
 
     @Override
@@ -78,48 +81,39 @@ public class BackgroundService extends Service {
 
         Log.d(TAG, "onStartCommand");
 
-        runMainThread();
 
-        //we use an alerm to keep the service awake
-        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
-        alarm.set(
-                AlarmManager.RTC_WAKEUP,     //
-                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
-                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
-        );
+        if (!mRunning) {
 
-        Log.d(TAG, "test combine the service is restarted!");
+            //we use an alerm to keep the service awake
+            AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+            alarm.set(
+                    AlarmManager.RTC_WAKEUP,     //
+                    System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+                    PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
+            );
 
-//        Notification note  = new Notification.Builder(getBaseContext())
-//                .setContentTitle(Constants.APP_NAME)
-//                .setContentText(Constants.RUNNING_APP_DECLARATION)
-//                .setSmallIcon(R.drawable.self_reflection)
-//                .setAutoCancel(false)
-//                .build();
-//        note.flags |= Notification.FLAG_NO_CLEAR;
-//        startForeground( 42, note );
+            Log.d(TAG, "test AR service start test combine the service is restarted! the service is not running");
 
+            mRunning = true;
+            // do something
 
-        if(!InstanceManager.isInitialized()) {
-            InstanceManager.getInstance(this);
-            SessionManager.getInstance(this);
+            runMainThread();
+
+            if(!InstanceManager.isInitialized()) {
+                InstanceManager.getInstance(this);
+                SessionManager.getInstance(this);
+            }
+
+            /**read test file**/
+            FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
+            FileHelper.readTestFile();
+
+        }
+        else {
+            Log.d(TAG, "test AR service start test combine the service is restarted! the service is running");
+
         }
 
-
-        /**read test file**/
-        FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
-        FileHelper.readTestFile();
-
-
-        /*MinukuDAOManager daoManager = MinukuDAOManager.getInstance();
-
-        LocationDataRecordDAO locationDataRecordDAO = new LocationDataRecordDAO(getApplicationContext());
-        daoManager.registerDaoFor(LocationDataRecord.class, locationDataRecordDAO);
-
-        LocationStreamGenerator locationStreamGenerator =
-                new LocationStreamGenerator(getApplicationContext());*/
-
-//        return START_STICKY_COMPATIBILITY;
         //TODO Keep eye on the service is working or not.
         return START_STICKY;
     }

@@ -159,12 +159,12 @@ public class SessionManager {
         return mOngoingSessionIdList;
     }
 
-    public void setmOngoingSessionIdList(ArrayList<String> mOngoingSessionIdList) {
-        mOngoingSessionIdList = mOngoingSessionIdList;
+    public void setmOngoingSessionIdList(ArrayList<Integer> ongoingSessionIdList) {
+        mOngoingSessionIdList = ongoingSessionIdList;
     }
 
     public void addOngoingSessionid(int id) {
-        edu.ohio.minuku.logger.Log.d(TAG, "test replay: adding ongonig session " + id );
+        edu.ohio.minuku.logger.Log.d(TAG, "test combine: adding ongonig session " + id );
         this.mOngoingSessionIdList.add(id);
 
     }
@@ -173,8 +173,8 @@ public class SessionManager {
         return mOngoingSessionIdList;
     }
 
-    public void removeOngoingSessionid(String id) {
-        edu.ohio.minuku.logger.Log.d(TAG, "test replay: inside removeongogint seesion renove " + id );
+    public void removeOngoingSessionid(int id) {
+        Log.d(TAG, "test replay: inside removeongogint seesion renove " + id );
         this.mOngoingSessionIdList.remove(id);
         edu.ohio.minuku.logger.Log.d(TAG, "test replay: inside removeongogint seesion the ongoiong list is  " + mOngoingSessionIdList.toString() );
     }
@@ -447,11 +447,16 @@ public class SessionManager {
      */
     public static void endCurSession(Session session) {
 
+        Log.d(TAG, "test combine: end cursession " + session.getId());
+
         //remove the ongoing session
         getOngoingSessionIdList().remove(session.getId());
 
+        Log.d(TAG, "test combine: after remove gooing the list is  " + getOngoingSessionIdList().toString());
+
         //update session with end time and long enough flag.
         updateCurSessionEndInfoTo(session.getId(),session.getEndTime(),session.isLongEnough());
+        Log.d(TAG, "test combine: after adding end time and longlong in  session in tge DB  " );
 
     }
 
@@ -495,6 +500,8 @@ public class SessionManager {
                 //get distance between the last and the previous
                 LatLng startLatLng = latLngs.get(0);
                 LatLng endLatLng = latLngs.get(latLngs.size() - 1);
+
+                edu.ohio.minuku.logger.Log.d(TAG, " test combine the first point is " + startLatLng + ", the end point is " + endLatLng );
 
                 //calculate the distance between the first and the last
                 float[] results = new float[1];

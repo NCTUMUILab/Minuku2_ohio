@@ -261,43 +261,7 @@ public class MinukuStreamManager implements StreamManager {
 
 
                     /**
-                     * 2. then check if the previous activity is performing a moving activity, if the previous is, the current activity label indicates an end of the previous session
-                     * we should remove the current ongoing session from the ongoing session list and add an end time to it
-                     * **/
-
-                    if(!this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
-                            && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
-
-
-                        //first get the last session id, which is the same as the count of the session in the database (it should
-                        Log.d(TAG, "test combine: the previous acitivty is movnig, we're going to remove the current session id " + sessionIdOfLastSession );
-                        SessionManager.getInstance().removeOngoingSessionid(String.valueOf(sessionIdOfLastSession));;
-                        Log.d(TAG, "test combine: after revmove, now the sesssion manager session list has  " + SessionManager.getInstance().getOngoingSessionList());
-
-
-                        /**
-                         * 3. Then we need to determine whether the session is long enough to be a session. We get the distance of the session to determine its isLongEnoughFlag *
-                         * */
-
-                        boolean isSessionLongEnough = SessionManager.isSessionLongEnough(SessionManager.SESSION_LONGENOUGH_THRESHOLD_DISTANCE, sessionIdOfLastSession);
-
-                        //if we end the current session, we should update its time and set a long enough flag
-                        long endTime = getCurrentTimeInMilli();
-                        lastSession.setEndTime(endTime);
-                        lastSession.setLongEnough(isSessionLongEnough);
-
-                        //end the current session
-                        SessionManager.endCurSession(lastSession);
-
-                        //debug..
-                        String lastSessionStr = DBHelper.queryLastSession().get(0);
-                        Log.d(TAG, "test combine: the previous acitivty is movnig,after update the session is: " +  lastSessionStr );
-
-                    }
-
-
-                    /**
-                     * 4 if the new activity is moving, we will first determine whether this is continuing the previosu activity or a new activity. If it is a continutous one we will not add a new sesssion but let the previous activity in the ongoing
+                     * 2 if the new activity is moving, we will first determine whether this is continuing the previosu activity or a new activity. If it is a continutous one we will not add a new sesssion but let the previous activity in the ongoing
                      * **/
 
                     if(!transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
@@ -311,21 +275,43 @@ public class MinukuStreamManager implements StreamManager {
                         shouldCombineWithLastSession = SessionManager.examineSessionCombinationByActivityAndTime(lastSession, transportationModeDataRecord.getConfirmedActivityString(),now );
 
                         if (shouldCombineWithLastSession){
+                            Log.d(TAG, "test combine we should combine " );
+
                             //modify the endTime of the previous session to empty (because we extend it!). we should also make the notlongenough field to be true.
                             SessionManager.continueLastSession(lastSession);
                         }
+
+                        //if the new moving should not combine, we should end the previosu session, and a new session
                         else {
-                            //not continue
+                            //1. end the previous session if the previous transportation is moving
                             addSessionFlag = true;
-                            Log.d(TAG, "test combine: we shgould not combine but add a new session " );
+                            Log.d(TAG, "test combine: we shgould not combine the new transportation activity with the last session " );
+
                         }
 
+                    }
+
+                    //to end a session (the previous is moving)
+                    //we first need to check whether the previous is a transportation
+                    if(!this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                            && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
 
 
+                        //first get the last session id, which is the same as the count of the session in the database (it should
+                        Log.d(TAG, "test combine: the previous acitivty is movnig, we're going to end the last session id " + sessionIdOfLastSession );
+                        boolean isSessionLongEnough = SessionManager.isSessionLongEnough(SessionManager.SESSION_LONGENOUGH_THRESHOLD_DISTANCE, sessionIdOfLastSession);
 
+                        //if we end the current session, we should update its time and set a long enough flag
+                        long endTime = getCurrentTimeInMilli();
+                        lastSession.setEndTime(endTime);
+                        lastSession.setLongEnough(isSessionLongEnough);
 
+                        //end the current session
+                        SessionManager.endCurSession(lastSession);
+                        Log.d(TAG, "test combine: after revmove, now the sesssion manager session list has  " + SessionManager.getInstance().getOngoingSessionList());
 
                     }
+
 
 
                 }
