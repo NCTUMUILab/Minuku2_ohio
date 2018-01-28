@@ -20,10 +20,12 @@ import java.util.Date;
 
 import edu.ohio.minuku.DataHandler;
 import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku_2.R;
+import edu.ohio.minuku_2.service.SurveyTriggerService;
 
 /**
  * Created by Lawrence on 2017/9/16.
@@ -93,6 +95,10 @@ public class SurveyActivity extends Activity {
                 //if they click it, set the openFlag to 1.
                 String id = data.get(data.size()-1).split(Constants.DELIMITER)[0];
                 DataHandler.updateSurveyOpenFlagAndTime(id);
+
+                //we schedule the next interval random survey after the user clicks on the survey
+                long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
+                SurveyTriggerService.setUpNextIntervalSurvey();
 
                 //get the latest link in the surveyLink table.
                 String link = data.get(data.size()-1).split(Constants.DELIMITER)[1];

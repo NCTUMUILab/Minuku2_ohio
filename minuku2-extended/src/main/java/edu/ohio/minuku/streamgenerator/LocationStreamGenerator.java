@@ -292,7 +292,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
         }
 
-        Log.d(TAG, "[test replay] Update stream  ssession is " + session_id);
+//        Log.d(TAG, "[test replay] Update stream  ssession is " + session_id);
 
         try {
             newlocationDataRecord = new LocationDataRecord(
@@ -310,7 +310,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     latestAccuracy,
                     String.valueOf(session_id));
         }
-        Log.e(TAG,"[test replay] newlocationDataRecord latestLatitude : "+ latestLatitude.get()+" latestLongitude : "+ latestLongitude.get() + "  session_id " +  session_id);
+//        Log.e(TAG,"[test replay] newlocationDataRecord latestLatitude : "+ latestLatitude.get()+" latestLongitude : "+ latestLongitude.get() + "  session_id " +  session_id);
 
         MinukuStreamManager.getInstance().setLocationDataRecord(newlocationDataRecord);
         toCheckFamiliarOrNotLocationDataRecord = newlocationDataRecord;

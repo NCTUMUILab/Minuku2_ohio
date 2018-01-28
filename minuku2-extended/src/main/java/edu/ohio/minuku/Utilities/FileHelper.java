@@ -145,7 +145,7 @@ public class FileHelper {
         //testing postfiles
 
 
-        String string = loadFileFromAsset("testDataActivity9.csv");
+        String string = loadFileFromAsset("testDataActivity3.csv");
         String[] lines = string.split(System.getProperty("line.separator"));
         for (int i=0; i<lines.length; i++) {
 
@@ -156,19 +156,23 @@ public class FileHelper {
             long time = Long.parseLong(col[0]);
             String rec_activitiesStr =  col[1];
             String latest_activitiesStr =  col[2];
-            String transportationStr = col[3];
-            String statusStr = col[4];
-
             float lat = 0;
             float lng = 0;
             float accuracy =0;
-            if (!col[5].equals("") && !col[6].equals("") && !col[7].equals("")){
-                lat = Float.parseFloat(col[5]);
-                lng = Float.parseFloat(col[6]);
-                accuracy = Float.parseFloat(col[7]);
+
+            if (col.length>3){
+                String transportationStr = col[3];
+                String statusStr = col[4];
+
+                if (!col[5].equals("") && !col[6].equals("") && !col[7].equals("")){
+                    lat = Float.parseFloat(col[5]);
+                    lng = Float.parseFloat(col[6]);
+                    accuracy = Float.parseFloat(col[7]);
 
 
+                }
             }
+
 //            Log.d(LOG_TAG, "[readTestFile] " + latest_activitiesStr + " : " + " lat:" + lat + " lng " + lng);
 
 
@@ -206,14 +210,15 @@ public class FileHelper {
 
 
             //create location record for the location
-            LocationDataRecord locationDataRecord = new LocationDataRecord(
-                    lat,
-                    lng,
-                    accuracy);
+            if (lat!=0 && lng!=0 && accuracy!=0){
+                LocationDataRecord locationDataRecord = new LocationDataRecord(
+                        lat,
+                        lng,
+                        accuracy);
 
-            //add to the location streamGenerator service so that we can replay later (only those with location valid value)
-            if (lat!=0 && lng !=0)
                 LocationStreamGenerator.addLocationDataRecord(locationDataRecord);
+            }
+
 
 
         }

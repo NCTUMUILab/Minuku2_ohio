@@ -64,11 +64,18 @@ public class ActivityRecognitionService extends IntentService {
     public ActivityRecognitionService() {
         super("ActivityRecognitionService");
 
-        serviceInstance = this;
+        Log.d("ARService", "[test AR service start]ActivityRecognitionService starts again! !");
 
         //mActivityRecognitionManager = ContextManager.getActivityRecognitionManager();
 
-//        startReplayARRecordTimer();
+        if (!isServiceRunning()){
+            serviceInstance = this;
+            Log.d("ARService", "[test AR service start] the servic is not running, start replay");
+//            startReplayARRecordTimer();
+        }else {
+            Log.d("ARService", "[test AR service start] the servic is arleady running, do not start replay");
+        }
+
 //        startARRecordExpirationTimer();
     }
 
@@ -125,6 +132,8 @@ public class ActivityRecognitionService extends IntentService {
 
     public void RePlayActivityRecordTimerTask() {
 
+
+        Log.d("ARService", "[test AR service start]RePlayActivityRecordTimerTask starts again! !");
 
         ReplayTimerTask = new TimerTask() {
 
@@ -225,6 +234,8 @@ public class ActivityRecognitionService extends IntentService {
     }
 
     public void startReplayARRecordTimer() {
+
+        Log.d("ARService", "[test AR service start] startReplayARRecordTimer starts !");
 
         //set a new Timer
         ReplayTimer = new Timer();

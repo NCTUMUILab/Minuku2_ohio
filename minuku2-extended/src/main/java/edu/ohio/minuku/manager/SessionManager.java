@@ -159,12 +159,12 @@ public class SessionManager {
         return mOngoingSessionIdList;
     }
 
-    public void setmOngoingSessionIdList(ArrayList<String> mOngoingSessionIdList) {
-        mOngoingSessionIdList = mOngoingSessionIdList;
+    public void setmOngoingSessionIdList(ArrayList<Integer> ongoingSessionIdList) {
+        mOngoingSessionIdList = ongoingSessionIdList;
     }
 
     public void addOngoingSessionid(int id) {
-        edu.ohio.minuku.logger.Log.d(TAG, "test replay: adding ongonig session " + id );
+        edu.ohio.minuku.logger.Log.d(TAG, "test combine: adding ongonig session " + id );
         this.mOngoingSessionIdList.add(id);
 
     }
@@ -173,8 +173,8 @@ public class SessionManager {
         return mOngoingSessionIdList;
     }
 
-    public void removeOngoingSessionid(String id) {
-        edu.ohio.minuku.logger.Log.d(TAG, "test replay: inside removeongogint seesion renove " + id );
+    public void removeOngoingSessionid(int id) {
+        Log.d(TAG, "test replay: inside removeongogint seesion renove " + id );
         this.mOngoingSessionIdList.remove(id);
         edu.ohio.minuku.logger.Log.d(TAG, "test replay: inside removeongogint seesion the ongoiong list is  " + mOngoingSessionIdList.toString() );
     }
@@ -251,11 +251,10 @@ public class SessionManager {
         }
         //there 's no end time of the session, we take the time of the last record
         else {
+            endTime = getLastRecordTimeinSession(session.getId());
 
-            //TODO this should be the last record of the session. For now, we just use the current time
-            endTime= ScheduleAndSampleManager.getCurrentTimeInMillis();
-            Log.d(TAG, "[test combine] testgetdata the end time is now:  " + ScheduleAndSampleManager.getTimeString(endTime));
         }
+        Log.d(TAG, "[test combine] testgetdata the end time is now:  " + ScheduleAndSampleManager.getTimeString(endTime));
 
         boolean islongEnough= true;
         boolean isModified = false;
@@ -329,6 +328,28 @@ public class SessionManager {
 
     }
 
+    public static long getLastRecordTimeinSession(int sessionId) {
+
+        ArrayList<String> resultBySession = null;
+        resultBySession = SessionManager.getRecordsInSession(sessionId, DBHelper.STREAM_TYPE_LOCATION);
+
+        Log.d(TAG, "test combine: there are " + resultBySession.size() + " location records"  );
+
+        //if there's no location points, it's not long enough
+        if (resultBySession.size()==0){
+            return 0;
+        }
+
+        //get the timestemp of the last record
+        else {
+            String[] separated = resultBySession.get(resultBySession.size()-1).split(Constants.DELIMITER);
+            long time = Long.parseLong(separated[1]);
+            Log.d(TAG, "test combine: the time of the last record is " + time );
+            return time;
+        }
+
+
+    }
 
     public static Session getSession (int sessionId) {
 
@@ -447,11 +468,21 @@ public class SessionManager {
      */
     public static void endCurSession(Session session) {
 
+        Log.d(TAG, "test combine: before enidn the session  the list sizr is " + getOngoingSessionIdList().size());
+
+        Log.d(TAG, "test combine: end cursession " + session.getId());
+
+        Log.d(TAG, "test combine: before remove  the list at 0 is " + getOngoingSessionIdList().get(0));
+
+
         //remove the ongoing session
-        getOngoingSessionIdList().remove(session.getId());
+        mOngoingSessionIdList.remove(Integer.valueOf(session.getId()));
+
+        Log.d(TAG, "test combine: after remove gooing the list is  " + getOngoingSessionIdList().toString());
 
         //update session with end time and long enough flag.
         updateCurSessionEndInfoTo(session.getId(),session.getEndTime(),session.isLongEnough());
+        Log.d(TAG, "test combine: after adding end time and longlong in  session in tge DB  " );
 
     }
 
@@ -495,6 +526,8 @@ public class SessionManager {
                 //get distance between the last and the previous
                 LatLng startLatLng = latLngs.get(0);
                 LatLng endLatLng = latLngs.get(latLngs.size() - 1);
+
+                edu.ohio.minuku.logger.Log.d(TAG, " test combine the first point is " + startLatLng + ", the end point is " + endLatLng );
 
                 //calculate the distance between the first and the last
                 float[] results = new float[1];
