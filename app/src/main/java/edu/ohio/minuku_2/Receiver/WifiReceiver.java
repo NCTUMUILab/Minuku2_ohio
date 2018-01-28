@@ -543,10 +543,6 @@ public class WifiReceiver extends BroadcastReceiver {
         String curr =  getDateCurrentTimeZone(new Date().getTime());
 
         //TODO upload to MongoDB
-        /*new HttpAsyncPostJsonTask().execute(postDumpUrl,
-                data.toString(),
-                "Dump",
-                curr);*/
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                 new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
