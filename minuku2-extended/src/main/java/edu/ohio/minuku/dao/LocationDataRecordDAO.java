@@ -123,7 +123,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
             values.put(DBHelper.Provider_col, entity.getProvider());
             values.put(DBHelper.COL_SESSION_ID, entity.getSessionid());
 
-            Log.e(TAG,"[test replay dao] to isnert LocationRecord session id"+ values.get(DBHelper.COL_SESSION_ID));
+//            Log.e(TAG,"[test replay dao] to isnert LocationRecord session id"+ values.get(DBHelper.COL_SESSION_ID));
 
 
             db.insert(DBHelper.STREAM_TYPE_LOCATION, null, values);

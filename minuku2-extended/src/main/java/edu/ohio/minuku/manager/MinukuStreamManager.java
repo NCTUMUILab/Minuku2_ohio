@@ -320,13 +320,19 @@ public class MinukuStreamManager implements StreamManager {
                             Log.d(TAG, "test combine: we shgould not combine but add a new session " );
                         }
 
+
+
+
+
+
                     }
 
 
                 }
 
                 //if we need to add a session
-                if (addSessionFlag){
+                if (addSessionFlag && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                        && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA) ){
                     Log.d(TAG, "[test combine] we should add session " + ((int) sessionCount + 1));
 
                     //insert into the session table;
@@ -344,8 +350,6 @@ public class MinukuStreamManager implements StreamManager {
                     SessionManager.startNewSession(session);
 
                 }
-
-
 
 
             }

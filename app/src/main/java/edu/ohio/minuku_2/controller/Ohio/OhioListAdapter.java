@@ -109,7 +109,7 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
             sessionTitle = timeLabel + " - " + labelStr;
 
             //if there's annotaiton in the session and the session is not ongoing
-            if (!labelStr.equals(SessionManager.SESSION_DISPLAY_ONGOING) && !labelStr.equals(SessionManager.SESSION_DISPLAY_ONGOING)) {
+            if (!labelStr.equals(SessionManager.SESSION_DISPLAY_ONGOING) && !labelStr.equals(SessionManager.SESSION_DISPLAY_NO_ANNOTATION)) {
                 //if they've edited, put the text in green
                 textView.setTextColor(Color.GRAY);
             }

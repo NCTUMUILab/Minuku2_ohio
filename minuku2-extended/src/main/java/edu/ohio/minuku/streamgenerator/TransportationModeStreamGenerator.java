@@ -55,9 +55,9 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
     private static final float CONFIRM_START_ACTIVITY_THRESHOLD_IN_VEHICLE = (float) 0.6;
     private static final float CONFIRM_START_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.6;
     private static final float CONFIRM_START_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.6;
-    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_IN_VEHICLE = (float)0.2;
-    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.2;
-    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.2;
+    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_IN_VEHICLE = (float)0.4;
+    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.4;
+    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.4;
     private static final int CONFIRM_STOP_ACTIVITY_CONFIDENCE_THRESHOLD =20;
 
 
@@ -82,7 +82,7 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
     private static final long WINDOW_LENGTH_START_ACTIVITY_IN_VEHICLE = 10 * Constants.MILLISECONDS_PER_SECOND; //TODO origin為20s
     private static final long WINDOW_LENGTH_START_ACTIVITY_ON_FOOT = 20 * Constants.MILLISECONDS_PER_SECOND;
     private static final long WINDOW_LENGTH_START_ACTIVITY_ON_BICYCLE = 20 * Constants.MILLISECONDS_PER_SECOND;
-    private static final long WINDOW_LENGTH_STOP_ACTIVITY_IN_VEHICLE = 150 * Constants.MILLISECONDS_PER_SECOND;
+    private static final long WINDOW_LENGTH_STOP_ACTIVITY_IN_VEHICLE = 120 * Constants.MILLISECONDS_PER_SECOND;
     private static final long WINDOW_LENGTH_STOP_ACTIVITY_ON_FOOT = 30 * Constants.MILLISECONDS_PER_SECOND; //TODO origin為60s
     private static final long WINDOW_LENGTH_STOP_ACTIVITY_ON_BICYCLE = 90 * Constants.MILLISECONDS_PER_SECOND;
 
@@ -720,14 +720,18 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
 
             List<DetectedActivity> detectedActivities = windowData.get(i).getProbableActivities();
 
-            //in the recent 6 there are more than 3
+            //counting how many target activity labels appear in the most recrnt 5 most proboable labels
             if (i >= windowData.size()-5) {
                 if (detectedActivities.get(0).getType()==activityType ) {
                     inRecentCount +=1;
                 }
             }
 
-            //if probable activities (not including the last one) contain the target activity, we count! (not simply see the most probable one)
+            /**
+             *  for each activity record that has a set of detected activities, we look at the content.
+             *  if probable activities (not including the last one) contain the target activity, we count! (not simply see the most probable one)
+             */
+
             for (int activityIndex = 0; activityIndex<detectedActivities.size()-1; activityIndex++) {
 
                 //if found the activity and the activyt confidence is still higher than a threshold (i.e. we're still think it's likely that the person is moving in that activity
@@ -742,6 +746,11 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
 
         float percentage = (float)count/windowData.size();
 
+        /**
+         * stop criteria:
+         * 1. if the percentage of the activity is lower than the threshold (e.g. 40%), we confirm that the activity has stopeed
+         * 2. it rarely appears in the most probablt activity
+         */
         if (windowData.size()!=0) {
             //if the percentage > threshold
             if ( threshold >= percentage && inRecentCount <= 2)

@@ -107,8 +107,8 @@ public class BackgroundService extends Service {
 
 
         /**read test file**/
-//        FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
-//        FileHelper.readTestFile();
+        FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
+        FileHelper.readTestFile();
 
 
         /*MinukuDAOManager daoManager = MinukuDAOManager.getInstance();
