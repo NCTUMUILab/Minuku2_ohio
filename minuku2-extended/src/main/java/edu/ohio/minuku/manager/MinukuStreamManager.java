@@ -53,7 +53,7 @@ import edu.ohio.minukucore.streamgenerator.StreamGenerator;
  */
 public class MinukuStreamManager implements StreamManager {
 
-    private final String TAG = "MinukuStreamManager";
+    private final String TAG = MinukuStreamManager.class.getSimpleName();
 
     protected Map<Class, Stream> mStreamMap;
     protected Map<Stream.StreamType, List<Stream<? extends DataRecord>>> mStreamTypeStreamMap;

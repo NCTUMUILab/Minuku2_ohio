@@ -44,7 +44,7 @@ import edu.ohio.minuku_2.manager.InstanceManager;
 
 public class BackgroundService extends Service {
 
-    private static final String TAG = "BackgroundService";
+    private static final String TAG = BackgroundService.class.getSimpleName();
 
     final static String CONNECTIVITY_ACTION = "android.net.conn.CONNECTIVITY_CHANGE";
     WifiReceiver mWifiReceiver;

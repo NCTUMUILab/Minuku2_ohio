@@ -39,7 +39,7 @@ import edu.ohio.minuku.model.Session;
 
 public class SessionManager {
 
-    private final static String TAG = "SessionManager";
+    private static final String TAG = SessionManager.class.getSimpleName();
 
     public static int sessionid_unStatic;
     private static int trip_size;

@@ -54,6 +54,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import edu.ohio.minuku.BuildConfig;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.LocationDataRecordDAO;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
@@ -78,7 +79,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         LocationListener {
 
     private LocationStream mStream;
-    private String TAG = "LocationStreamGenerator";
+    private static final String TAG = LocationStreamGenerator.class.getSimpleName();
 
     private static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
 
@@ -157,7 +158,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
     @Override
     public void onLocationChanged(Location location) {
         if (location != null) {
-            Log.d(TAG, "GPS: "
+            if (BuildConfig.DEBUG) Log.d(TAG, "GPS: "
                     + location.getLatitude() + ", "
                     + location.getLongitude() + ", "
                     + "latestAccuracy: " + location.getAccuracy()
@@ -168,7 +169,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             float dist = 0;
             float[] results = new float[1];
 
-            Log.d(TAG, "last time GPS : "
+            if (BuildConfig.DEBUG) Log.d(TAG, "last time GPS : "
                     + latestLatitude.get() + ", "
                     + latestLongitude.get() + ", "
                     + "latestAccuracy: " + location.getAccuracy());
@@ -180,7 +181,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             else
                 dist = 1000;
 
-            Log.d(TAG, "dist : " + dist);
             //if the newest
             //TODO cancel the dist restriction
 //            if(dist < 100 || (latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0)){
@@ -193,9 +193,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             lastposupdate = new Date().getTime();
 
             StoreToCSV(lastposupdate,location.getLatitude(),location.getLongitude(),location.getAccuracy());
-
-            Log.d(TAG,"onLocationChanged latestLatitude : "+ latestLatitude +" latestLongitude : "+ latestLongitude);
-            Log.d(TAG,"onLocationChanged location : "+this.location);
 
 //            }
 
@@ -228,10 +225,8 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                 mGoogleApiClient.connect();
             }
         } else {
-            Log.e(TAG, "Error occurred while attempting to access Google play.");
+            if (BuildConfig.DEBUG) Log.e(TAG, "Error occurred while attempting to access Google play.");
         }
-
-        Log.d(TAG, "Stream " + TAG + " registered successfully");
 
         EventBus.getDefault().post(new IncrementLoadingProcessCountEvent());
 
@@ -240,13 +235,13 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             public void run() {
                 try
                 {
-                    Log.d(TAG, "Stream " + TAG + "initialized from previous state");
+                    if (BuildConfig.DEBUG)Log.d(TAG, "Stream " + TAG + "initialized from previous state");
                     Future<List<LocationDataRecord>> listFuture =
                             mDAO.getLast(Constants.LOCATION_QUEUE_SIZE);
                     while(!listFuture.isDone()) {
                         Thread.sleep(1000);
                     }
-                    Log.d(TAG, "Received data from Future for " + TAG);
+                    if (BuildConfig.DEBUG) Log.d(TAG, "Received data from Future for " + TAG);
                     mStream.addAll(new LinkedList<>(listFuture.get()));
                 } catch (DAOException e) {
                     e.printStackTrace();
@@ -264,13 +259,12 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     @Override
     public void register() {
-        Log.d(TAG, "Registering with StreamManager.");
         try {
             MinukuStreamManager.getInstance().register(mStream, LocationDataRecord.class, this);
         } catch (StreamNotFoundException streamNotFoundException) {
-            Log.e(TAG, "One of the streams on which LocationDataRecord depends in not found.");
+            if (BuildConfig.DEBUG) Log.e(TAG, "One of the streams on which LocationDataRecord depends in not found.");
         } catch (StreamAlreadyExistsException streamAlreadyExistsException) {
-            Log.e(TAG, "Another stream which provides LocationDataRecord is already registered.");
+            if (BuildConfig.DEBUG) Log.e(TAG, "Another stream which provides LocationDataRecord is already registered.");
         }
     }
 
@@ -310,21 +304,16 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     latestAccuracy,
                     String.valueOf(session_id));
         }
-//        Log.e(TAG,"[test replay] newlocationDataRecord latestLatitude : "+ latestLatitude.get()+" latestLongitude : "+ latestLongitude.get() + "  session_id " +  session_id);
 
         MinukuStreamManager.getInstance().setLocationDataRecord(newlocationDataRecord);
         toCheckFamiliarOrNotLocationDataRecord = newlocationDataRecord;
 
         mStream.add(newlocationDataRecord);
-        Log.d(TAG, "Location to be sent to event bus" + newlocationDataRecord);
 
         // also post an event.
         EventBus.getDefault().post(newlocationDataRecord);
         try {
             mDAO.add(newlocationDataRecord);
-            //TODO notice it
-//                SessionManager.getInstance().setTrip(newlocationDataRecord);
-
 
         } catch (DAOException e) {
             e.printStackTrace();
@@ -345,7 +334,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     @Override
     public void offer(LocationDataRecord dataRecord) {
-        Log.e(TAG, "Offer for location data record does nothing!");
+        if (BuildConfig.DEBUG) Log.e(TAG, "Offer for location data record does nothing!");
     }
 
     /**
@@ -359,8 +348,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
     }
 
     public void StoreToCSV(long timestamp, ArrayList<LatLng> latLngs){
-
-        Log.d(TAG,"StoreToCSV startIndoorOutdoor");
 
         String sFileName = "startIndoorOutdoor.csv";
 
@@ -407,8 +394,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
     }
 
     public void StoreToCSV(long timestamp, double latitude, double longitude, float accuracy){
-
-        Log.d(TAG,"StoreToCSV");
 
         String sFileName = "LocationOnChange.csv";
 
@@ -545,9 +530,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             e.printStackTrace();
         }
 
-
-        Log.d(TAG, "onConnected");
-
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setInterval(Constants.INTERNAL_LOCATION_UPDATE_FREQUENCY);
         mLocationRequest.setFastestInterval(Constants.INTERNAL_LOCATION_UPDATE_FREQUENCY);
@@ -560,8 +542,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                             this);
 
         }catch (SecurityException e){
-//            TODO ask for this method good or not.
-//            Log.d(TAG, "SecurityException");
             onConnected(bundle);
         }
     }
@@ -573,7 +553,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.e(TAG, "Connection to Google play services failed.");
+        if (BuildConfig.DEBUG)Log.e(TAG, "Connection to Google play services failed.");
         stopCheckingForLocationUpdates();
     }
 
@@ -582,7 +562,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             mGoogleApiClient.disconnect();
             try {
                 MinukuStreamManager.getInstance().unregister(mStream, this);
-                Log.e(TAG, "Unregistering location stream generator from stream manager");
+                if (BuildConfig.DEBUG)Log.e(TAG, "Unregistering location stream generator from stream manager");
             } catch (StreamNotFoundException e) {
                 e.printStackTrace();
             }

@@ -34,7 +34,7 @@ import edu.ohio.minukucore.exception.StreamNotFoundException;
 
 public class ActivityRecognitionService extends IntentService {
 
-    private final String TAG = "ActivityRecognitionService";
+    private static final String TAG = ActivityRecognitionService.class.getSimpleName();
 
     private String Latest_mMostProbableActivitytype;
     private DetectedActivity mMostProbableActivity;
