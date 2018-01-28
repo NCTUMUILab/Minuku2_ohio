@@ -86,12 +86,12 @@ import edu.ohio.minukucore.exception.StreamNotFoundException;
 
 public class SurveyTriggerService extends Service {
 
-    private final String TAG = "SurveyTriggerService";
+    private static final String TAG = "SurveyTriggerService";
 
     //public ContextManager mContextManager; //TODO might be removed for the new logic in this code.
     private static Context serviceInstance;
     private static Handler mMainThread;
-    private Context mContext;
+    private static Context mContext;
     Intent intent = new Intent();
     private ProgressDialog loadingProgressDialog;
 
@@ -178,7 +178,7 @@ public class SurveyTriggerService extends Service {
 
     private final long One_Hour_In_milliseconds = 60 * 60 * 1000;
 
-    private String today;
+    private static String today;
     private String lastTimeSend_today;
     private int current_hour;
     private int last_hour;
@@ -188,11 +188,11 @@ public class SurveyTriggerService extends Service {
     private int interval_notifyID = 3; //used to 3
     //qua is equal to interval now
 
-    ArrayList<Long> interval_sampled_times;
+    private static ArrayList<Long> interval_sampled_times;
 
-    private int interval_sample_number;
+    private static int interval_sample_number;
 
-    private int interval_sampled;
+    private static int interval_sampled;
     private int walkoutdoor_sampled;
     private int walk_first_sampled;
     private int walk_second_sampled;
@@ -209,7 +209,7 @@ public class SurveyTriggerService extends Service {
 
     private String transportation;
 
-    private CSVWriter csv_writer = null;
+    private static CSVWriter csv_writer = null;
 
     private boolean testingserverThenFail = false;
     private boolean isServiceRunning;
@@ -231,7 +231,7 @@ public class SurveyTriggerService extends Service {
 
     public static CheckFamiliarOrNotStreamGenerator checkFamiliarOrNotStreamGenerator;
 
-    private SharedPreferences sharedPrefs;
+    private static SharedPreferences sharedPrefs;
 
     @Override
     public void onDestroy() {
@@ -272,7 +272,7 @@ public class SurveyTriggerService extends Service {
 
         countingTimeForIndoorOutdoor = sharedPrefs.getInt("countingTimeForIndoorOutdoor", 0);
 
-        time_base = getCurrentTimeInMillis();
+        time_base = ScheduleAndSampleManager.getCurrentTimeInMillis();
 
         mScheduledExecutorService = Executors.newScheduledThreadPool(REFRESH_FREQUENCY);
 
@@ -400,7 +400,7 @@ public class SurveyTriggerService extends Service {
         }
     }
 
-    private long getSpecialTimeInMillis(String givenDateFormat){
+    private static long getSpecialTimeInMillis(String givenDateFormat){
         SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE_Slash);
         long timeInMilliseconds = 0;
         try {
@@ -421,16 +421,16 @@ public class SurveyTriggerService extends Service {
         return currentTimeString;
     }
 
-    private void settingIntervalSampleing(long startTimeAfterWalkingSampling){
+    public static void settingIntervalSampling(long startTimeAfterWalkingSampling){
 
-        Log.d(TAG, "settingIntervalSampleing");
+        Log.d(TAG, "settingIntervalSampling");
 
         String yMdformat = today;
 
         Log.d(TAG, "yMdformat : " + yMdformat);
         interval_sampled_times = new ArrayList<>();
         ArrayList<Long> times = new ArrayList<Long>();
-        long now = getCurrentTimeInMillis();
+        long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
         Random random = new Random(now);
         int sample_period;
         //TODO set the start and end time.
@@ -546,7 +546,7 @@ public class SurveyTriggerService extends Service {
 
     }
 
-    public void cancelAlarmIfExists(Context mContext,int requestCode,Intent intent){
+    public static void cancelAlarmIfExists(Context mContext,int requestCode,Intent intent){
         try {
             PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, requestCode, intent,0);
             AlarmManager alarmManager = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
@@ -556,7 +556,7 @@ public class SurveyTriggerService extends Service {
         }
     }
 
-    public void cancelAlarmAll(Context mContext){
+    public static void cancelAlarmAll(Context mContext){
         try {
             Intent intent = new Intent(Constants.Interval_Sample);
 
@@ -656,7 +656,7 @@ public class SurveyTriggerService extends Service {
                 sharedPrefs.edit().putLong("last_Walking_Survey_Time", last_Walking_Survey_Time).apply();
 
                 //default
-                settingIntervalSampleing(-9999);
+                settingIntervalSampling(-9999);
 
                 //setting up the parameter for the surveu linkg
                 setUpSurveyLink();
@@ -792,18 +792,19 @@ public class SurveyTriggerService extends Service {
 
 
     /**
-     *
+     * the next interval-based esm should be based on the last time the user opened the questionnaire
      */
-    private void setUpNextIntervalSurvey() {
+    public static void setUpNextIntervalSurvey() {
         //reset the Interval Sampleing after we send the survey
         if (interval_sampled < 3) {
-            settingIntervalSampleing(new Date().getTime());//TODO input time
+            settingIntervalSampling(new Date().getTime());//TODO input time
         } else { //cancel all the interval today if the number of the sample are enough.
             //TODO might not work
             cancelAlarmAll(mContext);
         }
 
     }
+
 
 
     /**
@@ -820,7 +821,7 @@ public class SurveyTriggerService extends Service {
 
         //reset the Interval Sampleing after we send the survey
         if (interval_sampled < 3) {
-            settingIntervalSampleing(new Date().getTime());//TODO input time
+            settingIntervalSampling(new Date().getTime());//TODO input time
 
         }else{ //cancel all the interval today if the number of the sample are enough.
             //TODO might not work
@@ -831,7 +832,7 @@ public class SurveyTriggerService extends Service {
         last_Survey_Time = new Date().getTime();
         sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
 
-        setUpNextIntervalSurvey();
+//        setUpNextIntervalSurvey();
 
 
     }
@@ -873,7 +874,7 @@ public class SurveyTriggerService extends Service {
         sameTripPrevent = true;
         sharedPrefs.edit().putBoolean("sameTripPrevent", sameTripPrevent).apply();
 
-        setUpNextIntervalSurvey();
+//        setUpNextIntervalSurvey();
 
     }
 
@@ -1399,7 +1400,7 @@ public class SurveyTriggerService extends Service {
         }
     }
 
-    private void storeToCSVinterval(String todayDate){
+    private static void storeToCSVinterval(String todayDate){
 
         String sFileName = "Interval_"+todayDate+".csv";
 
@@ -1516,12 +1517,12 @@ public class SurveyTriggerService extends Service {
 
     }
 
-    public int generatePendingIntentRequestCode(long time){
+    public static int generatePendingIntentRequestCode(long time){
 
         int code = 0;
 
         if (time-time_base > 1000000000){
-            time_base = getCurrentTimeInMillis();
+            time_base = ScheduleAndSampleManager.getCurrentTimeInMillis();
         }
 
         return (int) (time-time_base);
@@ -1539,7 +1540,7 @@ public class SurveyTriggerService extends Service {
         return serviceInstance != null;
     }
 
-    private  boolean isExternalStorageWritable() {
+    private static boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state)) {
             return true;
@@ -1547,13 +1548,6 @@ public class SurveyTriggerService extends Service {
         return false;
     }
 
-    public long getCurrentTimeInMillis(){
-        //get timzone
-        TimeZone tz = TimeZone.getDefault();
-        java.util.Calendar cal = java.util.Calendar.getInstance(tz);
-        long t = cal.getTimeInMillis();
-        return t;
-    }
 
     private void intervalQualtrics(){
 
