@@ -35,7 +35,7 @@ import static edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator
 
 public class TransportationModeStreamGenerator extends AndroidStreamGenerator<TransportationModeDataRecord> {
 
-    public final String TAG = "TransportationModeStreamGenerator";
+    public static final String TAG = TransportationModeStreamGenerator.class.getSimpleName();
 
     /**ContextSourceType**/
     public static final int CONTEXT_SOURCE_TRANSPORTATION = 0;
@@ -384,7 +384,6 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
             }
         }
         else if (getCurrentState()==STATE_SUSPECTING_STOP) {
-
             boolean isTimeToConfirm = checkTimeElapseOfLatestActivityFromSuspectPoint(detectionTime, getSuspectTime(), getWindowLengh(getSuspectedStopActivityType(), getCurrentState()) );
 
             if (isTimeToConfirm) {
@@ -530,6 +529,9 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
     }
 
     public static boolean checkTimeElapseOfLatestActivityFromSuspectPoint( long lastestActivityTime, long suspectTime, long windowLenth) {
+
+        Log.d(TAG, "examine stop, lastestActivityTime " +lastestActivityTime + " suspectTime " + suspectTime + " the difference is c" + (lastestActivityTime - suspectTime)
+                + " windowLenth " + windowLenth );
 
         if (lastestActivityTime - suspectTime > windowLenth)
             //wait for long enough
@@ -709,6 +711,7 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
 
     private static boolean confirmStopPossibleTransportation(int activityType, ArrayList<ActivityRecognitionDataRecord> windowData) {
 
+        Log.d(TAG, "examine stop enter confirmStopPossibleTransportation");
         float threshold = getConfirmStopThreshold(activityType);
 
         /** check if in the window data the number of the possible activity exceeds the threshold**/
@@ -723,6 +726,7 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
             //counting how many target activity labels appear in the most recrnt 5 most proboable labels
             if (i >= windowData.size()-5) {
                 if (detectedActivities.get(0).getType()==activityType ) {
+                    Log.d(TAG, "[examine stop]in the last " + (windowData.size()-i) + "  activity, the most probable is " + getActivityNameFromType(detectedActivities.get(0).getType())  + " so most recent + 1");
                     inRecentCount +=1;
                 }
             }
@@ -738,30 +742,40 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
                 if (detectedActivities.get(activityIndex).getType()==activityType &&
                         detectedActivities.get(activityIndex).getConfidence()>=CONFIRM_STOP_ACTIVITY_CONFIDENCE_THRESHOLD) {
 
+                    Log.d(TAG, "examine stopin detected activities, we found " + getActivityNameFromType(detectedActivities.get(0).getType())
+                             + " at " + activityIndex + " with confidence " + detectedActivities.get(activityIndex).getConfidence()  + " so count + 1");
+
                     count +=1;
                     break;
                 }
             }
         }
 
+
         float percentage = (float)count/windowData.size();
+        Log.d ( TAG, "examine stop after examine the window, the cont is " + count + "  window data size  "
+                + windowData.size ( ) + " the percentage is " + percentage
+        );
 
         /**
          * stop criteria:
          * 1. if the percentage of the activity is lower than the threshold (e.g. 40%), we confirm that the activity has stopeed
          * 2. it rarely appears in the most probablt activity
          */
+        boolean stop = false;
         if (windowData.size()!=0) {
             //if the percentage > threshold
-            if ( threshold >= percentage && inRecentCount <= 2)
-                return true;
-            else
-                return false;
+            Log.d ( TAG, "examine stop final decision: the percentage is " + percentage + " the most recent count is " + inRecentCount);
+            if ( threshold >= percentage && inRecentCount <= 2 ) {
+                stop = true;
+            } else{
+                stop = false;
+            }
 
         }
-        else
-            //if there's no data in the windowdata, we should not confirm the possible activity
-            return false;
+        else  stop = true;
+            //if there's no data in the windowdata, we should stop the activity
+        return stop;
     }
 
     private static boolean changeSuspectingTransportation(int activityType, ArrayList<ActivityRecognitionDataRecord> windowData) {

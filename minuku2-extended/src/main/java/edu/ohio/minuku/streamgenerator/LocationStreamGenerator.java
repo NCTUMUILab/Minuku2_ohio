@@ -127,9 +127,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     private SharedPreferences sharedPrefs;
 
-//    TelephonyManager tel;
-//    MyPhoneStateListener myPhoneStateListener;
-
     public LocationStreamGenerator(Context applicationContext) {
         super(applicationContext);
         this.mStream = new LocationStream(Constants.LOCATION_QUEUE_SIZE);
@@ -138,18 +135,15 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         this.latestLongitude = new AtomicDouble();
 
         this.context = applicationContext;
-//        tripManager = new SessionManager();
-
 
         mLocationDataRecords = new ArrayList<LocationDataRecord>();
 
         startIndoorOutdoor = false;
 
-//        createCSV();
         sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
 
         //for replay location record
-//            startReplayLocationRecordTimer();
+        startReplayLocationRecordTimer();
 
         this.register();
     }
@@ -174,8 +168,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     + latestLongitude.get() + ", "
                     + "latestAccuracy: " + location.getAccuracy());
 
-//            Location.distanceBetween(location.getLatitude(),location.getLongitude(), latestLatitude.get(), latestLongitude.get(),results);
-
             if(!(latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0))
                 dist = results[0];
             else
@@ -185,9 +177,9 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             //TODO cancel the dist restriction
 //            if(dist < 100 || (latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0)){
             // Log.d(TAG, "Location is accurate upto 50 meters");
-                this.latestLatitude.set(location.getLatitude());
-                this.latestLongitude.set(location.getLongitude());
-                latestAccuracy = location.getAccuracy();
+//                this.latestLatitude.set(location.getLatitude());
+//                this.latestLongitude.set(location.getLongitude());
+//                latestAccuracy = location.getAccuracy();
 
             //the lastposition update value timestamp
             lastposupdate = new Date().getTime();

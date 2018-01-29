@@ -41,7 +41,7 @@ import static edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator
 
 public class TransportationModeService extends Service {
 
-    public String TAG = "TransportationModeService";
+    public static final String TAG = TransportationModeService.class.getSimpleName ();
 
     public static TransportationModeStreamGenerator transportationModeStreamGenerator;
 
@@ -64,9 +64,10 @@ public class TransportationModeService extends Service {
     private static final float CONFIRM_START_ACTIVITY_THRESHOLD_IN_VEHICLE = (float) 0.6;
     private static final float CONFIRM_START_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.6;
     private static final float CONFIRM_START_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.6;
-    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_IN_VEHICLE = (float)0.2;
-    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.1;
-    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.2;
+    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_IN_VEHICLE = (float)0.4;
+    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.4;
+    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.4;
+    private static final int CONFIRM_STOP_ACTIVITY_CONFIDENCE_THRESHOLD =20;
 
     /**label **/
     public static final String STRING_DETECTED_ACTIVITY_IN_VEHICLE = "in_vehicle";
@@ -1142,6 +1143,9 @@ public class TransportationModeService extends Service {
 
     public static boolean checkTimeElapseOfLatestActivityFromSuspectPoint( long lastestActivityTime, long suspectTime, long windowLenth) {
 
+        Log.d(TAG, "examine stop, lastestActivityTime " +lastestActivityTime + " suspectTime " + suspectTime + " the difference is c" + (lastestActivityTime - suspectTime)
+                + " windowLenth " + windowLenth );
+
         boolean flag = (lastestActivityTime - suspectTime > windowLenth); //(lastestActivityTime - suspectTime)*1000
 
         StoreToCSV(new Date().getTime(), lastestActivityTime, suspectTime, lastestActivityTime - suspectTime ,windowLenth, flag);
@@ -1383,6 +1387,7 @@ public class TransportationModeService extends Service {
 
     private static boolean confirmStopPossibleTransportation(int activityType, ArrayList<ActivityRecognitionDataRecord> windowData) {
 
+        Log.d(TAG, "examine stop enter confirmStopPossibleTransportation");
         float threshold = getConfirmStopThreshold(activityType);
 
         /** check if in the window data the number of the possible activity exceeds the threshold**/
@@ -1394,42 +1399,61 @@ public class TransportationModeService extends Service {
 
             List<DetectedActivity> detectedActivities = windowData.get(i).getProbableActivities();
 
-            //in the recent 6 there are more than 3
+            //counting how many target activity labels appear in the most recrnt 5 most proboable labels
             if (i >= windowData.size()-5) {
                 if (detectedActivities.get(0).getType()==activityType ) {
+                    Log.d(TAG, "[examine stop]in the last " + (windowData.size()-i) + "  activity, the most probable is " + getActivityNameFromType(detectedActivities.get(0).getType())  + " so most recent + 1");
                     inRecentCount +=1;
                 }
             }
 
-            for (int activityIndex = 0; activityIndex<detectedActivities.size(); activityIndex++) {
+            /**
+             *  for each activity record that has a set of detected activities, we look at the content.
+             *  if probable activities (not including the last one) contain the target activity, we count! (not simply see the most probable one)
+             */
 
-                //if probable activities contain the target activity, we count! (not simply see the most probable one)
-                if (detectedActivities.get(activityIndex).getType()==activityType ) {
+            for (int activityIndex = 0; activityIndex<detectedActivities.size()-1; activityIndex++) {
+
+                //if found the activity and the activyt confidence is still higher than a threshold (i.e. we're still think it's likely that the person is moving in that activity
+                if (detectedActivities.get(activityIndex).getType()==activityType &&
+                        detectedActivities.get(activityIndex).getConfidence()>=CONFIRM_STOP_ACTIVITY_CONFIDENCE_THRESHOLD) {
+
+                    Log.d(TAG, "examine stopin detected activities, we found " + getActivityNameFromType(detectedActivities.get(0).getType())
+                            + " at " + activityIndex + " with confidence " + detectedActivities.get(activityIndex).getConfidence()  + " so count + 1");
+
                     count +=1;
                     break;
                 }
             }
         }
 
-        float percentage = (float)count/windowData.size();
 
+        float percentage = (float)count/windowData.size();
+        Log.d ( TAG, "examine stop after examine the window, the cont is " + count + "  window data size  "
+                + windowData.size ( ) + " the percentage is " + percentage
+        );
+
+        /**
+         * stop criteria:
+         * 1. if the percentage of the activity is lower than the threshold (e.g. 40%), we confirm that the activity has stopeed
+         * 2. it rarely appears in the most probablt activity
+         */
+        boolean stop = false;
         if (windowData.size()!=0) {
             //if the percentage > threshold
-            StoreToCSV(new Date().getTime(), "stop", String.valueOf(percentage), windowData, threshold);
-
-            if ( threshold >= percentage && inRecentCount <= 2)
-
-                return true;
-            else
-                return false;
+            Log.d ( TAG, "examine stop final decision: the percentage is " + percentage + " the most recent count is " + inRecentCount);
+            if ( percentage< threshold && inRecentCount <= 2 ) {
+                Log.d ( TAG, "examine stop final decision: we should stop");
+                stop = true;
+            } else{
+                Log.d ( TAG, "examine stop final decision: we should not  stop");
+                stop = false;
+            }
 
         }
-        else{
-            StoreToCSV(new Date().getTime(), "no float", "stop", new ArrayList<ActivityRecognitionDataRecord>(), threshold);
-
-            //if there's no data in the windowdata, we should not confirm the possible activity
-            return false;
-        }
+        else  stop = true;
+        //if there's no data in the windowdata, we should stop the activity
+        return stop;
     }
 
     private static boolean changeSuspectingTransportation(int activityType, ArrayList<ActivityRecognitionDataRecord> windowData) {
