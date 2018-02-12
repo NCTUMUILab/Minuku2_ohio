@@ -27,7 +27,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -38,7 +37,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.provider.Settings;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.PagerAdapter;
@@ -58,11 +56,14 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -77,18 +78,19 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
-import edu.ohio.minuku_2.Receiver.WifiReceiver;
 import edu.ohio.minuku_2.controller.Ohio.SurveyActivity;
 import edu.ohio.minuku_2.controller.Ohio.recordinglistohio;
 import edu.ohio.minuku_2.controller.Ohio.sleepingohio;
 import edu.ohio.minuku_2.controller.home;
 import edu.ohio.minuku_2.controller.report;
 import edu.ohio.minuku_2.service.BackgroundService;
+import edu.ohio.minuku_2.service.SurveyTriggerService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -144,10 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
         handler = new Handler();
 
-        //TODO moving out
         startService(new Intent(getBaseContext(), BackgroundService.class));
-        //startService(new Intent(getBaseContext(), MinukuNotificationManager.class));
-        //startService(new Intent(getBaseContext(), DiaryNotificationService.class));  might be useless for us
 
         EventBus.getDefault().register(this);
 
@@ -164,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         Intent shortcutintent = new Intent("com.android.launcher.action.INSTALL_SHORTCUT");
         shortcutintent.putExtra("duplicate", false);
         shortcutintent.putExtra(Intent.EXTRA_SHORTCUT_NAME, getString(R.string.app_name));
-        Parcelable icon = Intent.ShortcutIconResource.fromContext(getApplicationContext(), R.drawable.dms_icon); //TODO change the icon with the Ohio one.
+        Parcelable icon = Intent.ShortcutIconResource.fromContext(getApplicationContext(), R.drawable.dms_icon);
         shortcutintent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, icon);
         shortcutintent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, new Intent(getApplicationContext(), SplashScreen.class));
         sendBroadcast(shortcutintent);
@@ -212,8 +211,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-//TODO IInputConnectionWrapper shaking alertdialog
-
     private void whichView(String projName){
         if(projName.equals("mobilecrowdsourcing")){
             setContentView(R.layout.activity_main);
@@ -224,7 +221,6 @@ public class MainActivity extends AppCompatActivity {
 
             initViewPager(timerview,recordview);
 
-            SettingViewPager();
         }else if(projName.equals("Ohio")){
 
 //            requestCode_setting = new Bundle();
@@ -232,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
 
             mScheduledExecutorService = Executors.newScheduledThreadPool(REFRESH_FREQUENCY);
 
-            setContentView(R.layout.onlydeviceid); //not "onlydeviceid" actually...
+            setContentView(R.layout.homepage); //not "homepage" actually...
 
             /* alertdialog for checking userid */
             sharedPrefs = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE);
@@ -266,8 +262,8 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View view) {
-//                    startActivity(new Intent(MainActivity.this, SurveyActivity.class));
-                    startActivityForResult(new Intent(MainActivity.this, SurveyActivity.class), 2);
+                    startActivity(new Intent(MainActivity.this, SurveyActivity.class));
+//                    startActivityForResult(new Intent(MainActivity.this, SurveyActivity.class), 2);
 
                 }
             });
@@ -278,6 +274,7 @@ public class MainActivity extends AppCompatActivity {
             ohio_annotate = (Button)findViewById(R.id.Annotate);
             ohio_annotate.setOnClickListener(ohio_annotateing);
 
+            //TODO deprecated
             /*startservice = (Button)findViewById(R.id.service);
             startservice.setOnClickListener(new Button.OnClickListener(){
 
@@ -309,13 +306,13 @@ public class MainActivity extends AppCompatActivity {
 
 //            ((GradientDrawable) surveyStatus.getBackground()).setColor(Color.GREEN);
 
+
+            //TODO deprecated
             //setting for the red green light
-            boolean tripstatusfromList = sharedPrefs.getBoolean("TripStatus", false);
+            /*boolean tripstatusfromList = sharedPrefs.getBoolean("TripStatus", false);
             boolean surveystatusfromList = sharedPrefs.getBoolean("SurveyStatus", false);
 
             Log.d(TAG,"tripstatusfromList : " + tripstatusfromList + " , surveystatusfromList : " + surveystatusfromList);
-
-//          tolinkList ohio_annotate
 
             Drawable drawable_red = getResources().getDrawable(R.drawable.circle_red);
             drawable_red.setBounds(0, 0, (int)(drawable_red.getIntrinsicWidth()*0.5), (int)(drawable_red.getIntrinsicHeight()*0.5));
@@ -338,10 +335,9 @@ public class MainActivity extends AppCompatActivity {
             else
                 tolinkList.setCompoundDrawables(null, null, drawable_green, null);
 //                surveyStatus.setImageResource(R.drawable.circle_green);
-
+*/
 
             sleepingtime = (TextView)findViewById(R.id.sleepingTime);
-//            SharedPreferences sharedPrefs = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE);
             String sleepStartTime = sharedPrefs.getString("SleepingStartTime","Please select your sleeping time");
             String sleepEndTime = sharedPrefs.getString("SleepingEndTime","Please select your wake up time");
 
@@ -377,8 +373,8 @@ public class MainActivity extends AppCompatActivity {
 
             //device_id.setText("ID = "+Constant.DEVICE_ID);
 
-            //TODO
-            startTimerThread();
+            //the light should be updated every 30 sec.
+//            startTimerThread();
 
 //            mScheduledExecutorService.scheduleAtFixedRate(
 //                    statusRunnable,
@@ -452,7 +448,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             //get all data in cursor
-            //TODO notice !! Convert the function into getRecentSessions
             /*
             data = SessionManager.getTripDatafromSQLite();
             ArrayList<String> dataInCursor = new ArrayList<String>();
@@ -508,7 +503,6 @@ public class MainActivity extends AppCompatActivity {
 
             dataPos = new ArrayList<Integer>();
 
-            //TODO judge
             /*if (Day % 2 == 0)
                 taskTable = DBHelper.checkFamiliarOrNotLinkList_table;
             else
@@ -597,37 +591,33 @@ public class MainActivity extends AppCompatActivity {
         sharedPrefs.edit().putBoolean("firstTimeToShowDialogOrNot", firstTimeToShowDialogOrNot).apply();
 
         LinearLayout layout = new LinearLayout(MainActivity.this);
-        layout.setOrientation(LinearLayout.HORIZONTAL);
+        layout.setOrientation(LinearLayout.VERTICAL);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
-//        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-//                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-//        params.setMargins(10, 0, 10, 0);
 
-        final EditText editText = new EditText(MainActivity.this);
-        editText.setHint("Confirmation number");
-//        editText.setWidth(100);
-        editText.setGravity(Gravity.CENTER_HORIZONTAL);
-        editText.setFilters(new InputFilter[] {
+        //the parameter for the size of the editText
+        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT,1.0f);
+
+        final EditText editText_confirmNum = new EditText(MainActivity.this);
+        editText_confirmNum.setHint("Confirmation number");
+        editText_confirmNum.setGravity(Gravity.CENTER_HORIZONTAL);
+        editText_confirmNum.setLayoutParams(params);
+        editText_confirmNum.setFilters(new InputFilter[] {
                 new InputFilter.LengthFilter(6)
         });
-        layout.addView(editText);
+        layout.addView(editText_confirmNum);
 
-//        final EditText editgroup = new EditText(MainActivity.this);
-//        editgroup.setHint("");
-////        editgroup.setWidth(layout.getWidth());
-////        editgroup.setWidth(100);
-//        editgroup.setGravity(Gravity.CENTER_HORIZONTAL);
-//        editgroup.setFilters(new InputFilter[] {
-//                new InputFilter.LengthFilter(1)
-//        });
-//        layout.addView(editgroup);
+        final EditText editText_Email = new EditText(MainActivity.this);
+        editText_Email.setHint("your Email");
+        editText_Email.setGravity(Gravity.CENTER_HORIZONTAL);
+        editText_Email.setLayoutParams(params);
+        layout.addView(editText_Email);
 
         user_id = (TextView) findViewById(R.id.userid);
         num_6_digit = (TextView) findViewById(R.id.group_num);
 
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this)
-                .setTitle("Please fill in your confirmation number.")
+                .setTitle("Please fill in your confirmation number and Email.")
                 .setView(layout)
                 .setPositiveButton(R.string.ok, null)
                 .setCancelable(false);
@@ -643,41 +633,51 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
 
-                        Log.d(TAG, "editText.getText().toString() : "+ editText.getText().toString());
+                        Log.d(TAG, "editText.getText().toString() : "+ editText_confirmNum.getText().toString());
 
-                        String inputID = editText.getText().toString();
+                        String inputID = editText_confirmNum.getText().toString();
                         Log.d(TAG,"inputID : "+inputID);
 
-//                        Pattern pattern = Pattern.compile("\\d+");
+                        String inputEmail = editText_Email.getText().toString();
+                        Log.d(TAG,"inputEmail : "+inputEmail);
 
-                        if(inputID.matches("") ||
-                                !tryParseInt(inputID) ||
-                                inputID.length()!=6 ||
-                                Integer.valueOf(inputID.substring(0, 1))>4 ||
-                                Integer.valueOf(inputID.substring(0, 1))==0){
+                        if(Utils.isConfirmNumInvalid(inputID)){
                             Toast.makeText(MainActivity.this,"Error, please try re-entering the number provided",Toast.LENGTH_SHORT).show();
                         }
                         else {
-//                            Log.d(TAG,"confirmation number" + editText.getText().toString().substring(1));
 
-                            Log.d(TAG,"participant ID" + inputID);
-                            Log.d(TAG,"group number" + inputID.substring(0, 1));
+                            if(!Utils.isEmailValid(inputEmail)){
+                                Toast.makeText(MainActivity.this,"Error, it is not an Email format",Toast.LENGTH_SHORT).show();
+                            }else {
 
-//                            sharedPrefs.edit().putString("userid", editText.getText().toString().substring(1)).apply();
-                            sharedPrefs.edit().putString("userid", inputID).apply();
-                            Constants.USER_ID = sharedPrefs.getString("userid","NA");
-                            user_id.setText("Confirmation #");
-                            sharedPrefs.edit().putString("groupNum", inputID.substring(0, 1)).apply();
-                            Constants.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
-                            num_6_digit.setText(Constants.USER_ID); //Constants.GROUP_NUM+
+                                Log.d(TAG, "participant ID" + inputID);
+                                Log.d(TAG, "group number" + inputID.substring(0, 1));
 
-                            startSettingSleepingTime(); //the appearing order is reversed from the code.
+                                sharedPrefs.edit().putString("userid", inputID).apply();
+                                Constants.USER_ID = sharedPrefs.getString("userid", "NA");
+                                user_id.setText("Confirmation #");
 
-                            startpermission();
+                                sharedPrefs.edit().putString("groupNum", inputID.substring(0, 1)).apply();
+                                Constants.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
+                                num_6_digit.setText(Constants.USER_ID);
 
+                                sharedPrefs.edit().putString("Email",inputEmail).apply();
+                                Constants.Email = sharedPrefs.getString("Email", "NA");
 
-                            //Dismiss once everything is OK.
-                            dialog.dismiss();
+                                startSettingSleepingTime(); //the appearing order is reversed from the code.
+
+                                startpermission();
+
+                                startService(new Intent(getBaseContext(), SurveyTriggerService.class));
+
+                                //TODO send a json to the server in the user collections.
+                                sendingUserInform();
+
+                                //TODO judging the time if the server storing the Study Start Time.
+
+                                //Dismiss once everything is OK.
+                                dialog.dismiss();
+                            }
                         }
                         Log.d(TAG,"setPositiveButton");
 
@@ -692,14 +692,87 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    boolean tryParseInt(String value) {
+    private void sendingUserInform(){
+
+        //making UserInform json file
+        JSONObject data = new JSONObject();
+        try {
+            long currentTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+            String currentTimeString = ScheduleAndSampleManager.getTimeString(currentTime);
+
+            data.put("time", currentTime);
+            data.put("timeString", currentTimeString);
+
+            data.put("user_id", Constants.USER_ID);
+            data.put("group_number", Constants.GROUP_NUM);
+            data.put("device_id", Constants.DEVICE_ID);
+            data.put("email", Constants.Email);
+
+            //computing the StudyStartTime
+            String Study_Start_Time = gettingStudyStartTime(currentTime);
+
+            data.put("StudyStartTime", Study_Start_Time);
+
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
+        Log.d(TAG, "UserInform data uploading : " + data.toString());
+
+//        String curr = getDateCurrentTimeZone(new Date().getTime());
+
+        //TODO wait for the URL to send the UserInform data
+        /*try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                        postIsAliveUrl_insert + Constants.DEVICE_ID,
+                        data.toString(),
+                        "isAlive",
+                        curr).get();
+            else
+                new HttpAsyncPostJsonTask().execute(
+                        postIsAliveUrl_insert + Constants.DEVICE_ID,
+                        data.toString(),
+                        "isAlive",
+                        curr).get();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }*/
+
+    }
+
+    private String gettingStudyStartTime(long currentTime){
+
+        //computing StudyStartTime
+        long currentTiming_at_Tomorrow_Date = currentTime + Constants.MILLISECONDS_PER_DAY;
+
+        SimpleDateFormat sdf_Date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+
+        String currentTiming_at_Tomorrow_Date_String = ScheduleAndSampleManager.getTimeString(currentTiming_at_Tomorrow_Date, sdf_Date);
+
+        Log.d(TAG, "currentTiming_at_Tomorrow_Date_String : " + currentTiming_at_Tomorrow_Date_String);
+
+        //Start at 8AM
+        String Study_Start_Time = currentTiming_at_Tomorrow_Date_String + " 08:00:00";
+
+        Log.d(TAG, "Study_Start_Time : " + Study_Start_Time);
+
+        return Study_Start_Time;
+
+    }
+
+    //TODO deprecated
+    /*boolean tryParseInt(String value) {
         try {
             Integer.parseInt(value);
             return true;
         } catch (NumberFormatException e) {
             return false;
         }
-    }
+    }*/
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -746,7 +819,7 @@ public class MainActivity extends AppCompatActivity {
 
                     break;
             }
-            switch (requestCode){
+            /*switch (requestCode){
                 case 2:
                     Log.d(TAG," case 2 ");
                     boolean tripstatusfromList = sharedPrefs.getBoolean("TripStatus", false);
@@ -777,7 +850,7 @@ public class MainActivity extends AppCompatActivity {
 //                        surveyStatus.setImageResource(R.drawable.circle_green);
 
                     break;
-            }
+            }*/
         }
     }
 
@@ -1011,48 +1084,6 @@ public class MainActivity extends AppCompatActivity {
                 + String.valueOf(dayOfMonth);
     }
 
-    public void SettingViewPager() {
-        viewList = new ArrayList<View>();
-        viewList.add(timerview);
-        viewList.add(recordview);
-
-        mViewPager.setAdapter(new TimerOrRecordPagerAdapter(viewList, this));
-
-        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTabs));
-        //TODO date button now can show on menu when switch to recordview, but need to determine where to place the date textview(default is today's date).
-        mTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-
-                if(!Constant.tabpos)
-                    //show date on menu
-                    Constant.tabpos = true;
-                else
-                    //hide date on menu
-                    Constant.tabpos = false;
-                invalidateOptionsMenu();
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-
-        mTabs.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(MainActivity.mViewPager));
-    }
-/*
-    private void showSettingsScreen() {
-        //showToast("Clicked settings");
-        Intent preferencesIntent = new Intent(this, SettingsActivity.class);
-        startActivity(preferencesIntent);
-    }
-*/
     @Override
     protected void onStart() {
         super.onStart();

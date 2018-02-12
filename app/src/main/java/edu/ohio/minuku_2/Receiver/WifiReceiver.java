@@ -263,7 +263,11 @@ public class WifiReceiver extends BroadcastReceiver {
 
             data.put("time", currentTime);
             data.put("timeString", currentTimeString);
+
+            data.put("user_id", Constants.USER_ID);
+            data.put("group_number", Constants.GROUP_NUM);
             data.put("device_id", Constants.DEVICE_ID);
+            data.put("email", Constants.Email);
 
         }catch (JSONException e){
             e.printStackTrace();
@@ -1215,7 +1219,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
 
     private long getSpecialTimeInMillis(String givenDateFormat){
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE_Slash);
         long timeInMilliseconds = 0;
         try {
             Date mDate = sdf.parse(givenDateFormat);

@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-import edu.ohio.minuku.DataHandler;
 import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.DataHandler;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
@@ -36,13 +36,13 @@ public class SurveyActivity extends Activity {
     private final static String TAG = "SurveyActivity";
 
     private Button surveyButton, testButton;
-    private TextView totalView, missedView, openedView;
+    private TextView totalView, missedView, openedView, lastOpenedView;
     private ListView listview;
     private ArrayList<String> data;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.linklist_ohio);
+        setContentView(R.layout.surveypage);
 
         data = new ArrayList<String>();
     }
@@ -117,6 +117,7 @@ public class SurveyActivity extends Activity {
         int total = data.size();
         int missCount = 0;
         int openCount = 0;
+        String lastOpenedTime;
 
         if(total == 0){
             surveyButton.setEnabled(false);
@@ -132,15 +133,33 @@ public class SurveyActivity extends Activity {
                 openCount++;
         }
 
+        //getting the last opened time
+        String latestOpenedSurveyData = DataHandler.getLatestOpenedSurveyData();
+
+        //because the position of the opened time is fourth
+        try {
+
+            long opendTime = Long.valueOf(latestOpenedSurveyData.split(Constants.DELIMITER)[3]);
+
+            SimpleDateFormat sdf_Hour_Min = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
+
+            lastOpenedTime = ScheduleAndSampleManager.getTimeString(opendTime, sdf_Hour_Min);
+
+        }
+        //at the very first time of entering this pages, there are no data in the DB.
+        catch (ArrayIndexOutOfBoundsException e){
+            lastOpenedTime = "NA";
+        }
 
         totalView = (TextView) findViewById(R.id.totalView);
         missedView = (TextView) findViewById(R.id.missedView);
         openedView = (TextView) findViewById(R.id.openedView);
+        lastOpenedView = (TextView) findViewById(R.id.last_opened_time_view);
 
         totalView.setText(String.valueOf(total));
         missedView.setText(String.valueOf(missCount));
         openedView.setText(String.valueOf(openCount));
-
+        lastOpenedView.setText(lastOpenedTime);
     }
 
     @Override
@@ -151,7 +170,6 @@ public class SurveyActivity extends Activity {
 
             Intent intent = getIntent();
             Bundle bundle = new Bundle();
-//        bundle.putBoolean("TripStatus", sharedPrefs.getBoolean("TripStatus", false));
             intent.putExtras(bundle);
             setResult(RESULT_OK, intent);
             finish();

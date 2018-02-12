@@ -69,7 +69,6 @@ import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
 import edu.ohio.minuku_2.dao.CheckFamiliarOrNotDAO;
 import edu.ohio.minuku_2.model.CheckFamiliarOrNotDataRecord;
 import edu.ohio.minuku_2.question.QuestionConfig;
-import edu.ohio.minuku_2.streamgenerator.CheckFamiliarOrNotStreamGenerator;
 
 /**
  * Created by neerajkumar on 8/28/16.
@@ -179,8 +178,9 @@ public class InstanceManager {
         TelephonyStreamGenerator telephonyStreamGenerator =
                 new TelephonyStreamGenerator(getApplicationContext());
 
-        CheckFamiliarOrNotStreamGenerator checkFamiliarOrNotStreamGenerator =
-                new CheckFamiliarOrNotStreamGenerator(getApplicationContext());
+        //TODO deprecated by triggering the service after the user enter their email and confirmNum
+//        CheckFamiliarOrNotStreamGenerator checkFamiliarOrNotStreamGenerator =
+//                new CheckFamiliarOrNotStreamGenerator(getApplicationContext());
 
         // All situations must be registered AFTER the stream generators are registers.
         MinukuSituationManager situationManager = MinukuSituationManager.getInstance();

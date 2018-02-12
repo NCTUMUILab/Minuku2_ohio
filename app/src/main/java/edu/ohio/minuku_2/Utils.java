@@ -22,6 +22,9 @@
 
 package edu.ohio.minuku_2;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Created by neera_000 on 3/26/2016.
  *
@@ -31,7 +34,7 @@ public class Utils {
 
     public static String TAG = "UtilityClass";
     /**
-     * Given an email Id as string, encodes it so that it can go into the firebase object without
+     * Given an Email Id as string, encodes it so that it can go into the firebase object without
      * any issues.
      * @param unencodedEmail
      * @return
@@ -39,6 +42,38 @@ public class Utils {
     public static final String encodeEmail(String unencodedEmail) {
         if (unencodedEmail == null) return null;
         return unencodedEmail.replace(".", ",");
+    }
+
+    /**
+     * method is used for checking valid Email id format.
+     *
+     * @param email
+     * @return boolean true for valid false for invalid
+     */
+    public static boolean isEmailValid(String email) {
+        String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
+        Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
+
+    public static boolean isConfirmNumInvalid(String inputID) {
+        boolean isInvalid = inputID.matches("") ||
+                !tryParseInt(inputID) ||
+                inputID.length()!=6 ||
+                Integer.valueOf(inputID.substring(0, 1))>4 ||
+                Integer.valueOf(inputID.substring(0, 1))==0;
+
+        return isInvalid;
+    }
+
+    public static boolean tryParseInt(String value) {
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
 }
