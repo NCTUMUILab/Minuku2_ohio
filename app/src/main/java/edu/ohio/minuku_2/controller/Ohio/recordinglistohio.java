@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -109,7 +108,7 @@ public class recordinglistohio extends Activity {
 
     }
 
-    @Override
+   /*@Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             // do something on back.
@@ -124,7 +123,7 @@ public class recordinglistohio extends Activity {
         }
 
         return super.onKeyDown(keyCode, event);
-    }
+    }*/
 
 
     /**

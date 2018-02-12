@@ -47,14 +47,14 @@ public class MailHelper extends AsyncTask<Void, Void, Void> {
     private Context context;
     private Session session;
 
-    //Information to send email
+    //Information to send Email
     private String toEmail;
     private String subject;
     private String message;
     private String fromEmail;
     private String fromPassword;
 
-    //Progressdialog to show while sending email
+    //Progressdialog to show while sending Email
     private ProgressDialog progressDialog;
 
     //Class Constructor
@@ -72,7 +72,7 @@ public class MailHelper extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        //Showing progress dialog while sending email
+        //Showing progress dialog while sending Email
         progressDialog = ProgressDialog.show(context, "Sending message", "Please wait...", false, false);
     }
 
@@ -82,7 +82,7 @@ public class MailHelper extends AsyncTask<Void, Void, Void> {
         //Dismissing the progress dialog
         progressDialog.dismiss();
         //Showing a success message
-        Toast.makeText(context, "Message sent. You will soon receive a password reset email with a link.",
+        Toast.makeText(context, "Message sent. You will soon receive a password reset Email with a link.",
                 Toast.LENGTH_LONG).show();
     }
 
@@ -121,7 +121,7 @@ public class MailHelper extends AsyncTask<Void, Void, Void> {
             //Adding message
             mm.setText(message);
 
-            //Sending email
+            //Sending Email
             Transport.send(mm);
 
         } catch (MessagingException e) {

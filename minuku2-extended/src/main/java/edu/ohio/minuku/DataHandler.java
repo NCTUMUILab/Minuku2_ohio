@@ -38,6 +38,18 @@ public class DataHandler {
         return result;
     }
 
+    public static String getLatestOpenedSurveyData(){
+
+        Log.d(TAG, "getLatestOpenedSurveyData");
+
+        String result = "";
+
+        //get the data from the query.
+        result = DBHelper.queryLatestOpenedSurveyLink();
+
+        return result;
+    }
+
     public static void updateSurveyMissTime(String id, String colName){
         Log.d(TAG, "updateSurveyMissTime");
         DBHelper.updateSurveyMissTime(id, colName);

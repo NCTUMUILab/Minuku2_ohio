@@ -446,7 +446,15 @@ public class SurveyTriggerService extends Service {
             startTime = startTimeAfterWalkingSampling;
 
         }else {
-            startTime = getSpecialTimeInMillis(yMdformat+" "+sleepingendTime+":00");
+            //default is not working.
+//            startTime = getSpecialTimeInMillis(yMdformat+" "+sleepingendTime+":00");
+
+            startTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+
+            //make sure that the user will not get any notification to day.
+            if(startTime > endTime){
+                startTime = endTime;
+            }
 
             //because "else" will be called at first interval sampling.
             interval_sampled = 0;
@@ -988,31 +996,29 @@ public class SurveyTriggerService extends Service {
 
     }
 
-        private ArrayList<LatLng> getLocationRecordInLastMinute(long lastminute, long now) {
+    private ArrayList<LatLng> getLocationRecordInLastMinute(long lastminute, long now) {
 
-            ArrayList<LatLng> LatLngs = new ArrayList<LatLng>();
+        ArrayList<LatLng> LatLngs = new ArrayList<LatLng>();
 
-            Log.d(TAG, "[test sampling] getLocationRecordInLastMinute ");
+        Log.d(TAG, "[test sampling] getLocationRecordInLastMinute ");
 
-            //get data from the database
-            ArrayList<String> data = DBHelper.queryRecordsBetweenTimes(DBHelper.STREAM_TYPE_LOCATION, lastminute, now);
+        //get data from the database
+        ArrayList<String> data = DBHelper.queryRecordsBetweenTimes(DBHelper.STREAM_TYPE_LOCATION, lastminute, now);
 
-            Log.d(TAG, "[test sampling] getLocationRecordInLastMinute get data:" + data.size() + "rows");
+        Log.d(TAG, "[test sampling] getLocationRecordInLastMinute get data:" + data.size() + "rows");
 
-            for (int i = 0; i < data.size(); i++) {
+        for (int i = 0; i < data.size(); i++) {
 
-                String[] record = data.get(i).split(Constants.DELIMITER);
-                double lat = Double.parseDouble(record[2]);
-                double lng = Double.parseDouble(record[3]);
+            String[] record = data.get(i).split(Constants.DELIMITER);
+            double lat = Double.parseDouble(record[2]);
+            double lng = Double.parseDouble(record[3]);
 
-                LatLngs.add(new LatLng(lat, lng));
+            LatLngs.add(new LatLng(lat, lng));
 
-            }
-
-            return LatLngs;
         }
 
-
+        return LatLngs;
+    }
 
 //add to DB in order to display it in the linklistOhio.java
     public void addSurveyLinkToDB(){
@@ -1355,26 +1361,6 @@ public class SurveyTriggerService extends Service {
             e.printStackTrace();
         }
     }
-
-    /*@Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-
-        Log.d(TAG, "TASK REMOVED");
-
-//        startService();
-
-        isServiceRunning = false;
-
-        PendingIntent service = PendingIntent.getService(
-                getApplicationContext(),
-                1001,
-                new Intent(getApplicationContext(), SurveyTriggerService.class),
-                PendingIntent.FLAG_ONE_SHOT);
-
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 1000, service);
-    }*/
 
     public void createCSV(){
         String sFileName = "LocationSentToServer.csv";

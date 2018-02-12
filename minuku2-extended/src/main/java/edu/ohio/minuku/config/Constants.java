@@ -106,10 +106,10 @@ public class Constants {
 
     // Google provider hashkeys
     public static final String GGL_PROVIDER_USERNAME_KEY = "username";
-    public static final String GGL_PROVIDER_EMAIL_KEY = "email";
+    public static final String GGL_PROVIDER_EMAIL_KEY = "Email";
 
     // Shared pref ids
-    public static final String ID_SHAREDPREF_EMAIL = "email";
+    public static final String ID_SHAREDPREF_EMAIL = "Email";
     public static final String ID_SHAREDPREF_PROVIDER = "provider";
     //public static final String ID_SHAREDPREF_DISPLAYNAME = "displayName";
 
@@ -187,6 +187,7 @@ public class Constants {
     public static String USER_ID = "N";
     public static String GROUP_NUM = "A";
     public static int TaskDayCount = -1;
+    public static String Email = "";
 
     public static String Interval_Sample = "Interval_Sample";
 

@@ -34,6 +34,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -47,9 +48,13 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
+import edu.ohio.minuku.manager.SessionManager;
+import edu.ohio.minuku.model.Annotation;
+import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku.streamgenerator.ConnectivityStreamGenerator;
 
 /**
@@ -161,79 +166,71 @@ public class WifiReceiver extends BroadcastReceiver {
             public void run() {
 
                 Log.d(TAG, "loading Dump data");
-/*
-                //TODO at official min should replaced by 0.
-//                Trip_startTime = getSpecialTimeInMillis(year,month,day,hour,min);
-                long startstartTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,min));
-                startstartTime /= 1000;
-                startTime = sharedPrefs.getLong("StartTime", startstartTime);
-//                Trip_startTime = sharedPrefs.getLong("Trip_startTime", getSpecialTimeInMillis(year,month,day,hour,min));
-//                Log.d(TAG,"Start : "+ getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,min)));
-                Log.d(TAG,"Start year : "+ year+" month : "+ month+" day : "+ day+" hour : "+ hour+" min : "+ min);
-//                Log.d(TAG,"StartTime : " + getTimeString(getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,min))));
-                Log.d(TAG,"StartTimeString : " + getTimeString(startTime));
-                Log.d(TAG,"StartTime : " + startTime);
 
-                long startendTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour+1,min));
-                startendTime /= 1000;
-                endTime = sharedPrefs.getLong("EndTime", startendTime);
-//                Trip_endTime = sharedPrefs.getLong("Trip_endTime", getSpecialTimeInMillis(year,month,day,hour,min+10));
-                Log.d(TAG,"End year : "+ year+" month : "+ month+" day : "+ day+" hour+1 : "+ (hour+1)+" min : "+ min);
-                Log.d(TAG,"EndTimeString : " + getTimeString(endTime));
-                Log.d(TAG,"EndTime : " + endTime);
+                //dump only can be sent when wifi is connected
+                if(ConnectivityStreamGenerator.mIsWifiConnected){
 
-                nowTime = new Date().getTime();//getCurrentTimeInMillis();//
-                Log.d(TAG,"NowTimeString : " + getTimeString(nowTime));
-                Log.d(TAG,"NowTime : " + nowTime);
+                    //TODO update endtime to get the latest data's time from MongoDB
+                    //TODO endtime = latest data's time + nextinterval
 
-                TimeZone tz = TimeZone.getDefault();
-                Calendar cal = Calendar.getInstance(tz);
-                int mDay = cal.get(Calendar.DAY_OF_MONTH);
+//                    String lasttime = sharedPrefs.getString("lasttime", "0");
 
-                lastDay = sharedPrefs.getInt("lastDay", day);
+                    long lastSentStarttime = sharedPrefs.getLong("lastSentStarttime", 0);
 
-                Log.d(TAG, "day : " + lastDay + ", mDay : "+ mDay);
+//                    if(lasttime == null || lasttime.isEmpty()){
+                    if(lastSentStarttime == 0){
+                        //if it doesn't reponse the setting with initialize ones
+                        //initialize
+                        long startstartTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,min));
+                        startTime = sharedPrefs.getLong("StartTime", startstartTime); //default
+                        Log.d(TAG,"StartTimeString : " + getTimeString(startTime));
 
-                if(lastDay != mDay) {
 
-                    _id = sharedPrefs.getInt("Trip_id", 1);
+                        //initialize
+                        long startendTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour+1,min));
+                        endTime = sharedPrefs.getLong("EndTime", startendTime);
+                        Log.d(TAG,"EndTimeString : " + getTimeString(endTime));
 
-                    int Year = cal.get(Calendar.YEAR);
-                    int Month = cal.get(Calendar.MONTH)+1;
+                    }else{
+                        //if it do reponse the setting with initialize ones
+                        startTime = Long.valueOf(lastSentStarttime);
+                        Log.d(TAG,"StartTimeString : " + getTimeString(startTime));
 
-                    long startTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, lastDay));
-                    long endTime = getSpecialTimeInMillis(makingDataFormat(Year, Month, lastDay+1));
+                        long nextinterval = 1 * 60 * 60000; //1 hr
 
-                    MakingAnnotatedTripData(startTime, endTime); //update Trip data when we get the new one.
+                        endTime = Long.valueOf(lastSentStarttime) + nextinterval;
+                        Log.d(TAG,"EndTimeString : " + getTimeString(endTime));
 
-                    sharedPrefs.edit().putInt("lastDay", mDay).apply();
+                    }
+
+                    nowTime = new Date().getTime();
+                    Log.d(TAG,"NowTimeString : " + getTimeString(nowTime));
+                    Log.d(TAG,"NowTime : " + nowTime);
+
+                    if(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected == true) {
+
+                        sendingDumpData();
+
+                        //setting nextime interval
+                        latestUpdatedTime = endTime;
+                        startTime = latestUpdatedTime;
+
+                        long nextinterval = 1 * 60 * 60000; //1 hr
+
+                        endTime = startTime + nextinterval;
+
+                        Log.d(TAG,"latestUpdatedTime : " + latestUpdatedTime);
+                        Log.d(TAG,"latestUpdatedTime + 1 hour : " + latestUpdatedTime + nextinterval);
+
+//                        sharedPrefs.edit().putLong("StartTime", startTime).apply();
+//                        sharedPrefs.edit().putLong("EndTime", endTime).apply();
+
+                        //update the last data's startTime.
+                        sharedPrefs.edit().putLong("lastSentStarttime", startTime).apply();
+
+                    }
+
                 }
-
-                if(nowTime > endTime) {
-                    MakingJsonDumpData();
-                    //setting nextime interval
-                    latestUpdatedTime = endTime;
-                    startTime = latestUpdatedTime;
-
-//                    long nextinterval = getSpecialTimeInMillis(makingDataFormat(0,0,0,0,5));
-                    long nextinterval = 1 * 60 * 60000; //1 hr
-
-                    endTime = startTime + nextinterval;//getSpecialTimeInMillis(0,0,0,0,10);
-
-                    Log.d(TAG,"latestUpdatedTime : " + latestUpdatedTime);
-                    Log.d(TAG,"latestUpdatedTime + 1 hour : " + latestUpdatedTime+ nextinterval);
-
-                    sharedPrefs.edit().putLong("StartTime", startTime).apply();
-                    sharedPrefs.edit().putLong("EndTime", endTime).apply();
-                }*/
-
-//                hour++;
-//                if(hour>24)
-//                    hour %= 24;
-
-//                sharedPrefs.edit().putInt("StartHour", hour).apply();
-
-//                MakingJsonDumpData();
 
                 // Trip, isAlive
                 if(ConnectivityStreamGenerator.mIsWifiConnected && ConnectivityStreamGenerator.mIsMobileConnected) {
@@ -241,6 +238,10 @@ public class WifiReceiver extends BroadcastReceiver {
                     Log.d(TAG, "loading IsAlive data");
 
                     sendingIsAliveData();
+
+                    Log.d(TAG, "loading Annotated Trip data");
+
+                    sendingAnnotatedTripData();
 
                 };
 
@@ -262,7 +263,11 @@ public class WifiReceiver extends BroadcastReceiver {
 
             data.put("time", currentTime);
             data.put("timeString", currentTimeString);
+
+            data.put("user_id", Constants.USER_ID);
+            data.put("group_number", Constants.GROUP_NUM);
             data.put("device_id", Constants.DEVICE_ID);
+            data.put("email", Constants.Email);
 
         }catch (JSONException e){
             e.printStackTrace();
@@ -292,6 +297,85 @@ public class WifiReceiver extends BroadcastReceiver {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }*/
+
+    }
+
+    public void sendingAnnotatedTripData(){
+
+        Log.d(TAG, "sendingAnnotatedTripData") ;
+
+
+        //getting the latest sessionid from the server side
+        //TODO improve it to get the real latest session id
+        int latestSessionidFromServer = sharedPrefs.getInt("latestSessionidFromServer", 1);
+
+        Session mSession = SessionManager.getSession(latestSessionidFromServer);
+
+        //tell if the session has been labeled. It is in the annotaiton with ESM tag
+        ArrayList<Annotation> annotations = mSession.getAnnotationsSet().getAnnotationByTag("ESM");
+
+        JSONObject ESMJSON=null;
+
+        //{"Entire_session":true,"Tag":["ESM"],"Content":"{\"ans1\":\"Walking outdoors.\",\"ans2\":\"Food\",\"ans3\":\"No\",\"ans4\":\"Right before\"}"}
+        if (annotations.size()>0){
+
+            JSONObject annotatedtripdata = new JSONObject();
+
+            try {
+
+                //getting the answers in the annotation.
+                String content = annotations.get(0).getContent();
+                ESMJSON = new JSONObject(content);
+                Log.d(TAG, "[test show trip] the contentofJSON ESMJSONObject  is " + ESMJSON );
+
+                //adding the id and group number
+                annotatedtripdata.put("user_id", Constants.USER_ID);
+                annotatedtripdata.put("group_number", Constants.GROUP_NUM);
+                annotatedtripdata.put("device_id", Constants.DEVICE_ID);
+
+                //adding the time info.
+                long StartTime = mSession.getStartTime();
+                long EndTime = mSession.getEndTime();
+                annotatedtripdata.put("StartTime", StartTime);
+                annotatedtripdata.put("EndTime", EndTime);
+                annotatedtripdata.put("StartTimeString", ScheduleAndSampleManager.getTimeString(StartTime));
+                annotatedtripdata.put("EndTimeString", ScheduleAndSampleManager.getTimeString(EndTime));
+
+                //adding the annotations data
+                annotatedtripdata.put("Annotations", ESMJSON);
+
+                Log.d(TAG, "the annotatedtripdata is going to send : "+annotatedtripdata.toString());
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            String curr = getDateCurrentTimeZone(new Date().getTime());
+
+//                storeTripToLocalFolder(annotatedtripdata);
+
+            //TODO upload to MongoDB
+            /*try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                    new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                            postTripUrl,
+                            annotatedtripdata.toString(),
+                            "Trip",
+                            curr).get();
+                else
+                    new HttpAsyncPostJsonTask().execute(
+                            postTripUrl,
+                            annotatedtripdata.toString(),
+                            "Trip",
+                            curr).get();
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }*/
+
+        }
 
     }
 
@@ -371,10 +455,6 @@ public class WifiReceiver extends BroadcastReceiver {
 //                storeTripToLocalFolder(annotatedtripdata);
 
                 //TODO upload to MongoDB
-            /*new HttpAsyncPostJsonTask().execute(postTripUrl,
-                    annotatedtripdata.toString(),
-                    "Trip",
-                    curr);*/
                 try {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                         new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
@@ -416,9 +496,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
     }
 
-    public void MakingJsonDumpData(){
+    public void sendingDumpData(){
 
-        Log.d(TAG, "MakingJsonDumpData") ;
+        Log.d(TAG, "sendingDumpData") ;
 
         JSONObject data = new JSONObject();
 
@@ -467,10 +547,6 @@ public class WifiReceiver extends BroadcastReceiver {
         String curr =  getDateCurrentTimeZone(new Date().getTime());
 
         //TODO upload to MongoDB
-        /*new HttpAsyncPostJsonTask().execute(postDumpUrl,
-                data.toString(),
-                "Dump",
-                curr);*/
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                 new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
@@ -1143,7 +1219,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
 
     private long getSpecialTimeInMillis(String givenDateFormat){
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE_Slash);
         long timeInMilliseconds = 0;
         try {
             Date mDate = sdf.parse(givenDateFormat);

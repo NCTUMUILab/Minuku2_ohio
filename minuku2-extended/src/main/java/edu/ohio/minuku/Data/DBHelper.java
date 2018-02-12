@@ -9,7 +9,6 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
@@ -1225,6 +1224,39 @@ public class DBHelper extends SQLiteOpenHelper {
                 }
                 rows.add(curRow);
             }*/
+
+            cursor.moveToLast();
+            int columnCount = cursor.getColumnCount();
+
+            for (int i=0; i<columnCount; i++){
+                result += cursor.getString(i)+ Constants.DELIMITER;
+            }
+
+            cursor.close();
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+        return result;
+
+    }
+
+    public static String queryLatestOpenedSurveyLink() {
+
+        String result = "";
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + surveyLink_table + " where " + openFlag_col + " = " + 1 +
+                    " order by " + generateTime_col;
+
+            Log.d(TAG, "[querySurveyLinkBetweenTimes] the query statement is " +sql);
+
+            Cursor cursor = db.rawQuery(sql, null);
 
             cursor.moveToLast();
             int columnCount = cursor.getColumnCount();

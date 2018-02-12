@@ -21,7 +21,6 @@ import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.Session;
-import edu.ohio.minuku_2.Constant;
 import edu.ohio.minuku_2.R;
 
 /**
@@ -105,17 +104,20 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
                 }
             }
 
+            //TODO deprecated because the text has changed.
+//            sessionTitle = timeLabel + " - " + labelStr;
+            sessionTitle = timeLabel;
 
-            sessionTitle = timeLabel + " - " + labelStr;
-
-            //if there's annotaiton in the session and the session is not ongoing
+            //if there's annotation in the session and the session is not ongoing
             if (!labelStr.equals(SessionManager.SESSION_DISPLAY_ONGOING) && !labelStr.equals(SessionManager.SESSION_DISPLAY_NO_ANNOTATION)) {
                 //if they've edited, put the text in green
                 textView.setTextColor(Color.GRAY);
+
             }
             //if there's no annotation or the session is ongoing
             else {
                 textView.setTextColor(Color.BLACK);
+
             }
 
             //set the title of the view

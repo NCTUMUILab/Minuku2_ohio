@@ -70,6 +70,6 @@ public class Log {
     }
 
     public static void setDeviceString(String deviceString) {
-        Bugfender.setDeviceString("user.email", deviceString);
+        Bugfender.setDeviceString("user.Email", deviceString);
     }
 }
