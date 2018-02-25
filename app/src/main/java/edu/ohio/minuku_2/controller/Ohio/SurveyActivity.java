@@ -1,7 +1,13 @@
 package edu.ohio.minuku_2.controller.Ohio;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -39,6 +45,10 @@ public class SurveyActivity extends Activity {
     private TextView totalView, missedView, openedView, lastOpenedView;
     private ListView listview;
     private ArrayList<String> data;
+
+    private int notifyID = 1;
+
+    private NotificationManager mNotificationManager;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,7 +107,6 @@ public class SurveyActivity extends Activity {
                 DataHandler.updateSurveyOpenFlagAndTime(id);
 
                 //we schedule the next interval random survey after the user clicks on the survey
-                long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
                 SurveyTriggerService.setUpNextIntervalSurvey();
 
                 //get the latest link in the surveyLink table.
@@ -109,6 +118,25 @@ public class SurveyActivity extends Activity {
                 resultIntent.setData(Uri.parse(link)); //get the link from adapter
 
                 startActivity(resultIntent);
+
+            }
+        });
+
+        //for testing, could deprecate it after we complete all the work
+        testButton = (Button) findViewById(R.id.triggerButton);
+        testButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                try{
+                    mNotificationManager.cancel(notifyID);
+                }catch (Exception e){
+                    e.printStackTrace();
+                    Log.d(TAG, "no old test notification");
+                }
+
+                triggerSurveyByButton();
+                addSurveyLinkToDB();
 
             }
         });
@@ -141,7 +169,7 @@ public class SurveyActivity extends Activity {
 
             long opendTime = Long.valueOf(latestOpenedSurveyData.split(Constants.DELIMITER)[3]);
 
-            SimpleDateFormat sdf_Hour_Min = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
+            SimpleDateFormat sdf_Hour_Min = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM);
 
             lastOpenedTime = ScheduleAndSampleManager.getTimeString(opendTime, sdf_Hour_Min);
 
@@ -290,6 +318,83 @@ public class SurveyActivity extends Activity {
             return String.valueOf("0"+date);
         else
             return String.valueOf(date);
+    }
+
+    //for Testing
+    private void triggerSurveyByButton(){
+
+        //TODO if the last link haven't been opened, setting it into missed.
+        String latestLinkData = DataHandler.getLatestSurveyData();
+        //if there have data in DB
+        if(!latestLinkData.equals("")) {
+
+            String clickOrNot = latestLinkData.split(Constants.DELIMITER)[5];
+
+            String id = latestLinkData.split(Constants.DELIMITER)[0];
+
+            DataHandler.updateSurveyMissTime(id, DBHelper.missedTime_col);
+
+        }
+
+        String notiText = "You have a new random survey(Artifical)";
+
+        Log.d(TAG,"intervalQualtrics");
+
+        Intent resultIntent = new Intent(SurveyActivity.this, SurveyActivity.class);
+        PendingIntent pending = PendingIntent.getActivity(SurveyActivity.this, 0, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);//Context.
+        Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
+        bigTextStyle.setBigContentTitle("DMS");
+        bigTextStyle.bigText(notiText);
+
+        Notification note = new Notification.Builder(this)
+                .setContentTitle(Constants.APP_NAME)
+                .setContentText(notiText)
+                .setContentIntent(pending)
+                .setStyle(bigTextStyle)
+                .setSmallIcon(R.drawable.self_reflection)
+                .setAutoCancel(true)
+                .build();
+
+        // using the same tag and Id causes the new notification to replace an existing one
+        mNotificationManager.notify(notifyID, note); //String.valueOf(System.currentTimeMillis()),
+        note.flags = Notification.FLAG_AUTO_CANCEL;
+
+    }
+
+    public void addSurveyLinkToDB(){
+        Log.d(TAG, "addSurveyLinkToDB");
+
+        String link = "https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";
+
+        SharedPreferences sharedPrefs = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE);
+        String participantID = sharedPrefs.getString("userid", "NA");
+        String groupNum = sharedPrefs.getString("groupNum", "NA");
+
+        String linktoShow = link + "?p="+participantID + "&g=" + groupNum + "&w=" + "1" + "&d=" + "1" + "&r=" + "1" + "&m=" + "0";
+
+        ContentValues values = new ContentValues();
+
+        try {
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+
+            values.put(DBHelper.generateTime_col, new Date().getTime());
+            values.put(DBHelper.link_col, linktoShow);
+//            values.put(DBHelper.openFlag_col, 0); //they can't enter the link by the notification.
+
+//            db.insert(DBHelper.checkFamiliarOrNotLinkList_table, null, values);
+            db.insert(DBHelper.surveyLink_table, null, values);
+
+        }
+        catch(NullPointerException e){
+            e.printStackTrace();
+        }
+        finally {
+            values.clear();
+            DBManager.getInstance().closeDatabase(); // Closing database connection
+        }
     }
 
 }

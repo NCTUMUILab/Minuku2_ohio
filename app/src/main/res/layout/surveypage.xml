@@ -4,28 +4,16 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-
-    <!--<ListView
+    <Button
+        android:id="@+id/triggerButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/linkList"
-        android:visibility="visible" />
-
-    &lt;!&ndash; empty view &ndash;&gt;
-    <LinearLayout android:id="@+id/emptyView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:layout_gravity="center_horizontal">
-
-        <TextView
-            android:text="No link yet."
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/emptyViewText"
-            android:textSize="24sp" />
-    </LinearLayout>-->
+        android:layout_marginLeft="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginTop="35dp"
+        android:text="trigger"
+        android:textSize="16sp"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/surveyButton"
@@ -33,17 +21,18 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="35dp"
         android:text="Survey"
-        android:textSize="26sp" />
+        android:textSize="16sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="16dp"
+        android:layout_weight="9"
         android:gravity="center"
-        android:weightSum="4"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:weightSum="4">
 
         <LinearLayout
             android:layout_width="match_parent"

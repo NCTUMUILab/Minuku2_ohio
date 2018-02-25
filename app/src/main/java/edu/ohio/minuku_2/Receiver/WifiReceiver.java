@@ -70,7 +70,7 @@ public class WifiReceiver extends BroadcastReceiver {
     private SharedPreferences sharedPrefs;
 
     private Runnable runnable = null;
-
+    
     private int year,month,day,hour,min;
     private int lastDay;
 
@@ -88,7 +88,7 @@ public class WifiReceiver extends BroadcastReceiver {
     private static final String postTripUrl = "http://mcog.asc.ohio-state.edu/apps/tripdump/";
     private static final String postDumpUrl = "http://mcog.asc.ohio-state.edu/apps/devicedump/";
 
-    public static int mainThreadUpdateFrequencyInSeconds = 10;
+    public static int mainThreadUpdateFrequencyInSeconds = 60; //originally 10s.
     public static long mainThreadUpdateFrequencyInMilliseconds = mainThreadUpdateFrequencyInSeconds *Constants.MILLISECONDS_PER_SECOND;
 
     @Override
@@ -237,6 +237,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     Log.d(TAG, "loading IsAlive data");
 
+                    //TODO replace the isAlive
+                    //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
+
                     sendingIsAliveData();
 
                     Log.d(TAG, "loading Annotated Trip data");
@@ -261,7 +264,9 @@ public class WifiReceiver extends BroadcastReceiver {
             long currentTime = new Date().getTime();
             String currentTimeString = getTimeString(currentTime);
 
-            data.put("time", currentTime);
+            long currentTimeInSec = currentTime/Constants.MILLISECONDS_PER_SECOND;
+
+            data.put("time", currentTimeInSec);
             data.put("timeString", currentTimeString);
 
             data.put("user_id", Constants.USER_ID);
@@ -309,8 +314,16 @@ public class WifiReceiver extends BroadcastReceiver {
         //TODO improve it to get the real latest session id
         int latestSessionidFromServer = sharedPrefs.getInt("latestSessionidFromServer", 1);
 
-        Session mSession = SessionManager.getSession(latestSessionidFromServer);
+        Session mSession = null;
 
+        try {
+            mSession = SessionManager.getSession(latestSessionidFromServer);
+
+            //No session yet, wait for next time.
+        }catch (IndexOutOfBoundsException e){
+            e.printStackTrace();
+            return;
+        }
         //tell if the session has been labeled. It is in the annotaiton with ESM tag
         ArrayList<Annotation> annotations = mSession.getAnnotationsSet().getAnnotationByTag("ESM");
 
@@ -336,6 +349,10 @@ public class WifiReceiver extends BroadcastReceiver {
                 //adding the time info.
                 long StartTime = mSession.getStartTime();
                 long EndTime = mSession.getEndTime();
+                //TODO Check : converting milliseconds into seconds
+                Log.d(TAG, "Annotation StartTime : "+StartTime);
+                Log.d(TAG, "Annotation EndTime : "+EndTime);
+
                 annotatedtripdata.put("StartTime", StartTime);
                 annotatedtripdata.put("EndTime", EndTime);
                 annotatedtripdata.put("StartTimeString", ScheduleAndSampleManager.getTimeString(StartTime));
@@ -512,8 +529,11 @@ public class WifiReceiver extends BroadcastReceiver {
 //            long Trip_startTime = getSpecialTimeInMillis(year,month,day,hour);
 //            long Trip_endTime = getSpecialTimeInMillis(year,month,day,hour+1);
 
-            data.put("start", String.valueOf(startTime));
-            data.put("end", String.valueOf(endTime));
+            long startTimeInSec = startTime/Constants.MILLISECONDS_PER_SECOND;
+            long endTimeInSec = endTime/Constants.MILLISECONDS_PER_SECOND;
+
+            data.put("start", startTimeInSec);
+            data.put("end", endTimeInSec);
             data.put("Trip_startTime", getTimeString(startTime));
             data.put("Trip_endTime", getTimeString(endTime));
         }catch (JSONException e){
@@ -737,7 +757,7 @@ public class WifiReceiver extends BroadcastReceiver {
             JSONObject transportationAndtimestampsJson = new JSONObject();
 
             JSONArray transportations = new JSONArray();
-            JSONArray timestamps = new JSONArray();
+            JSONArray timestampsInSec = new JSONArray();
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.transportationMode_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
@@ -756,13 +776,16 @@ public class WifiReceiver extends BroadcastReceiver {
                     Log.d(TAG,"transportation : "+transportation+" timestamp : "+timestamp);
 
                     transportations.put(transportation);
-                    timestamps.put(timestamp);
+
+                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
+
+                    timestampsInSec.put(timestampInSec);
 
                     transCursor.moveToNext();
                 }
 
                 transportationAndtimestampsJson.put("Transportation",transportations);
-                transportationAndtimestampsJson.put("timestamps",timestamps);
+                transportationAndtimestampsJson.put("timestamps",timestampsInSec);
 
                 data.put("TransportationMode",transportationAndtimestampsJson);
 
@@ -789,7 +812,7 @@ public class WifiReceiver extends BroadcastReceiver {
             JSONArray accuracys = new JSONArray();
             JSONArray longtitudes = new JSONArray();
             JSONArray latitudes = new JSONArray();
-            JSONArray timestamps = new JSONArray();
+            JSONArray timestampsInSec = new JSONArray();
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.STREAM_TYPE_LOCATION +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
@@ -812,7 +835,10 @@ public class WifiReceiver extends BroadcastReceiver {
                     accuracys.put(accuracy);
                     longtitudes.put(longtitude);
                     latitudes.put(latitude);
-                    timestamps.put(timestamp);
+
+                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
+
+                    timestampsInSec.put(timestampInSec);
 
                     transCursor.moveToNext();
                 }
@@ -820,7 +846,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 locationAndtimestampsJson.put("Accuracy",accuracys);
                 locationAndtimestampsJson.put("Longtitudes",longtitudes);
                 locationAndtimestampsJson.put("Latitudes",latitudes);
-                locationAndtimestampsJson.put("timestamps",timestamps);
+                locationAndtimestampsJson.put("timestamps",timestampsInSec);
 
                 data.put("Location",locationAndtimestampsJson);
 
@@ -846,7 +872,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
             JSONArray mostProbableActivityz = new JSONArray();
             JSONArray probableActivitiesz = new JSONArray();
-            JSONArray timestamps = new JSONArray();
+            JSONArray timestampsInSec = new JSONArray();
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.activityRecognition_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
@@ -908,14 +934,17 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     mostProbableActivityz.put(mostProbableActivity);
                     probableActivitiesz.put(probableActivities);
-                    timestamps.put(timestamp);
+
+                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
+
+                    timestampsInSec.put(timestampInSec);
 
                     transCursor.moveToNext();
                 }
 
                 arAndtimestampsJson.put("MostProbableActivity",mostProbableActivityz);
                 arAndtimestampsJson.put("ProbableActivities",probableActivitiesz);
-                arAndtimestampsJson.put("timestamps",timestamps);
+                arAndtimestampsJson.put("timestamps",timestampsInSec);
 
                 data.put("ActivityRecognition",arAndtimestampsJson);
 
@@ -946,7 +975,7 @@ public class WifiReceiver extends BroadcastReceiver {
             JSONArray StreamVolumeMusics = new JSONArray();
             JSONArray AudioModes = new JSONArray();
             JSONArray RingerModes = new JSONArray();
-            JSONArray timestamps = new JSONArray();
+            JSONArray timestampsInSec = new JSONArray();
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.ringer_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
@@ -980,7 +1009,10 @@ public class WifiReceiver extends BroadcastReceiver {
                     StreamVolumeMusics.put(StreamVolumeMusic);
                     AudioModes.put(AudioMode);
                     RingerModes.put(RingerMode);
-                    timestamps.put(timestamp);
+
+                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
+
+                    timestampsInSec.put(timestampInSec);
 
                     transCursor.moveToNext();
                 }
@@ -992,7 +1024,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 ringerAndtimestampsJson.put("StreamVolumeRing",StreamVolumeRings);
                 ringerAndtimestampsJson.put("StreamVolumeVoicecall",StreamVolumeVoicecalls);
                 ringerAndtimestampsJson.put("StreamVolumeSystem",StreamVolumeSystems);
-                ringerAndtimestampsJson.put("timestamps",timestamps);
+                ringerAndtimestampsJson.put("timestamps",timestampsInSec);
 
                 data.put("Ringer",ringerAndtimestampsJson);
 
@@ -1023,7 +1055,7 @@ public class WifiReceiver extends BroadcastReceiver {
             JSONArray IsConnecteds = new JSONArray();
             JSONArray IsNetworkAvailables = new JSONArray();
             JSONArray NetworkTypes = new JSONArray();
-            JSONArray timestamps = new JSONArray();
+            JSONArray timestampsInSec = new JSONArray();
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.connectivity_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
@@ -1057,7 +1089,10 @@ public class WifiReceiver extends BroadcastReceiver {
                     IsConnecteds.put(IsConnected);
                     IsNetworkAvailables.put(IsNetworkAvailable);
                     NetworkTypes.put(NetworkType);
-                    timestamps.put(timestamp);
+
+                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
+
+                    timestampsInSec.put(timestampInSec);
 
                     transCursor.moveToNext();
                 }
@@ -1069,7 +1104,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 connectivityAndtimestampsJson.put("IsMobileAvailable",IsMobileAvailables);
                 connectivityAndtimestampsJson.put("IsWifiConnected",IsWifiConnecteds);
                 connectivityAndtimestampsJson.put("IsMobileConnected",IsMobileConnecteds);
-                connectivityAndtimestampsJson.put("timestamps",timestamps);
+                connectivityAndtimestampsJson.put("timestamps",timestampsInSec);
 
                 data.put("Connectivity",connectivityAndtimestampsJson);
 
@@ -1097,7 +1132,7 @@ public class WifiReceiver extends BroadcastReceiver {
             JSONArray BatteryPercentages = new JSONArray();
             JSONArray BatteryChargingStates = new JSONArray();
             JSONArray isChargings = new JSONArray();
-            JSONArray timestamps = new JSONArray();
+            JSONArray timestampsInSec = new JSONArray();
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.battery_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
@@ -1123,7 +1158,10 @@ public class WifiReceiver extends BroadcastReceiver {
                     BatteryPercentages.put(BatteryPercentage);
                     BatteryChargingStates.put(BatteryChargingState);
                     isChargings.put(isCharging);
-                    timestamps.put(timestamp);
+
+                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
+
+                    timestampsInSec.put(timestampInSec);
 
                     transCursor.moveToNext();
                 }
@@ -1132,7 +1170,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 batteryAndtimestampsJson.put("BatteryPercentage",BatteryPercentages);
                 batteryAndtimestampsJson.put("BatteryChargingState",BatteryChargingStates);
                 batteryAndtimestampsJson.put("isCharging",isChargings);
-                batteryAndtimestampsJson.put("timestamps",timestamps);
+                batteryAndtimestampsJson.put("timestamps",timestampsInSec);
 
                 data.put("Battery",batteryAndtimestampsJson);
 
@@ -1159,7 +1197,7 @@ public class WifiReceiver extends BroadcastReceiver {
             JSONArray ScreenStatusz = new JSONArray();
             JSONArray Latest_Used_Apps = new JSONArray();
             JSONArray Latest_Foreground_Activitys = new JSONArray();
-            JSONArray timestamps = new JSONArray();
+            JSONArray timestampsInSec = new JSONArray();
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.appUsage_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
@@ -1182,7 +1220,10 @@ public class WifiReceiver extends BroadcastReceiver {
                     ScreenStatusz.put(ScreenStatus);
                     Latest_Used_Apps.put(Latest_Used_App);
                     Latest_Foreground_Activitys.put(Latest_Foreground_Activity);
-                    timestamps.put(timestamp);
+
+                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
+
+                    timestampsInSec.put(timestampInSec);
 
                     transCursor.moveToNext();
                 }
@@ -1190,7 +1231,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 appUsageAndtimestampsJson.put("ScreenStatus",ScreenStatusz);
                 appUsageAndtimestampsJson.put("Latest_Used_App",Latest_Used_Apps);
 //                appUsageAndtimestampsJson.put("Latest_Foreground_Activity",Latest_Foreground_Activitys);
-                appUsageAndtimestampsJson.put("timestamps",timestamps);
+                appUsageAndtimestampsJson.put("timestamps",timestampsInSec);
 
                 data.put("AppUsage",appUsageAndtimestampsJson);
 

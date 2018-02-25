@@ -34,7 +34,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import edu.ohio.minuku.Utilities.FileHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuStreamManager;
@@ -84,7 +83,7 @@ public class BackgroundService extends Service {
 
         if (!mRunning) {
 
-            //we use an alerm to keep the service awake
+            //we use an alarm to keep the service awake
             AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
             alarm.set(
                     AlarmManager.RTC_WAKEUP,     //
@@ -117,16 +116,6 @@ public class BackgroundService extends Service {
         //TODO Keep eye on the service is working or not.
         return START_STICKY;
     }
-
-    //        private void showNotification(){
-//            NotificationCompat.Builder builer = new NotificationCompat.Builder(this)
-//                    .setSmallIcon(R.drawable.self_reflection)
-//                    .setContentTitle("Service active")
-//                    .setContentText("Your service keeps running")
-//                    .setOngoing(true);
-//            mNotificationManager.notify(NOTIFICATION_ID, builer.build());
-//
-//        }
 
     private void runMainThread(){
 

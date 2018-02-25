@@ -48,6 +48,7 @@ public class Constants {
     public static final String DATE_FORMAT_HOUR_MIN = "HH:mm";
     public static final String DATE_FORMAT_HOUR = "HH";
     public static final String DATE_FORMAT_MIN = "mm";
+    public static final String DATE_FORMAT_HOUR_MIN_AMPM = "hh:mm a";
     public static final String DATE_FORMAT_DATE_TEXT = "MMM dd";
     public static final String DATE_FORMAT_DATE_TEXT_HOUR_MIN = "MMM dd HH:mm";
     public static final String DATE_FORMAT_DATE_TEXT_HOUR_MIN_SEC = "MMM dd  HH:mm:ss";

@@ -85,7 +85,7 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
                 labelStr = SessionManager.SESSION_DISPLAY_ONGOING;
 
             //format the time string
-            SimpleDateFormat sdf_minute = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_MINUTE_SLASH);
+            SimpleDateFormat sdf_minute = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
             timeLabel = ScheduleAndSampleManager.getTimeString(startTime,sdf_minute);
 
             //try to the find the transportation mode provided by the user. It is in the annotaiton with ESM tag
@@ -104,9 +104,19 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
                 }
             }
 
-            //TODO deprecated because the text has changed.
-//            sessionTitle = timeLabel + " - " + labelStr;
-            sessionTitle = timeLabel;
+            //checking the date of the startTime is Today or yesterday.
+            SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+            String StartTimeDate = ScheduleAndSampleManager.getTimeString(startTime,sdf_date);
+            String CurrentTimeDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+
+            String today_yesterday;
+            if(StartTimeDate.equals(CurrentTimeDate)){
+                today_yesterday = "today";
+            }else{
+                today_yesterday = "yesterday";
+            }
+
+            sessionTitle = today_yesterday + "-" + timeLabel;
 
             //if there's annotation in the session and the session is not ongoing
             if (!labelStr.equals(SessionManager.SESSION_DISPLAY_ONGOING) && !labelStr.equals(SessionManager.SESSION_DISPLAY_NO_ANNOTATION)) {

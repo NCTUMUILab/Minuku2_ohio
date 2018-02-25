@@ -87,7 +87,7 @@ public class TransportationModeService extends Service {
 
     private static final long WINDOW_LENGTH_START_ACTIVITY_DEFAULT = 20 * Constants.MILLISECONDS_PER_SECOND;
     private static final long WINDOW_LENGTH_STOP_ACTIVITY_DEFAULT = 20 * Constants.MILLISECONDS_PER_SECOND;
-    private static final long WINDOW_LENGTH_START_ACTIVITY_IN_VEHICLE = 10 * Constants.MILLISECONDS_PER_SECOND; //TODO origin為20s
+    private static final long WINDOW_LENGTH_START_ACTIVITY_IN_VEHICLE = 20 * Constants.MILLISECONDS_PER_SECOND; //TODO origin為10s
     private static final long WINDOW_LENGTH_START_ACTIVITY_ON_FOOT = 10 * Constants.MILLISECONDS_PER_SECOND;
     private static final long WINDOW_LENGTH_START_ACTIVITY_ON_BICYCLE = 20 * Constants.MILLISECONDS_PER_SECOND;
     private static final long WINDOW_LENGTH_STOP_ACTIVITY_IN_VEHICLE = 150 * Constants.MILLISECONDS_PER_SECOND;
@@ -199,59 +199,9 @@ public class TransportationModeService extends Service {
                 TimeUnit.SECONDS);
     }
 
-    /*Runnable TransportationModeRunnable = new Runnable() {
-        @Override
-        public void run() {
-
-            try {
-                transportationModeStreamGenerator = (TransportationModeStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(TransportationModeDataRecord.class);
-            }catch(StreamNotFoundException e){
-                Log.e(TAG,"transportationModeStreamGenerator haven't created yet.");
-            }
-
-            //Log.e(TAG, String.valueOf(activityRecognitionStreamGenerator.getLastSavedRecord()));
-            if(MinukuStreamManager.getInstance().getActivityRecognitionDataRecord()!=null){
-                //if (activityRecognitionStreamGenerator.getLastSavedRecord()!=null) { //maybe need to judge Location's record even "getLastSavedRecord()!=null" ?
-
-                ActivityRecognitionDataRecord recordPool = MinukuStreamManager.getInstance().getActivityRecognitionDataRecord();//activityRecognitionStreamGenerator.getLastSavedRecord();
-//                Log.e(TAG,"getID : "+recordPool.getID());
-                Log.e(TAG,"CreateTime:" + recordPool.getCreationTime()+ " MostProbableActivity:"+recordPool.getMostProbableActivity());
-
-                if (recordPool!=null) {
-                    examineTransportation(recordPool);
-                    Log.e(TAG, "[testactivitylog] examine" +
-                            " transportation: " + examineTransportation(recordPool));
-                    Log.e(TAG, "[testactivitylog] transportation: " + getConfirmedActvitiyString());
-
-                    //transportationModeDataRecordFromService =
-                    //       new TransportationModeDataRecord(getActivityNameFromType(examineTransportation(recordPool)));//;getConfirmedActvitiyString()
-
-                    try {
-                        transportationModeStreamGenerator.setTransportationModeDataRecord(getConfirmedActvitiyString());
-
-                        TransportationModeDataRecord transportationModeDataRecord = new TransportationModeDataRecord(getConfirmedActvitiyString());
-
-                        MinukuStreamManager.getInstance().setTransportationModeDataRecord(transportationModeDataRecord);
-//                    transportationModeDataRecordFromService = new TransportationModeDataRecord(getConfirmedActvitiyString());
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-
-                StoreToCSV(new Date().getTime(), getConfirmedActvitiyString(), recordPool.getCreationTime(), recordPool.getMostProbableActivity(), recordPool.getProbableActivities());
-
-            }
-            else
-                Log.e(TAG, "ActivityRecognition's Stream might not start working yet.");
-
-        }
-    };
-*/
-
     Runnable TransportationModeRunnable = new Runnable() {
         @Override
         public void run() {
-
 
 //            Log.d(TAG, "test replay] examining transportation runnable ");
             try {
@@ -399,8 +349,6 @@ public class TransportationModeService extends Service {
     private void showTransportation(String transportation){
 
         Log.e(TAG,"showTransportation");
-
-        String inhomeornot="not working yet";
 
         String local_transportation = transportation;
 

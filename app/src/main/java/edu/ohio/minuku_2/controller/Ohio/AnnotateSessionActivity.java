@@ -36,7 +36,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -72,6 +71,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     private RadioButton ans3_1, ans3_2, ans3_3;
     private RadioButton ans4_1, ans4_2, ans4_3;
     private RadioGroup ques1,
+            ques2,
             ques2_1, ques2_2, ques2_3, ques2_4, ques2_5,
             ques3, ques4;
 
@@ -385,32 +385,41 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         submit.setOnClickListener(submitting);
 
         ques1 = (RadioGroup)findViewById(R.id.ques1);
+        ques2 = (RadioGroup)findViewById(R.id.ques2);
+        /*
         ques2_1 = (RadioGroup)findViewById(R.id.ques2_1);
         ques2_2 = (RadioGroup)findViewById(R.id.ques2_2);
         ques2_3 = (RadioGroup)findViewById(R.id.ques2_3);
         ques2_4 = (RadioGroup)findViewById(R.id.ques2_4);
         ques2_5 = (RadioGroup)findViewById(R.id.ques2_5);
+        */
         ques3 = (RadioGroup)findViewById(R.id.ques3);
         ques4 = (RadioGroup)findViewById(R.id.ques4);
 
 
         mRadioGroups.add(ques1);
+        mRadioGroups.add(ques2);
+        /*
         mRadioGroups.add(ques2_1);
         mRadioGroups.add(ques2_2);
         mRadioGroups.add(ques2_3);
         mRadioGroups.add(ques2_4);
         mRadioGroups.add(ques2_5);
+        */
         mRadioGroups.add(ques3);
         mRadioGroups.add(ques4);
 
 
         ques4.setVisibility(View.GONE);
 
+        ques2.clearCheck();
+/*
         ques2_1.clearCheck();
         ques2_2.clearCheck();
         ques2_3.clearCheck();
         ques2_4.clearCheck();
         ques2_5.clearCheck();
+*/
 
         question4 = (TextView)findViewById(R.id.question4);
         ans3_1 = (RadioButton)findViewById(R.id.ans3_1);
@@ -435,12 +444,27 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             }
         });
 
+        ques2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // TODO Auto-generated method stub
+
+                if(checkedId==-1){
+                    error2=false;
+                }else{
+                    error2=true;
+//                    ans3=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
+                    RadioButton radioButton = (RadioButton) findViewById(checkedId);
+                    ans2 = radioButton.getText().toString();
+                }
+            }
+        });
+        /*
         ques2_1.setOnCheckedChangeListener(ques2_1Listener);
         ques2_2.setOnCheckedChangeListener(ques2_2Listener);
         ques2_3.setOnCheckedChangeListener(ques2_3Listener);
         ques2_4.setOnCheckedChangeListener(ques2_4Listener);
         ques2_5.setOnCheckedChangeListener(ques2_5Listener);
-
+        */
         ques3.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 // TODO Auto-generated method stub
@@ -467,7 +491,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                     question4.setText("When did you decide to take this trip?");
                     ans4_1.setText("Right before");
                     ans4_2.setText("Today");
-                    ans4_3.setText("Before Today");
+                    ans4_3.setText("Before today");
 
                 }
             }
@@ -749,173 +773,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         }
     };
-/*
-    private void initQuestionnaire(){
-        final RadioGroup ques1, ques2, ques3, ques4_1, ques4_2;
-
-        ques1 = (RadioGroup)findViewById(R.id.ques1);
-        ques2 = (RadioGroup)findViewById(R.id.ques2);
-        ques3 = (RadioGroup)findViewById(R.id.ques3);
-        ques4_1 = (RadioGroup)findViewById(R.id.ques4_1);
-        ques4_2 = (RadioGroup)findViewById(R.id.ques4_2);
-
-        ques3.setVisibility(View.GONE);
-
-        question3 = (TextView)findViewById(R.id.question3);
-        ans3_1 = (RadioButton)findViewById(R.id.ans3_1);
-        ans3_2 = (RadioButton)findViewById(R.id.ans3_2);
-        ans3_3 = (RadioButton)findViewById(R.id.ans3_3);
-
-        ques1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // TODO Auto-generated method stub
-
-                if(checkedId==-1){
-                    error1=false;
-                }else{
-                    error1=true;
-//                    ans1=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
-                    RadioButton radioButton = (RadioButton) findViewById(checkedId);
-                    ans1 = radioButton.getText().toString();
-                }
-            }
-        });
-
-        ques2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // TODO Auto-generated method stub
-
-                if(checkedId==-1){
-                    error2=false;
-                }else{
-                    error2=true;
-//                    ans2=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
-                    RadioButton radioButton = (RadioButton) findViewById(checkedId);
-                    ans2 = radioButton.getText().toString();
-                }
-
-                //different question on question3 based on question2
-                if(checkedId==R.id.ans2_1){ //Yes
-                    ques3.setVisibility(View.VISIBLE);
-                    question3.setText("Did you leave at your normal time?");
-                    ans3_1.setText("left early");
-                    ans3_2.setText("left at normal time");
-                    ans3_3.setText("left late");
-
-                }else if(checkedId==R.id.ans2_2){ //No
-                    ques3.setVisibility(View.VISIBLE);
-                    question3.setText("When did you decide to take this non-routine trip?");
-                    ans3_1.setText("right before");
-                    ans3_2.setText("today");
-                    ans3_3.setText("before today");
-
-                }
-            }
-        });
-
-        ques3.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // TODO Auto-generated method stub
-
-                if(checkedId==-1){
-                    error3=false;
-                }else{
-                    error3=true;
-//                    ans3=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
-                    RadioButton radioButton = (RadioButton) findViewById(checkedId);
-                    ans3 = radioButton.getText().toString();
-                }
-            }
-        });
-
-        ques4_1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // TODO Auto-generated method stub
-
-                if(checkedId==-1){
-                    error4=false;
-                }else{
-                    error4=true;
-//                    ans4=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
-                    RadioButton radioButton = (RadioButton) findViewById(checkedId);
-                    ans4 = radioButton.getText().toString();
-                }
-            }
-        });
-
-        ques4_2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // TODO Auto-generated method stub
-
-                if(checkedId==-1){
-                    error4_2=false;
-                }else{
-                    error4_2=true;
-//                    ans4_2=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
-                    RadioButton radioButton = (RadioButton) findViewById(checkedId);
-                    ans4_2 = radioButton.getText().toString();
-                }
-            }
-        });
-
-    }*/
-
-//    private void showRecordingVizualization(final ArrayList<LatLng> latLngs){
-//
-//        Log.d(TAG,"trip data showRecordingVizualization");
-//
-//
-//        ((MapFragment) getFragmentManager().findFragmentById(R.id.Mapfragment)).getMapAsync(new OnMapReadyCallback() {
-//            @Override
-//            public void onMapReady(GoogleMap googleMap) {
-//
-//                Log.d(TAG,"trip data showRecordingVizualization for latlngs " + latLngs.toString());
-//                mGoogleMap = googleMap;
-//                Log.d(TAG,"trip data safter google mao ");
-//
-//                LatLng startLatLng = latLngs.get(0);
-//                LatLng endLatLng = latLngs.get(latLngs.size() - 1);
-//                LatLng middleLatLng = latLngs.get(latLngs.size() / 2);
-//
-//                Log.d(TAG, "trip data startLatLng : "+startLatLng+"end : "+endLatLng+"middle : "+middleLatLng);
-//
-//                int i = 1;
-//
-//                for (LatLng latLng:latLngs) {
-//                    Log.d(TAG, "trip data latLng"+ i +" : "+latLng);
-//                    i++;
-//                }
-//
-//                /**after getting the start and ened point of location trace, we put a marker**/
-//                mGoogleMap.addMarker(new MarkerOptions().position(startLatLng).title("Start"))
-//                        .setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-//                mGoogleMap.addMarker(new MarkerOptions().position(endLatLng).title("End"));
-//
-////                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(middle,15.0f));
-//                showMapWithPaths(mGoogleMap, latLngs, middleLatLng,startLatLng, middleLatLng );
-//            }
-//        });
-//
-//
-//        /*if(mGoogleMap!=null) {
-////            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(GOOGLE_MAP_DEFAULT_CAMERA_CENTER, GOOGLE_MAP_DEFAULT_ZOOM_LEVEL));
-//
-//            LatLng nkut = latLngs.get(0);
-//            LatLng end = latLngs.get(latLngs.size() - 1);
-//            LatLng middle = latLngs.get(latLngs.size() / 2);
-//
-//            Log.d(TAG, "nkut : "+nkut+"end : "+end+"middle : "+middle);
-//
-//            ArrayList<LatLng> points = new ArrayList<LatLng>();
-//            points.add(nkut);
-//            points.add(middle);
-//            points.add(end);
-//            mGoogleMap.addMarker(new MarkerOptions().position(nkut).title("Here you are."));
-//            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(nkut,15.0f));
-//            showMapWithPaths(mGoogleMap, points, middle);
-//
-//        }*/
-//    }
 
     private void setUpMapIfNeeded() {
 
@@ -953,6 +810,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         long startTime = session.getStartTime();
         long endTime = session.getEndTime();
+
+        //TODO changed the date into "today" or "yesterday".
         SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_DATE_TEXT_HOUR_MIN);
         String timelabel = null;
 
