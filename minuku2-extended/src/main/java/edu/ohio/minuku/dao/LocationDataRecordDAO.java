@@ -112,7 +112,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
             values.put(DBHelper.TIME, entity.getCreationTime());
-//            values.put(DBHelper.TaskDayCount, entity.getTaskDayCount());
+//            values.put(DBHelper.daysInSurvey, entity.getTaskDayCount());
 //            values.put(DBHelper.HOUR, entity.getHour());
             values.put(DBHelper.latitude_col, entity.getLatitude());
             values.put(DBHelper.longitude_col, entity.getLongitude());

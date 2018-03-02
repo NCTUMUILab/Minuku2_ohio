@@ -36,6 +36,7 @@ public class Constants {
     public static final long MILLISECONDS_PER_DAY = HOURS_PER_DAY *MINUTES_PER_HOUR*SECONDS_PER_MINUTE*MILLISECONDS_PER_SECOND;
     public static final long MILLISECONDS_PER_HOUR = MINUTES_PER_HOUR*SECONDS_PER_MINUTE*MILLISECONDS_PER_SECOND;
     public static final long MILLISECONDS_PER_MINUTE = SECONDS_PER_MINUTE*MILLISECONDS_PER_SECOND;
+    public final static String DATE_FORMAT_NOW_Dash = "yyyy-MM-dd HH:mm:ss Z";
     public final static String DATE_FORMAT_NOW_SLASH = "yyyy/MM/dd HH:mm:ss Z";
     public final static String DATE_FORMAT_NOW_MINUTE_SLASH = "yyyy/MM/dd HH:mm";
     public static final String DATE_FORMAT_NOW_NO_ZONE_Slash = "yyyy/MM/dd HH:mm:ss";
@@ -170,8 +171,6 @@ public class Constants {
     public static final long INTERNAL_LOCATION_UPDATE_FREQUENCY = 1 * 10 * 1000; // 1 * 300 * 1000
     public static final float LOCATION_MINUMUM_DISPLACEMENT_UPDATE_THRESHOLD = 50 ;
 
-
-
     public static final String DIABETES_LOG_NOTIFICATION_SOURCE = "DIABETES_LOG";
 
     /* from NCTU */
@@ -187,10 +186,16 @@ public class Constants {
     public static String DEVICE_ID = "NA";
     public static String USER_ID = "N";
     public static String GROUP_NUM = "A";
-    public static int TaskDayCount = -1;
     public static String Email = "";
 
+    public static int daysInSurvey = -1;
+    public static long midnightstart = -999;
+    public static long FirstTime_ToInitializeIntervalSurvey = -999;
+
+    public static String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";
+
     public static String Interval_Sample = "Interval_Sample";
+    public static String Setting_Interval_Sample = "Setting_Interval_Sample";
 
     public static boolean tabpos = false;
 

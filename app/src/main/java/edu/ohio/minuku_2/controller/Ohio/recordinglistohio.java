@@ -76,7 +76,6 @@ public class recordinglistohio extends Activity {
         listview.setEmptyView(findViewById(R.id.emptyView));
 
         try{
-//            locationDataRecords = new ListSessionAsyncTask().execute(mReviewMode).get();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                 new ListSessionAsyncTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get();
@@ -180,6 +179,8 @@ public class recordinglistohio extends Activity {
             try {
 
                 sessions = SessionManager.getRecentSessions();
+
+                //TODO time, timeString, NumofTrips, NumofTripsBeenDisplayed, RawData
 
             }catch (Exception e) {
                 sessions = new ArrayList<Session>();

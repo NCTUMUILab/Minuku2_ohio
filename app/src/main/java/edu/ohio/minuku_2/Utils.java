@@ -22,8 +22,24 @@
 
 package edu.ohio.minuku_2;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Environment;
+import android.util.Log;
+
+import com.opencsv.CSVWriter;
+
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Constants;
 
 /**
  * Created by neera_000 on 3/26/2016.
@@ -32,7 +48,10 @@ import java.util.regex.Pattern;
  */
 public class Utils {
 
-    public static String TAG = "UtilityClass";
+    public static String TAG = "Utils";
+
+    public static CSVWriter csv_writer = null;
+
     /**
      * Given an Email Id as string, encodes it so that it can go into the firebase object without
      * any issues.
@@ -73,6 +92,68 @@ public class Utils {
             return true;
         } catch (NumberFormatException e) {
             return false;
+        }
+    }
+
+    public static void checkinresponseStoreToCSV(long timestamp, Context context, String response){
+
+        String sFileName = "checkInResponse.csv";
+        Log.d("checkinresponse", "entering checkinresponseStoreToCSV ");
+
+        try{
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            SharedPreferences sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
+            Boolean startCheckInResponseOrNot = sharedPrefs.getBoolean("startCheckInResponseOrNot", true);
+
+            if(startCheckInResponseOrNot) {
+                List<String[]> title = new ArrayList<String[]>();
+
+                title.add(new String[]{"timestamp", "timeString",
+                        "deviceid", "email", "userid", "firstcheckin", "currentcheckin", "firstcheckinstr", "currentcheckinstr",
+                        "daysinsurvey", "midnightstart", "surveyrunninghours", "startmidnightstr" });
+
+                csv_writer.writeAll(title);
+
+                sharedPrefs.edit().putBoolean("startCheckInResponseOrNot", false).apply();
+
+            }
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
+
+            JSONObject responseInJson = new JSONObject(response);
+
+            String deviceid = responseInJson.getString("deviceid");
+            String email = responseInJson.getString("email");
+            String userid = responseInJson.getString("userid");
+            String firstcheckin = responseInJson.getString("firstcheckin");
+            String currentcheckin = responseInJson.getString("currentcheckin");
+            String firstcheckinstr = responseInJson.getString("firstcheckinstr");
+            String currentcheckinstr = responseInJson.getString("currentcheckinstr");
+            String daysinsurvey = responseInJson.getString("daysinsurvey");
+            String midnightstart = responseInJson.getString("midnightstart");
+            String surveyrunninghours = responseInJson.getString("surveyrunninghours");
+            String startmidnightstr = responseInJson.getString("startmidnightstr");
+
+            //write transportation mode
+            data.add(new String[]{String.valueOf(timestamp), timeString,
+                    deviceid, email, userid, firstcheckin, currentcheckin, firstcheckinstr, currentcheckinstr,
+                    daysinsurvey, midnightstart, surveyrunninghours, startmidnightstr });
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+            android.util.Log.e(TAG, "exception", e);
         }
     }
 

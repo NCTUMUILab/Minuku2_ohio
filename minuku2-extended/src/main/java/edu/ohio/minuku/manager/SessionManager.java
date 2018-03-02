@@ -183,7 +183,7 @@ public class SessionManager {
 
     public void StoreToCSV(long timestamp, String sessionid, double latitude, double longitude, float accuracy, int TF){
 
-        Log.d(TAG,"StoreToCSV");
+        Log.d(TAG,"TransportationMode_StoreToCSV");
 
         String sFileName = "TripOnChange.csv";
 
@@ -596,7 +596,7 @@ public class SessionManager {
 
     public static void StoreToCSV(long timestamp, int id, String sessionid, double latitude, double longitude, float accuracy, int TF){
 
-//        Log.d(TAG,"StoreToCSV");
+//        Log.d(TAG,"TransportationMode_StoreToCSV");
 
         String sFileName = "CheckIsTrip.csv";
 

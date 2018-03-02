@@ -31,7 +31,7 @@ public class ConnectivityDataRecord implements DataRecord{
     public ConnectivityDataRecord(String NetworkType,boolean IsNetworkAvailable, boolean IsConnected, boolean IsWifiAvailable,
                                   boolean IsMobileAvailable, boolean IsWifiConnected, boolean IsMobileConnected){
         this.creationTime = new Date().getTime();
-//        this.taskDayCount = Constants.TaskDayCount;
+//        this.taskDayCount = Constants.daysInSurvey;
 //        this.hour = getmillisecondToHour(creationTime);
         this.NetworkType = NetworkType;
         this.IsNetworkAvailable = IsNetworkAvailable;

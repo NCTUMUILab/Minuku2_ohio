@@ -96,7 +96,7 @@ public class SessionStreamGenerator extends AndroidStreamGenerator<SessionDataRe
     }
 
     public void StoreToCSV(long timestamp, int sessionid){
-        Log.d(TAG,"StoreToCSV");
+        Log.d(TAG,"TransportationMode_StoreToCSV");
 
         String sFileName = "Sessionid_Log.csv";
 

@@ -31,7 +31,7 @@ public class RingerDataRecord implements DataRecord {
     public RingerDataRecord(String RingerMode, String AudioMode, int StreamVolumeMusic
             , int StreamVolumeNotification, int StreamVolumeRing, int StreamVolumeVoicecall, int StreamVolumeSystem){
         this.creationTime = new Date().getTime();
-//        this.taskDayCount = Constants.TaskDayCount;
+//        this.taskDayCount = Constants.daysInSurvey;
 //        this.hour = getmillisecondToHour(creationTime);
         this.RingerMode = RingerMode;
         this.AudioMode = AudioMode;

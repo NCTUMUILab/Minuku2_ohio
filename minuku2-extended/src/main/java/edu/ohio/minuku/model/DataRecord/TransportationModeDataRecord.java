@@ -20,7 +20,7 @@ public class TransportationModeDataRecord implements DataRecord{
 
     public TransportationModeDataRecord(String ConfirmedActivityType){
         this.creationTime = new Date().getTime();
-//        this.taskDayCount = Constants.TaskDayCount;
+//        this.taskDayCount = Constants.daysInSurvey;
 //        this.hour = getmillisecondToHour(creationTime);
         this.ConfirmedActivityType = ConfirmedActivityType;
     }

@@ -72,19 +72,6 @@ public class sleepingohio extends AppCompatActivity {
                 Toast.makeText(sleepingohio.this,"Please select your wake up time!!", Toast.LENGTH_SHORT).show();
             else {
 
-                //TODO deprecated
-                /*String startTimeInString = starttime.getText().toString();
-                String startTime_without_am_pm = startTimeInString.split(" ")[0];
-                String startTime_am_pm = startTimeInString.split(" ")[1];
-                String startTimeHour = startTime_without_am_pm.split(":")[0];
-                int startTimeHourInt = Integer.valueOf(startTimeHour);
-
-                String endTimeInString = endtime.getText().toString();
-                String endTime_without_am_pm = endTimeInString.split(" ")[0];
-                String endTime_am_pm = endTimeInString.split(" ")[1];
-                String endTimeHour = endTime_without_am_pm.split(":")[0];
-                int endTimeHourInt = Integer.valueOf(endTimeHour);*/
-
                 Intent intent = getIntent();
                 Bundle bundle = new Bundle();
                 bundle.putString("SleepingStartTime", startSleepTimeRaw);

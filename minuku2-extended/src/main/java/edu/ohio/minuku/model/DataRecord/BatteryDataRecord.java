@@ -29,7 +29,7 @@ public class BatteryDataRecord implements DataRecord{
         this.creationTime = new Date().getTime();
         Log.d(TAG, "creationTime : "+creationTime);
         Log.d(TAG, "creationTime String : "+getmillisecondToDateWithTime(creationTime));
-//        this.taskDayCount = Constants.TaskDayCount;
+//        this.taskDayCount = Constants.daysInSurvey;
 //        this.hour = getmillisecondToHour(creationTime);
         this.BatteryLevel = BatteryLevel;
         this.BatteryPercentage = BatteryPercentage;

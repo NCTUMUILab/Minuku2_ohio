@@ -53,7 +53,7 @@ public class RingerDataRecordDAO implements DAO<RingerDataRecord> {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
             values.put(DBHelper.TIME, entity.getCreationTime());
-//            values.put(DBHelper.TaskDayCount, entity.getTaskDayCount());
+//            values.put(DBHelper.daysInSurvey, entity.getTaskDayCount());
 //            values.put(DBHelper.HOUR, entity.getHour());
             values.put(DBHelper.RingerMode_col, entity.getRingerMode());
             values.put(DBHelper.AudioMode_col, entity.getAudioMode());

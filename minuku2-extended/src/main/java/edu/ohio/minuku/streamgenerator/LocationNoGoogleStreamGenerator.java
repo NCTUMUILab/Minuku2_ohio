@@ -419,7 +419,7 @@ public class LocationNoGoogleStreamGenerator extends AndroidStreamGenerator<Loca
             //the lastposition update value timestamp
             long lastposupdate = new Date().getTime();
 
-            StoreToCSV(lastposupdate,location.getLatitude(),location.getLongitude(),location.getAccuracy());
+            TransportationMode_StoreToCSV(lastposupdate,location.getLatitude(),location.getLongitude(),location.getAccuracy());
 
             LocationNoGoogleDataRecord locationNoGoogleDataRecord = new LocationNoGoogleDataRecord(
                     (float) latitude.get(),
@@ -439,7 +439,7 @@ public class LocationNoGoogleStreamGenerator extends AndroidStreamGenerator<Loca
 
     public void StoreToCSV(long timestamp, double latitude, double longitude, float accuracy){
 
-        Log.d(TAG,"StoreToCSV");
+        Log.d(TAG,"TransportationMode_StoreToCSV");
 
         String sFileName = "LocationNoGoogle.csv";
 

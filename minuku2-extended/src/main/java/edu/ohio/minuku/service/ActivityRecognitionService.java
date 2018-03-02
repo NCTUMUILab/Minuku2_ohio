@@ -71,6 +71,8 @@ public class ActivityRecognitionService extends IntentService {
         if (!isServiceRunning()){
             serviceInstance = this;
             Log.d("ARService", "[test AR service start] the servic is not running, start replay");
+
+            //testing the record in csv file
 //            startReplayARRecordTimer();
         }else {
             Log.d("ARService", "[test AR service start] the servic is arleady running, do not start replay");
@@ -286,11 +288,11 @@ public class ActivityRecognitionService extends IntentService {
     public void StoreToCSV(long timestamp, ActivityRecognitionDataRecord received_AR, ActivityRecognitionDataRecord latest_AR){
 
         String sFileName = "TransportationMode.csv";
-        Log.d("ARService", "[test replay] StoreToCSV entering StoreToCSV ");
+        Log.d("ARService", "[test replay] TransportationMode_StoreToCSV entering TransportationMode_StoreToCSV ");
 
         try{
             File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
-            Log.d("ARService", "[test replay] StoreToCSV after root");
+            Log.d("ARService", "[test replay] TransportationMode_StoreToCSV after root");
             if (!root.exists()) {
                 root.mkdirs();
             }
@@ -301,13 +303,13 @@ public class ActivityRecognitionService extends IntentService {
 
             String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
 
-            Log.d("ARService", "[test replay] StoreToCSV before definint string");
+            Log.d("ARService", "[test replay] TransportationMode_StoreToCSV before definint string");
             String rec_AR_String = "";
             String latest_AR_String = "";
             String transportation = "";
             String state = "";
 
-            Log.d("ARService", "[test replay] StoreToCSV receive AR is " + received_AR.toString());
+            Log.d("ARService", "[test replay] TransportationMode_StoreToCSV receive AR is " + received_AR.toString());
 
             if (received_AR!=null){
 
@@ -323,7 +325,7 @@ public class ActivityRecognitionService extends IntentService {
 
                 }
 
-                Log.d("ARService", "[test replay] StoreToCSV writing receive AR CSV " +  rec_AR_String);
+                Log.d("ARService", "[test replay] TransportationMode_StoreToCSV writing receive AR CSV " +  rec_AR_String);
             }
 
             if (latest_AR!=null){
@@ -338,10 +340,10 @@ public class ActivityRecognitionService extends IntentService {
                     latest_AR_String += activity.getConfidence();
 
                 }
-                Log.d("ARService", "[test replay] StoreToCSV writing latest AR data to CSV " + latest_AR_String);
+                Log.d("ARService", "[test replay] TransportationMode_StoreToCSV writing latest AR data to CSV " + latest_AR_String);
             }
 
-            Log.d("ARService", "[test replay] StoreToCSV writing data to CSV");
+            Log.d("ARService", "[test replay] TransportationMode_StoreToCSV writing data to CSV");
 
             //write transportation mode
             data.add(new String[]{String.valueOf(timestamp), timeString, rec_AR_String, latest_AR_String, transportation, state, "", "", ""});

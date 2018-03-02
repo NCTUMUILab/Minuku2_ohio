@@ -305,32 +305,6 @@ public class MinukuStreamManager implements StreamManager {
 
                     }
 
-                    /**
-                     * if the last activity is walking and the new one is not, we will need to cancel the walking survey if it existed.
-                     * **/
-                    if(this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT)){
-
-                        Log.d(TAG, "test canceling: the previous activity is on_foot");
-
-                        cancelWalkingSurveyFlag = true;
-
-                    }
-
-                    /**
-                     * if the new activity is walking, we will need to cancel the walking survey if it existed.
-                     * **/
-                    if(transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT)){
-
-                        Log.d(TAG, "the new activity is on_foot");
-
-                        LocationStreamGenerator.startIndoorOutdoor = true;
-
-                    }else{
-                        LocationStreamGenerator.startIndoorOutdoor = false;
-                    }
-
-                    Log.d(TAG, "test canceling: now cancelWalkingSurveyFlag is :"+ cancelWalkingSurveyFlag);
-
                 }
 
                 //if we need to add a session
@@ -353,6 +327,36 @@ public class MinukuStreamManager implements StreamManager {
                     SessionManager.startNewSession(session);
 
                 }
+
+                /**
+                 * if the last activity is walking and the new one is not, we will need to cancel the walking survey if it existed.
+                 * **/
+                if(this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT) &&
+                    !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT)){
+
+                    Log.d(TAG, "test canceling: the previous activity is on_foot");
+
+                    cancelWalkingSurveyFlag = true;
+
+                }
+
+                /**
+                 * if the new activity is walking, we will need to keep add the location into the ArrayList "locForIndoorOutdoor" in LocationStreamGenerator.
+                 * **/
+                if(transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT)){
+
+                    Log.d(TAG, "the new activity is on_foot");
+
+                    LocationStreamGenerator.startIndoorOutdoor = true;
+
+                }else{
+                    LocationStreamGenerator.startIndoorOutdoor = false;
+                }
+
+                Log.d(TAG, "test canceling: now startIndoorOutdoor is :"+ LocationStreamGenerator.startIndoorOutdoor);
+
+                Log.d(TAG, "test canceling: now cancelWalkingSurveyFlag is :"+ cancelWalkingSurveyFlag);
+
 
 
             }
