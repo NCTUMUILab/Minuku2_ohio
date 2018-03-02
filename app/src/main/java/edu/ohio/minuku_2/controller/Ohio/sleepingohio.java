@@ -27,6 +27,10 @@ public class sleepingohio extends AppCompatActivity {
 
     private Context mContext;
     private Button starttime, endtime, confirm;
+    private final static int TIME_PICKER_INTERVAL = 30;
+
+    private String startSleepTimeRaw, endSleepTimeRaw;
+
 
     public sleepingohio(){}
 
@@ -36,7 +40,7 @@ public class sleepingohio extends AppCompatActivity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.settingohio);
+        setContentView(R.layout.settingsleeptimepage);
 
         initsettingohio();
 
@@ -67,10 +71,11 @@ public class sleepingohio extends AppCompatActivity {
             else if(endtime.getText().equals("Please select your wake up time"))
                 Toast.makeText(sleepingohio.this,"Please select your wake up time!!", Toast.LENGTH_SHORT).show();
             else {
+
                 Intent intent = getIntent();
                 Bundle bundle = new Bundle();
-                bundle.putString("SleepingStartTime",starttime.getText().toString());
-                bundle.putString("SleepingEndTime",endtime.getText().toString());
+                bundle.putString("SleepingStartTime", startSleepTimeRaw);
+                bundle.putString("SleepingEndTime", endSleepTimeRaw);
                 intent.putExtras(bundle);
                 setResult(1, intent);
                 sleepingohio.this.finish();
@@ -85,25 +90,41 @@ public class sleepingohio extends AppCompatActivity {
             final Calendar c = Calendar.getInstance();
             int hour = c.get(Calendar.HOUR_OF_DAY);
             int minute = c.get(Calendar.MINUTE);
-            new TimePickerDialog(sleepingohio.this, new TimePickerDialog.OnTimeSetListener(){
+            new CustomTimePickerDialog(sleepingohio.this, new TimePickerDialog.OnTimeSetListener(){
                 @Override
                 public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 
                     String hour=String.valueOf(hourOfDay);
                     String min =String.valueOf(minute);
+                    String am_pm;
+
+                    startSleepTimeRaw = hour + ":" + min;
+
+                    if(hourOfDay < 12)
+                        am_pm = "am";
+                    else
+                        am_pm = "pm";
+
                     if(hourOfDay<10)
                         hour = "0" + String.valueOf(hourOfDay);
+                    else if(hourOfDay > 12) {
+//                        hour = String.valueOf(hourOfDay - 12);
+                        hourOfDay = hourOfDay - 12;
+
+                        if(hourOfDay<10)
+                            hour = "0" + String.valueOf(hourOfDay);
+                        else
+                            hour = String.valueOf(hourOfDay);
+
+                    }
 
                     if(minute<10)
                         min = "0" + String.valueOf(minute);
 
-                    starttime.setText( hour + ":" + min);
-
-                    /*SharedPreferences.Editor editor = getSharedPreferences("edu.umich.si.inteco.minuku_2", MODE_PRIVATE).edit();
-                    editor.putString("SleepingStartTime",starttime.getText().toString());
-                    editor.commit();*/
+                    starttime.setText( hour + ":" + min + " " + am_pm);
 
                 }
+
             }, hour, minute, false).show();
 
         }
@@ -116,23 +137,37 @@ public class sleepingohio extends AppCompatActivity {
             final Calendar c = Calendar.getInstance();
             int hour = c.get(Calendar.HOUR_OF_DAY);
             int minute = c.get(Calendar.MINUTE);
-            new TimePickerDialog(sleepingohio.this, new TimePickerDialog.OnTimeSetListener(){
+            new CustomTimePickerDialog(sleepingohio.this, new TimePickerDialog.OnTimeSetListener(){
                 @Override
                 public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 
                     String hour=String.valueOf(hourOfDay);
                     String min =String.valueOf(minute);
+                    String am_pm;
+
+                    endSleepTimeRaw = hour + ":" + min;
+
+                    if(hourOfDay < 12)
+                        am_pm = "am";
+                    else
+                        am_pm = "pm";
+
                     if(hourOfDay<10)
                         hour = "0" + String.valueOf(hourOfDay);
+                    else if(hourOfDay > 12) {
+//                        hour = String.valueOf(hourOfDay - 12);
+                        hourOfDay = hourOfDay - 12;
 
+                        if(hourOfDay<10)
+                            hour = "0" + String.valueOf(hourOfDay);
+                        else
+                            hour = String.valueOf(hourOfDay);
+
+                    }
                     if(minute<10)
                         min = "0" + String.valueOf(minute);
 
-                    endtime.setText( hour + ":" + min);
-
-                    /*SharedPreferences.Editor editor = getSharedPreferences("edu.umich.si.inteco.minuku_2", MODE_PRIVATE).edit();
-                    editor.putString("SleepingEndTime",endtime.getText().toString());
-                    editor.commit();*/
+                    endtime.setText( hour + ":" + min + " " + am_pm);
 
                 }
             }, hour, minute, false).show();

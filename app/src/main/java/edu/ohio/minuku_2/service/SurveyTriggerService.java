@@ -4,7 +4,6 @@ import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -18,7 +17,6 @@ import android.location.Location;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
@@ -41,8 +39,6 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,16 +49,10 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import edu.ohio.minuku.DataHandler;
 import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.DataHandler;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
@@ -88,103 +78,24 @@ public class SurveyTriggerService extends Service {
 
     private static final String TAG = "SurveyTriggerService";
 
-    //public ContextManager mContextManager; //TODO might be removed for the new logic in this code.
     private static Context serviceInstance;
-    private static Handler mMainThread;
     private static Context mContext;
-    Intent intent = new Intent();
-    private ProgressDialog loadingProgressDialog;
 
-    private static AlarmManager mAlarmManager;
-
-    ScheduledFuture<?> scheduledFuture= null;
     private ScheduledExecutorService mScheduledExecutorService;
-    public static final int REFRESH_FREQUENCY = 10; //10s, 10000ms TODO convert to 60 * 5
+    public static final int REFRESH_FREQUENCY = 10; //20s, 10000ms TODO convert to 20s
     public static final int BACKGROUND_RECORDING_INITIAL_DELAY = 0;
 
-    private final int URL_TIMEOUT = 5 * 1000; //TODO try 5s
-
-    public static final int HTTP_TIMEOUT = 10000; // millisecond
-    public static final int SOCKET_TIMEOUT = 20000; // millisecond
-
-    private float latitude;
-    private float longitude;
-    private float accuracy;
+    private final int URL_TIMEOUT = 5 * 1000;
 
     private String userid;
 
-    private int home = 0;
-    private int neighbor = 0;
-    private int outside = 0;
-    private float dist=0;
-    private long nowtime=0;
-    private long lastTimeSend_HomeMove=0;
-    private long lastTimeSend_HomeNotMove=0;
-    private long lastTimeSend_NearHomeMove=0;
-    private long lastTimeSend_NearHomeNotMove=0;
-    private long lastTimeSend_FarawayMove=0;
-    private long lastTimeSend_FarawayNotMove=0;
-
-    private float diffTime_HomeMove=0;
-    private float diffTime_HomeNotMove=0;
-    private float diffTime_NearHomeMove=0;
-    private float diffTime_NearHomeNotMove=0;
-    private float diffTime_FarawayMove=0;
-    private float diffTime_FarawayNotMove=0;
-
-    final private double period_onehalfHour = 1.5;
-
-    final private double period_HomeMove = period_onehalfHour; //1;  //0.1 = 6min, 1 = 60min
-    final private double period_HomeNotMove = period_onehalfHour; //1;
-    final private double period_NearHomeMove = period_onehalfHour; //0.5; //0.5
-    final private double period_NearHomeNotMove = period_onehalfHour; //0.5;
-    final private double period_FarawayMove = period_onehalfHour; //0.5;
-    final private double period_FarawayNotMove = period_onehalfHour; //0.5;
-
-    private int daily_count_HomeMove = 0;
-    private int daily_count_HomeNotMove = 0;
-    private int daily_count_NearHomeMove = 0;
-    private int daily_count_NearHomeNotMove = 0;
-    private int daily_count_FarawayMove = 0;
-    private int daily_count_FarawayNotMove = 0;
-
-    private int countforResponsed = 0;
-
-    private int probability_low_HomeMove = 10;
-    private int probability_normal_HomeMove = 30;
-    private int probability_high_HomeMove = 50;
-
-    private int probability_low_HomeNotMove = 10;
-    private int probability_normal_HomeNotMove = 30;
-    private int probability_high_HomeNotMove = 50;
-
-    private int probability_low_NearHomeMove = 20;
-    private int probability_normal_NearHomeMove = 40;
-    private int probability_high_NearHomeMove = 60;
-
-    private int probability_low_NearHomeNotMove = 20;
-    private int probability_normal_NearHomeNotMove = 40;
-    private int probability_high_NearHomeNotMove = 60;
-
-    private int probability_low_FarawayMove = 30;
-    private int probability_normal_FarawayMove = 50;
-    private int probability_high_FarawayMove = 70;
-
-    private int probability_low_FarawayNotMove = 30;
-    private int probability_normal_FarawayNotMove = 50;
-    private int probability_high_FarawayNotMove = 70;
-
     private static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
-
-    private final long One_Hour_In_milliseconds = 60 * 60 * 1000;
 
     private static String today;
     private String lastTimeSend_today;
-    private int current_hour;
-    private int last_hour;
 
     private int notifyID = 1;
-    private int qua_notifyID = 2;
+    private int walk_notifyID = 2;
     private int interval_notifyID = 3; //used to 3
     //qua is equal to interval now
 
@@ -198,7 +109,6 @@ public class SurveyTriggerService extends Service {
     private int walk_second_sampled;
     private int walk_third_sampled;
 
-    private int countingTimeForIndoorOutdoor;
     private boolean sameTripPrevent;
 
     private long last_Survey_Time;
@@ -219,31 +129,37 @@ public class SurveyTriggerService extends Service {
     private int weekNum, dailySurveyNum, dailyResponseNum;
 
     private final String link = "https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";//"https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";
-    private String inhome_test = "";
-//    private String NotificationText = "Please click to fill the questionnaire";
 
     private String curr =  getDateCurrentTimeZone(new Date().getTime());
     private String apikeyfortesting = "TiKLVvkv4m1XTWhmIjCx4A464jBTP0ZE";
     private String testUrl = "https://api.mlab.com/api/1/databases/mobility_study/collections/real_time?apiKey="+apikeyfortesting;
 
+    private final int dist_Lowerbound_Outdoorwalking = 50;
+    private final int dist_Upperbound_Outdoorwalking = 150;
+
     private NotificationManager mNotificationManager;
 
+    private String noti_random = "random";
+    private String noti_walk = "walk";
 
     public static CheckFamiliarOrNotStreamGenerator checkFamiliarOrNotStreamGenerator;
 
     private static SharedPreferences sharedPrefs;
 
+    public SurveyTriggerService(){}
+
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
+
+        unregisterActionAlarmReceiver();
+        unregisterSettingIntervalSampleAlarmReceiver();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
-
-    public SurveyTriggerService(){}
 
     @Override
     public void onCreate(){
@@ -260,9 +176,9 @@ public class SurveyTriggerService extends Service {
 
         transportation = "NA";
 
-        last_hour = sharedPrefs.getInt("last_hour",-99);
         lastTimeSend_today = sharedPrefs.getString("lastTimeSend_today","NA");
-        isServiceRunning = sharedPrefs.getBoolean("isServiceRunning", false);
+
+        isServiceRunning = false;
 
         interval_sampled = sharedPrefs.getInt("interval_sampled", 0);
 
@@ -270,27 +186,20 @@ public class SurveyTriggerService extends Service {
 
         sameTripPrevent = sharedPrefs.getBoolean("sameTripPrevent", false);
 
-        countingTimeForIndoorOutdoor = sharedPrefs.getInt("countingTimeForIndoorOutdoor", 0);
-
         time_base = ScheduleAndSampleManager.getCurrentTimeInMillis();
 
         mScheduledExecutorService = Executors.newScheduledThreadPool(REFRESH_FREQUENCY);
 
-        mAlarmManager = (AlarmManager)mContext.getSystemService( mContext.ALARM_SERVICE );
+//        mAlarmManager = (AlarmManager)mContext.getSystemService( mContext.ALARM_SERVICE );
 
         registerActionAlarmReceiver();
-
-        createCSV();
+        registerSettingIntervalSampleAlarmReceiver();
 
         try {
             checkFamiliarOrNotStreamGenerator = (CheckFamiliarOrNotStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(CheckFamiliarOrNotDataRecord.class);
         }catch(StreamNotFoundException e){
             Log.e(TAG,"checkFamiliarOrNotStreamGenerator haven't created yet.");
         }
-    }
-
-    public static Context setCheckFamiliarOrNotService(){
-        return serviceInstance;
     }
 
     public static Context getInstance() {
@@ -316,14 +225,6 @@ public class SurveyTriggerService extends Service {
             userid = Constants.DEVICE_ID;
         }
 
-        daily_count_HomeMove = sharedPrefs.getInt("daily_count_HomeMove", 0);
-        daily_count_HomeNotMove = sharedPrefs.getInt("daily_count_HomeNotMove", 0);
-        daily_count_NearHomeMove = sharedPrefs.getInt("daily_count_NearHomeMove", 0);
-        daily_count_NearHomeNotMove = sharedPrefs.getInt("daily_count_NearHomeNotMove", 0);
-        daily_count_FarawayMove = sharedPrefs.getInt("daily_count_FarawayMove", 0);
-        daily_count_FarawayNotMove = sharedPrefs.getInt("daily_count_FarawayNotMove", 0);
-
-        last_hour = sharedPrefs.getInt("last_hour",-99);
         lastTimeSend_today = sharedPrefs.getString("lastTimeSend_today","NA");
         interval_sampled = sharedPrefs.getInt("interval_sampled", 0);
         alarmregistered = sharedPrefs.getBoolean("alarmregistered",false);
@@ -332,23 +233,34 @@ public class SurveyTriggerService extends Service {
 
         Log.d(TAG, "onStartCommand");
 
-        if(!isServiceRunning)
+        if(!isServiceRunning) {
+
+            //we use an alarm to keep the service awake
+            AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+            alarm.set(
+                    AlarmManager.RTC_WAKEUP,
+                    System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+                    PendingIntent.getService(this, 0, new Intent(this, SurveyTriggerService.class), 0)
+            );
+
             startService();
 
-//        return START_STICKY;
-        return START_REDELIVER_INTENT;
+            isServiceRunning = true;
+
+        }
+        else {
+            Log.d(TAG, "test AR service start test combine the service is restarted! the service is running");
+//            isServiceRunning = false;
+        }
+
+        return START_STICKY;
+//        return START_REDELIVER_INTENT;
     }
 
 
     public void startService(){
 
-        SharedPreferences.Editor editor = getSharedPreferences("isServiceRunning", MODE_PRIVATE).edit();
-        editor.putBoolean("isServiceRunning", true);
-        editor.commit();
-
         Log.d(TAG,"startService");
-
-//        isServiceRunning = true;
 
         runMainThread();
 
@@ -358,13 +270,8 @@ public class SurveyTriggerService extends Service {
 
         Log.d(TAG,"runMainThread");
 
-        if(scheduledFuture!= null)
-            scheduledFuture.cancel(true);
-
-        Log.d(TAG,"scheduledFuture is not null : " + (scheduledFuture != null));
-
-        scheduledFuture = mScheduledExecutorService.scheduleAtFixedRate(
-                CheckFamiliarOrNotRunnable,
+        mScheduledExecutorService.scheduleAtFixedRate(
+                RunningForGivingSurveyOrNot,
                 BACKGROUND_RECORDING_INITIAL_DELAY,
                 REFRESH_FREQUENCY,
                 TimeUnit.SECONDS);
@@ -447,9 +354,9 @@ public class SurveyTriggerService extends Service {
 
         }else {
             //default is not working.
-//            startTime = getSpecialTimeInMillis(yMdformat+" "+sleepingendTime+":00");
+            startTime = getSpecialTimeInMillis(yMdformat+" "+sleepingendTime+":00");
 
-            startTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+//            startTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
 
             //make sure that the user will not get any notification to day.
             if(startTime > endTime){
@@ -537,14 +444,11 @@ public class SurveyTriggerService extends Service {
 
                 //for the reset one
                 AlarmManager alarmManager = (AlarmManager)mContext.getSystemService( mContext.ALARM_SERVICE );
-
-//                mAlarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
                 alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
 
                 //update the latest request_code to be the last request_code.
                 sharedPrefs.edit().putInt("last_request_code_"+i, request_code).apply();
                 sharedPrefs.edit().putString("sampled_times_"+i, getTimeString(time)).apply();
-//                sharedPrefs.edit().apply();
             }
 
         }
@@ -576,9 +480,11 @@ public class SurveyTriggerService extends Service {
         }
     }
 
-    Runnable CheckFamiliarOrNotRunnable = new Runnable() {
+    Runnable RunningForGivingSurveyOrNot = new Runnable() {
         @Override
         public void run() {
+
+            Log.d(TAG, "RunningForGivingSurveyOrNot");
 
             userid = Constants.DEVICE_ID;
 
@@ -586,10 +492,9 @@ public class SurveyTriggerService extends Service {
             participantID = sharedPrefs.getString("userid", "NA");
             groupNum = sharedPrefs.getString("groupNum", "NA");
             weekNum = sharedPrefs.getInt("weekNum", 0);
-            dailySurveyNum = sharedPrefs.getInt("dailySurveyNum", 0);
+//            dailySurveyNum = sharedPrefs.getInt("dailySurveyNum", 0);
+            dailySurveyNum = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
             dailyResponseNum = sharedPrefs.getInt("dailyResponseNum", 0);
-
-            Log.d(TAG, "CheckFamiliarOrNotRunnable");
 
             //check if the
             Date curDate = new Date(System.currentTimeMillis());
@@ -597,15 +502,13 @@ public class SurveyTriggerService extends Service {
             SimpleDateFormat df = new SimpleDateFormat(dateformat);
             today = df.format(curDate);
 
-
             /** setting third of the day**/
 
             //get sleep time and get up time from sharedpreference
-            //TODO set it back to startSleepingTime: 22:00 and endSleepingTime: 08:00
             String startSleepingTime = sharedPrefs.getString("SleepingStartTime","22:00");
             String endSleepingTime = sharedPrefs.getString("SleepingEndTime","08:00");
 
-            Log.d(TAG,"startSleepingTime : "+ startSleepingTime + "endSleepingTime : "+ endSleepingTime);
+            Log.d(TAG,"startSleepingTime : "+ startSleepingTime + " endSleepingTime : "+ endSleepingTime);
 
             //calculate the bed time and gettime for today
             long bedTime = getSpecialTimeInMillis(today+" "+startSleepingTime+":00");
@@ -619,26 +522,29 @@ public class SurveyTriggerService extends Service {
             //the amount for each third
             long third_interval = (awakeTime)/3;
 
+            Log.d(TAG, "third_interval is " + third_interval);
+
             //the endtime of the first, second, third third
             long endOfFirstThird = startDay_settingthird + third_interval;
             long endOfSecondThird = startDay_settingthird + third_interval * 2;
             long endOfThirdThird = startDay_settingthird + third_interval * 3;
 
-            current_hour = getCurrentHour();
-
             Log.d(TAG, "today is " + today);
+            Log.d(TAG, "endOfFirstThird is " + endOfFirstThird);
+            Log.d(TAG, "endOfSecondThird is " + endOfSecondThird);
+            Log.d(TAG, "endOfThirdThird is " + endOfThirdThird);
 
             //initialize
-            home = 0;
-            neighbor = 0;
-            outside = 0;
-            dist = 0;
             testingserverThenFail = false;
 
             Log.d(TAG, "userid: " + userid);
 
             //after a day
             if (!lastTimeSend_today.equals(today)) {
+
+                sharedPrefs.edit().putString("mobileMissedCount", "").apply();
+                sharedPrefs.edit().putString("randomMissedCount", "").apply();
+                sharedPrefs.edit().putString("OpenCount", "").apply();
 
                 walkoutdoor_sampled = 0;
                 sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
@@ -663,66 +569,112 @@ public class SurveyTriggerService extends Service {
                 last_Walking_Survey_Time = -999;
                 sharedPrefs.edit().putLong("last_Walking_Survey_Time", last_Walking_Survey_Time).apply();
 
+                //TODO moved to the DateChangedReceiver check it is work.
                 //default
-                settingIntervalSampling(-9999);
+//                settingIntervalSampling(-9999);
 
-                //setting up the parameter for the surveu linkg
+                //setting up the parameter for the survey link
                 setUpSurveyLink();
 
             }
 
-            //temporaily remove the trigger limit
-            if (!checkSleepingTime()) {
+            //checking to reset the InitializeIntervalSurveyTimeReceiver
+            boolean resetIntervalSurveyFlag = sharedPrefs.getBoolean("resetIntervalSurveyFlag", false);
+            Log.d(TAG, "resetIntervalSurveyFlag : " + resetIntervalSurveyFlag);
+            if(resetIntervalSurveyFlag){
+
+                //reset the InitializeIntervalSurveyTimeReceiver
+                unregisterSettingIntervalSampleAlarmReceiver();
+
+                registerSettingIntervalSampleAlarmReceiver();
+
+                sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", false).apply();
+            }
+
+            //temporarily remove the trigger limit
+            if (!InSleepingTime()) {
+
+                Log.d(TAG, "it's not sleeping time");
 
                 /** see if the user is walking in the last minute **/
                 long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
                 long lastminute = now - Constant.MILLISECONDS_PER_MINUTE;
 
                 //1. we get walking session
-                int sessionId = SessionManager.getOngoingSessionIdList().get(0);
-                Session session = SessionManager.getSession(sessionId);
+                //try : prevent the situation that the session hasn't created
+                try{
 
-                //see if the session is walking session
-                ArrayList<Annotation> annotations = session.getAnnotationsSet().getAnnotationByContent(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT);
+                    int sessionId = SessionManager.getOngoingSessionIdList().get(0);
+                    Session session = SessionManager.getSession(sessionId);
 
-                //session startTime
-                long sessionStarTime = session.getStartTime();
+                    Log.d(TAG, "sessionId : " + sessionId);
 
+                    //see if the session is walking session
+                    ArrayList<Annotation> annotations = session.getAnnotationsSet().getAnnotationByContent(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT);
 
-                //if the session is on foot and has lasted for  one minute
-                if (annotations.size() > 0  && sessionStarTime < lastminute && isWalkingOutdoor(lastminute, now)) {
-                    Log.d(TAG, "[test sampling] the user has been walking for a miunute");
+                    //session startTime
+                    long sessionStartTime = session.getStartTime();
 
-                    walkoutdoor_sampled = sharedPrefs.getInt("walkoutdoor_sampled", 0);
+                    //if the session is on foot and has lasted for one minute
+                    if (annotations.size() > 0  && sessionStartTime < lastminute && isWalkingOutdoor(lastminute, now)) {
+                        Log.d(TAG, "[test sampling] the user has been walking for a minute");
 
-                    //the user is walking outdoor we need to trigger a survey
-                    if (walkoutdoor_sampled < 3 && sameTripPrevent == false) {
+                        walkoutdoor_sampled = sharedPrefs.getInt("walkoutdoor_sampled", 0);
 
-                        //determine whether to send a walking triggeted survey by checking whether there has triggered one survey before
-                       boolean sendSurveyFlag = true;
+                        //the user is walking outdoor we need to trigger a survey
+                        if (walkoutdoor_sampled < 3 && sameTripPrevent == false) {
 
-                        if (now <= endOfFirstThird) {
-                            if (walk_first_sampled >= 1)
-                                sendSurveyFlag = false;
-                        } else if (now <= endOfSecondThird && now > endOfFirstThird) {
-                            if (walk_second_sampled >= 1)
-                                sendSurveyFlag = false;
-                        } else if (now <= endOfThirdThird && now > endOfSecondThird) {
-                            if (walk_third_sampled >= 1)
-                                sendSurveyFlag = false;
-                        }
+                            //determine whether to send a walking triggered survey by checking whether there has triggered one survey before
+                            boolean sendSurveyFlag = true;
 
-                        //send notification
-                        if (sendSurveyFlag){
-                            if (timeForSurvey())
-                                triggerWalkingSurvey(endOfFirstThird, endOfSecondThird, endOfFirstThird);
+                            if (now <= endOfFirstThird) {
+                                if (walk_first_sampled >= 1)
+                                    sendSurveyFlag = false;
+                            } else if (now <= endOfSecondThird && now > endOfFirstThird) {
+                                if (walk_second_sampled >= 1)
+                                    sendSurveyFlag = false;
+                            } else if (now <= endOfThirdThird && now > endOfSecondThird) {
+                                if (walk_third_sampled >= 1)
+                                    sendSurveyFlag = false;
+                            }
+
+                            //send notification
+                            if (sendSurveyFlag){
+                                if (isTimeForSurvey(noti_walk))
+                                    triggerWalkingSurvey(endOfFirstThird, endOfSecondThird, endOfFirstThird);
+                            }
+
                         }
 
                     }
 
+                }catch (IndexOutOfBoundsException e){
+                    e.printStackTrace();
+//                    Log.e(TAG, "exception", e);
                 }
+
+                Log.d(TAG, "cancelWalkingSurveyFlag : "+MinukuStreamManager.cancelWalkingSurveyFlag);
+
                 //TODO: if the walking has ended, we should dismiss the notification
-//                    mNotificationManager.cancel(qua_notifyID);
+                if(MinukuStreamManager.cancelWalkingSurveyFlag){
+                    try{
+                        Log.d(TAG, "Notification canceling");
+
+                        mNotificationManager.cancel(walk_notifyID);
+
+                        Log.d(TAG, "Notification should be canceled");
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        Log.d(TAG, "No previous walking survey yet.");
+                    }finally {
+
+                        Log.d(TAG, "Set the cancelWalkingSurveyFlag back to false");
+                        MinukuStreamManager.cancelWalkingSurveyFlag = false;
+                    }
+                }
+
+            }else{
+                Log.d(TAG, "InSleepingTime true.");
             }
             StoreToCSV(new Date().getTime(), interval_sampled, walkoutdoor_sampled, walk_first_sampled, walk_second_sampled, walk_third_sampled);
 
@@ -730,7 +682,7 @@ public class SurveyTriggerService extends Service {
     };
 
 
-    private boolean timeForSurvey() {
+    private boolean isTimeForSurvey(String noti_type) {
 
         long now  = ScheduleAndSampleManager.getCurrentTimeInMillis();
         boolean isTimeToSendSurvey = false;
@@ -738,10 +690,25 @@ public class SurveyTriggerService extends Service {
         //set the default 0 so that we can send the first survey
         long last_Survey_Time =sharedPrefs.getLong("last_Survey_Time", 0 );
 
-        if ( now - last_Survey_Time > Constants.MILLISECONDS_PER_HOUR
-                && now - last_Walking_Survey_Time > 2 * Constants.MILLISECONDS_PER_HOUR) {
+        Log.d(TAG, "last_Survey_Time : "+last_Survey_Time);
 
-            isTimeToSendSurvey = true;
+        //every notification have to check if the last one is in a hour
+        //and the days in survey is not 0 and -1, meaning that its not the first day the user download the app
+        if ( now - last_Survey_Time > Constants.MILLISECONDS_PER_HOUR
+                && Constants.daysInSurvey == 0 && Constants.daysInSurvey == -1 ) {
+
+            //if it is a walking notification, checking if the last walking time is in two hour.
+            if(noti_type.equals(noti_walk)){
+
+                if(now - last_Walking_Survey_Time > 2 * Constants.MILLISECONDS_PER_HOUR){
+
+                    isTimeToSendSurvey = true;
+                }
+
+            }else {
+
+                isTimeToSendSurvey = true;
+            }
         }
         return isTimeToSendSurvey;
 
@@ -752,9 +719,10 @@ public class SurveyTriggerService extends Service {
      *
      */
     private void setUpSurveyLink() {
+        Log.d(TAG, "setUpSurveyLink");
 
         //Counting the day of the experiments
-        int TaskDayCount = sharedPrefs.getInt("TaskDayCount", Constants.TaskDayCount);
+        int TaskDayCount = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
         TaskDayCount++;
 
         if ((TaskDayCount - 1) % 7 == 0) { //1, 8, 15
@@ -768,7 +736,7 @@ public class SurveyTriggerService extends Service {
         dailyResponseNum = 0;
 
 
-        sharedPrefs.edit().putInt("TaskDayCount", TaskDayCount).apply();
+        sharedPrefs.edit().putInt("daysInSurvey", TaskDayCount).apply();
         sharedPrefs.edit().putInt("weekNum", weekNum).apply();
         sharedPrefs.edit().putInt("dailySurveyNum", dailySurveyNum).apply();
         sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
@@ -779,23 +747,36 @@ public class SurveyTriggerService extends Service {
     /**
      *
      */
-    private void sendSurveyLink() {
+    private void sendSurveyLink(String noti_type) {
 
         //cancel the survey if it exists
+        //the new notification should replace the old one even if it is not the same id.
         try{
-            mNotificationManager.cancel(qua_notifyID);
-        }catch (Exception e ){
+            mNotificationManager.cancel(walk_notifyID);
+        }catch (Exception e){
             e.printStackTrace();
-            android.util.Log.e(TAG, "exception", e);
+            Log.d(TAG, "no old walking notification");
+//            Log.e(TAG, "exception", e);
         }
 
-        intervalQualtrics();
-        addSurveyLinkToDB();
+        try{
+            mNotificationManager.cancel(interval_notifyID);
+        }catch (Exception e){
+            e.printStackTrace();
+            Log.d(TAG, "no old random notification");
+//            Log.e(TAG, "exception", e);
+        }
+
+        triggerQualtrics(noti_type);
+        addSurveyLinkToDB(noti_type);
 
         //after we send out the survey decrease the needed number for the interval_sample_number
         interval_sample_number--;
         sharedPrefs.edit().putInt("interval_sample_number", interval_sample_number).apply();
 
+        //update the last survey time
+        last_Survey_Time = new Date().getTime();
+        sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
     }
 
 
@@ -821,9 +802,9 @@ public class SurveyTriggerService extends Service {
     private void triggerIntervalSurvey() {
 
         //send survey
-        sendSurveyLink();
+        sendSurveyLink(noti_random);
 
-        //after sending survey, updatge the preference
+        //after sending survey, update the preference
         interval_sampled++;
         sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
 
@@ -836,15 +817,10 @@ public class SurveyTriggerService extends Service {
             cancelAlarmAll(mContext);
         }
 
-        //update the last survey time
-        last_Survey_Time = new Date().getTime();
-        sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
-
+        //no need to set the next interval time because it is belonging to interval survey.
 //        setUpNextIntervalSurvey();
 
-
     }
-
 
     /**
      *
@@ -857,7 +833,7 @@ public class SurveyTriggerService extends Service {
         long currentTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
 
         //send survey
-        sendSurveyLink();
+        sendSurveyLink(noti_walk);
 
         //after sending survey, updatge the preference
         walkoutdoor_sampled++;
@@ -882,15 +858,15 @@ public class SurveyTriggerService extends Service {
         sameTripPrevent = true;
         sharedPrefs.edit().putBoolean("sameTripPrevent", sameTripPrevent).apply();
 
-//        setUpNextIntervalSurvey();
+        setUpNextIntervalSurvey();
 
     }
 
 
     public boolean isWalkingOutdoor(long walkingStarTime, long walkingEndtime) {
 
+        Log.d(TAG, "isWalkingOutdoor");
 
-        boolean isWalkingOutdoor = false;
         //get locations in the last minute
         ArrayList<LatLng> latlngs = getLocationRecordInLastMinute(walkingStarTime, walkingEndtime);
 
@@ -898,12 +874,16 @@ public class SurveyTriggerService extends Service {
         double dist = calculateTotalDistanceOfPath(latlngs);
 
         //50 < dist < 150 means walking outdoor
-        if(dist >= 50 && dist <= 150){
+        if(dist >= dist_Lowerbound_Outdoorwalking && dist <= dist_Upperbound_Outdoorwalking){
+            Log.d(TAG, "isWalkingOutdoor true");
+
             return true;
         }
-        else
-            return false;
+        else {
+            Log.d(TAG, "isWalkingOutdoor false");
 
+            return false;
+        }
     }
 
 
@@ -936,48 +916,6 @@ public class SurveyTriggerService extends Service {
         inputStream.close();
         return result;
 
-    }
-
-    /***
-     * trust all hsot....
-     */
-    private void trustAllHosts() {
-
-        X509TrustManager easyTrustManager = new X509TrustManager() {
-
-            public void checkClientTrusted(
-                    X509Certificate[] chain,
-                    String authType) throws CertificateException {
-                // Oh, I am easy!
-            }
-
-            public void checkServerTrusted(
-                    X509Certificate[] chain,
-                    String authType) throws CertificateException {
-                // Oh, I am easy!
-            }
-
-            public X509Certificate[] getAcceptedIssuers() {
-                return null;
-            }
-
-
-        };
-
-        // Create a trust manager that does not validate certificate chains
-        TrustManager[] trustAllCerts = new TrustManager[] {easyTrustManager};
-
-        // Install the all-trusting trust manager
-        try {
-            SSLContext sc = SSLContext.getInstance("TLS");
-
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private double calculateTotalDistanceOfPath(ArrayList<LatLng> latLngs){
@@ -1020,9 +958,85 @@ public class SurveyTriggerService extends Service {
         return LatLngs;
     }
 
-//add to DB in order to display it in the linklistOhio.java
-    public void addSurveyLinkToDB(){
+    private void settingMissedClickedCount(){
+        //TODO to check the missing count and clicked
+        //setting the
+        long startTime = -9999;
+        long endTime = -9999;
+        String startTimeString = "";
+        String endTimeString = "";
+
+        Calendar cal = Calendar.getInstance();
+        Date date = new Date();
+        cal.setTime(date);
+        int Year = cal.get(Calendar.YEAR);
+        int Month = cal.get(Calendar.MONTH)+1;
+        int Day = cal.get(Calendar.DAY_OF_MONTH);
+
+        startTimeString = makingDataFormat(Year, Month, Day);
+        endTimeString = makingDataFormat(Year, Month, Day+1);
+        startTime = getSpecialTimeInMillis(startTimeString);
+        endTime = getSpecialTimeInMillis(endTimeString);
+
+        ArrayList<String> data = new ArrayList<String>();
+        data = DataHandler.getSurveyData(startTime, endTime);
+
+        Log.d(TAG, "SurveyData : "+ data.toString());
+
+        int mobileMissedCount = 0;
+        int randomMissedCount = 0;
+        int missCount = 0;
+        int openCount = 0;
+
+        for(String datapart : data){
+            //if the link havn't been opened.
+            if(datapart.split(Constants.DELIMITER)[5].equals("0")){
+                missCount++;
+                if(datapart.split(Constants.DELIMITER)[6].equals(noti_walk))
+                    mobileMissedCount++;
+                else if(datapart.split(Constants.DELIMITER)[6].equals(noti_random))
+                    randomMissedCount++;
+            }
+            else if(datapart.split(Constants.DELIMITER)[5].equals("1"))
+                openCount++;
+        }
+
+        String previousMobileMissedCount = sharedPrefs.getString("mobileMissedCount", "");
+        String previousRandomMissedCount = sharedPrefs.getString("randomMissedCount", "");
+        String previousOpenCount = sharedPrefs.getString("OpenCount", "");
+
+        previousMobileMissedCount += " "+mobileMissedCount;
+        previousRandomMissedCount += " "+randomMissedCount;
+        previousOpenCount += " "+openCount;
+
+        sharedPrefs.edit().putString("mobileMissedCount", previousMobileMissedCount).apply();
+        sharedPrefs.edit().putString("randomMissedCount", previousRandomMissedCount).apply();
+        sharedPrefs.edit().putString("OpenCount", previousOpenCount).apply();
+
+    }
+
+    private String addZero(int date){
+        if(date<10)
+            return String.valueOf("0"+date);
+        else
+            return String.valueOf(date);
+    }
+
+    public String makingDataFormat(int year,int month,int date){
+        String dataformat= "";
+
+//        dataformat = addZero(year)+"-"+addZero(month)+"-"+addZero(date)+" "+addZero(hour)+":"+addZero(min)+":00";
+        dataformat = addZero(year)+"/"+addZero(month)+"/"+addZero(date)+" "+"00:00:00";
+        Log.d(TAG,"dataformat : " + dataformat);
+
+        return dataformat;
+    }
+
+    //add to DB in order to display it in the SurveyActivity.java
+    public void addSurveyLinkToDB(String noti_type){
         Log.d(TAG, "addSurveyLinkToDB");
+
+        settingMissedClickedCount();
 
         dailyResponseNum++;
         sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
@@ -1050,9 +1064,9 @@ public class SurveyTriggerService extends Service {
 
             values.put(DBHelper.generateTime_col, new Date().getTime());
             values.put(DBHelper.link_col, linktoShow);
+            values.put(DBHelper.surveyType_col, noti_type);
 //            values.put(DBHelper.openFlag_col, 0); //they can't enter the link by the notification.
 
-//            db.insert(DBHelper.checkFamiliarOrNotLinkList_table, null, values);
             db.insert(DBHelper.surveyLink_table, null, values);
 
         }
@@ -1104,7 +1118,7 @@ public class SurveyTriggerService extends Service {
                 .build();
 
         // using the same tag and Id causes the new notification to replace an existing one
-        mNotificationManager.notify(qua_notifyID, note); //String.valueOf(System.currentTimeMillis()),
+        mNotificationManager.notify(walk_notifyID, note); //String.valueOf(System.currentTimeMillis()),
         note.flags = Notification.FLAG_AUTO_CANCEL;
 
     }
@@ -1112,15 +1126,6 @@ public class SurveyTriggerService extends Service {
     private void showTransportationAndIsHome(){
 
         Log.e(TAG,"showTransportationAndIsHome");
-
-        /*String inhomeornot="not working yet";
-
-        if(home==1)
-            inhomeornot = "home";
-        else if(home!=1 && dist<=200)
-            inhomeornot = "near home";
-        else if(home!=1 && dist>200)
-            inhomeornot = "faraway";*/
 
         String NotificationText = "";
 
@@ -1147,34 +1152,11 @@ public class SurveyTriggerService extends Service {
                     +(sampled_times.get(2))+", "+(sampled_times.get(3))+", "
                     +(sampled_times.get(4))+", "+(sampled_times.get(5))+", "
                     + "\r\n" +"random count : "+interval;
-/*
-            NotificationText = "Current Transportation Mode: " + local_transportation
-                    + "\r\n" + "ActivityRecognition : " + ActivityRecognitionStreamGenerator.getActivityNameFromType(ActivityRecognitionStreamGenerator.sMostProbableActivity.getType())
-                    + "\r\n" + "interval sampling count : " + interval_sampled
-                    + "\r\n" + "Is_home: " + inhomeornot
-                    + "\r\n" + "Home, moving: " + daily_count_HomeMove
-                    + "\r\n" + "Home, not moving: " + daily_count_HomeNotMove
-                    + "\r\n" + "Near home, moving: " + daily_count_NearHomeMove
-                    + "\r\n" + "Near home, not moving: " + daily_count_NearHomeNotMove
-                    + "\r\n" + "Faraway, moving: " + daily_count_FarawayMove
-                    + "\r\n" + "Faraway, not moving: " + daily_count_FarawayNotMove
-                    + "\r\n" + "Total: " + (daily_count_HomeMove + daily_count_HomeNotMove
-                                          + daily_count_NearHomeMove + daily_count_NearHomeNotMove
-                                          + daily_count_FarawayMove + daily_count_FarawayNotMove);
-            if(testingserverThenFail)
-                NotificationText = NotificationText + "\r\n" + "Server Error";
-*/
 
             Log.e(TAG, "getConfirmedActivityString : " + local_transportation);
         }catch (Exception e){
             e.printStackTrace();
         }
-
-        // pending implicit intent to view url
-        /*Intent resultIntent = new Intent(Intent.ACTION_VIEW);
-        resultIntent.setData(Uri.parse(link));*/
-//        Intent resultIntent = new Intent(SurveyTriggerService.this, SurveyActivity.class);
-//        PendingIntent pending = PendingIntent.getActivity(SurveyTriggerService.this, 0, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         NotificationManager mNotificationManager =
                 (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);//Context.
@@ -1207,30 +1189,24 @@ public class SurveyTriggerService extends Service {
                     .build();
         }
 
-        //note.flags |= Notification.FLAG_NO_CLEAR;
-        //startForeground( 42, note );
-
         // using the same tag and Id causes the new notification to replace an existing one
         mNotificationManager.notify(notifyID, note); //String.valueOf(System.currentTimeMillis()),
         note.flags = Notification.FLAG_AUTO_CANCEL;
 
-        //note.setContentText(NotificationText);
-        //mNotificationManager.notify(String.valueOf(System.currentTimeMillis()), 1, note.build());
 
     }
 
-    public boolean checkSleepingTime(){
+    public boolean InSleepingTime(){
 
-//        SharedPreferences sharedPrefs = getSharedPreferences("edu.umich.si.inteco.minuku_2", MODE_PRIVATE);
-        String startSleepingTime = sharedPrefs.getString("SleepingStartTime",null);
-        String endSleepingTime = sharedPrefs.getString("SleepingEndTime",null);
+        String startSleepingTime = sharedPrefs.getString("SleepingStartTime","22:00");
+        String endSleepingTime = sharedPrefs.getString("SleepingEndTime","08:00");
+
+        Log.d(TAG, "startSleepingTime : " + startSleepingTime + " endSleepingTime : " + endSleepingTime);
 
         if(startSleepingTime!=null && endSleepingTime!=null) {
 
             String[] startSleepingTimeArray = startSleepingTime.split(":");
             String[] endSleepingTimeArray = endSleepingTime.split(":");
-
-            Log.d(TAG, "startSleepingTime : " + startSleepingTime + " endSleepingTime : " + endSleepingTime);
 
             Log.d(TAG, "startSleepingHour : " + startSleepingTimeArray[0] + " startSleepingMin : " + startSleepingTimeArray[1]
                     + " endSleepingHour : " + endSleepingTimeArray[0] + " endSleepingMin : " + endSleepingTimeArray[1]);
@@ -1249,41 +1225,20 @@ public class SurveyTriggerService extends Service {
             int min = cal.get(Calendar.MINUTE);
             Log.d(TAG, "hour : " + hour + " min : " + min);
 
-            if (startSleepingHour < endSleepingHour) {
+            int startSleepingTimeWholeMin = startSleepingHour * 60 + startSleepingMin;
+            int endSleepingTimeWholeMin = endSleepingHour * 60 + endSleepingMin;
+            int currentSleepingTimeWholeMin = hour * 60 + min;
 
-                if (hour >= startSleepingHour && hour <= endSleepingHour) {
+            //check the current time is in user's sleeping time or not
+            if(currentSleepingTimeWholeMin <= startSleepingTimeWholeMin
+                    && currentSleepingTimeWholeMin >= endSleepingTimeWholeMin){
 
-                    return true;
-                }
+                return false;
+            }else{
 
-            } else if (startSleepingHour == endSleepingHour) {
-
-                if (startSleepingMin < endSleepingMin) {
-
-                    if (min >= startSleepingMin && min <= endSleepingMin)
-                        return true;
-                    else
-                        return false;
-
-                } else if (startSleepingMin == endSleepingMin)
-                    return false;
-                else {
-
-                    if (min >= endSleepingMin && min <= startSleepingMin)
-                        return false;
-                    else
-                        return true;
-
-                }
-
-            } else {
-
-                if (min >= endSleepingMin && min <= startSleepingMin)
-                    return false;
-                else
-                    return true;
-
+                return true;
             }
+
         }
         return false;
 
@@ -1292,7 +1247,7 @@ public class SurveyTriggerService extends Service {
 
     public void StoreToCSV(long timestamp, long random, long walktotal, long walkfirst, long walksecond, long walkthird){
 
-        Log.d(TAG,"StoreToCSV");
+        Log.d(TAG,"TransportationMode_StoreToCSV");
 
         String sFileName = "SamplingCheck.csv";
 
@@ -1330,61 +1285,6 @@ public class SurveyTriggerService extends Service {
 
     }
 
-    public void StoreToCSV(long timestamp, double latitude, double longitude, float accuracy, String userid){
-
-        Log.d(TAG,"StoreToCSV");
-
-        String sFileName = "LocationSentToServer.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            Log.d(TAG, "root : " + root);
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-//            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy"});
-            String timeString = getTimeString(timestamp);
-
-            data.add(new String[]{String.valueOf(timestamp),timeString,String.valueOf(latitude),String.valueOf(longitude),String.valueOf(accuracy), userid});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    public void createCSV(){
-        String sFileName = "LocationSentToServer.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy","UserId"});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-    }
 
     private static void storeToCSVinterval(String todayDate){
 
@@ -1416,28 +1316,11 @@ public class SurveyTriggerService extends Service {
 
             for(int index=0 ; index < interval_sample_number ; index++){
                 addToCSV.add(getTimeString(interval_sampled_times.get(index)));
-//                addToCSVFile[index] = getTimeString(interval_sampled_times.get(index));
             }
 
             addToCSVFile = addToCSV.toArray(addToCSVFile);
 
             data.add(addToCSVFile);
-
-            /*data.add(new String[]{
-                     getTimeString(interval_sampled_times.get(0))
-                    ,getTimeString(interval_sampled_times.get(1))
-                    ,getTimeString(interval_sampled_times.get(2))
-                    ,getTimeString(interval_sampled_times.get(3))
-                    ,getTimeString(interval_sampled_times.get(4))
-                    ,getTimeString(interval_sampled_times.get(5))
-            });*/
-
-            /*data.add(new String[]{"HomeMove",String.valueOf(daily_count_HomeMove)});
-            data.add(new String[]{"HomeNotMove",String.valueOf(daily_count_HomeNotMove)});
-            data.add(new String[]{"NearHomeMove",String.valueOf(daily_count_NearHomeMove)});
-            data.add(new String[]{"NearHomeNotMove",String.valueOf(daily_count_NearHomeNotMove)});
-            data.add(new String[]{"FarawayMove",String.valueOf(daily_count_FarawayMove)});
-            data.add(new String[]{"FarawayNotMove",String.valueOf(daily_count_FarawayNotMove)});*/
 
             csv_writer.writeAll(data);
 
@@ -1450,55 +1333,6 @@ public class SurveyTriggerService extends Service {
             e2.printStackTrace();
             android.util.Log.e(TAG, "exception", e2);
 
-        }
-
-    }
-
-    private void storeToCSV(String todayDate){
-
-        String sFileName = "LogAt_"+todayDate+".csv";
-
-        sFileName = sFileName.replace("/","-");
-
-        Log.d(TAG, "sFileName : " + sFileName);
-
-        try {
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-
-            Log.d(TAG, "root : " + root);
-
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-//            data.add(new String[]{"","HomeMove","HomeNotMove","NearHomeMove","NearHomeNotMove","FarawayMove","FarawayNotMove"});
-
-            data.add(new String[]{String.valueOf(last_hour)+":00"
-                    ,String.valueOf(daily_count_HomeMove)
-                    ,String.valueOf(daily_count_HomeNotMove)
-                    ,String.valueOf(daily_count_NearHomeMove)
-                    ,String.valueOf(daily_count_NearHomeNotMove)
-                    ,String.valueOf(daily_count_FarawayMove)
-                    ,String.valueOf(daily_count_FarawayNotMove)
-                });
-
-            /*data.add(new String[]{"HomeMove",String.valueOf(daily_count_HomeMove)});
-            data.add(new String[]{"HomeNotMove",String.valueOf(daily_count_HomeNotMove)});
-            data.add(new String[]{"NearHomeMove",String.valueOf(daily_count_NearHomeMove)});
-            data.add(new String[]{"NearHomeNotMove",String.valueOf(daily_count_NearHomeNotMove)});
-            data.add(new String[]{"FarawayMove",String.valueOf(daily_count_FarawayMove)});
-            data.add(new String[]{"FarawayNotMove",String.valueOf(daily_count_FarawayNotMove)});*/
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        } catch(IOException e) {
-            e.printStackTrace();
         }
 
     }
@@ -1534,8 +1368,9 @@ public class SurveyTriggerService extends Service {
         return false;
     }
 
+    private void triggerQualtrics(String noti_type){
 
-    private void intervalQualtrics(){
+        Log.d(TAG,"triggerQualtrics");
 
         //TODO if the last link haven't been opened, setting it into missed.
         String latestLinkData = DataHandler.getLatestSurveyData();
@@ -1550,10 +1385,8 @@ public class SurveyTriggerService extends Service {
 
         }
 
-        String notiText = "You have a new random survey(Random)"+"\r\n"
+        String notiText = "You have a new random survey("+noti_type+")"+"\r\n"
                 +"Walking : "+walkoutdoor_sampled+" ;Random : "+interval_sampled;
-
-        Log.d(TAG,"intervalQualtrics");
 
         Intent resultIntent = new Intent(SurveyTriggerService.this, SurveyActivity.class);
         PendingIntent pending = PendingIntent.getActivity(SurveyTriggerService.this, 0, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -1574,12 +1407,15 @@ public class SurveyTriggerService extends Service {
                 .build();
 
         // using the same tag and Id causes the new notification to replace an existing one
-        mNotificationManager.notify(interval_notifyID, note); //String.valueOf(System.currentTimeMillis()),
+        if(noti_type.equals(noti_walk)){
+            mNotificationManager.notify(walk_notifyID, note);
+        }else {
+            mNotificationManager.notify(interval_notifyID, note);
+        }
+
         note.flags = Notification.FLAG_AUTO_CANCEL;
 
     }
-
-
 
     public void registerActionAlarmReceiver(){
 
@@ -1603,56 +1439,13 @@ public class SurveyTriggerService extends Service {
         sharedPrefs.edit().commit();
     }
 
-    public void addToDB_interval(String link){
-        Log.d(TAG, "addSurveyLinkToDB");
-
-        dailyResponseNum++;
-        sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
-        String mob = "";
-        try {
-            ConnectivityDataRecord connectivityDataRecord = ConnectivityStreamGenerator.toOtherconnectDataRecord;
-
-            if (connectivityDataRecord.getIsMobileConnected()) {
-                mob = "1";
-            } else {
-                mob = "0";
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-            mob = "0";
-        }
-
-        String linktoShow = link + "?p="+participantID + "&g=" + groupNum + "&w=" + weekNum + "&d=" + dailySurveyNum + "&r=" + dailyResponseNum + "&m=" + mob;
-
-        ContentValues values = new ContentValues();
-
-        try {
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-
-            values.put(DBHelper.TIME, new Date().getTime());
-            values.put(DBHelper.link_col, linktoShow);
-            values.put(DBHelper.openFlag_col, 0); //they can't enter the link by the notification.
-
-            db.insert(DBHelper.intervalSampleLinkList_table, null, values);
-        }
-        catch(NullPointerException e){
-            e.printStackTrace();
-        }
-        finally {
-            values.clear();
-            DBManager.getInstance().closeDatabase(); // Closing database connection
-        }
-    }
-
     BroadcastReceiver IntervalSampleReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
 
             if (intent.getAction().equals(Constants.Interval_Sample)){
                 Log.d(TAG, "In IntervalSampleReceiver");
 
-                long currentTime = new Date().getTime();
-
-                if (interval_sampled < 3 && timeForSurvey()) {
+                if (interval_sampled < 3 && isTimeForSurvey(noti_random)) {
                     triggerIntervalSurvey();
                 }
 
@@ -1661,4 +1454,77 @@ public class SurveyTriggerService extends Service {
         }
     };
 
+    public void unregisterSettingIntervalSampleAlarmReceiver(){
+
+        unregisterReceiver(InitializeIntervalSurveyTimeReceiver);
+    }
+
+    public void registerSettingIntervalSampleAlarmReceiver(){
+
+        //register action alarm
+        IntentFilter alarm_filter = new IntentFilter(Constants.Setting_Interval_Sample);
+        registerReceiver(InitializeIntervalSurveyTimeReceiver, alarm_filter);
+
+        //initialize
+        setNextTimeToInitialize();
+    }
+
+    private void setNextTimeToInitialize(){
+
+        String sleepingEndTime = sharedPrefs.getString("SleepingEndTime", "08:00");
+
+        //getting the time in millisecond
+        long hour = Integer.valueOf(sleepingEndTime.split(":")[0]);
+        long min = Integer.valueOf(sleepingEndTime.split(":")[1]);
+
+        //default is 04:00
+        hour = hour - 4;
+
+        long midnightstart = sharedPrefs.getLong("midnightstart", Constants.midnightstart);
+
+        Constants.FirstTime_ToInitializeIntervalSurvey = midnightstart
+                + hour * Constants.MILLISECONDS_PER_HOUR + min * Constants.MILLISECONDS_PER_MINUTE;
+
+        Log.d(TAG, "midnightstart : "+midnightstart);
+        Log.d(TAG, "midnightstart : "+ScheduleAndSampleManager.getTimeString(midnightstart));
+        Log.d(TAG, "hour : " + hour);
+        Log.d(TAG, "min : " + min);
+        Log.d(TAG, "FirstTime_ToInitializeIntervalSurvey : " + Constants.FirstTime_ToInitializeIntervalSurvey);
+        Log.d(TAG, "midnightstart : " + ScheduleAndSampleManager.getTimeString(Constants.FirstTime_ToInitializeIntervalSurvey));
+
+        int daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+
+        long nextTimeToInitializeIntervalSurvey = Constants.FirstTime_ToInitializeIntervalSurvey
+                + daysInSurvey * Constants.MILLISECONDS_PER_DAY;
+
+        Log.d(TAG, "daysInSurvey " + daysInSurvey);
+        Log.d(TAG, "timeToInitializeIntervalSurvey " + nextTimeToInitializeIntervalSurvey);
+
+        int request_code = SurveyTriggerService.generatePendingIntentRequestCode(nextTimeToInitializeIntervalSurvey);
+        //create an alarm for a time
+        Intent intent = new Intent(Constants.Setting_Interval_Sample);
+
+        PendingIntent pi = PendingIntent.getBroadcast(mContext, request_code, intent, 0);
+
+        Log.d(TAG, "nextTimeToInitializeIntervalSurvey : " + ScheduleAndSampleManager.getTimeString(nextTimeToInitializeIntervalSurvey));
+
+        //for the reset one
+        AlarmManager alarmManager = (AlarmManager) getSystemService( ALARM_SERVICE );
+        alarmManager.set(AlarmManager.RTC_WAKEUP, nextTimeToInitializeIntervalSurvey, pi);
+    }
+
+    BroadcastReceiver InitializeIntervalSurveyTimeReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+
+            if (intent.getAction().equals(Constants.Setting_Interval_Sample)){
+                Log.d(TAG, "In InitializeIntervalSurveyTimeReceiver");
+
+                //action
+                settingIntervalSampling(-9999);
+
+                setNextTimeToInitialize();
+            }
+
+        }
+    };
 }

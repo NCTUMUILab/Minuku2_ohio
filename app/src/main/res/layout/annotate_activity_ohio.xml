@@ -81,29 +81,64 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_7"
                     android:layout_weight="7" />
-
+<!--
                 <RadioButton
                     android:text="Trip is part of previous trip (COMBINE)."
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_8"
                     android:layout_weight="8" />
+-->
 
                 <RadioButton
                     android:text="Trip is incorrect (DELETE)."
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/ans1_9"
+                    android:id="@+id/ans1_8"
                     android:layout_weight="3" />
 
                 <RadioButton
                     android:text="Other."
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/ans1_10"
+                    android:id="@+id/ans1_9"
                     android:layout_weight="3" />
             </RadioGroup>
 
+            <TextView
+                android:text="Did you complete this trip on your own?"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/question2"
+                android:paddingTop="16dp"
+                android:paddingLeft="16dp"
+                android:textSize="22sp"
+                android:layout_weight="1" />
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:id="@+id/ques2"
+                android:paddingLeft="16dp"
+                android:paddingTop="5dp">
+
+                <RadioButton
+                    android:text="Yes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/ans2_1"
+                    android:layout_weight="1" />
+
+                <RadioButton
+                    android:text="No"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/ans2_2"
+                    android:layout_weight="1" />
+
+            </RadioGroup>
+<!--
             <TextView
                 android:text="Where did you go?"
                 android:layout_width="match_parent"
@@ -232,6 +267,7 @@
                     android:layout_weight="3" />
 
             </RadioGroup>
+-->
 
             <TextView
                 android:text="Is this trip part of your weekly routine?"
@@ -302,289 +338,9 @@
                     android:layout_weight="1" />
             </RadioGroup>
 
-            <!--TextView
-                android:text="ActivityType"
+            <Space
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/labeltitle"
-                android:paddingTop="16dp"
-                android:paddingLeft="16dp"
-                android:textSize="22sp" />
-
-            <Spinner
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dialog"
-                android:id="@+id/activityspinner"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_gravity="bottom" />
-
-            <TextView
-                android:text="TripType"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/triptitle"
-                android:paddingTop="16dp"
-                android:paddingLeft="16dp"
-                android:textSize="22sp" />
-
-            <Spinner
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dialog"
-                android:id="@+id/tripspinner"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_gravity="bottom" />
-
-            <Space android:layout_height="70dp"
-                android:layout_width="match_parent" />
-
-            <TextView
-                android:text="Preplan"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/preplanTitle"
-                android:paddingTop="16dp"
-                android:paddingLeft="16dp"
-                android:textSize="22sp" />
-
-            <Spinner
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dialog"
-                android:id="@+id/preplanspinner"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_gravity="bottom" />
-
-            <TextView
-                android:text="Why did you make this trip?"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/question1"
-                android:paddingTop="16dp"
-                android:paddingLeft="16dp"
-                android:textSize="22sp" />
-
-            <RadioGroup
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/ques1"
-                android:paddingLeft="16dp"
-                android:paddingTop="5dp">
-
-                <RadioButton
-                    android:text="working"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans1_1"
-                    android:layout_weight="1" />
-                <RadioButton
-                    android:text="errand/responsibility"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans1_2"
-                    android:layout_weight="2" />
-
-                <RadioButton
-                    android:text="entertainment"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans1_4"
-                    android:layout_weight="4" />
-                <RadioButton
-                    android:text="eating/drinking"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans1_5"
-                    android:layout_weight="5" />
-                <RadioButton
-                    android:text="health/exercising"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans1_6"
-                    android:layout_weight="6" />
-
-                <RadioButton
-                    android:text="sleeping/relaxing"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans1_7"
-                    android:layout_weight="7" />
-
-                <RadioButton
-                    android:text="no reason"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans1_8"
-                    android:layout_weight="8" />
-
-                <RadioButton
-                    android:text="socializing"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans1_3"
-                    android:layout_weight="3" />
-
-            </RadioGroup>
-
-            <TextView
-                android:text="Was this trip part of your normal routine?"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/question2"
-                android:paddingTop="16dp"
-                android:paddingLeft="16dp"
-                android:textSize="22sp"
-                android:layout_weight="1" />
-
-            <RadioGroup
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:id="@+id/ques2"
-                android:paddingLeft="16dp"
-                android:paddingTop="5dp">
-
-                <RadioButton
-                    android:text="Yes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans2_1"
-                    android:layout_weight="1" />
-
-                <RadioButton
-                    android:text="No"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans2_2"
-                    android:layout_weight="1" />
-
-            </RadioGroup>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/question3"
-                android:layout_weight="1"
-                android:paddingLeft="16dp"
-                android:paddingTop="16dp"
-                android:textSize="22sp" />
-
-            <RadioGroup
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/ques3"
-                android:paddingLeft="16dp"
-                android:paddingTop="5dp">
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans3_1"
-                    android:layout_weight="1" />
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans3_2"
-                    android:layout_weight="1" />
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans3_3"
-                    android:layout_weight="1" />
-            </RadioGroup>
-
-            <TextView
-                android:text="How did the starting place compare to the destination? The destination was..."
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/question4"
-                android:textSize="22sp"
-                android:paddingLeft="16dp"
-                android:paddingTop="16dp" />
-
-            <TextView
-                android:text="(a)"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/question4_1"
-                android:layout_weight="1"
-                android:paddingLeft="16dp"
-                android:paddingTop="16dp"
-                android:textSize="22sp" />
-
-            <RadioGroup
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/ques4_1"
-                android:paddingLeft="16dp"
-                android:paddingTop="5dp">
-
-                <RadioButton
-                    android:text="less stimulating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans4_1_1"
-                    android:layout_weight="1" />
-
-                <RadioButton
-                    android:text="about the same"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans4_1_2"
-                    android:layout_weight="1" />
-
-                <RadioButton
-                    android:text="more stimulating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans4_1_3"
-                    android:layout_weight="1" />
-            </RadioGroup>
-
-            <TextView
-                android:text="(b)"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/question4_2"
-                android:layout_weight="1"
-                android:paddingLeft="16dp"
-                android:paddingTop="16dp"
-                android:textSize="22sp" />
-
-            <RadioGroup
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/ques4_2"
-                android:paddingLeft="16dp"
-                android:paddingTop="5dp">
-
-                <RadioButton
-                    android:text="less recharging"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans4_2_1"
-                    android:layout_weight="1" />
-
-                <RadioButton
-                    android:text="about the same"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans4_2_2"
-                    android:layout_weight="1" />
-
-                <RadioButton
-                    android:text="more recharging"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans4_2_3"
-                    android:layout_weight="1" />
-            </RadioGroup-->
+                android:layout_height="20dp" />
 
             <Button
                 android:text="submit"
@@ -594,6 +350,11 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 android:paddingTop="16dp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20dp" />
+
         </LinearLayout>
     </ScrollView>
 

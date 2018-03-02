@@ -148,7 +148,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
 
         //for replay location record
-//            startReplayLocationRecordTimer();
+//        startReplayLocationRecordTimer();
 
         this.register();
     }
@@ -173,8 +173,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     + latestLongitude.get() + ", "
                     + "latestAccuracy: " + location.getAccuracy());
 
-//            Location.distanceBetween(location.getLatitude(),location.getLongitude(), latestLatitude.get(), latestLongitude.get(),results);
-
             if(!(latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0))
                 dist = results[0];
             else
@@ -182,12 +180,11 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
             Log.d(TAG, "dist : " + dist);
             //if the newest
-            //TODO cancel the dist restriction
-//            if(dist < 100 || (latestLatitude.get() == -999.0 && latestLongitude.get() == -999.0)){
-            // Log.d(TAG, "Location is accurate upto 50 meters");
-                this.latestLatitude.set(location.getLatitude());
-                this.latestLongitude.set(location.getLongitude());
-                latestAccuracy = location.getAccuracy();
+
+            //TODO uncomment them when we stop testing
+            this.latestLatitude.set(location.getLatitude());
+            this.latestLongitude.set(location.getLongitude());
+            latestAccuracy = location.getAccuracy();
 
             //the lastposition update value timestamp
             lastposupdate = new Date().getTime();
@@ -360,7 +357,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     public void StoreToCSV(long timestamp, ArrayList<LatLng> latLngs){
 
-        Log.d(TAG,"StoreToCSV startIndoorOutdoor");
+        Log.d(TAG,"TransportationMode_StoreToCSV startIndoorOutdoor");
 
         String sFileName = "startIndoorOutdoor.csv";
 
@@ -408,7 +405,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     public void StoreToCSV(long timestamp, double latitude, double longitude, float accuracy){
 
-        Log.d(TAG,"StoreToCSV");
+        Log.d(TAG,"TransportationMode_StoreToCSV");
 
         String sFileName = "LocationOnChange.csv";
 
@@ -506,7 +503,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
                 sec++;
 
-                //for every 5 seconds and if we still have more AR labels in the list to reply, we will set an AR label to the streamgeneratro
+                //for every 5 seconds and if we still have more AR labels in the list to reply, we will set an AR label to the streamgenerator
                 if(sec%5 == 0 && mLocationDataRecords.size()>0 && locationRecordCurIndex < mLocationDataRecords.size()-1){
 
                     LocationDataRecord locationDataRecord =mLocationDataRecords.get(locationRecordCurIndex);

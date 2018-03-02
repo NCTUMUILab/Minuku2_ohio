@@ -176,13 +176,18 @@ public class ConnectivityStreamGenerator extends AndroidStreamGenerator<Connecti
             for (Network network : networks) {
                 activeNetwork = mConnectivityManager.getNetworkInfo(network);
 
-                if (activeNetwork.getType()== ConnectivityManager.TYPE_WIFI){
-                    mIsWifiAvailable = activeNetwork.isAvailable();
-                    mIsWifiConnected = activeNetwork.isConnected();
-                }
-                else if (activeNetwork.getType()==ConnectivityManager.TYPE_MOBILE){
-                    mIsMobileAvailable = activeNetwork.isAvailable();
-                    mIsMobileConnected = activeNetwork.isConnected();
+                //TODO try catch it in NullpointerException
+
+                try {
+                    if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
+                        mIsWifiAvailable = activeNetwork.isAvailable();
+                        mIsWifiConnected = activeNetwork.isConnected();
+                    } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
+                        mIsMobileAvailable = activeNetwork.isAvailable();
+                        mIsMobileConnected = activeNetwork.isConnected();
+                    }
+                }catch (NullPointerException e){
+                    e.printStackTrace();
                 }
 
             }

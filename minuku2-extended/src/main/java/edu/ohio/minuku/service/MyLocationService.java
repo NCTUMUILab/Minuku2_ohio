@@ -62,7 +62,7 @@ public class MyLocationService extends Service {
 
         public void StoreToCSV(long timestamp, double latitude, double longitude, float accuracy){
 
-            Log.d(TAG,"StoreToCSV");
+            Log.d(TAG,"TransportationMode_StoreToCSV");
 
             String sFileName = "LocationNonGoogle.csv";
 

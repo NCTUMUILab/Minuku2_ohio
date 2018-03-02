@@ -5,13 +5,13 @@
     android:weightSum="1">
 
     <TextView
-        android:text="Please set your sleeping time. "
+        android:id="@+id/description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/description"
         android:paddingLeft="16dp"
-        android:textSize="24sp"
-        android:paddingTop="16dp" />
+        android:paddingTop="16dp"
+        android:text="Please set your sleep hours. "
+        android:textSize="24sp" />
 
     <TextView
         android:text="(The app won't trigger the notification at your sleeping time.)"

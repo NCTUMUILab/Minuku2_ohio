@@ -60,7 +60,7 @@ public class LocationDataRecord implements DataRecord {
     public LocationDataRecord(float latitude, float longitude, float Accuracy, String sessionid){
 
         this.creationTime = new Date().getTime();
-//        this.taskDayCount = Constants.TaskDayCount;
+//        this.taskDayCount = Constants.daysInSurvey;
 //        this.hour = getmillisecondToHour(creationTime);
         this.latitude = latitude;
         this.longitude = longitude;
@@ -71,7 +71,7 @@ public class LocationDataRecord implements DataRecord {
     public LocationDataRecord(float latitude, float longitude, float Accuracy){
 
         this.creationTime = new Date().getTime();
-//        this.taskDayCount = Constants.TaskDayCount;
+//        this.taskDayCount = Constants.daysInSurvey;
 //        this.hour = getmillisecondToHour(creationTime);
         this.latitude = latitude;
         this.longitude = longitude;

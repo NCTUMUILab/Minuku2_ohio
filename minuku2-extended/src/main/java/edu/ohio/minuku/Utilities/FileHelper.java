@@ -145,7 +145,7 @@ public class FileHelper {
         //testing postfiles
 
 
-        String string = loadFileFromAsset("testDataActivity3.csv");
+        String string = loadFileFromAsset("testDataActivity2.csv");
         String[] lines = string.split(System.getProperty("line.separator"));
         for (int i=0; i<lines.length; i++) {
 

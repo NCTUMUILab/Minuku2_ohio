@@ -1,7 +1,9 @@
 package edu.ohio.minuku.Utilities;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 
 import edu.ohio.minuku.config.Constants;
@@ -43,6 +45,18 @@ public class ScheduleAndSampleManager {
 		Calendar cal = Calendar.getInstance(tz);
 		long t = cal.getTimeInMillis();
 		return t;
+	}
+
+	public static long getTimeInMillis(String givenDateFormat, SimpleDateFormat sdf){
+		long timeInMilliseconds = 0;
+		try {
+			Date mDate = sdf.parse(givenDateFormat);
+			timeInMilliseconds = mDate.getTime();
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return timeInMilliseconds;
 	}
 
 	public static int getHourOfTimeOfDay (String TimeOfDay){

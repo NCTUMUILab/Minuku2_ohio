@@ -38,7 +38,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String USERID = "user_id";
     public static final String TIME = "time"; //timeToSQLite
 
-//    public static final String TaskDayCount = "TaskDayCount";
+//    public static final String daysInSurvey = "daysInSurvey";
 //    public static final String HOUR = "hour";
 
     //checkFamiliarOrNot link list
@@ -47,6 +47,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String openTime_col = "openTime";
     public static final String missedTime_col = "missedTime";
     public static final String openFlag_col = "openFlag";
+    public static final String surveyType_col = "surveyType";
 
     //Location and Trip
     public static final String sessionid_col = "sessionid";
@@ -274,7 +275,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 generateTime_col+" INTEGER NOT NULL," +
                 openTime_col+" INTEGER," +
                 missedTime_col+" INTEGER," +
-                openFlag_col +" INTEGER" +
+                openFlag_col +" INTEGER," +
+                surveyType_col +" TEXT" +
                 ");";
 
         db.execSQL(cmd);
@@ -302,7 +304,7 @@ public class DBHelper extends SQLiteOpenHelper {
         String cmd = "CREATE TABLE " +
                 checkFamiliarOrNotLinkList_table + "(" +
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
-//                TaskDayCount+" TEXT NOT NULL,"+
+//                daysInSurvey+" TEXT NOT NULL,"+
 //                HOUR+" TEXT NOT NULL,"+
                 TIME + " TEXT NOT NULL," +
                 link_col+" TEXT," +
@@ -408,7 +410,7 @@ public class DBHelper extends SQLiteOpenHelper {
         String cmd = "CREATE TABLE " +
                 appUsage_table + "(" +
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
-//                TaskDayCount+" TEXT NOT NULL,"+
+//                daysInSurvey+" TEXT NOT NULL,"+
 //                HOUR+" TEXT NOT NULL,"+
                 TIME + " TEXT NOT NULL," +
                 ScreenStatus_col+" TEXT," +
@@ -581,7 +583,7 @@ public class DBHelper extends SQLiteOpenHelper {
 //        String cmd = "CREATE TABLE " +
 //                trip_table + "(" +
 //                id+" INTEGER PRIMARY KEY NOT NULL, " +
-////                TaskDayCount+" TEXT NOT NULL,"+
+////                daysInSurvey+" TEXT NOT NULL,"+
 ////                HOUR+" TEXT NOT NULL,"+
 //                TIME + " TEXT NOT NULL," +
 //                sessionid_col + " TEXT," +

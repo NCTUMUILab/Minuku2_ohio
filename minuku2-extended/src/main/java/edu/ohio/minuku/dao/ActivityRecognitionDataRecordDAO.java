@@ -62,7 +62,7 @@ public class ActivityRecognitionDataRecordDAO implements DAO<ActivityRecognition
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
             values.put(DBHelper.TIME, entity.getCreationTime());
-//            values.put(DBHelper.TaskDayCount, entity.getTaskDayCount());
+//            values.put(DBHelper.daysInSurvey, entity.getTaskDayCount());
 //            values.put(DBHelper.HOUR, entity.getHour());
             values.put(DBHelper.MostProbableActivity_col, entity.getMostProbableActivity().toString());
             values.put(DBHelper.ProbableActivities_col, entity.getProbableActivities().toString());

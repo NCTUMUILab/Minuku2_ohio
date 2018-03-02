@@ -107,89 +107,6 @@
                 android:value=".LoginActivity" />-->
         </activity>
 
-        <!--activity android:name=".MoodDataRecordActivity"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
-
-        <activity android:name=".QuestionnaireActivity"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
-
-        <activity android:name=".LocationListViewRenderActivity"
-            android:parentActivityName=".LocationConfigurationActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".LocationConfigurationActivity" />
-        </activity>
-
-        <activity android:name=".DiabetesLogActivity"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
-
-        <activity android:name=".DisplayCreditActivity"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
-        </activity>
-
-        <activity android:name=".EODQuestionsActivity"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
-        </activity>
-
-        <activity android:name=".SettingsActivity"
-            android:label="@string/app_name">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
-
-        <activity android:name=".LocationConfigurationActivity"
-            android:label="@string/app_name">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity-->
-
-
-        <!-- Login and create account related stuff - anything that happens before primary screen -->
-        <!--activity android:name=".LoginActivity">
-            <intent-filter android:label="@string/app_name">
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-->
-
-        <!--activity
-            android:name=".CreateAccountActivity"
-            android:label="@string/title_activity_create_account"
-            android:parentActivityName=".LoginActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".LoginActivity" />
-        </activity>
-
-        <activity android:name=".EODTimelineActivity"
-            android:label="Timeline"
-            android:parentActivityName=".MainActivity">
-        </activity>
-
-        <activity android:name=".PromptMissedDataQuesttionaireActivity"
-            android:label="DReflect"
-            android:parentActivityName=".MainActivity"></activity-->
-
         <!-- Activities included from third party libraries -->
         <activity android:name="com.desmond.squarecamera.CameraActivity" />
 
@@ -227,23 +144,37 @@
             </intent-filter>
         </receiver>
 
-<!--
         <receiver
-            android:name=".Receiver.WifiReceiver"
+            android:name=".Receiver.DateChangedReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
-                <action android:name="android.net.wifi.STATE_CHANGE"/>
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
             </intent-filter>
         </receiver>
--->
+
+
+    <!--
+            <receiver
+                android:name=".Receiver.WifiReceiver"
+                android:enabled="true"
+                android:exported="true">
+                <intent-filter>
+                    <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                    <action android:name="android.net.wifi.STATE_CHANGE"/>
+                    <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
+                </intent-filter>
+            </receiver>
+    -->
 
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="490219889f9c5227241662e1fa307d31f82f536d" />
     </application>
 
 </manifest>

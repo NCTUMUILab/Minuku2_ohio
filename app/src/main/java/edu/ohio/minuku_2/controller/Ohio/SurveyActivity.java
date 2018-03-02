@@ -1,7 +1,13 @@
 package edu.ohio.minuku_2.controller.Ohio;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -36,9 +42,17 @@ public class SurveyActivity extends Activity {
     private final static String TAG = "SurveyActivity";
 
     private Button surveyButton, testButton;
-    private TextView totalView, missedView, openedView, lastOpenedView;
+    private TextView totalView, missedView, openedView, lastOpenedView, mobileMissedView, randomMissedView;
     private ListView listview;
     private ArrayList<String> data;
+
+    private int notifyID = 1;
+
+    private int test_notitypeNum = 0;
+
+    private SharedPreferences sharedPrefs;
+
+    private NotificationManager mNotificationManager;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +74,8 @@ public class SurveyActivity extends Activity {
     private void initlinkListohio(){
 
         Log.d(TAG,"initlinkListohio");
+
+        sharedPrefs = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE);
 
         /* preparing all the data for this page. */
         long startTime = -9999;
@@ -97,7 +113,6 @@ public class SurveyActivity extends Activity {
                 DataHandler.updateSurveyOpenFlagAndTime(id);
 
                 //we schedule the next interval random survey after the user clicks on the survey
-                long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
                 SurveyTriggerService.setUpNextIntervalSurvey();
 
                 //get the latest link in the surveyLink table.
@@ -109,6 +124,25 @@ public class SurveyActivity extends Activity {
                 resultIntent.setData(Uri.parse(link)); //get the link from adapter
 
                 startActivity(resultIntent);
+
+            }
+        });
+
+        //for testing, could deprecate it after we complete all the work
+        testButton = (Button) findViewById(R.id.triggerButton);
+        testButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                try{
+                    mNotificationManager.cancel(notifyID);
+                }catch (Exception e){
+                    e.printStackTrace();
+                    Log.d(TAG, "no old test notification");
+                }
+
+                triggerSurveyByButton();
+                addSurveyLinkToDB();
 
             }
         });
@@ -141,7 +175,7 @@ public class SurveyActivity extends Activity {
 
             long opendTime = Long.valueOf(latestOpenedSurveyData.split(Constants.DELIMITER)[3]);
 
-            SimpleDateFormat sdf_Hour_Min = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
+            SimpleDateFormat sdf_Hour_Min = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM);
 
             lastOpenedTime = ScheduleAndSampleManager.getTimeString(opendTime, sdf_Hour_Min);
 
@@ -156,10 +190,22 @@ public class SurveyActivity extends Activity {
         openedView = (TextView) findViewById(R.id.openedView);
         lastOpenedView = (TextView) findViewById(R.id.last_opened_time_view);
 
+        mobileMissedView = (TextView) findViewById(R.id.mobileMissedView);
+        randomMissedView = (TextView) findViewById(R.id.randomMissedView);
+
         totalView.setText(String.valueOf(total));
         missedView.setText(String.valueOf(missCount));
-        openedView.setText(String.valueOf(openCount));
+//        openedView.setText(String.valueOf(openCount));
         lastOpenedView.setText(lastOpenedTime);
+
+        String MobileMissedCount = sharedPrefs.getString("mobileMissedCount", "");
+        String RandomMissedCount = sharedPrefs.getString("randomMissedCount", "");
+        String OpenCount = sharedPrefs.getString("OpenCount", "");
+
+        mobileMissedView.setText(MobileMissedCount);
+        randomMissedView.setText(RandomMissedCount);
+        openedView.setText(OpenCount);
+
     }
 
     @Override
@@ -290,6 +336,154 @@ public class SurveyActivity extends Activity {
             return String.valueOf("0"+date);
         else
             return String.valueOf(date);
+    }
+
+    //for Testing
+    private void triggerSurveyByButton(){
+
+        //TODO if the last link haven't been opened, setting it into missed.
+        String latestLinkData = DataHandler.getLatestSurveyData();
+        //if there have data in DB
+        if(!latestLinkData.equals("")) {
+
+            String clickOrNot = latestLinkData.split(Constants.DELIMITER)[5];
+
+            String id = latestLinkData.split(Constants.DELIMITER)[0];
+
+            DataHandler.updateSurveyMissTime(id, DBHelper.missedTime_col);
+
+        }
+
+        String notiText = "You have a new random survey(Artifical)";
+
+        Log.d(TAG,"intervalQualtrics");
+
+        Intent resultIntent = new Intent(SurveyActivity.this, SurveyActivity.class);
+        PendingIntent pending = PendingIntent.getActivity(SurveyActivity.this, 0, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);//Context.
+        Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
+        bigTextStyle.setBigContentTitle("DMS");
+        bigTextStyle.bigText(notiText);
+
+        Notification note = new Notification.Builder(this)
+                .setContentTitle(Constants.APP_NAME)
+                .setContentText(notiText)
+                .setContentIntent(pending)
+                .setStyle(bigTextStyle)
+                .setSmallIcon(R.drawable.self_reflection)
+                .setAutoCancel(true)
+                .build();
+
+        // using the same tag and Id causes the new notification to replace an existing one
+        mNotificationManager.notify(notifyID, note); //String.valueOf(System.currentTimeMillis()),
+        note.flags = Notification.FLAG_AUTO_CANCEL;
+
+    }
+
+    public void addSurveyLinkToDB(){
+        Log.d(TAG, "addSurveyLinkToDB");
+
+        settingMissedClickedCount();
+
+        String noti_type;
+
+        test_notitypeNum++;
+        if(test_notitypeNum %2 ==0)
+            noti_type = "walk";
+        else
+            noti_type = "random";
+
+        String link = "https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";
+
+        SharedPreferences sharedPrefs = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE);
+        String participantID = sharedPrefs.getString("userid", "NA");
+        String groupNum = sharedPrefs.getString("groupNum", "NA");
+
+        String linktoShow = link + "?p="+participantID + "&g=" + groupNum + "&w=" + "1" + "&d=" + "1" + "&r=" + "1" + "&m=" + "0";
+
+        ContentValues values = new ContentValues();
+
+        try {
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+
+            values.put(DBHelper.generateTime_col, new Date().getTime());
+            values.put(DBHelper.link_col, linktoShow);
+            values.put(DBHelper.surveyType_col, noti_type);
+//            values.put(DBHelper.openFlag_col, 0); //they can't enter the link by the notification.
+
+            db.insert(DBHelper.surveyLink_table, null, values);
+
+        }
+        catch(NullPointerException e){
+            e.printStackTrace();
+        }
+        finally {
+            values.clear();
+            DBManager.getInstance().closeDatabase(); // Closing database connection
+        }
+    }
+
+    private void settingMissedClickedCount(){
+        //TODO to check the missing count and clicked
+        //setting the
+        long startTime = -9999;
+        long endTime = -9999;
+        String startTimeString = "";
+        String endTimeString = "";
+
+        Calendar cal = Calendar.getInstance();
+        Date date = new Date();
+        cal.setTime(date);
+        int Year = cal.get(Calendar.YEAR);
+        int Month = cal.get(Calendar.MONTH)+1;
+        int Day = cal.get(Calendar.DAY_OF_MONTH);
+
+        startTimeString = makingDataFormat(Year, Month, Day);
+        endTimeString = makingDataFormat(Year, Month, Day+1);
+        startTime = getSpecialTimeInMillis(startTimeString);
+        endTime = getSpecialTimeInMillis(endTimeString);
+
+        ArrayList<String> data = new ArrayList<String>();
+        data = DataHandler.getSurveyData(startTime, endTime);
+
+        Log.d(TAG, "SurveyData : "+ data.toString());
+
+        int mobileMissedCount = 0;
+        int randomMissedCount = 0;
+        int missCount = 0;
+        int openCount = 0;
+
+        for(String datapart : data){
+            Log.d(TAG, "datapart : " + datapart);
+            Log.d(TAG, "datapart [5] : " + datapart.split(Constants.DELIMITER)[5]);
+            Log.d(TAG, "datapart [5] == 1 : " + datapart.split(Constants.DELIMITER)[5].equals("1"));
+
+            //if the link havn't been opened.
+            if(datapart.split(Constants.DELIMITER)[5].equals("0")){
+                missCount++;
+                if(datapart.split(Constants.DELIMITER)[6].equals("walk"))
+                    mobileMissedCount++;
+                else if(datapart.split(Constants.DELIMITER)[6].equals("random"))
+                    randomMissedCount++;
+            }
+            else if(datapart.split(Constants.DELIMITER)[5].equals("1"))
+                openCount++;
+        }
+
+        String previousMobileMissedCount = sharedPrefs.getString("mobileMissedCount", "");
+        String previousRandomMissedCount = sharedPrefs.getString("randomMissedCount", "");
+        String previousOpenCount = sharedPrefs.getString("OpenCount", "");
+
+        previousMobileMissedCount += " "+mobileMissedCount;
+        previousRandomMissedCount += " "+randomMissedCount;
+        previousOpenCount += " "+openCount;
+
+        sharedPrefs.edit().putString("mobileMissedCount", previousMobileMissedCount).apply();
+        sharedPrefs.edit().putString("randomMissedCount", previousRandomMissedCount).apply();
+        sharedPrefs.edit().putString("OpenCount", previousOpenCount).apply();
+
     }
 
 }

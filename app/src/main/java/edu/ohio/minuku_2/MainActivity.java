@@ -24,7 +24,7 @@ package edu.ohio.minuku_2;
 
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -32,6 +32,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -39,18 +40,15 @@ import android.os.Parcelable;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.text.InputFilter;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -65,6 +63,13 @@ import org.greenrobot.eventbus.Subscribe;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -73,6 +78,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -84,10 +90,10 @@ import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
+import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku_2.controller.Ohio.SurveyActivity;
 import edu.ohio.minuku_2.controller.Ohio.recordinglistohio;
 import edu.ohio.minuku_2.controller.Ohio.sleepingohio;
-import edu.ohio.minuku_2.controller.home;
 import edu.ohio.minuku_2.controller.report;
 import edu.ohio.minuku_2.service.BackgroundService;
 import edu.ohio.minuku_2.service.SurveyTriggerService;
@@ -134,6 +140,8 @@ public class MainActivity extends AppCompatActivity {
     public static final int BACKGROUND_RECORDING_INITIAL_DELAY = 0;
     //private UserSubmissionStats mUserSubmissionStats;
 
+//    private final String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,9 +150,11 @@ public class MainActivity extends AppCompatActivity {
         Log.e(TAG,"start");
 
         //** Please set your project name. **//
-        whichView(projName);
+        settingHomepageView();
 
         handler = new Handler();
+
+        setServiceNotKilled();
 
         startService(new Intent(getBaseContext(), BackgroundService.class));
 
@@ -192,10 +202,6 @@ public class MainActivity extends AppCompatActivity {
         int Min = cal.get(Calendar.MINUTE);
         Log.d(TAG, "Year : "+Year+" Month : "+Month+" Day : "+Day+" Hour : "+Hour+" Min : "+Min);
 
-        Constants.TaskDayCount = 0; //increase in checkfamiliarornotservice
-
-//        Day++; //TODO start the task tomorrow.
-
         sharedPrefs.edit().putInt("StartYear", Year).apply();
         sharedPrefs.edit().putInt("StartMonth", Month).apply();
         sharedPrefs.edit().putInt("StartDay", Day).apply();
@@ -203,78 +209,63 @@ public class MainActivity extends AppCompatActivity {
         sharedPrefs.edit().putInt("StartHour", Hour).apply();
         sharedPrefs.edit().putInt("StartMin", Min).apply();
 
-        sharedPrefs.edit().putInt("TaskDayCount", Constants.TaskDayCount).apply();
-
-        Log.d(TAG, "Start Year : " + Year + " Month : " + Month + " Day : " + Day + " TaskDayCount : " + Constants.TaskDayCount);
+        Log.d(TAG, "Start Year : " + Year + " Month : " + Month + " Day : " + Day + " daysInSurvey : " + Constants.daysInSurvey);
 
     }
 
+    private void settingHomepageView(){
 
+        requestCode_annotate = new Bundle();
 
-    private void whichView(String projName){
-        if(projName.equals("mobilecrowdsourcing")){
-            setContentView(R.layout.activity_main);
+        mScheduledExecutorService = Executors.newScheduledThreadPool(REFRESH_FREQUENCY);
 
-            final LayoutInflater mInflater = getLayoutInflater().from(this);
-            timerview = mInflater.inflate(R.layout.home, null);
-            recordview = mInflater.inflate(R.layout.record, null);
+        setContentView(R.layout.homepage);
 
-            initViewPager(timerview,recordview);
+        /* alertdialog for checking userid */
+        sharedPrefs = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE);
 
-        }else if(projName.equals("Ohio")){
+        sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", false).apply();
 
-//            requestCode_setting = new Bundle();
-            requestCode_annotate = new Bundle();
+        firstTimeToShowDialogOrNot = sharedPrefs.getBoolean("firstTimeToShowDialogOrNot", true);
+        Log.d(TAG,"firstTimeToShowDialogOrNot : "+firstTimeToShowDialogOrNot);
 
-            mScheduledExecutorService = Executors.newScheduledThreadPool(REFRESH_FREQUENCY);
+        Constants.USER_ID = sharedPrefs.getString("userid","NA");
 
-            setContentView(R.layout.homepage); //not "homepage" actually...
+        if(firstTimeToShowDialogOrNot) {
+            createShortCut(); //on home Screen Desktop
+            showdialogforuser();
+        }else if(Constants.USER_ID.equals("NA")){
+            showdialogforuser();
+        }
 
-            /* alertdialog for checking userid */
-            sharedPrefs = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE);
+        user_id = (TextView) findViewById(R.id.userid);
+        Constants.USER_ID = sharedPrefs.getString("userid","NA");
+        user_id.setText("Confirmation #:" );
 
-            firstTimeToShowDialogOrNot = sharedPrefs.getBoolean("firstTimeToShowDialogOrNot", true);
-            Log.d(TAG,"firstTimeToShowDialogOrNot : "+firstTimeToShowDialogOrNot);
+        num_6_digit = (TextView) findViewById(R.id.group_num);
+        Constants.GROUP_NUM =  sharedPrefs.getString("groupNum","NA");
+        num_6_digit.setText(Constants.USER_ID);
 
-            Constants.USER_ID = sharedPrefs.getString("userid","NA");
+        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey",0);
 
-            if(firstTimeToShowDialogOrNot) {
-                createShortCut(); //on home Screen Desktop
-                getStartDate();
-                showdialogforuser();
-            }else if(Constants.USER_ID.equals("NA")){
-                showdialogforuser();
+        //button
+        tolinkList = (Button) findViewById(R.id.linkList);
+        tolinkList.setOnClickListener(new Button.OnClickListener(){
+
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, SurveyActivity.class));
+
             }
+        });
 
-            user_id = (TextView) findViewById(R.id.userid);
-            Constants.USER_ID = sharedPrefs.getString("userid","NA");
-            user_id.setText("Confirmation #:" );
+        ohio_setting = (Button)findViewById(R.id.Setting);
+        ohio_setting.setOnClickListener(ohio_settinging);
 
-            num_6_digit = (TextView) findViewById(R.id.group_num);
-            Constants.GROUP_NUM =  sharedPrefs.getString("groupNum","NA");
-            num_6_digit.setText(Constants.USER_ID); //Constants.GROUP_NUM +
+        ohio_annotate = (Button)findViewById(R.id.Annotate);
+        ohio_annotate.setOnClickListener(ohio_annotateing);
 
-            Constants.TaskDayCount = sharedPrefs.getInt("TaskDayCount",0);
-
-            //button
-            tolinkList = (Button) findViewById(R.id.linkList);
-            tolinkList.setOnClickListener(new Button.OnClickListener(){
-
-                @Override
-                public void onClick(View view) {
-                    startActivity(new Intent(MainActivity.this, SurveyActivity.class));
-//                    startActivityForResult(new Intent(MainActivity.this, SurveyActivity.class), 2);
-
-                }
-            });
-
-            ohio_setting = (Button)findViewById(R.id.Setting);
-            ohio_setting.setOnClickListener(ohio_settinging);
-
-            ohio_annotate = (Button)findViewById(R.id.Annotate);
-            ohio_annotate.setOnClickListener(ohio_annotateing);
-
-            //TODO deprecated
+        //TODO deprecated
             /*startservice = (Button)findViewById(R.id.service);
             startservice.setOnClickListener(new Button.OnClickListener(){
 
@@ -296,93 +287,35 @@ public class MainActivity extends AppCompatActivity {
 
             });*/
 
+        sleepingtime = (TextView)findViewById(R.id.sleepingTime);
+        String sleepStartTime = sharedPrefs.getString("SleepingStartTime","Please select your sleeping time");
+        String sleepEndTime = sharedPrefs.getString("SleepingEndTime","Please select your wake up time");
 
-//            tripStatus = (ImageView)findViewById(R.id.tripstatus);
-//            tripStatus.setImageResource(R.drawable.circle_green);
-//            ((GradientDrawable) tripStatus.getBackground()).setColor(Color.GREEN);
-//
-//            surveyStatus = (ImageView)findViewById(R.id.surveystatus);
-//            surveyStatus.setImageResource(R.drawable.circle_green);
+        if(!sleepStartTime.equals("Please select your sleeping time")&&!sleepEndTime.equals("Please select your wake up time")){
 
-//            ((GradientDrawable) surveyStatus.getBackground()).setColor(Color.GREEN);
-
-
-            //TODO deprecated
-            //setting for the red green light
-            /*boolean tripstatusfromList = sharedPrefs.getBoolean("TripStatus", false);
-            boolean surveystatusfromList = sharedPrefs.getBoolean("SurveyStatus", false);
-
-            Log.d(TAG,"tripstatusfromList : " + tripstatusfromList + " , surveystatusfromList : " + surveystatusfromList);
-
-            Drawable drawable_red = getResources().getDrawable(R.drawable.circle_red);
-            drawable_red.setBounds(0, 0, (int)(drawable_red.getIntrinsicWidth()*0.5), (int)(drawable_red.getIntrinsicHeight()*0.5));
-//            ScaleDrawable sd_red = new ScaleDrawable(drawable_red, 0, 1.0f, 1.0f);
-
-            Drawable drawable_green = getResources().getDrawable(R.drawable.circle_green);
-            drawable_green.setBounds(0, 0, (int)(drawable_green.getIntrinsicWidth()*0.5), (int)(drawable_green.getIntrinsicHeight()*0.5));
-//            ScaleDrawable sd_green = new ScaleDrawable(drawable_green, 0, 1.0f, 1.0f);
-
-            if(tripstatusfromList)
-                ohio_annotate.setCompoundDrawables(null, null, drawable_red, null);
-//                tripStatus.setImageResource(R.drawable.circle_red);
-            else
-                ohio_annotate.setCompoundDrawables(null, null, drawable_green, null);
-//                tripStatus.setImageResource(R.drawable.circle_green);
-
-            if(surveystatusfromList)
-                tolinkList.setCompoundDrawables(null, null, drawable_red, null);
-//                surveyStatus.setImageResource(R.drawable.circle_red);
-            else
-                tolinkList.setCompoundDrawables(null, null, drawable_green, null);
-//                surveyStatus.setImageResource(R.drawable.circle_green);
-*/
-
-            sleepingtime = (TextView)findViewById(R.id.sleepingTime);
-            String sleepStartTime = sharedPrefs.getString("SleepingStartTime","Please select your sleeping time");
-            String sleepEndTime = sharedPrefs.getString("SleepingEndTime","Please select your wake up time");
-
-            if(!sleepStartTime.equals("Please select your sleeping time")&&!sleepEndTime.equals("Please select your wake up time")){
-                String[] sleepStartDetail = sleepStartTime.split(":");
-
-                int sleepStartHour = Integer.valueOf(sleepStartDetail[0]);
-                String sleepStartHourStr = "";
-                if(sleepStartHour<12)
-                    sleepStartHourStr = String.valueOf(sleepStartHour)+"am";
-                else if(sleepStartHour==12)
-                    sleepStartHourStr = String.valueOf(sleepStartHour)+"pm";
-                else
-                    sleepStartHourStr = String.valueOf(sleepStartHour-12)+"pm";
-
-                String[] sleepEndDetail = sleepEndTime.split(":");
-
-                int sleepEndHour = Integer.valueOf(sleepEndDetail[0]);
-                String sleepEndHourStr = "";
-                if(sleepEndHour<12)
-                    sleepEndHourStr = String.valueOf(sleepEndHour)+"am";
-                else if(sleepEndHour==12)
-                    sleepEndHourStr = String.valueOf(sleepEndHour)+"pm";
-                else
-                    sleepEndHourStr = String.valueOf(sleepEndHour-12)+"pm";
-
-                sleepingtime.setText("Sleeping time: "+sleepStartHourStr+" to "+sleepEndHourStr);
-//                sleepingtime.setText("Sleeping time:"+"\r\n"+sleepStartTime+" to "+sleepEndTime);
-            }
-            else
-                sleepingtime.setText("Set Sleep Time");
-            //device_id=(TextView)findViewById(R.id.deviceid);
-
-            //device_id.setText("ID = "+Constant.DEVICE_ID);
-
-            //the light should be updated every 30 sec.
-//            startTimerThread();
-
-//            mScheduledExecutorService.scheduleAtFixedRate(
-//                    statusRunnable,
-//                    BACKGROUND_RECORDING_INITIAL_DELAY,
-//                    REFRESH_FREQUENCY,
-//                    TimeUnit.SECONDS);
+            sleepingtime.setText("Sleep: "+sleepStartTime+" to "+sleepEndTime);
         }
+        else
+            sleepingtime.setText("Set Sleep Time");
+    }
 
+    private void setServiceNotKilled() {
+        Log.d("FFF", "toggleNotificationListenerService");
+        PackageManager pm = getPackageManager();
+        pm.setComponentEnabledSetting(new ComponentName(this, BackgroundService.class),
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        pm.setComponentEnabledSetting(new ComponentName(this, BackgroundService.class),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+
+        pm.setComponentEnabledSetting(new ComponentName(this, SurveyTriggerService.class),
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        pm.setComponentEnabledSetting(new ComponentName(this, SurveyTriggerService.class),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+
+        pm.setComponentEnabledSetting(new ComponentName(this, TransportationModeService.class),
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        pm.setComponentEnabledSetting(new ComponentName(this, TransportationModeService.class),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
     }
 
     private void startTimerThread() {
@@ -447,66 +380,7 @@ public class MainActivity extends AppCompatActivity {
                 ohio_annotate.setCompoundDrawables(null, null, drawable_green, null);
             }
 
-            //get all data in cursor
-            /*
-            data = SessionManager.getTripDatafromSQLite();
-            ArrayList<String> dataInCursor = new ArrayList<String>();
-            try {
-                SQLiteDatabase db = DBManager.getInstance().openDatabase();
-
-                Cursor tripCursor = db.rawQuery("SELECT " + DBHelper.Trip_startTime + " , " + DBHelper.lat + " , " + DBHelper.lng + " FROM " + DBHelper.annotate_table + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
-                        + DBHelper.Trip_startTime + " BETWEEN" + " '" + startTimeString + "' " + "AND" + " '" + endTimeString + "' ORDER BY " + DBHelper.Trip_startTime + " DESC", null);
-
-                Log.d(TAG, "SELECT " + DBHelper.Trip_startTime + " , " + DBHelper.lat + " , " + DBHelper.lng + " FROM " + DBHelper.annotate_table + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
-                        + DBHelper.Trip_startTime + " BETWEEN" + " '" + startTimeString + "' " + "AND" + " '" + endTimeString + "' ORDER BY " + DBHelper.Trip_startTime + " DESC");
-
-                //get all data from cursor
-                if (tripCursor.moveToFirst()) {
-                    do {
-                        String eachdataInCursor = tripCursor.getString(0);
-                        dataInCursor.add(eachdataInCursor);
-                        Log.d(TAG, " tripCursor.moveToFirst()");
-                    } while (tripCursor.moveToNext());
-                } else
-                    Log.d(TAG, " tripCursor.moveToFirst() else");
-                tripCursor.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            for (int i = 0; i < data.size(); i++) {
-                String datafromList = data.get(i);
-                String timedata[] = datafromList.split("-");
-                String tripstartTime = timedata[0];
-                tripstartTime = SessionManager.getmillisecondToDateWithTime(Long.valueOf(tripstartTime));
-                if (dataInCursor.contains(tripstartTime))
-                    dataPos.add(i);
-            }
-
-            Drawable drawable_red = getResources().getDrawable(R.drawable.circle_red);
-            drawable_red.setBounds(0, 0, (int)(drawable_red.getIntrinsicWidth()*0.5), (int)(drawable_red.getIntrinsicHeight()*0.5));
-
-            Drawable drawable_green = getResources().getDrawable(R.drawable.circle_green);
-            drawable_green.setBounds(0, 0, (int)(drawable_green.getIntrinsicWidth()*0.5), (int)(drawable_green.getIntrinsicHeight()*0.5));
-
-            if (dataPos.size() != data.size()) { // != mean there have some trip haven't been done.
-//                tripStatus.setImageResource(R.drawable.circle_red);
-                ohio_annotate.setCompoundDrawables(null, null, drawable_red, null);
-//                ohio_annotate.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.circle_red, 0);
-                sharedPrefs.edit().putBoolean("TripStatus", true).apply();
-            } else {
-//                tripStatus.setImageResource(R.drawable.circle_green);
-                ohio_annotate.setCompoundDrawables(null, null, drawable_green, null);
-//                ohio_annotate.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.circle_green, 0);
-                sharedPrefs.edit().putBoolean("TripStatus", false).apply();
-            }*/
-
             dataPos = new ArrayList<Integer>();
-
-            /*if (Day % 2 == 0)
-                taskTable = DBHelper.checkFamiliarOrNotLinkList_table;
-            else
-                taskTable = DBHelper.intervalSampleLinkList_table;*/
 
             taskTable = DBHelper.surveyLink_table;
 
@@ -547,16 +421,11 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-//            if (dataPos.contains(tripCursorNum)) {
             if (!dataPos.isEmpty()) {
-//                surveyStatus.setImageResource(R.drawable.circle_red);
                 tolinkList.setCompoundDrawables(null, null, drawable_red, null);
-//                tolinkList.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.circle_red, 0);
                 sharedPrefs.edit().putBoolean("SurveyStatus", true).apply();
             } else {
-//                surveyStatus.setImageResource(R.drawable.circle_green);
                 tolinkList.setCompoundDrawables(null, null, drawable_green, null);
-//                tolinkList.setCompoundDrawablesWithIntrinsicBounds( 0, 0, R.drawable.circle_green, 0);
                 sharedPrefs.edit().putBoolean("SurveyStatus", false).apply();
 
             }
@@ -668,12 +537,14 @@ public class MainActivity extends AppCompatActivity {
 
                                 startpermission();
 
-                                startService(new Intent(getBaseContext(), SurveyTriggerService.class));
-
                                 //TODO send a json to the server in the user collections.
                                 sendingUserInform();
 
                                 //TODO judging the time if the server storing the Study Start Time.
+                                getStartDate();
+
+                                startService(new Intent(getBaseContext(), SurveyTriggerService.class));
+
 
                                 //Dismiss once everything is OK.
                                 dialog.dismiss();
@@ -694,85 +565,95 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendingUserInform(){
 
-        //making UserInform json file
-        JSONObject data = new JSONObject();
+//       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=3333333
+//      deviceid=375996574474999&email=none@nobody.com&userid=3333333
+        String link = Constants.checkInUrl + "deviceid=" + Constants.DEVICE_ID + "&email=" + Constants.Email+"&userid="+Constants.USER_ID;
+        String userInformInString = null;
+        JSONObject userInform = null;
+
+        Log.d(TAG, "user inform link : "+ link);
+
         try {
-            long currentTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
-            String currentTimeString = ScheduleAndSampleManager.getTimeString(currentTime);
-
-            data.put("time", currentTime);
-            data.put("timeString", currentTimeString);
-
-            data.put("user_id", Constants.USER_ID);
-            data.put("group_number", Constants.GROUP_NUM);
-            data.put("device_id", Constants.DEVICE_ID);
-            data.put("email", Constants.Email);
-
-            //computing the StudyStartTime
-            String Study_Start_Time = gettingStudyStartTime(currentTime);
-
-            data.put("StudyStartTime", Study_Start_Time);
-
-        }catch (JSONException e){
-            e.printStackTrace();
-        }
-
-        Log.d(TAG, "UserInform data uploading : " + data.toString());
-
-//        String curr = getDateCurrentTimeZone(new Date().getTime());
-
-        //TODO wait for the URL to send the UserInform data
-        /*try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                        postIsAliveUrl_insert + Constants.DEVICE_ID,
-                        data.toString(),
-                        "isAlive",
-                        curr).get();
+                userInformInString = new HttpAsyncGetUserInformFromServer().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                        link).get();
             else
-                new HttpAsyncPostJsonTask().execute(
-                        postIsAliveUrl_insert + Constants.DEVICE_ID,
-                        data.toString(),
-                        "isAlive",
-                        curr).get();
+                userInformInString = new HttpAsyncGetUserInformFromServer().execute(
+                        link).get();
+
+            userInform = new JSONObject(userInformInString);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
-        }*/
-
-    }
-
-    private String gettingStudyStartTime(long currentTime){
-
-        //computing StudyStartTime
-        long currentTiming_at_Tomorrow_Date = currentTime + Constants.MILLISECONDS_PER_DAY;
-
-        SimpleDateFormat sdf_Date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
-
-        String currentTiming_at_Tomorrow_Date_String = ScheduleAndSampleManager.getTimeString(currentTiming_at_Tomorrow_Date, sdf_Date);
-
-        Log.d(TAG, "currentTiming_at_Tomorrow_Date_String : " + currentTiming_at_Tomorrow_Date_String);
-
-        //Start at 8AM
-        String Study_Start_Time = currentTiming_at_Tomorrow_Date_String + " 08:00:00";
-
-        Log.d(TAG, "Study_Start_Time : " + Study_Start_Time);
-
-        return Study_Start_Time;
-
-    }
-
-    //TODO deprecated
-    /*boolean tryParseInt(String value) {
-        try {
-            Integer.parseInt(value);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
+        } catch (JSONException e){
+            e.printStackTrace();
         }
-    }*/
+
+        Log.d(TAG, "userInform : " + userInform);
+
+        //In order to set the survey link
+        setDaysInSurvey(userInform);
+
+        setMidnightStart(userInform);
+
+    }
+
+    private void setDaysInSurvey(JSONObject userInform){
+
+        try{
+            Constants.daysInSurvey = userInform.getInt("daysinsurvey");
+
+            sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
+
+            Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void setMidnightStart(JSONObject userInform){
+
+        try{
+            //1519645071 firstcheckin
+            long firstcheckin = userInform.getLong("firstcheckin") * Constants.MILLISECONDS_PER_SECOND;
+
+            SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE);
+
+            Log.d(TAG, "firstcheckin : "+ firstcheckin);
+            Log.d(TAG, "firstcheckin String : "+ ScheduleAndSampleManager.getTimeString(firstcheckin, sdf_now));
+
+            sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+
+            long firstcheckinAfteraDay = firstcheckin + Constants.MILLISECONDS_PER_DAY;
+
+            Log.d(TAG, "firstcheckinAfteraDay : "+ firstcheckinAfteraDay);
+
+            String firstresearchdate = ScheduleAndSampleManager.getTimeString(firstcheckinAfteraDay, sdf_now);
+
+            firstresearchdate = firstresearchdate + " 00:00:00";
+
+            Log.d(TAG, "firstcheckinAfteraDay String : "+ firstresearchdate);
+
+            long firstresearchday = ScheduleAndSampleManager.getTimeInMillis(firstresearchdate,sdf_now);
+
+//            String firstcheckinDate = ScheduleAndSampleManager.getTimeString(firstcheckin, sdf_now);
+
+            Constants.midnightstart = firstresearchday;
+
+            sharedPrefs.edit().putLong("midnightstart", Constants.midnightstart).apply();
+
+            Log.d(TAG, "midnightstart : "+ Constants.midnightstart);
+
+            sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", true).apply();
+
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -783,6 +664,7 @@ public class MainActivity extends AppCompatActivity {
                     String sleepEndTime = data.getExtras().getString("SleepingEndTime");
 
                     if(!sleepStartTime.equals("Please select your start time")&&!sleepEndTime.equals("Please select your end time")) {
+
                         String[] sleepStartDetail = sleepStartTime.split(":");
 
                         int sleepStartHour = Integer.valueOf(sleepStartDetail[0]);
@@ -804,8 +686,20 @@ public class MainActivity extends AppCompatActivity {
                             sleepEndHourStr = String.valueOf(sleepEndHour)+"pm";
                         else
                             sleepEndHourStr = String.valueOf(sleepEndHour-12)+"pm";
-//                        sleepingtime.setText("Sleeping time:"+"\r\n"+sleepStartTime+" to "+sleepEndTime);
-                        sleepingtime.setText("Sleeping time: " + sleepStartHourStr + " to " + sleepEndHourStr);
+                        sleepingtime.setText("Sleep: " + sleepStartHourStr + " to " + sleepEndHourStr);
+
+                        sleepingtime.setText("Sleep: " + sleepStartTime + " to " + sleepEndTime);
+
+
+                        sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", true).apply();
+
+                        /*
+                        //cancel the last one first
+                        unregisterActionAlarmReceiver();
+
+                        //then, create the new one based on the new sleeping time
+                        registerActionAlarmReceiver();
+                        */
                     }
                     else
                         sleepingtime.setText("Set Sleep Time");
@@ -889,7 +783,6 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             Log.e(TAG,"recordinglist_ohio clicked");
 
-//            startActivity(new Intent(MainActivity.this, recordinglistohio.class));
             startActivityForResult(new Intent(MainActivity.this, recordinglistohio.class), 2);
 
         }
@@ -901,30 +794,12 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG,"sleepingohio clicked");
 
             startActivityForResult(new Intent(MainActivity.this, sleepingohio.class),requestCode_setting);
-//            startActivity(new Intent(MainActivity.this, sleepingohio.class));
 
         }
     };
 
-    //public for update
-    public void initViewPager(View timerview, View recordview){
-        mTabs = (android.support.design.widget.TabLayout) findViewById(R.id.tablayout);
-        mTabs.addTab(mTabs.newTab().setText("計時"));
-        mTabs.addTab(mTabs.newTab().setText("紀錄"));
-
-        mViewPager = (ViewPager) findViewById(R.id.viewpager);
-        timerview.setTag(Constant.home_tag);
-
-
-    }
-
     protected void showToast(String aText) {
         Toast.makeText(this, aText, Toast.LENGTH_SHORT).show();
-    }
-
-    public void improveMenu(boolean bool){
-        Constant.tabpos = bool;
-        ActivityCompat.invalidateOptionsMenu(this);
     }
 
     @Override
@@ -1048,8 +923,6 @@ public class MainActivity extends AppCompatActivity {
                 perms.put(android.Manifest.permission.READ_PHONE_STATE, PackageManager.PERMISSION_GRANTED);
                 perms.put(android.Manifest.permission.BODY_SENSORS, PackageManager.PERMISSION_GRANTED);
 
-
-
                 // Fill with actual results from user
                 if (grantResults.length > 0) {
                     for (int i = 0; i < permissions.length; i++)
@@ -1089,33 +962,6 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
     }
 
-/*
-    @Subscribe
-    public void assertEligibilityAndPopulateCompensationMessage(
-            UserSubmissionStats userSubmissionStats) {
-        Log.d(TAG, "Attempting to update compesnation message");
-        if(userSubmissionStats != null && isEligibleForReward(userSubmissionStats)) {
-            Log.d(TAG, "populating the compensation message");
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    compensationMessage.setText("You are now eligible for today's reward!");
-                    compensationMessage.setVisibility(View.VISIBLE);
-                    compensationMessage.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onCheckCreditPressed(v);
-                        }
-                    });
-
-                }});
-        } else {
-                compensationMessage.setText("");
-                compensationMessage.setVisibility(View.INVISIBLE);
-        }
-    }
-*/
-
     @Subscribe
     public void incrementLoadingProcessCount(IncrementLoadingProcessCountEvent event) {
         Integer loadingCount = loadingProcessCount.incrementAndGet();
@@ -1126,89 +972,67 @@ public class MainActivity extends AppCompatActivity {
     public void decrementLoadingProcessCountEvent(DecrementLoadingProcessCountEvent event) {
         Integer loadingCount = loadingProcessCount.decrementAndGet();
         Log.d(TAG, "Decrementing loading processes count: " + loadingCount);
-        //maybeRemoveProgressDialog(loadingCount);
     }
-    // because of loadingProgressDialog
-/*
-    private void maybeRemoveProgressDialog(Integer loadingCount) {
-        if(loadingCount <= 0) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    loadingProgressDialog.hide();
+
+    private class HttpAsyncGetUserInformFromServer extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            String result=null;
+//            String url = params[0];
+
+            HttpURLConnection connection = null;
+            BufferedReader reader = null;
+
+            try {
+                URL url = new URL(params[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+
+                InputStream stream = connection.getInputStream();
+
+                reader = new BufferedReader(new InputStreamReader(stream));
+
+                StringBuffer buffer = new StringBuffer();
+                String line = "";
+
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line+"\n");
+                    Log.d(TAG, "Response : " + line);
                 }
-            });
-        }
-    }
-*/
-    /*
-    @Subscribe
-    public boolean isEligibleForReward(UserSubmissionStats userSubmissionStats) {
-        return getRewardRelevantSubmissionCount(userSubmissionStats) >= ApplicationConstants.MIN_REPORTS_TO_GET_REWARD;
-    }
 
-    public void onCheckCreditPressed(View view) {
-        Intent displayCreditIntent = new Intent(MainActivity.this, DisplayCreditActivity.class);
-        startActivity(displayCreditIntent);
-    }*/
+                return buffer.toString();
 
-
-    public class TimerOrRecordPagerAdapter extends PagerAdapter {
-        private List<View> mListViews;
-        private Context mContext;
-
-        public TimerOrRecordPagerAdapter(){};
-
-        public TimerOrRecordPagerAdapter(List<View> mListViews,Context mContext) {
-            this.mListViews = mListViews;
-            this.mContext = mContext;
-        }
-
-        @Override
-        public int getCount() {
-            return mListViews.size();
-        }
-
-        @Override
-        public boolean isViewFromObject(View view, Object o) {
-            return o == view;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return "Item " + (position + 1);
-        }
-
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            View view = mListViews.get(position);
-            switch (position){
-                case 0: //timer
-                    home mhome = new home(mContext);
-                    mhome.inithome(timerview);
-
-                    break;
-                case 1: //report
-
-                    break;
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
-
-            container.addView(view);
-
-            return view;
+            return result;
         }
 
-        /*
-        public int getItemPosition(Object object) {
-            return POSITION_NONE;
-        }*/
-
+        // onPostExecute displays the results of the AsyncTask.
         @Override
-        public void destroyItem(ViewGroup container, int position, Object object) {
-            container.removeView((View) object);
-        }
+        protected void onPostExecute(String result) {
+            Log.d(TAG, "get http post result " + result);
 
+        }
 
     }
+
+
 }

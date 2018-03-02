@@ -49,7 +49,7 @@ public class BatteryDataRecordDAO implements DAO<BatteryDataRecord> {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
             values.put(DBHelper.TIME, entity.getCreationTime());
-//            values.put(DBHelper.TaskDayCount, entity.getTaskDayCount());
+//            values.put(DBHelper.daysInSurvey, entity.getTaskDayCount());
 //            values.put(DBHelper.HOUR, entity.getHour());
             values.put(DBHelper.BatteryLevel_col, entity.getBatteryLevel());
             values.put(DBHelper.BatteryPercentage_col, entity.getBatteryPercentage());
