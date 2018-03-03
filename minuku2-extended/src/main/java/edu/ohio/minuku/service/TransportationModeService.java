@@ -64,9 +64,11 @@ public class TransportationModeService extends Service {
     private static final float CONFIRM_START_ACTIVITY_THRESHOLD_IN_VEHICLE = (float) 0.6;
     private static final float CONFIRM_START_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.6;
     private static final float CONFIRM_START_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.6;
-    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_IN_VEHICLE = (float)0.2;
-    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.1;
-    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.2;
+    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_IN_VEHICLE = (float)0.3; //0.2
+    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.3; //0.1
+    private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.3; //0.2
+
+    public static final int CONFIRM_STOP_ACTIVITY_Needed_Confidence = 45;
 
     /**label **/
     public static final String STRING_DETECTED_ACTIVITY_IN_VEHICLE = "in_vehicle";
@@ -262,7 +264,6 @@ public class TransportationModeService extends Service {
                     examineTransportation(record);
 
                     Log.d("ARService", "[test replay] test trip: after examine transportation the current activity is  is " + getConfirmedActvitiyString() + " the status is " + getCurrentState());
-
 
                    // showTransportation(getConfirmedActvitiyString());
 
@@ -548,7 +549,8 @@ public class TransportationModeService extends Service {
 
                 long startTime = detectionTime - getWindowLengh(getSuspectedStartActivityType(), getCurrentState());
                 long endTime = detectionTime;
-                boolean isNewTransportationModeConfirmed = confirmStartPossibleTransportation(getSuspectedStartActivityType(), getWindowData(startTime, endTime));
+                boolean isNewTransportationModeConfirmed = confirmStartPossibleTransportation(getSuspectedStartActivityType(), getWindowData(startTime, endTime),
+                        getWindowLengh(getSuspectedStartActivityType(), getCurrentState()));
 
                 if (isNewTransportationModeConfirmed) {
 
@@ -599,7 +601,7 @@ public class TransportationModeService extends Service {
         else if (getCurrentState()==STATE_CONFIRMED) {
 
             Log.d(TAG,"[test replay] in confirm, the confirm AR is " + getActivityNameFromType(getConfirmedActivityType()));
-            /** if the detected activity is vehicle, bike or on foot, then we suspect the activity from now**/
+            /** if the detected activity is vehicle, bike or on foot, then we suspect the activity from now **/
 
             //if the latest activity is not the currently confirmed activity nor tilting nor unkown
             if (probableActivities.get(0).getType() != getConfirmedActivityType() &&
@@ -654,7 +656,9 @@ public class TransportationModeService extends Service {
 //                        WindowLength
                         ;
                 long endTime = detectionTime;
-                boolean isExitingTransportationMode = confirmStopPossibleTransportation(getSuspectedStopActivityType(), getWindowData(startTime, endTime));
+                boolean isExitingTransportationMode =
+                        confirmStopPossibleTransportation(getSuspectedStopActivityType(), getWindowData(startTime, endTime),
+                                getWindowLengh(getSuspectedStartActivityType(), getCurrentState()));
 
                 if (isExitingTransportationMode) {
 /*
@@ -948,7 +952,7 @@ public class TransportationModeService extends Service {
     }
 
 
-    private static boolean confirmStartPossibleTransportation(int activityType, ArrayList<ActivityRecognitionDataRecord> windowData) {
+    private boolean confirmStartPossibleTransportation(int activityType, ArrayList<ActivityRecognitionDataRecord> windowData, long windowLength) {
 
         float threshold = getConfirmStartThreshold(activityType);
 
@@ -981,7 +985,7 @@ public class TransportationModeService extends Service {
 
             float percentage = (float)count/windowData.size();
 
-            StoreToCSV(new Date().getTime(), String.valueOf(percentage), "start", windowData, threshold);
+            StoreToCSV(new Date().getTime(), String.valueOf(percentage), "start", windowData, threshold, windowLength);
 
             //if the percentage > threshold
             if ( threshold <= percentage || inRecentCount >= 2)
@@ -993,14 +997,14 @@ public class TransportationModeService extends Service {
         else{
 
 
-            StoreToCSV(new Date().getTime(), "no float", "start",new ArrayList<ActivityRecognitionDataRecord>(), threshold);
+            StoreToCSV(new Date().getTime(), "no float", "start",new ArrayList<ActivityRecognitionDataRecord>(), threshold, windowLength);
 
             //if there's no data in the windowdata, we should not confirm the possible activity
             return false;
         }
     }
 
-    public static void StoreToCSV(long timestamp, String percentage, String startstop, ArrayList<ActivityRecognitionDataRecord> windowData, float threshold){
+    public void StoreToCSV(long timestamp, String percentage, String startstop, ArrayList<ActivityRecognitionDataRecord> windowData, float threshold, long windowLength){
 
         String sFileName = "windowdata.csv";
 
@@ -1012,11 +1016,25 @@ public class TransportationModeService extends Service {
 
             CSVWriter csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
 
+            SharedPreferences sharedPrefs = mContext.getSharedPreferences("edu.umich.minuku_2", mContext.MODE_PRIVATE);
+            Boolean startwindowdataOrNot = sharedPrefs.getBoolean("startwindowdataOrNot", true);
+
+            if(startwindowdataOrNot) {
+                List<String[]> title = new ArrayList<String[]>();
+
+                title.add(new String[]{"timestamp", "timeString", "percentage", "startstop", "windowData", "threshold", "windowLength"});
+
+                csv_writer.writeAll(title);
+
+                sharedPrefs.edit().putBoolean("startwindowdataOrNot", false).apply();
+
+            }
+
             List<String[]> data = new ArrayList<String[]>();
 
             String timeString = getTimeString(timestamp);
 
-            data.add(new String[]{String.valueOf(timestamp), timeString, percentage, startstop,String.valueOf(windowData), String.valueOf(threshold)});
+            data.add(new String[]{String.valueOf(timestamp), timeString, percentage, startstop,String.valueOf(windowData), String.valueOf(threshold), String.valueOf(windowLength)});
 
             csv_writer.writeAll(data);
 
@@ -1073,7 +1091,7 @@ public class TransportationModeService extends Service {
         return windowData;
     }
 
-    private static boolean confirmStopPossibleTransportation(int activityType, ArrayList<ActivityRecognitionDataRecord> windowData) {
+    private boolean confirmStopPossibleTransportation(int activityType, ArrayList<ActivityRecognitionDataRecord> windowData, long windowLength) {
 
         float threshold = getConfirmStopThreshold(activityType);
 
@@ -1096,18 +1114,23 @@ public class TransportationModeService extends Service {
             for (int activityIndex = 0; activityIndex<detectedActivities.size(); activityIndex++) {
 
                 //if probable activities contain the target activity, we count! (not simply see the most probable one)
-                if (detectedActivities.get(activityIndex).getType()==activityType ) {
+
+                if (detectedActivities.get(activityIndex).getType()==activityType
+                        //also, we only care about the label which is much confidence to
+                        //prevent the low confidence ones would affect the result
+                        && detectedActivities.get(activityIndex).getConfidence() >= CONFIRM_STOP_ACTIVITY_Needed_Confidence){
                     count +=1;
                     break;
                 }
             }
+
         }
 
         float percentage = (float)count/windowData.size();
 
         if (windowData.size()!=0) {
             //if the percentage > threshold
-            StoreToCSV(new Date().getTime(), "stop", String.valueOf(percentage), windowData, threshold);
+            StoreToCSV(new Date().getTime(), "stop", String.valueOf(percentage), windowData, threshold, windowLength);
 
             if ( threshold >= percentage && inRecentCount <= 2)
 
@@ -1117,7 +1140,7 @@ public class TransportationModeService extends Service {
 
         }
         else{
-            StoreToCSV(new Date().getTime(), "no float", "stop", new ArrayList<ActivityRecognitionDataRecord>(), threshold);
+            StoreToCSV(new Date().getTime(), "no float", "stop", new ArrayList<ActivityRecognitionDataRecord>(), threshold, windowLength);
 
             //if there's no data in the windowdata, we should not confirm the possible activity
             return false;
