@@ -168,6 +168,10 @@ public class TransportationModeService extends Service {
 
         Log.d(TAG, "onDestroy");
 
+        ServiceDestroying_StoreToCSV(new Date().getTime(), "TransportationMode.csv");
+        ServiceDestroying_StoreToCSV(new Date().getTime(), "TransportationState.csv");
+        ServiceDestroying_StoreToCSV(new Date().getTime(),  "windowdata.csv");
+
         sharedPrefs.edit().putInt("CurrentState", mCurrentState).apply();
         sharedPrefs.edit().putInt("ConfirmedActivityType", mConfirmedActivityType).apply();
 
@@ -368,6 +372,38 @@ public class TransportationModeService extends Service {
             String timeString = getTimeString(timestamp);
 
             data.add(new String[]{String.valueOf(timestamp), timeString, String.valueOf(rec_conf), String.valueOf(latest_conf)});
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void ServiceDestroying_StoreToCSV(long timestamp,String sFileName){
+        Log.d(TAG,"ServiceDestroying_StoreToCSV");
+
+//        String sFileName = "..._.csv";
+
+        try{
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            Log.d(TAG, "root : " + root);
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            String timeString = getTimeString(timestamp);
+
+            data.add(new String[]{String.valueOf(timestamp), timeString, "Sevice killed."});
 
             csv_writer.writeAll(data);
 
