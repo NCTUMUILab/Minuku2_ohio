@@ -357,7 +357,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     public void StoreToCSV(long timestamp, ArrayList<LatLng> latLngs){
 
-        Log.d(TAG,"TransportationMode_StoreToCSV startIndoorOutdoor");
+        Log.d(TAG,"StoreToCSV startIndoorOutdoor");
 
         String sFileName = "startIndoorOutdoor.csv";
 
@@ -405,7 +405,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     public void StoreToCSV(long timestamp, double latitude, double longitude, float accuracy){
 
-        Log.d(TAG,"TransportationMode_StoreToCSV");
+        Log.d(TAG,"StoreToCSV");
 
         String sFileName = "LocationOnChange.csv";
 
@@ -423,30 +423,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             String timeString = getTimeString(timestamp);
 
             data.add(new String[]{String.valueOf(timestamp),timeString,String.valueOf(latitude),String.valueOf(longitude),String.valueOf(accuracy)});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    public void createCSV(){
-        String sFileName = "LocationOnChange.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy","Extras"});
 
             csv_writer.writeAll(data);
 
