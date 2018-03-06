@@ -59,7 +59,7 @@ public class BackgroundService extends Service {
         super();
         streamManager = MinukuStreamManager.getInstance();
 //        mNotificationManager = new NotificationManager();
-        mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_FREQUENCY);
+        mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_THREAD_SIZE);
 
         intentFilter = new IntentFilter();
         intentFilter.addAction(CONNECTIVITY_ACTION);

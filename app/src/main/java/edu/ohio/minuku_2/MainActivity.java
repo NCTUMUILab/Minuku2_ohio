@@ -600,7 +600,9 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "userInform : " + userInform);
 
         //In order to set the survey link
-        setDaysInSurvey(userInform);
+        setDaysInSurveyAndTheDayTodayIs(userInform);
+
+        setDownloadedDaysInSurveyIs(userInform);
 
         setMidnightStart(userInform);
 
@@ -623,7 +625,7 @@ public class MainActivity extends AppCompatActivity {
         return haveConnectedWifi || haveConnectedMobile;
     }
 
-    private void setDaysInSurvey(JSONObject userInform){
+    private void setDaysInSurveyAndTheDayTodayIs(JSONObject userInform){
 
         try{
             Constants.daysInSurvey = userInform.getInt("daysinsurvey");
@@ -631,6 +633,20 @@ public class MainActivity extends AppCompatActivity {
             sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
 
             Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void setDownloadedDaysInSurveyIs(JSONObject userInform){
+
+        try{
+            Constants.downloadedDayInSurvey = userInform.getInt("daysinsurvey");
+
+            sharedPrefs.edit().putInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey).apply();
+
+            Log.d(TAG, "downloadedDayInSurvey : "+ Constants.downloadedDayInSurvey);
         }catch (JSONException e){
             e.printStackTrace();
         }

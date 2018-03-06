@@ -65,6 +65,7 @@ import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku.streamgenerator.ConnectivityStreamGenerator;
 import edu.ohio.minuku_2.Constant;
 import edu.ohio.minuku_2.R;
+import edu.ohio.minuku_2.Utils;
 import edu.ohio.minuku_2.controller.Ohio.SurveyActivity;
 import edu.ohio.minuku_2.model.CheckFamiliarOrNotDataRecord;
 import edu.ohio.minuku_2.streamgenerator.CheckFamiliarOrNotStreamGenerator;
@@ -152,6 +153,8 @@ public class SurveyTriggerService extends Service {
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
 
+        Utils.ServiceDestroying_StoreToCSV(new Date().getTime(), "SamplingCheck.csv");
+
         unregisterActionAlarmReceiver();
         unregisterSettingIntervalSampleAlarmReceiver();
     }
@@ -216,7 +219,7 @@ public class SurveyTriggerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        Log.d("SurveyTriggerService", "[test service running] going to start the probe service, isServiceRunning:  " + isServiceRunning());
+        Log.d(TAG, "[test service running] going to start the probe service, isServiceRunning:  " + isServiceRunning());
 
         int permissionStatus= ContextCompat.checkSelfPermission(SurveyTriggerService.this, android.Manifest.permission.READ_PHONE_STATE);
         if(permissionStatus== PackageManager.PERMISSION_GRANTED) {
@@ -230,6 +233,7 @@ public class SurveyTriggerService extends Service {
         alarmregistered = sharedPrefs.getBoolean("alarmregistered",false);
 
         Constants.USER_ID = sharedPrefs.getString("userid","NA");
+        Constants.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey);
 
         Log.d(TAG, "onStartCommand");
 
@@ -684,18 +688,32 @@ public class SurveyTriggerService extends Service {
 
     private boolean isTimeForSurvey(String noti_type) {
 
-        long now  = ScheduleAndSampleManager.getCurrentTimeInMillis();
+        long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
         boolean isTimeToSendSurvey = false;
 
         //set the default 0 so that we can send the first survey
-        long last_Survey_Time =sharedPrefs.getLong("last_Survey_Time", 0 );
+        long last_Survey_Time = sharedPrefs.getLong("last_Survey_Time", 0 );
+
+        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+        Constants.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey);
 
         Log.d(TAG, "last_Survey_Time : "+last_Survey_Time);
 
+        Log.d(TAG, "now : " + now);
+        Log.d(TAG, "last_Survey_Time : " + last_Survey_Time);
+        Log.d(TAG, "now - last_Survey_Time is more than a hour : " + ((now - last_Survey_Time) > Constants.MILLISECONDS_PER_HOUR));
+        Log.d(TAG, "daysInSurvey is not the downloadedDayInSurvey : " + (Constants.daysInSurvey != Constants.downloadedDayInSurvey));
+        Log.d(TAG, "daysInSurvey is not initial one : " + (Constants.daysInSurvey != -1));
+
+        Log.d(TAG, "MILLISECONDS_PER_HOUR : " +  Constants.MILLISECONDS_PER_HOUR);
+        Log.d(TAG, "daysInSurvey " + Constants.daysInSurvey);
+        Log.d(TAG, "downloadedDayInSurvey " + Constants.downloadedDayInSurvey);
+
         //every notification have to check if the last one is in a hour
-        //and the days in survey is not 0 and -1, meaning that its not the first day the user download the app
+        //and the days in survey is not the day the user downloaded app and -1
+        //, meaning that its not the day the user download the app
         if ( now - last_Survey_Time > Constants.MILLISECONDS_PER_HOUR
-                && Constants.daysInSurvey == 0 && Constants.daysInSurvey == -1 ) {
+                && Constants.daysInSurvey != Constants.downloadedDayInSurvey && Constants.daysInSurvey != -1 ) {
 
             //if it is a walking notification, checking if the last walking time is in two hour.
             if(noti_type.equals(noti_walk)){
@@ -714,10 +732,6 @@ public class SurveyTriggerService extends Service {
 
     }
 
-
-    /**
-     *
-     */
     private void setUpSurveyLink() {
         Log.d(TAG, "setUpSurveyLink");
 
@@ -743,10 +757,6 @@ public class SurveyTriggerService extends Service {
 
     }
 
-
-    /**
-     *
-     */
     private void sendSurveyLink(String noti_type) {
 
         //cancel the survey if it exists
@@ -784,7 +794,7 @@ public class SurveyTriggerService extends Service {
      * the next interval-based esm should be based on the last time the user opened the questionnaire
      */
     public static void setUpNextIntervalSurvey() {
-        //reset the Interval Sampleing after we send the survey
+        //reset the Interval Sampling after we send the survey
         if (interval_sampled < 3) {
             settingIntervalSampling(new Date().getTime());//TODO input time
         } else { //cancel all the interval today if the number of the sample are enough.
@@ -794,11 +804,6 @@ public class SurveyTriggerService extends Service {
 
     }
 
-
-
-    /**
-     *
-     */
     private void triggerIntervalSurvey() {
 
         //send survey
@@ -808,7 +813,7 @@ public class SurveyTriggerService extends Service {
         interval_sampled++;
         sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
 
-        //reset the Interval Sampleing after we send the survey
+        //reset the Interval Sampling after we send the survey
         if (interval_sampled < 3) {
             settingIntervalSampling(new Date().getTime());//TODO input time
 
@@ -823,7 +828,6 @@ public class SurveyTriggerService extends Service {
     }
 
     /**
-     *
      * @param endOfFirstThird
      * @param endOfSecondThird
      * @param endOfThirdThird
@@ -861,7 +865,6 @@ public class SurveyTriggerService extends Service {
         setUpNextIntervalSurvey();
 
     }
-
 
     public boolean isWalkingOutdoor(long walkingStarTime, long walkingEndtime) {
 
@@ -1442,10 +1445,14 @@ public class SurveyTriggerService extends Service {
     BroadcastReceiver IntervalSampleReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
 
+            Log.d(TAG, "In IntervalSampleReceiver");
+
             if (intent.getAction().equals(Constants.Interval_Sample)){
-                Log.d(TAG, "In IntervalSampleReceiver");
+
+                Log.d(TAG, "isTimeForSurvey(noti_random) : " + isTimeForSurvey(noti_random));
 
                 if (interval_sampled < 3 && isTimeForSurvey(noti_random)) {
+                    Log.d(TAG, "triggerIntervalSurvey");
                     triggerIntervalSurvey();
                 }
 
@@ -1462,7 +1469,8 @@ public class SurveyTriggerService extends Service {
     public void registerSettingIntervalSampleAlarmReceiver(){
 
         //register action alarm
-        IntentFilter alarm_filter = new IntentFilter(Constants.Setting_Interval_Sample);
+        IntentFilter alarm_filter = new IntentFilter();
+        alarm_filter.addAction(Constants.Setting_Interval_Sample);
         registerReceiver(InitializeIntervalSurveyTimeReceiver, alarm_filter);
 
         //initialize
@@ -1486,19 +1494,20 @@ public class SurveyTriggerService extends Service {
                 + hour * Constants.MILLISECONDS_PER_HOUR + min * Constants.MILLISECONDS_PER_MINUTE;
 
         Log.d(TAG, "midnightstart : "+midnightstart);
-        Log.d(TAG, "midnightstart : "+ScheduleAndSampleManager.getTimeString(midnightstart));
+        Log.d(TAG, "midnightstart String : "+ScheduleAndSampleManager.getTimeString(midnightstart));
         Log.d(TAG, "hour : " + hour);
         Log.d(TAG, "min : " + min);
         Log.d(TAG, "FirstTime_ToInitializeIntervalSurvey : " + Constants.FirstTime_ToInitializeIntervalSurvey);
-        Log.d(TAG, "midnightstart : " + ScheduleAndSampleManager.getTimeString(Constants.FirstTime_ToInitializeIntervalSurvey));
+        Log.d(TAG, "FirstTime_ToInitializeIntervalSurvey String : " + ScheduleAndSampleManager.getTimeString(Constants.FirstTime_ToInitializeIntervalSurvey));
 
         int daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
 
         long nextTimeToInitializeIntervalSurvey = Constants.FirstTime_ToInitializeIntervalSurvey
                 + daysInSurvey * Constants.MILLISECONDS_PER_DAY;
 
-        Log.d(TAG, "daysInSurvey " + daysInSurvey);
-        Log.d(TAG, "timeToInitializeIntervalSurvey " + nextTimeToInitializeIntervalSurvey);
+        Log.d(TAG, "daysInSurvey : " + daysInSurvey);
+        Log.d(TAG, "timeToInitializeIntervalSurvey : " + nextTimeToInitializeIntervalSurvey);
+        Log.d(TAG, "nextTimeToInitializeIntervalSurvey : " + ScheduleAndSampleManager.getTimeString(nextTimeToInitializeIntervalSurvey));
 
         int request_code = SurveyTriggerService.generatePendingIntentRequestCode(nextTimeToInitializeIntervalSurvey);
         //create an alarm for a time
@@ -1506,7 +1515,6 @@ public class SurveyTriggerService extends Service {
 
         PendingIntent pi = PendingIntent.getBroadcast(mContext, request_code, intent, 0);
 
-        Log.d(TAG, "nextTimeToInitializeIntervalSurvey : " + ScheduleAndSampleManager.getTimeString(nextTimeToInitializeIntervalSurvey));
 
         //for the reset one
         AlarmManager alarmManager = (AlarmManager) getSystemService( ALARM_SERVICE );
@@ -1524,6 +1532,18 @@ public class SurveyTriggerService extends Service {
 
                 setNextTimeToInitialize();
             }
+
+            /*if (intent.getAction().equals(Constants.Interval_Sample)){
+                Log.d(TAG, "In IntervalSampleReceiver");
+
+                Log.d(TAG, "isTimeForSurvey(noti_random) : " + isTimeForSurvey(noti_random));
+
+                if (interval_sampled < 3 && isTimeForSurvey(noti_random)) {
+                    Log.d(TAG, "triggerIntervalSurvey");
+                    triggerIntervalSurvey();
+                }
+
+            }*/
 
         }
     };

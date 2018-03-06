@@ -33,6 +33,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -65,7 +66,6 @@ public class Utils {
 
     /**
      * method is used for checking valid Email id format.
-     *
      * @param email
      * @return boolean true for valid false for invalid
      */
@@ -95,10 +95,57 @@ public class Utils {
         }
     }
 
+    public static void checkinresponseStoreToCSV(long timestamp, Context context){
+
+        String sFileName = "checkInResponse.csv";
+        Log.d("checkinresponse", "entering checkinresponseStoreToCSV");
+
+        try{
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            SharedPreferences sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
+            Boolean startCheckInResponseOrNot = sharedPrefs.getBoolean("startCheckInResponseOrNot", true);
+
+            if(startCheckInResponseOrNot) {
+                List<String[]> title = new ArrayList<String[]>();
+
+                title.add(new String[]{"timestamp", "timeString",
+                        "deviceid", "email", "userid", "firstcheckin", "currentcheckin", "firstcheckinstr", "currentcheckinstr",
+                        "daysinsurvey", "midnightstart", "surveyrunninghours", "startmidnightstr" });
+
+                csv_writer.writeAll(title);
+
+                sharedPrefs.edit().putBoolean("startCheckInResponseOrNot", false).apply();
+
+            }
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
+
+            String message = "going to get the userinform";
+            //write transportation mode
+            data.add(new String[]{String.valueOf(timestamp), timeString, message});
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+            android.util.Log.e(TAG, "exception", e);
+        }
+    }
+
     public static void checkinresponseStoreToCSV(long timestamp, Context context, String response){
 
         String sFileName = "checkInResponse.csv";
-        Log.d("checkinresponse", "entering checkinresponseStoreToCSV ");
+        Log.d("checkinresponse", "entering checkinresponseStoreToCSV");
 
         try{
             File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
@@ -154,6 +201,38 @@ public class Utils {
         }catch (Exception e){
             e.printStackTrace();
             android.util.Log.e(TAG, "exception", e);
+        }
+    }
+
+    public static void ServiceDestroying_StoreToCSV(long timestamp,String sFileName){
+        Log.d(TAG,"ServiceDestroying_StoreToCSV");
+
+//        String sFileName = "..._.csv";
+
+        try{
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            Log.d(TAG, "root : " + root);
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
+
+            data.add(new String[]{String.valueOf(timestamp), timeString, "Sevice killed."});
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 

@@ -68,7 +68,8 @@ public class TransportationModeService extends Service {
     private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_FOOT = (float)0.3; //0.1
     private static final float CONFIRM_STOP_ACTIVITY_THRESHOLD_ON_BICYCLE =(float) 0.3; //0.2
 
-    public static final int CONFIRM_STOP_ACTIVITY_Needed_Confidence = 45;
+    public static final int CONFIRM_START_ACTIVITY_Needed_Confidence = 40;
+    public static final int CONFIRM_STOP_ACTIVITY_Needed_Confidence = 40;
 
     /**label **/
     public static final String STRING_DETECTED_ACTIVITY_IN_VEHICLE = "in_vehicle";
@@ -1010,8 +1011,21 @@ public class TransportationModeService extends Service {
                 }
             }
 
-            if (detectedActivities.get(0).getType()==activityType ) {
-                count +=1;
+//            if (detectedActivities.get(0).getType()==activityType ) {
+//                count +=1;
+//            }
+
+            for (int activityIndex = 0; activityIndex<detectedActivities.size(); activityIndex++) {
+
+                //if probable activities contain the target activity, we count! (not simply see the most probable one)
+
+                if (detectedActivities.get(activityIndex).getType()==activityType
+                        //also, we only care about the label which is much confidence to
+                        //prevent the low confidence ones would affect the result
+                        && detectedActivities.get(activityIndex).getConfidence() >= CONFIRM_START_ACTIVITY_Needed_Confidence){
+                    count +=1;
+                    break;
+                }
             }
 
 

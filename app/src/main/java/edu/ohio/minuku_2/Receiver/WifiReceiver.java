@@ -1514,6 +1514,12 @@ public class WifiReceiver extends BroadcastReceiver {
     private class HttpAsyncGetUserInformFromServer extends AsyncTask<String, Void, String> {
 
         @Override
+        protected void onPreExecute(){
+            Log.d(TAG, "onPreExecute");
+            Utils.checkinresponseStoreToCSV(ScheduleAndSampleManager.getCurrentTimeInMillis(), context);
+        }
+
+        @Override
         protected String doInBackground(String... params) {
 
             String result=null;
