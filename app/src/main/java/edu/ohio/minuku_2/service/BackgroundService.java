@@ -80,13 +80,14 @@ public class BackgroundService extends Service {
 
         Log.d(TAG, "onStartCommand");
 
+        Log.d(TAG, "test service awake "+ TAG + ", isServiceRunning : "+ mRunning);
 
         if (!mRunning) {
 
             //we use an alarm to keep the service awake
             AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
             alarm.set(
-                    AlarmManager.RTC_WAKEUP,     //
+                    AlarmManager.RTC_WAKEUP,
                     System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
                     PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
             );
@@ -114,7 +115,7 @@ public class BackgroundService extends Service {
         }
 
         //TODO Keep eye on the service is working or not.
-        return START_STICKY;
+        return START_REDELIVER_INTENT;
     }
 
     private void runMainThread(){

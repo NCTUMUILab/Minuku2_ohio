@@ -207,7 +207,7 @@ public class TransportationModeService extends Service {
 
         startService();
 
-        //TODO might not necessary, we have same mechanism on BackGroundService
+        //TODO might not necessary, we have same mechanism on BackGroundService. Need to check.
         //add the Alarm try to wake the service to avoid the situation that the service is killed.
         /*if(!isServiceRunning) {
 
@@ -229,8 +229,8 @@ public class TransportationModeService extends Service {
 //            isServiceRunning = false;
         }*/
 
-        return START_STICKY;
-//        return START_REDELIVER_INTENT;
+        return START_REDELIVER_INTENT;
+        //return START_STICKY;
     }
 
     public void startService(){
@@ -253,6 +253,7 @@ public class TransportationModeService extends Service {
         public void run() {
 
             Log.d(TAG, "TransportationModeRunnable ");
+
             try {
                 transportationModeStreamGenerator = (TransportationModeStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(TransportationModeDataRecord.class);
             }catch(StreamNotFoundException e){
@@ -270,7 +271,7 @@ public class TransportationModeService extends Service {
 
                     Log.d("ARService", "[test replay] test trip: after examine transportation the current activity is  is " + getConfirmedActvitiyString() + " the status is " + getCurrentState());
 
-                   // showTransportation(getConfirmedActvitiyString());
+                   // showTransportation(getConfirmedActivityString());
 
                     try {
                         transportationModeStreamGenerator.setTransportationModeDataRecord(getConfirmedActvitiyString());
@@ -278,16 +279,6 @@ public class TransportationModeService extends Service {
                     }catch(Exception e){
                         e.printStackTrace();
                     }
-                }
-
-                try {
-                    Log.d(TAG, "record conf : " + record.getMostProbableActivity().getConfidence());
-                    Log.d(TAG, "latest conf : " + latest_activityRecognitionDataRecord.getMostProbableActivity().getConfidence());
-                    StoreToCSV(new Date().getTime(), record.getMostProbableActivity().getConfidence(), latest_activityRecognitionDataRecord.getMostProbableActivity().getConfidence());
-                }catch (Exception e){
-                    e.printStackTrace();
-                    Log.d(TAG, "record conf : " + record.getMostProbableActivity().getConfidence());
-                    StoreToCSV(new Date().getTime(), record.getMostProbableActivity().getConfidence(), 0);
                 }
 
                 sharedPrefs.edit().putInt("CurrentState", mCurrentState).apply();
@@ -351,38 +342,6 @@ public class TransportationModeService extends Service {
         //note.setContentText(NotificationText);
         //mNotificationManager.notify(String.valueOf(System.currentTimeMillis()), 1, note.build());
 
-    }
-
-    public void StoreToCSV(long timestamp,int rec_conf, int latest_conf){
-        Log.d(TAG,"StoreToCSV");
-
-        String sFileName = "receive_latest.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            Log.d(TAG, "root : " + root);
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-            String timeString = getTimeString(timestamp);
-
-            data.add(new String[]{String.valueOf(timestamp), timeString, String.valueOf(rec_conf), String.valueOf(latest_conf)});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
     }
 
     public void ServiceDestroying_StoreToCSV(long timestamp,String sFileName){
@@ -1020,10 +979,17 @@ public class TransportationModeService extends Service {
                 //if probable activities contain the target activity, we count! (not simply see the most probable one)
 
                 if (detectedActivities.get(activityIndex).getType()==activityType
+                        //TODO turned into getting the first two labels
                         //also, we only care about the label which is much confidence to
                         //prevent the low confidence ones would affect the result
-                        && detectedActivities.get(activityIndex).getConfidence() >= CONFIRM_START_ACTIVITY_Needed_Confidence){
+//                        && detectedActivities.get(activityIndex).getConfidence() >= CONFIRM_START_ACTIVITY_Needed_Confidence
+                        ){
                     count +=1;
+                    break;
+                }
+
+                //TODO only consider the first two labels
+                if(activityIndex >= 1){
                     break;
                 }
             }
@@ -1166,10 +1132,17 @@ public class TransportationModeService extends Service {
                 //if probable activities contain the target activity, we count! (not simply see the most probable one)
 
                 if (detectedActivities.get(activityIndex).getType()==activityType
+                        //TODO only consider the first two labels
                         //also, we only care about the label which is much confidence to
                         //prevent the low confidence ones would affect the result
-                        && detectedActivities.get(activityIndex).getConfidence() >= CONFIRM_STOP_ACTIVITY_Needed_Confidence){
+                        //&& detectedActivities.get(activityIndex).getConfidence() >= CONFIRM_STOP_ACTIVITY_Needed_Confidence
+                        ){
                     count +=1;
+                    break;
+                }
+
+                //TODO only consider the first two labels
+                if(activityIndex >= 1){
                     break;
                 }
             }

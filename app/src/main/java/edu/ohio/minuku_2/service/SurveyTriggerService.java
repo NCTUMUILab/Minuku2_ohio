@@ -153,6 +153,21 @@ public class SurveyTriggerService extends Service {
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
 
+        isServiceRunning = false;
+
+        Utils.ServiceDestroying_StoreToCSV(new Date().getTime(), "SamplingCheck.csv");
+
+        unregisterActionAlarmReceiver();
+        unregisterSettingIntervalSampleAlarmReceiver();
+    }
+
+    @Override
+    public void onTaskRemoved(Intent intent){
+        super.onTaskRemoved(intent);
+        Log.d(TAG, "onTaskRemoved");
+
+        isServiceRunning = false;
+
         Utils.ServiceDestroying_StoreToCSV(new Date().getTime(), "SamplingCheck.csv");
 
         unregisterActionAlarmReceiver();
@@ -219,6 +234,9 @@ public class SurveyTriggerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
+
+        Log.d(TAG, "test service awake "+ TAG + ", isServiceRunning : "+ isServiceRunning);
+
         Log.d(TAG, "[test service running] going to start the probe service, isServiceRunning:  " + isServiceRunning());
 
         int permissionStatus= ContextCompat.checkSelfPermission(SurveyTriggerService.this, android.Manifest.permission.READ_PHONE_STATE);
@@ -257,8 +275,8 @@ public class SurveyTriggerService extends Service {
 //            isServiceRunning = false;
         }
 
-        return START_STICKY;
-//        return START_REDELIVER_INTENT;
+//        return START_STICKY;
+        return START_REDELIVER_INTENT;
     }
 
 
@@ -697,10 +715,9 @@ public class SurveyTriggerService extends Service {
         Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
         Constants.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey);
 
-        Log.d(TAG, "last_Survey_Time : "+last_Survey_Time);
-
         Log.d(TAG, "now : " + now);
         Log.d(TAG, "last_Survey_Time : " + last_Survey_Time);
+        Log.d(TAG, "last_Survey_Time String : " + ScheduleAndSampleManager.getTimeString(last_Survey_Time));
         Log.d(TAG, "now - last_Survey_Time is more than a hour : " + ((now - last_Survey_Time) > Constants.MILLISECONDS_PER_HOUR));
         Log.d(TAG, "daysInSurvey is not the downloadedDayInSurvey : " + (Constants.daysInSurvey != Constants.downloadedDayInSurvey));
         Log.d(TAG, "daysInSurvey is not initial one : " + (Constants.daysInSurvey != -1));
@@ -1500,7 +1517,7 @@ public class SurveyTriggerService extends Service {
         Log.d(TAG, "FirstTime_ToInitializeIntervalSurvey : " + Constants.FirstTime_ToInitializeIntervalSurvey);
         Log.d(TAG, "FirstTime_ToInitializeIntervalSurvey String : " + ScheduleAndSampleManager.getTimeString(Constants.FirstTime_ToInitializeIntervalSurvey));
 
-        int daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+        int daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey) + 1;
 
         long nextTimeToInitializeIntervalSurvey = Constants.FirstTime_ToInitializeIntervalSurvey
                 + daysInSurvey * Constants.MILLISECONDS_PER_DAY;

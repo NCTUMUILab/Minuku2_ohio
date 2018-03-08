@@ -24,7 +24,6 @@ package edu.ohio.minuku_2;
 
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -93,7 +92,6 @@ import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
-import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku_2.controller.Ohio.SurveyActivity;
 import edu.ohio.minuku_2.controller.Ohio.recordinglistohio;
 import edu.ohio.minuku_2.controller.Ohio.sleepingohio;
@@ -127,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView tripStatus;
     private ImageView surveyStatus;
 
-    private Button ohio_setting, ohio_annotate, startservice, tolinkList;
+    private Button ohio_setting, ohio_annotate, closeService, tolinkList;
     private String projName = "Ohio";
 
     private int requestCode_setting = 1;
@@ -137,6 +135,8 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPrefs;
 
     private Handler handler;
+
+    private Intent intentToStartSurvey, intentToStartBackground;
 
     private ScheduledExecutorService mScheduledExecutorService;
     public static final int REFRESH_FREQUENCY = 3; //10s, 10000ms
@@ -157,9 +157,12 @@ public class MainActivity extends AppCompatActivity {
 
         handler = new Handler();
 
-        setServiceNotKilled();
+//        setServiceNotKilled();
 
-        startService(new Intent(getBaseContext(), BackgroundService.class));
+        intentToStartBackground = new Intent(getBaseContext(), BackgroundService.class);
+        intentToStartSurvey = new Intent(getBaseContext(), SurveyTriggerService.class);
+
+        startService(intentToStartBackground);
 
         EventBus.getDefault().register(this);
 
@@ -268,6 +271,15 @@ public class MainActivity extends AppCompatActivity {
         ohio_annotate = (Button)findViewById(R.id.Annotate);
         ohio_annotate.setOnClickListener(ohio_annotateing);
 
+        closeService = (Button) findViewById(R.id.closeService);
+        closeService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopService(intentToStartBackground);
+                stopService(intentToStartSurvey);
+            }
+        });
+
         //TODO deprecated
             /*startservice = (Button)findViewById(R.id.service);
             startservice.setOnClickListener(new Button.OnClickListener(){
@@ -302,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
             sleepingtime.setText("Set Sleep Time");
     }
 
-    private void setServiceNotKilled() {
+    /*private void setServiceNotKilled() {
         Log.d("FFF", "toggleNotificationListenerService");
         PackageManager pm = getPackageManager();
         pm.setComponentEnabledSetting(new ComponentName(this, BackgroundService.class),
@@ -319,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
         pm.setComponentEnabledSetting(new ComponentName(this, TransportationModeService.class),
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-    }
+    }*/
 
     private void startTimerThread() {
         final Handler handler = new Handler();
@@ -549,8 +561,8 @@ public class MainActivity extends AppCompatActivity {
                                 //TODO judging the time if the server storing the Study Start Time.
                                 getStartDate();
 
-                                startService(new Intent(getBaseContext(), SurveyTriggerService.class));
-
+//                                startService(new Intent(getBaseContext(), SurveyTriggerService.class));
+                                startService(intentToStartSurvey);
 
                                 //Dismiss once everything is OK.
                                 dialog.dismiss();

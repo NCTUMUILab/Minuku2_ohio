@@ -164,7 +164,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     +"Extras : " + location.getExtras());
 
             // If the location is accurate to 30 meters, it's good enough for us.
-            // Post an update event and exit. //TODO maybe be
+            // Post an update event and exit.
             float dist = 0;
             float[] results = new float[1];
 
@@ -179,7 +179,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                 dist = 1000;
 
             Log.d(TAG, "dist : " + dist);
-            //if the newest
 
             //TODO uncomment them when we stop testing
             this.latestLatitude.set(location.getLatitude());
@@ -194,8 +193,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             Log.d(TAG,"onLocationChanged latestLatitude : "+ latestLatitude +" latestLongitude : "+ latestLongitude);
             Log.d(TAG,"onLocationChanged location : "+this.location);
 
-//            }
-
             if(startIndoorOutdoor){
                 LatLng latLng = new LatLng(latestLatitude.get(), latestLongitude.get());
                 locForIndoorOutdoor.add(latLng);
@@ -205,14 +202,24 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
             StoreToCSV(new Date().getTime(), locForIndoorOutdoor);
 
+            //store it to the sharePrefrence
+            sharedPrefs.edit().putFloat("latestLatitude", (float) location.getLatitude()).apply();
+            sharedPrefs.edit().putFloat("latestLongitude", (float) location.getLongitude()).apply();
+
         }
     }
 
     @Override
     public void onStreamRegistration() {
 
-        this.latestLatitude.set(-999.0);
-        this.latestLongitude.set(-999.0);
+        float latestLatitudeFromSharedPref = sharedPrefs.getFloat("latestLatitude", -999);
+        float latestLongitudeFromSharedPref = sharedPrefs.getFloat("latestLongitude", -999);
+
+        this.latestLatitude.set(latestLatitudeFromSharedPref);
+        this.latestLongitude.set(latestLongitudeFromSharedPref);
+
+//        this.latestLatitude.set(-999.0);
+//        this.latestLongitude.set(-999.0);
 
         if (GooglePlayServicesUtil.isGooglePlayServicesAvailable(mApplicationContext)
                 == ConnectionResult.SUCCESS) {
