@@ -404,6 +404,11 @@ public class SessionManager {
         //get annotaitons that has the transportation mode tag
         ArrayList<Annotation> annotations = lastSession.getAnnotationsSet().getAnnotationByContent(activity);
 
+
+        //check if the last session has endtime. It is possible that it ends unexpectedly
+
+
+
         //if the previous session does not have any annotation of which transportation is of the same tag, we should not combine
         if (annotations.size() == 0) {
             edu.ohio.minuku.logger.Log.d(TAG, "[test combine] addSessionFlag = true  the last session is not the same activity");

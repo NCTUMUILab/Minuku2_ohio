@@ -260,9 +260,10 @@ public class SurveyTriggerService extends Service {
                 PendingIntent.getService(this, 0, new Intent(this, SurveyTriggerService.class), 0)
         );
 
+        startService();
+
         if(!isServiceRunning) {
 
-            startService();
 
             isServiceRunning = true;
 
@@ -717,6 +718,9 @@ public class SurveyTriggerService extends Service {
                     }
 
                 }catch (IndexOutOfBoundsException e){
+                    e.printStackTrace();
+//                    Log.e(TAG, "exception", e);
+                }catch (NullPointerException e){
                     e.printStackTrace();
 //                    Log.e(TAG, "exception", e);
                 }
@@ -1353,14 +1357,16 @@ public class SurveyTriggerService extends Service {
 
     private static void storeToCSVinterval(String todayDate){
 
-        String sFileName = "Interval_"+todayDate+".csv";
+//        String sFileName = "Interval_"+todayDate+".csv";
+        String sFileName = "Interval_Samples_Times.csv";
 
         sFileName = sFileName.replace("/","-");
 
         Log.d(TAG, "sFileName : " + sFileName);
 
         try {
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH_IntervalSamples);
+
+            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
 
             Log.d(TAG, "root : " + root);
 
@@ -1370,7 +1376,7 @@ public class SurveyTriggerService extends Service {
 
             Log.d(TAG, "interval_sampled_times : "+interval_sampled_times);
 
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH_IntervalSamples+sFileName,true));
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
 
             List<String[]> data = new ArrayList<String[]>();
 

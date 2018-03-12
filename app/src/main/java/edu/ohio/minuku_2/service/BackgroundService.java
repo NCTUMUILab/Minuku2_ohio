@@ -34,10 +34,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.manager.SessionManager;
+import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku_2.Receiver.WifiReceiver;
 import edu.ohio.minuku_2.manager.InstanceManager;
 
@@ -133,14 +135,52 @@ public class BackgroundService extends Service {
         @Override
         public void run() {
 
+            Log.d(TAG, "updateStreamManagerRunnable");
             streamManager.updateStreamGenerators();
 
         }
     };
 
+    private void stopTheSessionByServiceClose(){
+        //if the background service is killed, set the end time of the ongoing trip (if any) using the current timestamp
+        if (SessionManager.getOngoingSessionIdList().size()>0){
+            Session session = SessionManager.getSession(SessionManager.getOngoingSessionIdList().get(0)) ;
+
+            Log.d(TAG, "test ondestory trip get session in onDestroy " + session.getId() + " time: " + session.getStartTime() + " - " + session.getEndTime());
+
+            //if we end the current session, we should update its time and set a long enough flag
+            if (session.getEndTime()==0){
+                long endTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+                session.setEndTime(endTime);
+            }
+
+            boolean isSessionLongEnough = SessionManager.isSessionLongEnough(SessionManager.SESSION_LONGENOUGH_THRESHOLD_DISTANCE, session.getId());
+
+            session.setLongEnough(isSessionLongEnough);
+
+            //end the current session
+            SessionManager.endCurSession(session);
+            Log.d(TAG, "test ondestory trip: after remove, now the sesssion manager session list has  " + SessionManager.getInstance().getOngoingSessionList());
+
+        }
+
+        Log.d(TAG, "test ondestory trip end of ending a trip");
+    }
+
     @Override
     public void onDestroy() {
-        Log.d(TAG, "Destroying service. Your state might be lost!");
+        Log.d(TAG, "test ondestory trip Destroying service. Your state might be lost!");
+
+        stopTheSessionByServiceClose();
+
+        unregisterReceiver(mWifiReceiver);
+    }
+
+    public void onTaskRemoved(Intent intent){
+        super.onTaskRemoved(intent);
+
+        stopTheSessionByServiceClose();
+
         unregisterReceiver(mWifiReceiver);
     }
 

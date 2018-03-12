@@ -103,6 +103,48 @@ public class Utils {
         for(int DaysInSurvey = 1; DaysInSurvey <= countOfDaysInSurvey; DaysInSurvey++ ){
             SurveyTriggerService.settingIntervalSampling(DaysInSurvey, context);
         }
+
+        storeToCSV_Interval_Samples_Times_split();
+    }
+
+    private static void storeToCSV_Interval_Samples_Times_split(){
+
+//        String sFileName = "Interval_"+todayDate+".csv";
+        String sFileName = "Interval_Samples_Times.csv";
+
+        sFileName = sFileName.replace("/","-");
+
+        Log.d(TAG, "sFileName : " + sFileName);
+
+        try {
+
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+
+            Log.d(TAG, "root : " + root);
+
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            data.add(new String[]{"======","======","======","======","======","======","======"});
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        } catch(IOException e) {
+            e.printStackTrace();
+            android.util.Log.e(TAG, "exception", e);
+        } catch (IndexOutOfBoundsException e2){
+            e2.printStackTrace();
+            android.util.Log.e(TAG, "exception", e2);
+
+        }
+
     }
 
     public static void checkinresponseStoreToCSV(long timestamp, Context context){

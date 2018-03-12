@@ -56,6 +56,7 @@ public class TransportationModeService extends Service {
     /**Table Name**/
     public static final String RECORD_TABLE_NAME_TRANSPORTATION = "Record_Table_Transportation";
 
+    public static final int STATE_INITIAL = -1;
     public static final int STATE_STATIC = 0;
     public static final int STATE_SUSPECTING_START = 1;
     public static final int STATE_CONFIRMED = 2;
@@ -71,6 +72,7 @@ public class TransportationModeService extends Service {
 
     public static final int CONFIRM_START_ACTIVITY_Needed_Confidence = 40;
     public static final int CONFIRM_STOP_ACTIVITY_Needed_Confidence = 40;
+    public static final int CANCEL_SUSPECT_STOP_Threshold = 95;
 
     /**label **/
     public static final String STRING_DETECTED_ACTIVITY_IN_VEHICLE = "in_vehicle";
@@ -208,6 +210,8 @@ public class TransportationModeService extends Service {
         mCurrentState = sharedPrefs.getInt("CurrentState", STATE_STATIC);
         mConfirmedActivityType = sharedPrefs.getInt("ConfirmedActivityType", NO_ACTIVITY_TYPE);
 
+        String currentAR = sharedPrefs.getString("currentAR","Static");
+
     }
 
     public static boolean isServiceRunning() {
@@ -303,6 +307,20 @@ public class TransportationModeService extends Service {
                 if(record.getMostProbableActivity().getConfidence()!=999){ //conf == 999 means it didn't receive anything from AR
                     latest_activityRecognitionDataRecord = record;
 
+                    latest_activityRecognitionDataRecord.getProbableActivities();
+
+                    /*
+                        for (int i=0; i<latest_AR.getProbableActivities().size(); i++){
+
+                        if (i!=0){
+                            latest_AR_String+=Constants.ACTIVITY_DELIMITER;
+                        }
+                        DetectedActivity activity =  latest_AR.getProbableActivities().get(i);
+                        latest_AR_String += ActivityRecognitionStreamGenerator.getActivityNameFromType(activity.getType());
+                        latest_AR_String += Constants.ACTIVITY_CONFIDENCE_CONNECTOR;
+                        latest_AR_String += activity.getConfidence();
+
+                    }*/
                 }
             }
             else
@@ -541,15 +559,29 @@ public class TransportationModeService extends Service {
 
     public int examineTransportation(ActivityRecognitionDataRecord activityRecognitionDataRecord){
 
+        //if there's no existing activity type, we need to get activity from the shared preference
+        if (mConfirmedActivityType == NO_ACTIVITY_TYPE){
+            mConfirmedActivityType = sharedPrefs.getInt("ConfirmedActivityType", NO_ACTIVITY_TYPE);
+        }
+
+        if(mCurrentState == STATE_INITIAL){
+            mCurrentState = sharedPrefs.getInt("CurrentState", STATE_INITIAL);
+        }
+
+
+        if(activityRecognitionDataRecord.getProbableActivities()==null || activityRecognitionDataRecord.getProbableActivities().isEmpty()){
+            return -1;
+        }
 
         List<DetectedActivity> probableActivities = activityRecognitionDataRecord.getProbableActivities();
+
 
         Log.d(TAG, "[test replay] examine the incoming record.....for transportation " + activityRecognitionDataRecord.getDetectedtime()  +" : "+ activityRecognitionDataRecord.getProbableActivities().toString());
 
         long detectionTime = activityRecognitionDataRecord.getCreationTime();
 
-        //if in the static state, we try to suspect new activity
-        if (getCurrentState()==STATE_STATIC) {
+        //if in the static state or initial state, we try to suspect new activity
+        if (getCurrentState()==STATE_STATIC || getCurrentState()==STATE_INITIAL) {
 
 //            Log.d(TAG,"[test replay] in Static");
 
@@ -557,7 +589,6 @@ public class TransportationModeService extends Service {
             if (probableActivities.get(0).getType()== DetectedActivity.ON_BICYCLE ||
                     probableActivities.get(0).getType()== DetectedActivity.IN_VEHICLE ||
                     probableActivities.get(0).getType()== DetectedActivity.ON_FOOT) {
-
 
 //                Log.d(TAG,"[test replay] change to suspect");
 
@@ -681,6 +712,24 @@ public class TransportationModeService extends Service {
                 WindowLength = getTransitionWindowLength(getSuspectedStopActivityType(), getCurrentState());
             }*/
 
+            //TODO if any label having a AR confidence == 100, go back to state_confirmed
+//            int targetType = getSuspectedStopActivityType();
+            if (probableActivities.get(0).getType() == getSuspectedStopActivityType() &&
+                    probableActivities.get(0).getConfidence() >= CANCEL_SUSPECT_STOP_Threshold) {
+
+                //back to static, cancel the suspection
+                setCurrentState(STATE_CONFIRMED);
+
+                setSuspectedStartActivityType(NO_ACTIVITY_TYPE);
+
+/*
+                    LogManager.log(LogManager.LOG_TAG_ACTIVITY_RECOGNITION,
+                            LogManager.LOG_TAG_PROBE_TRANSPORTATION,
+                            "Cancel Suspection:\t" +  "state:" + getStateName(getCurrentState()) );
+*///
+                TransportationState_StoreToCSV(new Date().getTime(), "STATE_CONFIRMED", getConfirmedActvitiyString());
+            }
+
             boolean isTimeToConfirm = checkTimeElapseOfLatestActivityFromSuspectPoint(detectionTime, getSuspectTime(),
                     getWindowLengh(getSuspectedStopActivityType(),
 //                    getTransitionWindowLength(getSuspectedStopActivityType(),
@@ -701,6 +750,7 @@ public class TransportationModeService extends Service {
                         confirmStopPossibleTransportation(getSuspectedStopActivityType(), getWindowData(startTime, endTime),
                                 getWindowLengh(getSuspectedStartActivityType(), getCurrentState()));
 
+
                 if (isExitingTransportationMode) {
 /*
                     LogManager.log(LogManager.LOG_TAG_ACTIVITY_RECOGNITION,
@@ -720,7 +770,6 @@ public class TransportationModeService extends Service {
                     TransportationState_StoreToCSV(new Date().getTime(), "STATE_STATIC", getConfirmedActvitiyString());
 
                 }
-
                 //not exiting the confirmed activity
                 else {
                     //back to static, cancel the suspection
