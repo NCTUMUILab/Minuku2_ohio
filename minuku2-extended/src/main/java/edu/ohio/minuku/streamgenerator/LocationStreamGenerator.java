@@ -126,9 +126,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     private SharedPreferences sharedPrefs;
 
-//    TelephonyManager tel;
-//    MyPhoneStateListener myPhoneStateListener;
-
     public LocationStreamGenerator(Context applicationContext) {
         super(applicationContext);
         this.mStream = new LocationStream(Constants.LOCATION_QUEUE_SIZE);

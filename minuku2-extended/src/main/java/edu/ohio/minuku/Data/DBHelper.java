@@ -749,8 +749,8 @@ public class DBHelper extends SQLiteOpenHelper {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME +
                     " where " + COL_SESSION_LONG_ENOUGH_FLAG + " = 1" +
-//                    " where " + COL_SESSION_START_TIME + " > " + startTime + " and " +
-//                    COL_SESSION_START_TIME + " < " + endTime +
+                    " and " + COL_SESSION_START_TIME + " > " + startTime + " and " +
+                    COL_SESSION_START_TIME + " < " + endTime +
                     " order by " + COL_SESSION_START_TIME + " DESC ";
 
              Log.d(TAG, "test combine [querySessionsBetweenTimes] the query statement is " +sql);

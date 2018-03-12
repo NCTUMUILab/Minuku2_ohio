@@ -67,9 +67,6 @@ import edu.ohio.minuku_2.Constant;
 import edu.ohio.minuku_2.R;
 import edu.ohio.minuku_2.Utils;
 import edu.ohio.minuku_2.controller.Ohio.SurveyActivity;
-import edu.ohio.minuku_2.model.CheckFamiliarOrNotDataRecord;
-import edu.ohio.minuku_2.streamgenerator.CheckFamiliarOrNotStreamGenerator;
-import edu.ohio.minukucore.exception.StreamNotFoundException;
 
 /**
  * Created by Lawrence on 2017/4/23.
@@ -91,6 +88,7 @@ public class SurveyTriggerService extends Service {
     private String userid;
 
     private static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
+    private static final String PACKAGE_DIRECTORY_PATH_IntervalSamples="/Android/data/edu.ohio.minuku_2/IntervalSamples/";
 
     private static String today;
     private String lastTimeSend_today;
@@ -143,8 +141,6 @@ public class SurveyTriggerService extends Service {
 
     private String noti_random = "random";
     private String noti_walk = "walk";
-
-    public static CheckFamiliarOrNotStreamGenerator checkFamiliarOrNotStreamGenerator;
 
     private static SharedPreferences sharedPrefs;
 
@@ -211,14 +207,12 @@ public class SurveyTriggerService extends Service {
 
 //        mAlarmManager = (AlarmManager)mContext.getSystemService( mContext.ALARM_SERVICE );
 
+        //we set them to avoid the situation that alarm being canceled by Android.
+        resetIntervalSampling();
+
         registerActionAlarmReceiver();
 //        registerSettingIntervalSampleAlarmReceiver();
 
-        try {
-            checkFamiliarOrNotStreamGenerator = (CheckFamiliarOrNotStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(CheckFamiliarOrNotDataRecord.class);
-        }catch(StreamNotFoundException e){
-            Log.e(TAG,"checkFamiliarOrNotStreamGenerator haven't created yet.");
-        }
     }
 
     public static Context getInstance() {
@@ -353,9 +347,35 @@ public class SurveyTriggerService extends Service {
         return currentTimeString;
     }
 
+    private void resetIntervalSampling(){
 
+        //cancel the times which are set.
+        cancelAlarmAll(mContext);
 
-//    public static void settingIntervalSampling(long startTimeFromPara){
+        int alarmCount = sharedPrefs.getInt("alarmCount", 0);
+
+        for (int eachAlarm = 0; eachAlarm < alarmCount; eachAlarm++) {
+
+            long time = sharedPrefs.getLong("alarm_time_" + eachAlarm,0);
+
+            //if the time is overtime, skip it.
+            if(ScheduleAndSampleManager.getCurrentTimeInMillis() > time)
+                continue;
+
+            int request_code = generatePendingIntentRequestCode(time);
+
+            //create an alarm for a time
+            Intent intent = new Intent(Constants.Interval_Sample);
+            PendingIntent pi = PendingIntent.getBroadcast(mContext, request_code, intent, 0);
+            Log.d(TAG, "resetIntervalSampling time : " + getTimeString(time));
+
+            AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(mContext.ALARM_SERVICE);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
+
+        }
+
+    }
+
     public static void settingIntervalSampling(int daysInSurvey, Context context){
 
         Log.d(TAG, "settingIntervalSampling");
@@ -472,7 +492,6 @@ public class SurveyTriggerService extends Service {
 //                int last_request_code = sharedPrefs.getInt("last_request_code_"+i, -999);
 //                cancelAlarmIfExists(mContext, last_request_code, intent);
 
-//                PendingIntent pi = PendingIntent.getBroadcast(mContext, request_code, intent, 0);
                 PendingIntent pi = PendingIntent.getBroadcast(context, request_code, intent, 0);
                 Log.d(TAG, "time : " + getTimeString(time));
 
@@ -484,6 +503,14 @@ public class SurveyTriggerService extends Service {
                 //update the latest request_code to be the last request_code.
                 sharedPrefs.edit().putInt("last_request_code_"+i, request_code).apply();
                 sharedPrefs.edit().putString("sampled_times_"+i, getTimeString(time)).apply();
+                //TODO save them with the new keys because we'd like to keep all 14 days of them.
+
+                //daysInSurvey
+                int alarmCount = sharedPrefs.getInt("alarmCount", 0);
+                alarmCount = alarmCount + 1;
+                sharedPrefs.edit().putInt("alarmCount", alarmCount).apply();
+                sharedPrefs.edit().putLong("alarm_time_"+alarmCount, time).apply();
+
             }
 
         }
@@ -1333,7 +1360,7 @@ public class SurveyTriggerService extends Service {
         Log.d(TAG, "sFileName : " + sFileName);
 
         try {
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
+            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH_IntervalSamples);
 
             Log.d(TAG, "root : " + root);
 
@@ -1343,7 +1370,7 @@ public class SurveyTriggerService extends Service {
 
             Log.d(TAG, "interval_sampled_times : "+interval_sampled_times);
 
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH_IntervalSamples+sFileName,true));
 
             List<String[]> data = new ArrayList<String[]>();
 

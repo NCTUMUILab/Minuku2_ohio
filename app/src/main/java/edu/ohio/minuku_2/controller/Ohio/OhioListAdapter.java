@@ -79,13 +79,13 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
             endTime = session.getEndTime();
 
             boolean isSessionOngoing = SessionManager.isSessionOngoing(session.getId());
-            Log.d(TAG, "[test show trip] session ongoging flag:  " + isSessionOngoing );
+            Log.d(TAG, "[test show trip] session ongoing flag:  " + isSessionOngoing );
 
             if (isSessionOngoing)
                 labelStr = SessionManager.SESSION_DISPLAY_ONGOING;
 
             //format the time string
-            SimpleDateFormat sdf_minute = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
+            SimpleDateFormat sdf_minute = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM);
             timeLabel = ScheduleAndSampleManager.getTimeString(startTime,sdf_minute);
 
             //try to the find the transportation mode provided by the user. It is in the annotaiton with ESM tag
@@ -99,6 +99,8 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
                     Log.d(TAG, "[test show trip] the contentofJSON ESMJSONObject  is " + contentJSON );
                     labelStr = contentJSON.getString("ans1");
 
+                    labelStr = getLabelFromAns1(labelStr);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -111,12 +113,13 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
 
             String today_yesterday;
             if(StartTimeDate.equals(CurrentTimeDate)){
-                today_yesterday = "today";
+                today_yesterday = "Today";
             }else{
-                today_yesterday = "yesterday";
+                today_yesterday = "Yesterday";
             }
 
-            sessionTitle = today_yesterday + "-" + timeLabel;
+            sessionTitle = today_yesterday + " " + timeLabel + "-" + labelStr;
+
 
             //if there's annotation in the session and the session is not ongoing
             if (!labelStr.equals(SessionManager.SESSION_DISPLAY_ONGOING) && !labelStr.equals(SessionManager.SESSION_DISPLAY_NO_ANNOTATION)) {
@@ -128,6 +131,8 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
             else {
                 textView.setTextColor(Color.BLACK);
 
+                if (labelStr.equals(SessionManager.SESSION_DISPLAY_ONGOING))
+                    sessionTitle = labelStr;
             }
 
             //set the title of the view
@@ -140,6 +145,30 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
         }
 
         return view;
+    }
+
+    private String getLabelFromAns1(String labelStr){
+
+        switch (labelStr){
+            case "Walking outdoors.": //ans1
+                return "Walking";
+            case "Walking indoors.": //ans1
+                return "Walking";
+            case "Riding a bicycle.":
+                return "Biking";
+            case "Driving (I'm the driver).":
+                return "Driving";
+            case "Driving (I'm the passenger).":
+                return "Driving";
+            case "Trip is part of previous trip (COMBINE).":
+                return "Combine";
+            case "Taking a bus.":
+                return "on the bus";
+            case "Trip is incorrect (DELETE).":
+                return "Delete";
+            default:
+                return "";
+        }
     }
 
 }

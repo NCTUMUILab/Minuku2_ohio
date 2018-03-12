@@ -165,9 +165,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         initQuestionnaire();
 
-
     }
-
 
     private void showRecordingVizualization(final int sessionId){
 
@@ -243,52 +241,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 }catch (IllegalArgumentException e){
                     //Log.e(LOG_TAG, "Could not unregister receiver " + e.getMessage()+"");
                 }
-
-
-//                final Handler updateMapHandler = new Handler();
-//
-//                Runnable runnable = new Runnable() {
-//                    @Override
-//                    public void run() {
-//
-//                        try{
-//
-//                            Log.d(TAG, "[test show trip] the session is in the currently recording session, update map!!! Get new points!");
-//
-//                            //get location points to draw on the map..
-//                            ArrayList<LatLng> points = getLocationPointsToDrawOnMap(sessionId);
-//
-//                            LatLng startLatLng;
-//                            //we use endLatLng, which is the user's current location as the center of the camera
-//                            LatLng endLatLng;
-//
-//                            //only has one point
-//                            if (points.size()==1){
-//
-//                                startLatLng  = points.get(0);
-//                                endLatLng = points.get(0);
-//
-//                                showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
-//                            }
-//                            //when have multiple locaiton points
-//                            else if (points.size()>1) {
-//
-//                                startLatLng  = points.get(0);
-//                                endLatLng = points.get(points.size()-1);
-//
-//                                showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
-//                            }
-//
-//
-//                        }catch (IllegalArgumentException e){
-//                            //Log.e(LOG_TAG, "Could not unregister receiver " + e.getMessage()+"");
-//                        }
-//                        updateMapHandler.postDelayed(this, 5*1000);
-//                    }
-//                };
-
-                /**start repeatedly store the extracted contextual information into Record objects**/
-//                updateMapHandler.post(runnable);
 
             }
 
