@@ -82,15 +82,17 @@ public class BackgroundService extends Service {
 
         Log.d(TAG, "test service awake "+ TAG + ", isServiceRunning : "+ mRunning);
 
-        if (!mRunning) {
+        //we use an alarm to keep the service awake
+        Log.d(TAG, "[test alarm] going to set alarm");
 
-            //we use an alarm to keep the service awake
-            AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
-            alarm.set(
-                    AlarmManager.RTC_WAKEUP,
-                    System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
-                    PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
-            );
+        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+        alarm.set(
+                AlarmManager.RTC_WAKEUP,
+                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
+        );
+
+        if (!mRunning) {
 
             Log.d(TAG, "test AR service start test combine the service is restarted! the service is not running");
 

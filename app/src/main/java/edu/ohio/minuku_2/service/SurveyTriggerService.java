@@ -102,7 +102,8 @@ public class SurveyTriggerService extends Service {
 
     private static ArrayList<Long> interval_sampled_times;
 
-    private static int interval_sample_number;
+    private static int interval_sample_number = 6;
+    private static int interval_sample_threshold = 2;
 
     private static int interval_sampled;
     private int walkoutdoor_sampled;
@@ -155,10 +156,10 @@ public class SurveyTriggerService extends Service {
 
         isServiceRunning = false;
 
-        Utils.ServiceDestroying_StoreToCSV(new Date().getTime(), "SamplingCheck.csv");
+        Utils.ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), "SamplingCheck.csv");
 
         unregisterActionAlarmReceiver();
-        unregisterSettingIntervalSampleAlarmReceiver();
+//        unregisterSettingIntervalSampleAlarmReceiver();
     }
 
     @Override
@@ -168,10 +169,10 @@ public class SurveyTriggerService extends Service {
 
         isServiceRunning = false;
 
-        Utils.ServiceDestroying_StoreToCSV(new Date().getTime(), "SamplingCheck.csv");
+        Utils.ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), "SamplingCheck.csv");
 
         unregisterActionAlarmReceiver();
-        unregisterSettingIntervalSampleAlarmReceiver();
+//        unregisterSettingIntervalSampleAlarmReceiver();
     }
 
     @Override
@@ -211,7 +212,7 @@ public class SurveyTriggerService extends Service {
 //        mAlarmManager = (AlarmManager)mContext.getSystemService( mContext.ALARM_SERVICE );
 
         registerActionAlarmReceiver();
-        registerSettingIntervalSampleAlarmReceiver();
+//        registerSettingIntervalSampleAlarmReceiver();
 
         try {
             checkFamiliarOrNotStreamGenerator = (CheckFamiliarOrNotStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(CheckFamiliarOrNotDataRecord.class);
@@ -235,6 +236,8 @@ public class SurveyTriggerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
+        Log.d(TAG, "onStartCommand");
+
         Log.d(TAG, "test service awake "+ TAG + ", isServiceRunning : "+ isServiceRunning);
 
         Log.d(TAG, "[test service running] going to start the probe service, isServiceRunning:  " + isServiceRunning());
@@ -253,17 +256,17 @@ public class SurveyTriggerService extends Service {
         Constants.USER_ID = sharedPrefs.getString("userid","NA");
         Constants.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey);
 
-        Log.d(TAG, "onStartCommand");
+        //we use an alarm to keep the service awake
+        Log.d(TAG, "[test alarm] going to set alarm");
+
+        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+        alarm.set(
+                AlarmManager.RTC_WAKEUP,
+                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+                PendingIntent.getService(this, 0, new Intent(this, SurveyTriggerService.class), 0)
+        );
 
         if(!isServiceRunning) {
-
-            //we use an alarm to keep the service awake
-            AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
-            alarm.set(
-                    AlarmManager.RTC_WAKEUP,
-                    System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
-                    PendingIntent.getService(this, 0, new Intent(this, SurveyTriggerService.class), 0)
-            );
 
             startService();
 
@@ -272,7 +275,7 @@ public class SurveyTriggerService extends Service {
         }
         else {
             Log.d(TAG, "test AR service start test combine the service is restarted! the service is running");
-//            isServiceRunning = false;
+
         }
 
 //        return START_STICKY;
@@ -350,11 +353,19 @@ public class SurveyTriggerService extends Service {
         return currentTimeString;
     }
 
-    public static void settingIntervalSampling(long startTimeAfterWalkingSampling){
+
+
+//    public static void settingIntervalSampling(long startTimeFromPara){
+    public static void settingIntervalSampling(int daysInSurvey, Context context){
 
         Log.d(TAG, "settingIntervalSampling");
 
-        String yMdformat = today;
+        SharedPreferences sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
+
+        Log.d(TAG, "daysInSurvey : "+daysInSurvey);
+        Date curDate = new Date(System.currentTimeMillis() + daysInSurvey * Constants.MILLISECONDS_PER_DAY);
+        SimpleDateFormat df = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY_Slash);
+        String yMdformat = df.format(curDate);
 
         Log.d(TAG, "yMdformat : " + yMdformat);
         interval_sampled_times = new ArrayList<>();
@@ -367,18 +378,17 @@ public class SurveyTriggerService extends Service {
         String sleepingendTime = sharedPrefs.getString("SleepingEndTime", "08:00"); //"08:00"
 
         Log.d(TAG, "sleepingstartTime : " + yMdformat+" "+sleepingstartTime+":00");
+        Log.d(TAG, "sleepingendTime : " + yMdformat+" "+sleepingendTime+":00");
 
         long endTime = getSpecialTimeInMillis(yMdformat+" "+sleepingstartTime+":00");
         long startTime; //because they are wake up.
 
-        if(startTimeAfterWalkingSampling != -9999){ //if the user have one or more walking sampling.
-            startTime = startTimeAfterWalkingSampling;
-
-        }else {
+//        if(startTimeFromPara != -9999){ //if the user have one or more walking sampling.
+//            startTime = startTimeFromPara;
+//
+//        }else {
             //default is not working.
             startTime = getSpecialTimeInMillis(yMdformat+" "+sleepingendTime+":00");
-
-//            startTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
 
             //make sure that the user will not get any notification to day.
             if(startTime > endTime){
@@ -386,17 +396,18 @@ public class SurveyTriggerService extends Service {
             }
 
             //because "else" will be called at first interval sampling.
-            interval_sampled = 0;
-            sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
-        }
+//            interval_sampled = 0;
+//            sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
+//        }
 
         long sub_startTime = startTime;
         long sub_endTime  = endTime;
-        long min_interval = (endTime - startTime)/(interval_sample_number+4); //90 * 60 * 1000  (e-s)/10
+        long min_interval = (endTime - startTime)/(interval_sample_number + interval_sample_threshold); //90 * 60 * 1000  (e-s)/10
 
         Log.d(TAG, "endTime : "+endTime);
         Log.d(TAG, "startTime : "+startTime);
-
+        Log.d(TAG, "endTime : "+ScheduleAndSampleManager.getTimeString(endTime));
+        Log.d(TAG, "startTime : "+ScheduleAndSampleManager.getTimeString(startTime));
         //1. first get the entire sampling period
 
         //repeatedly find the subsampling period
@@ -456,16 +467,18 @@ public class SurveyTriggerService extends Service {
                 //create an alarm for a time
                 Intent intent = new Intent(Constants.Interval_Sample);
 
+                //TODO deprecated, no need to cancel the last one
                 //cancel the last time ones here.
-                int last_request_code = sharedPrefs.getInt("last_request_code_"+i, -999);
-                cancelAlarmIfExists(mContext, last_request_code, intent);
+//                int last_request_code = sharedPrefs.getInt("last_request_code_"+i, -999);
+//                cancelAlarmIfExists(mContext, last_request_code, intent);
 
-                PendingIntent pi = PendingIntent.getBroadcast(mContext, request_code, intent, 0);
-
+//                PendingIntent pi = PendingIntent.getBroadcast(mContext, request_code, intent, 0);
+                PendingIntent pi = PendingIntent.getBroadcast(context, request_code, intent, 0);
                 Log.d(TAG, "time : " + getTimeString(time));
 
                 //for the reset one
-                AlarmManager alarmManager = (AlarmManager)mContext.getSystemService( mContext.ALARM_SERVICE );
+//                AlarmManager alarmManager = (AlarmManager)mContext.getSystemService( mContext.ALARM_SERVICE );
+                AlarmManager alarmManager = (AlarmManager)context.getSystemService( context.ALARM_SERVICE );
                 alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
 
                 //update the latest request_code to be the last request_code.
@@ -475,9 +488,10 @@ public class SurveyTriggerService extends Service {
 
         }
 
-        if (isExternalStorageWritable())
-            storeToCSVinterval(today);
-
+        if (isExternalStorageWritable()) {
+//            storeToCSVinterval(today);
+            storeToCSVinterval(yMdformat);
+        }
     }
 
     public static void cancelAlarmIfExists(Context mContext,int requestCode,Intent intent){
@@ -578,12 +592,12 @@ public class SurveyTriggerService extends Service {
                 walk_third_sampled = 0;
                 sharedPrefs.edit().putInt("walk_third_sampled", walk_third_sampled).apply();
 
-                lastTimeSend_today = today;
-                sharedPrefs.edit().putString("lastTimeSend_today", lastTimeSend_today).apply();
-
                 //total 6 surveys a day
-                interval_sample_number = 6;
-                sharedPrefs.edit().putInt("interval_sample_number", interval_sample_number).apply();
+//                interval_sample_number = 6;
+//                sharedPrefs.edit().putInt("interval_sample_number", interval_sample_number).apply();
+
+                interval_sampled = 0;
+                sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
 
                 last_Survey_Time = -999;
                 sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
@@ -595,23 +609,28 @@ public class SurveyTriggerService extends Service {
                 //default
 //                settingIntervalSampling(-9999);
 
-                //setting up the parameter for the survey link
-                setUpSurveyLink();
+                if(lastTimeSend_today.equals("NA")) {
+                    //setting up the parameter for the survey link
+                    setUpSurveyLink();
+                }
+
+                lastTimeSend_today = today;
+                sharedPrefs.edit().putString("lastTimeSend_today", lastTimeSend_today).apply();
 
             }
 
             //checking to reset the InitializeIntervalSurveyTimeReceiver
-            boolean resetIntervalSurveyFlag = sharedPrefs.getBoolean("resetIntervalSurveyFlag", false);
+            /*boolean resetIntervalSurveyFlag = sharedPrefs.getBoolean("resetIntervalSurveyFlag", false);
             Log.d(TAG, "resetIntervalSurveyFlag : " + resetIntervalSurveyFlag);
             if(resetIntervalSurveyFlag){
 
                 //reset the InitializeIntervalSurveyTimeReceiver
-                unregisterSettingIntervalSampleAlarmReceiver();
+//                unregisterSettingIntervalSampleAlarmReceiver();
 
-                registerSettingIntervalSampleAlarmReceiver();
+//                registerSettingIntervalSampleAlarmReceiver();
 
                 sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", false).apply();
-            }
+            }*/
 
             //temporarily remove the trigger limit
             if (!InSleepingTime()) {
@@ -689,7 +708,6 @@ public class SurveyTriggerService extends Service {
                         e.printStackTrace();
                         Log.d(TAG, "No previous walking survey yet.");
                     }finally {
-
                         Log.d(TAG, "Set the cancelWalkingSurveyFlag back to false");
                         MinukuStreamManager.cancelWalkingSurveyFlag = false;
                     }
@@ -798,24 +816,23 @@ public class SurveyTriggerService extends Service {
         addSurveyLinkToDB(noti_type);
 
         //after we send out the survey decrease the needed number for the interval_sample_number
-        interval_sample_number--;
-        sharedPrefs.edit().putInt("interval_sample_number", interval_sample_number).apply();
+//        interval_sample_number--;
+//        sharedPrefs.edit().putInt("interval_sample_number", interval_sample_number).apply();
 
         //update the last survey time
         last_Survey_Time = new Date().getTime();
         sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
     }
 
-
+    //TODO deprecated, we don't need to reset the time of the day after the survey have triggered
     /**
      * the next interval-based esm should be based on the last time the user opened the questionnaire
      */
     public static void setUpNextIntervalSurvey() {
         //reset the Interval Sampling after we send the survey
         if (interval_sampled < 3) {
-            settingIntervalSampling(new Date().getTime());//TODO input time
+//            settingIntervalSampling(new Date().getTime());//TODO input time
         } else { //cancel all the interval today if the number of the sample are enough.
-            //TODO might not work
             cancelAlarmAll(mContext);
         }
 
@@ -830,14 +847,14 @@ public class SurveyTriggerService extends Service {
         interval_sampled++;
         sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
 
+        //TODO deprecated, we don't need to reset the time of the day after the survey have triggered
         //reset the Interval Sampling after we send the survey
-        if (interval_sampled < 3) {
+        /*if (interval_sampled < 3) {
             settingIntervalSampling(new Date().getTime());//TODO input time
 
         }else{ //cancel all the interval today if the number of the sample are enough.
-            //TODO might not work
             cancelAlarmAll(mContext);
-        }
+        }*/
 
         //no need to set the next interval time because it is belonging to interval survey.
 //        setUpNextIntervalSurvey();
@@ -879,7 +896,8 @@ public class SurveyTriggerService extends Service {
         sameTripPrevent = true;
         sharedPrefs.edit().putBoolean("sameTripPrevent", sameTripPrevent).apply();
 
-        setUpNextIntervalSurvey();
+        //TODO deprecated, we don't need to reset the time of the day after the survey have triggered
+//        setUpNextIntervalSurvey();
 
     }
 
@@ -1334,7 +1352,9 @@ public class SurveyTriggerService extends Service {
             String[] addToCSVFile = new String[]{};
             List<String> addToCSV = new ArrayList<String>();
 
-            for(int index=0 ; index < interval_sample_number ; index++){
+//            for(int index=0 ; index < interval_sample_number ; index++){
+            for(int index=0 ; index < interval_sampled_times.size() ; index++){
+
                 addToCSV.add(getTimeString(interval_sampled_times.get(index)));
             }
 
@@ -1545,22 +1565,10 @@ public class SurveyTriggerService extends Service {
                 Log.d(TAG, "In InitializeIntervalSurveyTimeReceiver");
 
                 //action
-                settingIntervalSampling(-9999);
+//                settingIntervalSampling(-9999);
 
                 setNextTimeToInitialize();
             }
-
-            /*if (intent.getAction().equals(Constants.Interval_Sample)){
-                Log.d(TAG, "In IntervalSampleReceiver");
-
-                Log.d(TAG, "isTimeForSurvey(noti_random) : " + isTimeForSurvey(noti_random));
-
-                if (interval_sampled < 3 && isTimeForSurvey(noti_random)) {
-                    Log.d(TAG, "triggerIntervalSurvey");
-                    triggerIntervalSurvey();
-                }
-
-            }*/
 
         }
     };

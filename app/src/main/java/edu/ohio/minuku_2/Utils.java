@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
+import edu.ohio.minuku_2.service.SurveyTriggerService;
 
 /**
  * Created by neera_000 on 3/26/2016.
@@ -92,6 +93,15 @@ public class Utils {
             return true;
         } catch (NumberFormatException e) {
             return false;
+        }
+    }
+
+    public static void settingAllDaysIntervalSampling(Context context){
+
+        //14 is the total of the research days
+        int countOfDaysInSurvey = 14 - Constants.daysInSurvey;
+        for(int DaysInSurvey = 1; DaysInSurvey <= countOfDaysInSurvey; DaysInSurvey++ ){
+            SurveyTriggerService.settingIntervalSampling(DaysInSurvey, context);
         }
     }
 
@@ -204,8 +214,8 @@ public class Utils {
         }
     }
 
-    public static void ServiceDestroying_StoreToCSV(long timestamp,String sFileName){
-        Log.d(TAG,"ServiceDestroying_StoreToCSV");
+    public static void ServiceDestroying_StoreToCSV_onDestroy(long timestamp, String sFileName){
+        Log.d(TAG,"ServiceDestroying_StoreToCSV_onDestroy");
 
 //        String sFileName = "..._.csv";
 
@@ -223,7 +233,39 @@ public class Utils {
 
             String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
 
-            data.add(new String[]{String.valueOf(timestamp), timeString, "Sevice killed."});
+            data.add(new String[]{String.valueOf(timestamp), timeString, "Service killed.(onDestroy)"});
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void ServiceDestroying_StoreToCSV_onTaskRemoved(long timestamp, String sFileName){
+        Log.d(TAG,"ServiceDestroying_StoreToCSV_onTaskRemoved");
+
+//        String sFileName = "..._.csv";
+
+        try{
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            Log.d(TAG, "root : " + root);
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
+
+            data.add(new String[]{String.valueOf(timestamp), timeString, "Service killed.(onTaskRemoved)"});
 
             csv_writer.writeAll(data);
 

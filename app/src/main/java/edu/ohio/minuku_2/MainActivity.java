@@ -564,6 +564,8 @@ public class MainActivity extends AppCompatActivity {
 //                                startService(new Intent(getBaseContext(), SurveyTriggerService.class));
                                 startService(intentToStartSurvey);
 
+                                Utils.settingAllDaysIntervalSampling(getBaseContext());
+
                                 //Dismiss once everything is OK.
                                 dialog.dismiss();
                             }

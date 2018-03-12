@@ -4,21 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.google.android.gms.location.DetectedActivity;
-
 import org.greenrobot.eventbus.EventBus;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.TransportationModeDAO;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
-import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
 import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
 import edu.ohio.minuku.service.TransportationModeService;
 import edu.ohio.minuku.stream.TransportationModeStream;
@@ -27,8 +18,6 @@ import edu.ohio.minukucore.exception.StreamAlreadyExistsException;
 import edu.ohio.minukucore.exception.StreamNotFoundException;
 import edu.ohio.minukucore.stream.Stream;
 
-import static edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator.getLocalRecordPool;
-
 /**
  * Created by Lawrence on 2017/5/22.
  */
@@ -36,7 +25,7 @@ import static edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator
 public class TransportationModeStreamGenerator extends AndroidStreamGenerator<TransportationModeDataRecord> {
 
     public final String TAG = "TransportationModeStreamGenerator";
-    
+
     private Context mContext;
     private TransportationModeStream mStream;
     TransportationModeDAO mDAO;
@@ -119,8 +108,10 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
     public void onStreamRegistration() {
 
         Intent intent = new Intent(mContext, TransportationModeService.class);
-        if(!TransportationModeService.isServiceRunning())
+        if(!TransportationModeService.isServiceRunning()){
+            Log.d(TAG, "[test alarm] going to start TransportationModeService");
             mContext.startService(intent);
+        }
 
     }
 

@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import edu.ohio.minuku.config.Constants;
@@ -151,15 +152,13 @@ public class TransportationModeService extends Service {
     private static Context serviceInstance = null;
     private Context mContext;
 
+    private ScheduledFuture<?> scheduledFuture;
     private ScheduledExecutorService mScheduledExecutorService;
     public static final int TransportationMode_REFRESH_FREQUENCY = 5; //1s, 1000ms
     public static final int BACKGROUND_RECORDING_INITIAL_DELAY = 0;
-    private final int TransportationMode_Threads = 1;
+    private final int TransportationMode_ThreadSize = 1;
 
     private SharedPreferences sharedPrefs;
-
-    private boolean isServiceRunning;
-
 
     public TransportationModeService(){}
 
@@ -169,13 +168,29 @@ public class TransportationModeService extends Service {
 
         Log.d(TAG, "onDestroy");
 
-        ServiceDestroying_StoreToCSV(new Date().getTime(), "TransportationMode.csv");
-        ServiceDestroying_StoreToCSV(new Date().getTime(), "TransportationState.csv");
-        ServiceDestroying_StoreToCSV(new Date().getTime(),  "windowdata.csv");
+        ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), "TransportationMode.csv");
+        ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), "TransportationState.csv");
+        ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(),  "windowdata.csv");
 
         sharedPrefs.edit().putInt("CurrentState", mCurrentState).apply();
         sharedPrefs.edit().putInt("ConfirmedActivityType", mConfirmedActivityType).apply();
 
+        mScheduledExecutorService.shutdown();
+    }
+
+    @Override
+    public void onTaskRemoved(Intent intent){
+        super.onTaskRemoved(intent);
+        Log.d(TAG, "onTaskRemoved");
+
+        ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), "TransportationMode.csv");
+        ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), "TransportationState.csv");
+        ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(),  "windowdata.csv");
+
+        sharedPrefs.edit().putInt("CurrentState", mCurrentState).apply();
+        sharedPrefs.edit().putInt("ConfirmedActivityType", mConfirmedActivityType).apply();
+
+        mScheduledExecutorService.shutdown();
     }
 
     public void onCreate(){
@@ -186,9 +201,7 @@ public class TransportationModeService extends Service {
 
         mContext = this;
 
-        isServiceRunning = false;
-
-        mScheduledExecutorService = Executors.newScheduledThreadPool(TransportationMode_Threads);
+        mScheduledExecutorService = Executors.newScheduledThreadPool(TransportationMode_ThreadSize);
 
         sharedPrefs = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE);
 
@@ -241,7 +254,7 @@ public class TransportationModeService extends Service {
 
     private void runMainThread(){
 
-        mScheduledExecutorService.scheduleAtFixedRate(
+        scheduledFuture = mScheduledExecutorService.scheduleAtFixedRate(
                 TransportationModeRunnable,
                 BACKGROUND_RECORDING_INITIAL_DELAY,
                 TransportationMode_REFRESH_FREQUENCY,
@@ -252,7 +265,7 @@ public class TransportationModeService extends Service {
         @Override
         public void run() {
 
-            Log.d(TAG, "TransportationModeRunnable ");
+            Log.d(TAG, "TransportationModeRunnable");
 
             try {
                 transportationModeStreamGenerator = (TransportationModeStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(TransportationModeDataRecord.class);
@@ -344,8 +357,8 @@ public class TransportationModeService extends Service {
 
     }
 
-    public void ServiceDestroying_StoreToCSV(long timestamp,String sFileName){
-        Log.d(TAG,"ServiceDestroying_StoreToCSV");
+    public void ServiceDestroying_StoreToCSV_onDestroy(long timestamp, String sFileName){
+        Log.d(TAG,"ServiceDestroying_StoreToCSV_onDestroy");
 
 //        String sFileName = "..._.csv";
 
@@ -363,7 +376,39 @@ public class TransportationModeService extends Service {
 
             String timeString = getTimeString(timestamp);
 
-            data.add(new String[]{String.valueOf(timestamp), timeString, "Sevice killed."});
+            data.add(new String[]{String.valueOf(timestamp), timeString, "Service killed.(onDestroy)"});
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void ServiceDestroying_StoreToCSV_onTaskRemoved(long timestamp, String sFileName){
+        Log.d(TAG,"ServiceDestroying_StoreToCSV_onTaskRemoved");
+
+//        String sFileName = "..._.csv";
+
+        try{
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            Log.d(TAG, "root : " + root);
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            String timeString = getTimeString(timestamp);
+
+            data.add(new String[]{String.valueOf(timestamp), timeString, "Service killed.(onTaskRemoved)"});
 
             csv_writer.writeAll(data);
 

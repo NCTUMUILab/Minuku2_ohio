@@ -150,6 +150,7 @@
         android:background="@drawable/button_style"
         android:text="closeService"
         android:textColor="#666666"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:visibility="gone" />
 
 </LinearLayout>

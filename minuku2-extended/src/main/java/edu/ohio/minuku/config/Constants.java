@@ -40,6 +40,7 @@ public class Constants {
     public final static String DATE_FORMAT_NOW_SLASH = "yyyy/MM/dd HH:mm:ss Z";
     public final static String DATE_FORMAT_NOW_MINUTE_SLASH = "yyyy/MM/dd HH:mm";
     public static final String DATE_FORMAT_NOW_NO_ZONE_Slash = "yyyy/MM/dd HH:mm:ss";
+    public static final String DATE_FORMAT_NOW_DAY_Slash = "yyyy/MM/dd";
     public static final String DATE_FORMAT_NOW_NO_ZONE = "yyyy-MM-dd HH:mm:ss";
     public static final String DATE_FORMAT_NOW_DAY = "yyyy-MM-dd";
     public static final String DATE_FORMAT_NOW_HOUR = "yyyy-MM-dd HH";

@@ -31,7 +31,6 @@ import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku_2.R;
-import edu.ohio.minuku_2.service.SurveyTriggerService;
 
 /**
  * Created by Lawrence on 2017/9/16.
@@ -112,8 +111,9 @@ public class SurveyActivity extends Activity {
                 String id = data.get(data.size()-1).split(Constants.DELIMITER)[0];
                 DataHandler.updateSurveyOpenFlagAndTime(id);
 
+                //TODO deprecated, we don't need to reset the time of the day after the survey have triggered
                 //we schedule the next interval random survey after the user clicks on the survey
-                SurveyTriggerService.setUpNextIntervalSurvey();
+//                SurveyTriggerService.setUpNextIntervalSurvey();
 
                 //get the latest link in the surveyLink table.
                 String link = data.get(data.size()-1).split(Constants.DELIMITER)[1];

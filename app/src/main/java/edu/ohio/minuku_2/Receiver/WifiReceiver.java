@@ -341,9 +341,8 @@ public class WifiReceiver extends BroadcastReceiver {
         Log.d(TAG, "userInform : " + userInform);
 
         //In order to set the survey link
-        setDaysInSurvey(userInform);
+//        setDaysInSurvey(userInform);
 
-//        setMidnightStart(userInform);
     }
 
     private void setDaysInSurvey(JSONObject userInform){
