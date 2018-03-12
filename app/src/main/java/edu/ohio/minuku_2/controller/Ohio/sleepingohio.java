@@ -15,6 +15,7 @@ import java.util.Calendar;
 
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku_2.R;
+import edu.ohio.minuku_2.Utils;
 //import edu.ohio.minuku_2.R;
 
 /**
@@ -71,6 +72,8 @@ public class sleepingohio extends AppCompatActivity {
             else if(endtime.getText().equals("Please select your wake up time"))
                 Toast.makeText(sleepingohio.this,"Please select your wake up time!!", Toast.LENGTH_SHORT).show();
             else {
+
+                Utils.settingAllDaysIntervalSampling(getApplicationContext());
 
                 Intent intent = getIntent();
                 Bundle bundle = new Bundle();

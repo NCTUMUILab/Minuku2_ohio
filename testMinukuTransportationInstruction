@@ -12,7 +12,7 @@ REPLAY LOCATION
 2. location stream generator 用timer來Feed AR資料
 
 LocationStreamGenerator() constructor裡 uncomment
- startReplayARRecordTimer();
+ startReplayLocationRecordTimer();
 
 
 3. 在LocationStreamGenerator裡面的Location收到資料以後不更新

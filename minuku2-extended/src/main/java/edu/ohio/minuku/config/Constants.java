@@ -40,6 +40,7 @@ public class Constants {
     public final static String DATE_FORMAT_NOW_SLASH = "yyyy/MM/dd HH:mm:ss Z";
     public final static String DATE_FORMAT_NOW_MINUTE_SLASH = "yyyy/MM/dd HH:mm";
     public static final String DATE_FORMAT_NOW_NO_ZONE_Slash = "yyyy/MM/dd HH:mm:ss";
+    public static final String DATE_FORMAT_NOW_DAY_Slash = "yyyy/MM/dd";
     public static final String DATE_FORMAT_NOW_NO_ZONE = "yyyy-MM-dd HH:mm:ss";
     public static final String DATE_FORMAT_NOW_DAY = "yyyy-MM-dd";
     public static final String DATE_FORMAT_NOW_HOUR = "yyyy-MM-dd HH";
@@ -124,6 +125,7 @@ public class Constants {
     // Prompt service related constants
     public static final long PROMPT_SERVICE_REPEAT_MILLISECONDS = MILLISECONDS_PER_MINUTE * 10; // 1000 * 60 = 1 minute
     public static final int STREAM_UPDATE_FREQUENCY = 5;
+    public static final int STREAM_UPDATE_THREAD_SIZE = 1;
     //changing from 50 mins to 15 mins, users were getting it close to bedtime
     public static final int DIARY_NOTIFICATION_SERVICE_REPEAT_MILLISECONDS = 15 * 60 * 1000; //15 minutes
 
@@ -188,6 +190,7 @@ public class Constants {
     public static String GROUP_NUM = "A";
     public static String Email = "";
 
+    public static int downloadedDayInSurvey = -1;
     public static int daysInSurvey = -1;
     public static long midnightstart = -999;
     public static long FirstTime_ToInitializeIntervalSurvey = -999;

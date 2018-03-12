@@ -336,14 +336,15 @@ public class WifiReceiver extends BroadcastReceiver {
             e.printStackTrace();
         } catch (JSONException e){
             e.printStackTrace();
+        } catch (NullPointerException e){
+            e.printStackTrace();
         }
 
         Log.d(TAG, "userInform : " + userInform);
 
         //In order to set the survey link
-        setDaysInSurvey(userInform);
+//        setDaysInSurvey(userInform);
 
-//        setMidnightStart(userInform);
     }
 
     private void setDaysInSurvey(JSONObject userInform){
@@ -1512,6 +1513,12 @@ public class WifiReceiver extends BroadcastReceiver {
     }
 
     private class HttpAsyncGetUserInformFromServer extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected void onPreExecute(){
+            Log.d(TAG, "onPreExecute");
+            Utils.checkinresponseStoreToCSV(ScheduleAndSampleManager.getCurrentTimeInMillis(), context);
+        }
 
         @Override
         protected String doInBackground(String... params) {

@@ -81,27 +81,25 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_7"
                     android:layout_weight="7" />
-<!--
                 <RadioButton
                     android:text="Trip is part of previous trip (COMBINE)."
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_8"
                     android:layout_weight="8" />
--->
 
                 <RadioButton
                     android:text="Trip is incorrect (DELETE)."
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/ans1_8"
+                    android:id="@+id/ans1_9"
                     android:layout_weight="3" />
 
                 <RadioButton
                     android:text="Other."
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/ans1_9"
+                    android:id="@+id/ans1_10"
                     android:layout_weight="3" />
             </RadioGroup>
 

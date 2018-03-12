@@ -1,10 +1,7 @@
 package edu.ohio.minuku.manager;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.Environment;
 import android.util.Log;
@@ -407,6 +404,11 @@ public class SessionManager {
         //get annotaitons that has the transportation mode tag
         ArrayList<Annotation> annotations = lastSession.getAnnotationsSet().getAnnotationByContent(activity);
 
+
+        //check if the last session has endtime. It is possible that it ends unexpectedly
+
+
+
         //if the previous session does not have any annotation of which transportation is of the same tag, we should not combine
         if (annotations.size() == 0) {
             edu.ohio.minuku.logger.Log.d(TAG, "[test combine] addSessionFlag = true  the last session is not the same activity");
@@ -564,7 +566,7 @@ public class SessionManager {
         //start time = a specific hours ago
         long queryStartTime = ScheduleAndSampleManager.getCurrentTimeInMillis() - Constants.MILLISECONDS_PER_HOUR * SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR;
 
-        Log.d(TAG, " [gtest show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
+        Log.d(TAG, " [test show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
 
 
         //query//get sessions between the starTime and endTime
