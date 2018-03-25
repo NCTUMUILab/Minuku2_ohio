@@ -46,7 +46,6 @@ import java.util.concurrent.Future;
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.config.UserPreferences;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minukucore.dao.DAO;
@@ -99,7 +98,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
 
     @Override
     public void add(LocationDataRecord entity) throws DAOException {
-        Log.d(TAG, "Adding location data record.");
+        //Log.d(TAG, "Adding location data record.");
         /* * This is old function created by umich.
         Firebase locationListRef = new Firebase(Constants.FIREBASE_URL_LOCATION)
                 .child(myUserEmail)
@@ -123,13 +122,13 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
             values.put(DBHelper.Provider_col, entity.getProvider());
             values.put(DBHelper.COL_SESSION_ID, entity.getSessionid());
 
-//            Log.e(TAG,"[test replay dao] to isnert LocationRecord session id"+ values.get(DBHelper.COL_SESSION_ID));
+//            //Log.e(TAG,"[test replay dao] to isnert LocationRecord session id"+ values.get(DBHelper.COL_SESSION_ID));
 
 
             db.insert(DBHelper.STREAM_TYPE_LOCATION, null, values);
         }
         catch(NullPointerException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             values.clear();
@@ -150,8 +149,8 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
         int Accuracyrow = AccuracyCursor.getCount();
         int Accuracycol = AccuracyCursor.getColumnCount();
 
-        Log.d(TAG,"latituderow : " + latituderow +" latitudecol : " + latitudecol+" longituderow : " + longituderow+
-                " longitudecol : " + longitudecol+" Accuracyrow : " + Accuracyrow+" Accuracycol : " + Accuracycol);
+        //Log.d(TAG,"latituderow : " + latituderow +" latitudecol : " + latitudecol+" longituderow : " + longituderow+
+//                " longitudecol : " + longitudecol+" Accuracyrow : " + Accuracyrow+" Accuracycol : " + Accuracycol);
 
     }
 
@@ -159,7 +158,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
         Cursor latitudeCursor = db.rawQuery("SELECT * FROM "+ DBHelper.STREAM_TYPE_LOCATION, null);
 
-        Log.d(TAG, latitudeCursor.toString());
+        //Log.d(TAG, latitudeCursor.toString());
     }
 
     public void addToBeATrip(LocationDataRecord entity){
@@ -174,11 +173,11 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
         long id = recordCount++;
         record.setID(id);
 
-        Log.d(TAG,String.valueOf(record.getID())+ "," +
-                record.getCreationTime()+ "," +
-                record.getLatitude()+ "," +
-                record.getLongitude()+ "," +
-                record.getAccuracy());
+        //Log.d(TAG,String.valueOf(record.getID())+ "," +
+//                record.getCreationTime()+ "," +
+//                record.getLatitude()+ "," +
+//                record.getLongitude()+ "," +
+//                record.getAccuracy());
 
         LocationToTrip.add(record);
 
@@ -193,7 +192,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
             //remove outdated records.
             if (diff >= sKeepalive){
                 LocationToTrip.remove(locationDataRecord);
-                Log.d(TAG,"remove : "+locationDataRecord.getCreationTime()+",location : ("+locationDataRecord.getLatitude() + ","+ locationDataRecord.getLongitude()+ ")");
+                //Log.d(TAG,"remove : "+locationDataRecord.getCreationTime()+",location : ("+locationDataRecord.getLatitude() + ","+ locationDataRecord.getLongitude()+ ")");
                 updateOrNot = true;
                 i--;
             }
@@ -225,10 +224,10 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
                 data.put("Accuracy",locationDataRecord.getAccuracy());
 
             }catch (JSONException e){
-                e.printStackTrace();
+                //e.printStackTrace();
             }
 
-            Log.d(TAG,"data : "+ data.toString());
+            //Log.d(TAG,"data : "+ data.toString());
 
             long tripLocid = tripLocCount++;
 
@@ -238,7 +237,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
 //                tempdata += data.toString();
 
             }catch(JSONException e) {
-                Log.d(TAG, "tempdata : " + tempdata);
+                //Log.d(TAG, "tempdata : " + tempdata);
 
             }
         }
@@ -248,10 +247,10 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
         try{
             tempdataset.put(firstTime+"-"+lastTime,tempdata);
         }catch (JSONException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
-        Log.d(TAG, "tempdataset : "+ tempdataset);
+        //Log.d(TAG, "tempdataset : "+ tempdataset);
 
         long id = tripCount++;
 
@@ -259,10 +258,10 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
         try{
             dataset.put(String.valueOf(id),String.valueOf(tempdataset));
         }catch (JSONException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
-        Log.d(TAG, "dataset : "+ dataset);
+        //Log.d(TAG, "dataset : "+ dataset);
 
         ContentValues values = new ContentValues();
 
@@ -274,7 +273,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
             db.insert(DBHelper.trip_table, null, values);
         }
         catch(NullPointerException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             values.clear();
@@ -308,7 +307,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
 
     public static ArrayList<String> getTripDatafromSQLite(){
 
-        Log.d("getTripDatafromSQLite","test1");
+        //Log.d("getTripDatafromSQLite","test1");
 
         ArrayList<String> rows = new ArrayList<String>();
 
@@ -318,17 +317,17 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
 
 //        int columnCount = tripCursor.getColumnCount();
 
-            Log.d("getTripDatafromSQLite while","test2");
+            //Log.d("getTripDatafromSQLite while","test2");
 
             while (tripCursor.moveToNext()) {
                 String curRow = "";
             /*for (int i=0; i<columnCount; i++){
 
-                Log.d("getTripDatafromSQLite", "tripCursor.getString(i) : "+ tripCursor.getString(i));
+                //Log.d("getTripDatafromSQLite", "tripCursor.getString(i) : "+ tripCursor.getString(i));
 
                 curRow = tripCursor.getString(i);
             }*/
-                Log.d("getTripDatafromSQLite", "tripCursor.getString(i) : " + tripCursor.getString(1));
+                //Log.d("getTripDatafromSQLite", "tripCursor.getString(i) : " + tripCursor.getString(1));
 
                 JSONObject data = new JSONObject(tripCursor.getString(1));
 
@@ -338,20 +337,20 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
                 // get the value i care about
                 String value = data.optString(str_Name);*/
 
-                Log.d("getTripDatafromSQLite while2","test3");
+                //Log.d("getTripDatafromSQLite while2","test3");
 
                 while (keys.hasNext()){
 
                     String key =keys.next();
                     String value = data.getString(key);
 
-                    Log.d("getTripDatafromSQLite while2", "tripCursor.getString(i) : " + key +":"+value);
+                    //Log.d("getTripDatafromSQLite while2", "tripCursor.getString(i) : " + key +":"+value);
 
                     JSONObject toList = new JSONObject(value);
 
-                    Log.d("getTripDatafromSQLite while3","toList : " + toList);
+                    //Log.d("getTripDatafromSQLite while3","toList : " + toList);
 
-                    Log.d("getTripDatafromSQLite while3","test4");
+                    //Log.d("getTripDatafromSQLite while3","test4");
 
                     Iterator<String> timekeys = toList.keys();
                     while (timekeys.hasNext()){
@@ -359,7 +358,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
                         String timekey = timekeys.next();
                         String timevalue = toList.getString(timekey);
                         //timekey = 2017/6/26 15:42:34-2017/6/26 15:47:31
-                        Log.d("getTripDatafromSQLite while3", "toList : " + timekey +":"+new JSONObject(timevalue));
+                        //Log.d("getTripDatafromSQLite while3", "toList : " + timekey +":"+new JSONObject(timevalue));
 
                         /*//TODO maybe change to annotateohio
                         JSONObject EachLoctoList = new JSONObject(timevalue);
@@ -385,7 +384,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
 
             DBManager.getInstance().closeDatabase();
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         return rows;
@@ -393,7 +392,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
 
     public static ArrayList<LatLng> getTripLocToDrawOnMap(String timekey){
 
-        Log.d("getTripandLocDatafromSQLite","test1");
+        //Log.d("getTripandLocDatafromSQLite","test1");
 
         ArrayList<LatLng> rows = new ArrayList<LatLng>();
 
@@ -401,20 +400,20 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             Cursor tripCursor = db.rawQuery("SELECT * FROM " + DBHelper.trip_table, null);
 
-            Log.d("getTripandLocDatafromSQLite while","test2");
+            //Log.d("getTripandLocDatafromSQLite while","test2");
 
             while (tripCursor.moveToNext()) {
                 String curRow = "";
 
-                Log.d("getTripandLocDatafromSQLite", "tripCursor.getString(i) : " + tripCursor.getString(1).replace("\\",""));
+                //Log.d("getTripandLocDatafromSQLite", "tripCursor.getString(i) : " + tripCursor.getString(1).replace("\\",""));
 
                 JSONObject data = new JSONObject(tripCursor.getString(1).replace("\\",""));
 
-                Log.d("getTripandLocDatafromSQLite","data : " + data.toString());
+                //Log.d("getTripandLocDatafromSQLite","data : " + data.toString());
 
                 String timevalue = data.getString(timekey);
 
-                Log.d("getTripandLocDatafromSQLite","data.getString(timekey) : " + data.getString(timekey));
+                //Log.d("getTripandLocDatafromSQLite","data.getString(timekey) : " + data.getString(timekey));
 
                 JSONObject EachLoctoList = new JSONObject(timevalue);
                 Iterator<String> EachLockeys = EachLoctoList.keys();
@@ -437,20 +436,20 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
                 // get the value i care about
                 String value = data.optString(str_Name);
 
-                Log.d("getTripDatafromSQLite while2","test3");
+                //Log.d("getTripDatafromSQLite while2","test3");
 
                 *//*while (keys.hasNext()){
 
                     String key =keys.next();
                     String value = data.getString(key);
 
-                    Log.d("getTripDatafromSQLite while2", "tripCursor.getString(i) : " + key +":"+value);
+                    //Log.d("getTripDatafromSQLite while2", "tripCursor.getString(i) : " + key +":"+value);
 
                     JSONObject toList = new JSONObject(value);
 
-                    Log.d("getTripDatafromSQLite while3","toList : " + toList);
+                    //Log.d("getTripDatafromSQLite while3","toList : " + toList);
 
-                    Log.d("getTripDatafromSQLite while3","test4");
+                    //Log.d("getTripDatafromSQLite while3","test4");
 
                     Iterator<String> timekeys = toList.keys();
                     while (timekeys.hasNext()){
@@ -458,7 +457,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
                         String timekey = timekeys.next();
                         String timevalue = toList.getString(timekey);
                         //timekey = 2017/6/26 15:42:34-2017/6/26 15:47:31
-                        Log.d("getTripDatafromSQLite while3", "toList : " + timekey +":"+new JSONObject(timevalue));
+                        //Log.d("getTripDatafromSQLite while3", "toList : " + timekey +":"+new JSONObject(timevalue));
 
                         //TODO maybe change to annotateohio
                         JSONObject EachLoctoList = new JSONObject(timevalue);
@@ -542,7 +541,7 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
     @Override
     public void update(LocationDataRecord oldEntity, LocationDataRecord newEntity)
             throws DAOException {
-        Log.e(TAG, "Method not implemented. Returning null");
+        //Log.e(TAG, "Method not implemented. Returning null");
     }
 
     private final void getLastNValues(final int N,

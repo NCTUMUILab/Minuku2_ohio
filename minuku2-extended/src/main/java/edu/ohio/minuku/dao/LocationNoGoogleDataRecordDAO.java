@@ -3,7 +3,6 @@ package edu.ohio.minuku.dao;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +36,7 @@ public class LocationNoGoogleDataRecordDAO  implements DAO<LocationNoGoogleDataR
 
     @Override
     public void add(LocationNoGoogleDataRecord entity) throws DAOException {
-        Log.d(TAG, "Adding location data record.");
+        //Log.d(TAG, "Adding location data record.");
         /* * This is old function created by umich.
         Firebase locationListRef = new Firebase(Constants.FIREBASE_URL_LOCATION)
                 .child(myUserEmail)
@@ -59,7 +58,7 @@ public class LocationNoGoogleDataRecordDAO  implements DAO<LocationNoGoogleDataR
             db.insert(DBHelper.locationNoGoogle_table, null, values);
         }
         catch(NullPointerException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             values.clear();

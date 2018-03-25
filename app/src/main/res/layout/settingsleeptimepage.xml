@@ -38,7 +38,7 @@
         android:text="Please select your sleeping time"
         android:layout_width="278dp"
         android:layout_height="37dp"
-        android:id="@+id/starttime"
+        android:id="@+id/sleepStarttime"
         android:layout_marginLeft="16dp" />
 
     <Space
@@ -57,7 +57,7 @@
         android:text="Please select your wake up time"
         android:layout_width="278dp"
         android:layout_height="37dp"
-        android:id="@+id/endtime"
+        android:id="@+id/sleepEndtime"
         android:layout_marginLeft="16dp" />
 
     <Space

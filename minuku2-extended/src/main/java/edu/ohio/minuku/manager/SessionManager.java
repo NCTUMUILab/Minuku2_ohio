@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Environment;
-import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.opencsv.CSVWriter;
@@ -63,8 +62,8 @@ public class SessionManager {
     public static final String SESSION_LONGENOUGH_THRESHOLD_DISTANCE = "distance";
 
     public static final long SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION = 3 * Constants.MILLISECONDS_PER_MINUTE;
-    public static final long SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION = 3 * Constants.MILLISECONDS_PER_MINUTE;
-    public static final long SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION = 100;  // meters;
+    public static final long SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION = 2 * Constants.MILLISECONDS_PER_MINUTE;
+    public static final long SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION = 200;  // meters
 
     public static int SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR = 24;
 
@@ -93,7 +92,6 @@ public class SessionManager {
         editor = context.getSharedPreferences("edu.umich.minuku_2", Context.MODE_PRIVATE).edit();
 
         sessionid = "0";
-//        sessionid_unStatic = 0;
 
         mOngoingSessionIdList = new ArrayList<Integer>();
 
@@ -102,14 +100,13 @@ public class SessionManager {
         trip_size = sharedPrefs.getInt("trip_size",0);
 
         transportation = "NA";
-//        lasttime_transportation = "NA";
 
         lasttime_transportation = sharedPrefs.getString("","NA");
 
         lasttime_trip_transportation = sharedPrefs.getString("lasttime_trip_transportation","NA");
 
         lastSessiontime = sharedPrefs.getLong("lastSessiontime", -1);
-//        testing_count = 0;
+
         lastSessionIDtime = sharedPrefs.getLong("lastSessionIDtime", -1);
     }
 
@@ -117,9 +114,9 @@ public class SessionManager {
         if(SessionManager.instance == null) {
             try {
 //                SessionManager.instance = new SessionManager();
-                Log.d(TAG,"getInstance without mContext.");
+                //Log.d(TAG,"getInstance without mContext.");
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
         return SessionManager.instance;
@@ -130,7 +127,7 @@ public class SessionManager {
             try {
                 SessionManager.instance = new SessionManager(context);
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
         return SessionManager.instance;
@@ -138,16 +135,16 @@ public class SessionManager {
 
     public static boolean isSessionOngoing(int sessionId) {
 
-        Log.d(TAG, " [test combine] tyring to see if the session is ongoing:" + sessionId);
+        //Log.d(TAG, " [test combine] tyring to see if the session is ongoing:" + sessionId);
 
         for (int i = 0; i< mOngoingSessionIdList.size(); i++){
-            //       Log.d(LOG_TAG, " [getCurRecordingSession] looping to " + i + "th session of which the id is " + mCurRecordingSessions.get(i).getId());
+            //       //Log.d(LOG_TAG, " [getCurRecordingSession] looping to " + i + "th session of which the id is " + mCurRecordingSessions.get(i).getId());
 
             if (mOngoingSessionIdList.get(i)==sessionId){
                 return true;
             }
         }
-        Log.d(TAG, " [test combine] the session is not ongoing:" + sessionId);
+        //Log.d(TAG, " [test combine] the session is not ongoing:" + sessionId);
 
         return false;
     }
@@ -161,7 +158,7 @@ public class SessionManager {
     }
 
     public void addOngoingSessionid(int id) {
-        edu.ohio.minuku.logger.Log.d(TAG, "test combine: adding ongonig session " + id );
+        //Log.d(TAG, "test combine: adding ongonig session " + id );
         this.mOngoingSessionIdList.add(id);
 
     }
@@ -171,41 +168,9 @@ public class SessionManager {
     }
 
     public void removeOngoingSessionid(int id) {
-        Log.d(TAG, "test replay: inside removeongogint seesion renove " + id );
+        //Log.d(TAG, "test replay: inside removeongogint seesion renove " + id );
         this.mOngoingSessionIdList.remove(id);
-        edu.ohio.minuku.logger.Log.d(TAG, "test replay: inside removeongogint seesion the ongoiong list is  " + mOngoingSessionIdList.toString() );
-    }
-
-
-
-    public void StoreToCSV(long timestamp, String sessionid, double latitude, double longitude, float accuracy, int TF){
-
-        Log.d(TAG,"TransportationMode_StoreToCSV");
-
-        String sFileName = "TripOnChange.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-//            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy"});
-            String timeString = getTimeString(timestamp);
-
-            data.add(new String[]{String.valueOf(timestamp), timeString, sessionid, String.valueOf(latitude), String.valueOf(longitude), String.valueOf(accuracy), String.valueOf(TF)});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+        //Log.d(TAG, "test replay: inside removeongogint seesion the ongoiong list is  " + mOngoingSessionIdList.toString() );
     }
 
     public static String getTimeString(long time){
@@ -241,7 +206,7 @@ public class SessionManager {
 
         long endTime = 0;
         //the session could be still ongoing..so we need to check where's endTime
-        Log.d(TAG, "[test combine] separated[DBHelper.COL_INDEX_SESSION_END_TIME] " + separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
+        //Log.d(TAG, "[test combine] separated[DBHelper.COL_INDEX_SESSION_END_TIME] " + separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
 
         if (!separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_END_TIME].equals("")){
             endTime = Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_END_TIME]);
@@ -251,7 +216,7 @@ public class SessionManager {
             endTime = getLastRecordTimeinSession(session.getId());
 
         }
-        Log.d(TAG, "[test combine] testgetdata the end time is now:  " + ScheduleAndSampleManager.getTimeString(endTime));
+        //Log.d(TAG, "[test combine] testgetdata the end time is now:  " + ScheduleAndSampleManager.getTimeString(endTime));
 
         boolean islongEnough= true;
         boolean isModified = false;
@@ -279,7 +244,7 @@ public class SessionManager {
                 annotateionSetJSONArray = annotationSetJSON.getJSONArray(ANNOTATION_PROPERTIES_ANNOTATION);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
 
@@ -299,13 +264,13 @@ public class SessionManager {
 
         int sessionId = Integer.parseInt(id);
         ArrayList<String> res =  DBHelper.querySession(sessionId);
-        Log.d(TAG, "[test show trip]query session from LocalDB is " + res);
+        //Log.d(TAG, "[test show trip]query session from LocalDB is " + res);
         Session session = null;
 
         for (int i=0; i<res.size() ; i++) {
 
             session = convertStringToSession(res.get(i));
-            Log.d(TAG, " test show trip  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
+            //Log.d(TAG, " test show trip  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
 
         }
 
@@ -317,9 +282,9 @@ public class SessionManager {
 
         Session session = null;
         String sessionStr = DBHelper.queryLastSession().get(0);
-        Log.d(TAG, "test combine lastsession " + sessionStr );
+        //Log.d(TAG, "test combine lastsession " + sessionStr );
         session = convertStringToSession(sessionStr);
-        Log.d(TAG, " test show trip  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
+        //Log.d(TAG, " test show trip  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
 
         return session;
 
@@ -330,7 +295,7 @@ public class SessionManager {
         ArrayList<String> resultBySession = null;
         resultBySession = SessionManager.getRecordsInSession(sessionId, DBHelper.STREAM_TYPE_LOCATION);
 
-        Log.d(TAG, "test combine: there are " + resultBySession.size() + " location records"  );
+        //Log.d(TAG, "test combine: there are " + resultBySession.size() + " location records"  );
 
         //if there's no location points, it's not long enough
         if (resultBySession.size()==0){
@@ -341,7 +306,7 @@ public class SessionManager {
         else {
             String[] separated = resultBySession.get(resultBySession.size()-1).split(Constants.DELIMITER);
             long time = Long.parseLong(separated[1]);
-            Log.d(TAG, "test combine: the time of the last record is " + time );
+            //Log.d(TAG, "test combine: the time of the last record is " + time );
             return time;
         }
 
@@ -352,9 +317,9 @@ public class SessionManager {
 
         Session session = null;
         String sessionStr =  DBHelper.querySession(sessionId).get(0);
-        Log.d(TAG, "[test combine]query session from LocalDB is " + sessionStr);
+        //Log.d(TAG, "[test combine]query session from LocalDB is " + sessionStr);
         session = convertStringToSession(sessionStr);
-        Log.d(TAG, " test combine  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
+        //Log.d(TAG, " test combine  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
 
         return session;
     }
@@ -411,30 +376,30 @@ public class SessionManager {
 
         //if the previous session does not have any annotation of which transportation is of the same tag, we should not combine
         if (annotations.size() == 0) {
-            edu.ohio.minuku.logger.Log.d(TAG, "[test combine] addSessionFlag = true  the last session is not the same activity");
+            //Log.d(TAG, "[test combine] addSessionFlag = true  the last session is not the same activity");
             combine = false;
         }
 
         // the current activity is the same TM with the previous session mode, we check its time difference
         else {
-            Log.d(TAG, "[test combine] we found the last session with the same activity");
+            //Log.d(TAG, "[test combine] we found the last session with the same activity");
             //check its interval to see if it's within 5 minutes
 
-            Log.d(TAG, "[test combine] the previous session ends at " +  lastSession.getEndTime() + " and the current activity starts at " + time  +
-                    " the difference is " + (time - lastSession.getEndTime()) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
+            //Log.d(TAG, "[test combine] the previous session ends at " +  lastSession.getEndTime() + " and the current activity starts at " + time  +
+//                    " the difference is " + (time - lastSession.getEndTime()) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
 
             //if the current session is too close from the previous one in terms of time, we should combine
             if (time - lastSession.getEndTime() <= SessionManager.SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION) {
 
-                edu.ohio.minuku.logger.Log.d(TAG, "[test combine] the current activity is too close from the previous trip, continue the last session! the difference is "
-                        + (time - lastSession.getEndTime()) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
+                //Log.d(TAG, "[test combine] the current activity is too close from the previous trip, continue the last session! the difference is "
+//                        + (time - lastSession.getEndTime()) / Constants.MILLISECONDS_PER_MINUTE + " minutes");
 
                 combine = true;
 
             }
             //the session is far from the previous one, it should be a new session. we should not combine
             else {
-                Log.d(TAG, "[test combine] addSessionFlag = true the current truip is far from the previous trip");
+                //Log.d(TAG, "[test combine] addSessionFlag = true the current truip is far from the previous trip");
                 combine = false;
             }
         }
@@ -442,7 +407,7 @@ public class SessionManager {
 
         //debug...
         String lastSessionStr = DBHelper.queryLastSession().get(0);
-        edu.ohio.minuku.logger.Log.d(TAG, "test combine: the previous acitivty is movnig,after combine it the last session is: " +  lastSessionStr );
+        //Log.d(TAG, "test combine: the previous acitivty is movnig,after combine it the last session is: " +  lastSessionStr );
         return combine;
 
 
@@ -470,21 +435,21 @@ public class SessionManager {
      */
     public static void endCurSession(Session session) {
 
-        Log.d(TAG, "test combine: before enidn the session  the list sizr is " + getOngoingSessionIdList().size());
+        //Log.d(TAG, "test combine: before enidn the session  the list sizr is " + getOngoingSessionIdList().size());
 
-        Log.d(TAG, "test combine: end cursession " + session.getId());
+        //Log.d(TAG, "test combine: end cursession " + session.getId());
 
-        Log.d(TAG, "test combine: before remove  the list at 0 is " + getOngoingSessionIdList().get(0));
+        //Log.d(TAG, "test combine: before remove  the list at 0 is " + getOngoingSessionIdList().get(0));
 
 
         //remove the ongoing session
         mOngoingSessionIdList.remove(Integer.valueOf(session.getId()));
 
-        Log.d(TAG, "test combine: after remove gooing the list is  " + getOngoingSessionIdList().toString());
+        //Log.d(TAG, "test combine: after remove gooing the list is  " + getOngoingSessionIdList().toString());
 
         //update session with end time and long enough flag.
         updateCurSessionEndInfoTo(session.getId(),session.getEndTime(),session.isLongEnough());
-        Log.d(TAG, "test combine: after adding end time and longlong in  session in tge DB  " );
+        //Log.d(TAG, "test combine: after adding end time and longlong in  session in tge DB  " );
 
     }
 
@@ -496,13 +461,13 @@ public class SessionManager {
         //we see if the session is long enough based on its distance
         if (thresholdType.equals(SESSION_LONGENOUGH_THRESHOLD_DISTANCE)){
 
-            Log.d(TAG, "test combine: test threshold " + SESSION_LONGENOUGH_THRESHOLD_DISTANCE  + " for session " + sessionId);
+            //Log.d(TAG, "test combine: test threshold " + SESSION_LONGENOUGH_THRESHOLD_DISTANCE  + " for session " + sessionId);
 
             //get location records from the session
             ArrayList<String> resultBySession = null;
             resultBySession = SessionManager.getRecordsInSession(sessionId, DBHelper.STREAM_TYPE_LOCATION);
 
-            Log.d(TAG, "test combine: there are " + resultBySession.size() + " location records"  );
+            //Log.d(TAG, "test combine: there are " + resultBySession.size() + " location records"  );
 
 
             //if there's no location points, it's not long enough
@@ -514,6 +479,7 @@ public class SessionManager {
             else {
                 //create arraylist for storing the latlng
                 ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+                ArrayList<Long> latLngsTime = new ArrayList<Long>();
 
                 /** storing location records after we obain from the database*/
                 for(int index = 0;index < resultBySession.size(); index++){
@@ -523,28 +489,38 @@ public class SessionManager {
 
                     LatLng latLng = new LatLng(lat, lng);
                     latLngs.add(latLng);
+
+                    long time = Long.valueOf(separated[1]);
+                    latLngsTime.add(time);
                 }
 
                 //get distance between the last and the previous
                 LatLng startLatLng = latLngs.get(0);
                 LatLng endLatLng = latLngs.get(latLngs.size() - 1);
 
-                edu.ohio.minuku.logger.Log.d(TAG, " test combine the first point is " + startLatLng + ", the end point is " + endLatLng );
+                //Log.d(TAG, " test combine the first point is " + startLatLng + ", the end point is " + endLatLng );
 
                 //calculate the distance between the first and the last
                 float[] results = new float[1];
                 Location.distanceBetween(startLatLng.latitude,startLatLng.longitude, endLatLng.latitude, endLatLng.longitude,results);
                 float distance = results[0];
 
-                edu.ohio.minuku.logger.Log.d(TAG, " test combine the distance between start and end is " + distance  + " now we comapre with the threshold " + SessionManager.SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION );
+                //Log.d(TAG, " test combine the distance between start and end is " + distance  + " now we comapre with the threshold " + SessionManager.SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION );
+
+                long startLocTime = latLngsTime.get(0);
+                long endLocTime = latLngsTime.get(latLngsTime.size()-1);
+
+                long duration = endLocTime - startLocTime;
 
                 //if the session is shorter than a threshold (now - start time < threshold), we should give it a flag, so that it wouldnot show up in the annotation list
-                if (distance<SessionManager.SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION){
-                    edu.ohio.minuku.logger.Log.d(TAG, " test combine the trip is too short  ");
+                if (distance < SessionManager.SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION
+                        || duration < SessionManager.SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION
+                        ){
+                    //Log.d(TAG, " test combine the trip is too short  ");
 
                     islongEnough = false;
                 }else {
-                    Log.d(TAG, " test combine the trip is long enough ");
+                    //Log.d(TAG, " test combine the trip is long enough ");
                 }
             }
 
@@ -552,7 +528,7 @@ public class SessionManager {
 
         }
 
-        Log.d(TAG, " finally the session " + sessionId + " long enough is " + islongEnough);
+        //Log.d(TAG, " finally the session " + sessionId + " long enough is " + islongEnough);
         return islongEnough;
 
     }
@@ -566,14 +542,14 @@ public class SessionManager {
         //start time = a specific hours ago
         long queryStartTime = ScheduleAndSampleManager.getCurrentTimeInMillis() - Constants.MILLISECONDS_PER_HOUR * SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR;
 
-        Log.d(TAG, " [test show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
+        //Log.d(TAG, " [test show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
 
 
         //query//get sessions between the starTime and endTime
         ArrayList<String> res =  DBHelper.querySessionsBetweenTimes(queryStartTime, queryEndTime);
 
 
-        Log.d(TAG, "[test show trip] getRecentSessions get res: " +  res);
+        //Log.d(TAG, "[test show trip] getRecentSessions get res: " +  res);
 
         //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
         for (int i=0; i<res.size() ; i++) {
@@ -590,7 +566,7 @@ public class SessionManager {
         ArrayList<String> resultList = new ArrayList<String>();
 
         resultList = DBHelper.queryRecordsInSession(tableName, sessionId);
-        Log.d(TAG, "[getRecordsInSession] test combine got " + resultList.size() + " of results from queryRecordsInSession");
+        //Log.d(TAG, "[getRecordsInSession] test combine got " + resultList.size() + " of results from queryRecordsInSession");
 
         return resultList;
     }
@@ -598,7 +574,7 @@ public class SessionManager {
 
     public static void StoreToCSV(long timestamp, int id, String sessionid, double latitude, double longitude, float accuracy, int TF){
 
-//        Log.d(TAG,"TransportationMode_StoreToCSV");
+//        //Log.d(TAG,"TransportationMode_StoreToCSV");
 
         String sFileName = "CheckIsTrip.csv";
 
@@ -622,7 +598,7 @@ public class SessionManager {
             csv_writer2.close();
 
         }catch (IOException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -640,9 +616,9 @@ public class SessionManager {
         try {
             Date mDate = sdf.parse(givenDateFormat);
             timeInMilliseconds = mDate.getTime();
-            Log.d(TAG,"Date in milli :: " + timeInMilliseconds);
+            //Log.d(TAG,"Date in milli :: " + timeInMilliseconds);
         } catch (ParseException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return timeInMilliseconds;
     }
@@ -652,7 +628,7 @@ public class SessionManager {
 
 //        dataformat = addZero(year)+"-"+addZero(month)+"-"+addZero(date)+" "+addZero(hour)+":"+addZero(min)+":00";
         dataformat = addZero(year)+"/"+addZero(month)+"/"+addZero(date)+" "+"00:00:00";
-        Log.d(TAG,"dataformat : " + dataformat);
+        //Log.d(TAG,"dataformat : " + dataformat);
 
         return dataformat;
     }
@@ -679,49 +655,22 @@ public class SessionManager {
 
                     String tag = tagsJSONArray.getString(j);
                     annotation.addTag(tag);
-                    Log.d(TAG, "[toAnnorationSet] the content is " + content +  " tag " + tag);
+                    //Log.d(TAG, "[toAnnorationSet] the content is " + content +  " tag " + tag);
                 }
 
                 annotations.add(annotation);
 
             } catch (JSONException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
 
         }
 
         annotationSet.setAnnotations(annotations);
 
-        Log.d(TAG, "[toAnnorationSet] the annotationSet has  " + annotationSet.getAnnotations().size() + " annotations ");
+        //Log.d(TAG, "[toAnnorationSet] the annotationSet has  " + annotationSet.getAnnotations().size() + " annotations ");
         return annotationSet;
 
     }
-
-
-//    private static void notiQuerySessions(){
-//
-//        Log.d(TAG,"notiQuerySessions");
-//
-//        String notiText = "You have queried the Sessions.";
-//
-//        NotificationManager mNotificationManager =
-//                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);//Context.
-//        Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
-//        bigTextStyle.setBigContentTitle("DMS");
-//        bigTextStyle.bigText(notiText);
-//
-//        Notification note = new Notification.Builder(mContext)
-//                .setContentTitle(Constants.APP_NAME)
-//                .setContentText(notiText)
-//                .setStyle(bigTextStyle)
-//                .setSmallIcon(R.drawable.self_reflection)
-//                .setAutoCancel(true)
-//                .build();
-//
-//        // using the same tag and Id causes the new notification to replace an existing one
-//        mNotificationManager.notify(999, note); //String.valueOf(System.currentTimeMillis()),
-//        note.flags = Notification.FLAG_AUTO_CANCEL;
-//
-//    }
 
 }

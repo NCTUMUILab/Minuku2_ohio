@@ -54,7 +54,7 @@ public class ScheduleAndSampleManager {
 			timeInMilliseconds = mDate.getTime();
 
 		} catch (ParseException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 		return timeInMilliseconds;
 	}

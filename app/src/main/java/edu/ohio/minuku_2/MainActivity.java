@@ -22,7 +22,6 @@
 
 package edu.ohio.minuku_2;
 
-import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -49,10 +48,8 @@ import android.telephony.TelephonyManager;
 import android.text.InputFilter;
 import android.view.Gravity;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -81,8 +78,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.ohio.minuku.Data.DBHelper;
@@ -92,12 +87,10 @@ import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
-import edu.ohio.minuku_2.controller.Ohio.SurveyActivity;
-import edu.ohio.minuku_2.controller.Ohio.recordinglistohio;
-import edu.ohio.minuku_2.controller.Ohio.sleepingohio;
-import edu.ohio.minuku_2.controller.report;
+import edu.ohio.minuku_2.controller.SurveyActivity;
+import edu.ohio.minuku_2.controller.TripListActivity;
+import edu.ohio.minuku_2.controller.sleepingohio;
 import edu.ohio.minuku_2.service.BackgroundService;
-import edu.ohio.minuku_2.service.SurveyTriggerService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -134,16 +127,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean firstTimeToShowDialogOrNot;
     private SharedPreferences sharedPrefs;
 
-    private Handler handler;
-
     private Intent intentToStartSurvey, intentToStartBackground;
 
-    private ScheduledExecutorService mScheduledExecutorService;
     public static final int REFRESH_FREQUENCY = 3; //10s, 10000ms
-    public static final int BACKGROUND_RECORDING_INITIAL_DELAY = 0;
-    //private UserSubmissionStats mUserSubmissionStats;
-
-//    private final String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,14 +141,10 @@ public class MainActivity extends AppCompatActivity {
         //** Please set your project name. **//
         settingHomepageView();
 
-        handler = new Handler();
-
-//        setServiceNotKilled();
-
         intentToStartBackground = new Intent(getBaseContext(), BackgroundService.class);
-        intentToStartSurvey = new Intent(getBaseContext(), SurveyTriggerService.class);
+//        intentToStartSurvey = new Intent(getBaseContext(), SurveyTriggerService.class);
 
-        startService(intentToStartBackground);
+
 
         EventBus.getDefault().register(this);
 
@@ -185,18 +167,8 @@ public class MainActivity extends AppCompatActivity {
         sendBroadcast(shortcutintent);
     }
 
-
-    public static String getTimeString(long time){
-
-        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
-        String currentTimeString = sdf_now.format(time);
-
-        return currentTimeString;
-    }
-
     public void getStartDate(){
         //get timzone
-//        TimeZone tz = TimeZone.getDefault();
         Calendar cal = Calendar.getInstance();
         Date date = new Date();
         cal.setTime(date);
@@ -223,12 +195,10 @@ public class MainActivity extends AppCompatActivity {
 
         requestCode_annotate = new Bundle();
 
-        mScheduledExecutorService = Executors.newScheduledThreadPool(REFRESH_FREQUENCY);
-
         setContentView(R.layout.homepage);
 
         /* alertdialog for checking userid */
-        sharedPrefs = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE);
+        sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
 
         sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", false).apply();
 
@@ -276,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 stopService(intentToStartBackground);
-                stopService(intentToStartSurvey);
+//                stopService(intentToStartSurvey);
             }
         });
 
@@ -308,30 +278,34 @@ public class MainActivity extends AppCompatActivity {
 
         if(!sleepStartTime.equals("Please select your sleeping time")&&!sleepEndTime.equals("Please select your wake up time")){
 
-            sleepingtime.setText("Sleep: "+sleepStartTime+" to "+sleepEndTime);
+            String[] sleepStartDetail = sleepStartTime.split(":");
+
+            int sleepStartHour = Integer.valueOf(sleepStartDetail[0]);
+            String sleepStartHourStr = "";
+            if(sleepStartHour<12)
+                sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" am";
+            else if(sleepStartHour==12)
+                sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" pm";
+            else
+                sleepStartHourStr = String.valueOf(sleepStartHour-12)+":"+sleepStartDetail[1]+" pm";
+
+            String[] sleepEndDetail = sleepEndTime.split(":");
+
+            int sleepEndHour = Integer.valueOf(sleepEndDetail[0]);
+            String sleepEndHourStr = "";
+            if(sleepEndHour<12)
+                sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" am";
+            else if(sleepEndHour==12)
+                sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" pm";
+            else
+                sleepEndHourStr = String.valueOf(sleepEndHour-12)+":"+sleepEndDetail[1]+" pm";
+
+            sleepingtime.setText("Sleep: " + sleepStartHourStr + " to " + sleepEndHourStr);
+
         }
         else
             sleepingtime.setText("Set Sleep Time");
     }
-
-    /*private void setServiceNotKilled() {
-        Log.d("FFF", "toggleNotificationListenerService");
-        PackageManager pm = getPackageManager();
-        pm.setComponentEnabledSetting(new ComponentName(this, BackgroundService.class),
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-        pm.setComponentEnabledSetting(new ComponentName(this, BackgroundService.class),
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-
-        pm.setComponentEnabledSetting(new ComponentName(this, SurveyTriggerService.class),
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-        pm.setComponentEnabledSetting(new ComponentName(this, SurveyTriggerService.class),
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-
-        pm.setComponentEnabledSetting(new ComponentName(this, TransportationModeService.class),
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-        pm.setComponentEnabledSetting(new ComponentName(this, TransportationModeService.class),
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-    }*/
 
     private void startTimerThread() {
         final Handler handler = new Handler();
@@ -561,13 +535,12 @@ public class MainActivity extends AppCompatActivity {
                                 //TODO judging the time if the server storing the Study Start Time.
                                 getStartDate();
 
-//                                startService(new Intent(getBaseContext(), SurveyTriggerService.class));
-                                startService(intentToStartSurvey);
-
-                                Utils.settingAllDaysIntervalSampling(getBaseContext());
+                                startService(intentToStartBackground);
+//                                startService(intentToStartSurvey);
 
                                 //Dismiss once everything is OK.
                                 dialog.dismiss();
+                                MainActivity.this.finish();
                             }
                         }
                         Log.d(TAG,"setPositiveButton");
@@ -723,46 +696,30 @@ public class MainActivity extends AppCompatActivity {
                         int sleepStartHour = Integer.valueOf(sleepStartDetail[0]);
                         String sleepStartHourStr = "";
                         if(sleepStartHour<12)
-                            sleepStartHourStr = String.valueOf(sleepStartHour)+"am";
+                            sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" am";
                         else if(sleepStartHour==12)
-                            sleepStartHourStr = String.valueOf(sleepStartHour)+"pm";
+                            sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" pm";
                         else
-                            sleepStartHourStr = String.valueOf(sleepStartHour-12)+"pm";
+                            sleepStartHourStr = String.valueOf(sleepStartHour-12)+":"+sleepStartDetail[1]+" pm";
 
                         String[] sleepEndDetail = sleepEndTime.split(":");
 
                         int sleepEndHour = Integer.valueOf(sleepEndDetail[0]);
                         String sleepEndHourStr = "";
                         if(sleepEndHour<12)
-                            sleepEndHourStr = String.valueOf(sleepEndHour)+"am";
+                            sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" am";
                         else if(sleepEndHour==12)
-                            sleepEndHourStr = String.valueOf(sleepEndHour)+"pm";
+                            sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" pm";
                         else
-                            sleepEndHourStr = String.valueOf(sleepEndHour-12)+"pm";
+                            sleepEndHourStr = String.valueOf(sleepEndHour-12)+":"+sleepEndDetail[1]+" pm";
+
                         sleepingtime.setText("Sleep: " + sleepStartHourStr + " to " + sleepEndHourStr);
-
-                        sleepingtime.setText("Sleep: " + sleepStartTime + " to " + sleepEndTime);
-
 
                         sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", true).apply();
 
-                        /*
-                        //cancel the last one first
-                        unregisterActionAlarmReceiver();
-
-                        //then, create the new one based on the new sleeping time
-                        registerActionAlarmReceiver();
-                        */
                     }
                     else
                         sleepingtime.setText("Set Sleep Time");
-
-                    SharedPreferences.Editor editor_1 = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE).edit();
-                    editor_1.putString("SleepingStartTime",sleepStartTime);
-                    editor_1.commit();
-                    SharedPreferences.Editor editor_2 = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE).edit();
-                    editor_2.putString("SleepingEndTime",sleepEndTime);
-                    editor_2.commit();
 
                     break;
             }
@@ -836,7 +793,7 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             Log.e(TAG,"recordinglist_ohio clicked");
 
-            startActivityForResult(new Intent(MainActivity.this, recordinglistohio.class), 2);
+            startActivityForResult(new Intent(MainActivity.this, TripListActivity.class), 2);
 
         }
     };
@@ -864,38 +821,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-
-        if(projName.equals("Ohio")) //f***ing hardcode
-            menu.findItem(R.id.action_report).setVisible(false);
-
-        if(Constant.tabpos)
-            menu.findItem(R.id.action_selectdate).setVisible(true);
-        else
-            menu.findItem(R.id.action_selectdate).setVisible(false);
         super.onPrepareOptionsMenu(menu);
-        return true;
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_report:
-                startActivity(new Intent(MainActivity.this, report.class));
-                return true;
-            case R.id.action_selectdate:
-                final Calendar c = Calendar.getInstance();
-                mYear = c.get(Calendar.YEAR);
-                mMonth = c.get(Calendar.MONTH);
-                mDay = c.get(Calendar.DAY_OF_MONTH);
-                new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int year, int month, int day) {
-                        String format = setDateFormat(year,month,day);
-                        //startdate.setText(format);
-                    }
-
-                }, mYear,mMonth, mDay).show();
-                return true;
-        }
         return true;
     }
 

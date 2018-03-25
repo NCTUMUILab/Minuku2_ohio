@@ -25,7 +25,6 @@ package edu.ohio.minuku_2;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
-import android.util.Log;
 
 import com.opencsv.CSVWriter;
 
@@ -41,7 +40,7 @@ import java.util.regex.Pattern;
 
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku_2.service.SurveyTriggerService;
+import edu.ohio.minuku_2.manager.SurveyTriggerManager;
 
 /**
  * Created by neera_000 on 3/26/2016.
@@ -100,12 +99,103 @@ public class Utils {
 
         //14 is the total of the research days
         int countOfDaysInSurvey = 14 - Constants.daysInSurvey;
-        for(int DaysInSurvey = 1; DaysInSurvey <= countOfDaysInSurvey; DaysInSurvey++ ){
-            SurveyTriggerService.settingIntervalSampling(DaysInSurvey, context);
+        for(int DaysInSurvey = 0; DaysInSurvey <= countOfDaysInSurvey; DaysInSurvey++ ){
+            SurveyTriggerManager.settingIntervalSampling(DaysInSurvey, context);
         }
 
         storeToCSV_Interval_Samples_Times_split();
     }
+
+    public static void storeToCSV_IntervalSurveyCreated(long triggeredTimestamp, int surveyNum, String surveyLink, Context context){
+
+        String sFileName = "IntervalSurveyState.csv";
+
+        //Log.d(TAG, "sFileName : " + sFileName);
+
+        try {
+
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+
+            //Log.d(TAG, "root : " + root);
+
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
+            Boolean startSurveying = sharedPrefs.getBoolean("startSurveying", true);
+
+            if(startSurveying) {
+                List<String[]> title = new ArrayList<String[]>();
+
+                title.add(new String[]{"triggeredTime", "Survey #", "clicked", "clickedTime","Survey link"});
+
+                csv_writer.writeAll(title);
+
+                sharedPrefs.edit().putBoolean("startSurveying", false).apply();
+
+            }
+
+            String triggeredTimeString = ScheduleAndSampleManager.getTimeString(triggeredTimestamp);
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            data.add(new String[]{triggeredTimeString, "Survey "+surveyNum, "",  "", surveyLink});
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        } catch(IOException e) {
+            //e.printStackTrace();
+            //Log.e(TAG, "exception", e);
+        } catch (IndexOutOfBoundsException e2){
+            e2.printStackTrace();
+            //Log.e(TAG, "exception", e2);
+
+        }
+
+    }
+
+    public static void storeToCSV_IntervalSurveyUpdated(boolean clicked){
+
+        String sFileName = "IntervalSurveyState.csv";
+
+        //Log.d(TAG, "sFileName : " + sFileName);
+
+        try {
+
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+
+            //Log.d(TAG, "root : " + root);
+
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            data.add(new String[]{"", "", String.valueOf(clicked), ""});
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        } catch(IOException e) {
+            //e.printStackTrace();
+//            Log.e(TAG, "exception", e);
+        } catch (IndexOutOfBoundsException e2){
+            e2.printStackTrace();
+//            Log.e(TAG, "exception", e2);
+
+        }
+
+    }
+
 
     private static void storeToCSV_Interval_Samples_Times_split(){
 
@@ -114,13 +204,13 @@ public class Utils {
 
         sFileName = sFileName.replace("/","-");
 
-        Log.d(TAG, "sFileName : " + sFileName);
+        //Log.d(TAG, "sFileName : " + sFileName);
 
         try {
 
             File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
 
-            Log.d(TAG, "root : " + root);
+            //Log.d(TAG, "root : " + root);
 
             if (!root.exists()) {
                 root.mkdirs();
@@ -137,11 +227,11 @@ public class Utils {
             csv_writer.close();
 
         } catch(IOException e) {
-            e.printStackTrace();
-            android.util.Log.e(TAG, "exception", e);
+            //e.printStackTrace();
+            //Log.e(TAG, "exception", e);
         } catch (IndexOutOfBoundsException e2){
-            e2.printStackTrace();
-            android.util.Log.e(TAG, "exception", e2);
+//            e2.printStackTrace();
+            //Log.e(TAG, "exception", e2);
 
         }
 
@@ -150,7 +240,7 @@ public class Utils {
     public static void checkinresponseStoreToCSV(long timestamp, Context context){
 
         String sFileName = "checkInResponse.csv";
-        Log.d("checkinresponse", "entering checkinresponseStoreToCSV");
+        //Log.d("checkinresponse", "entering checkinresponseStoreToCSV");
 
         try{
             File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
@@ -189,15 +279,15 @@ public class Utils {
             csv_writer.close();
 
         }catch (Exception e){
-            e.printStackTrace();
-            android.util.Log.e(TAG, "exception", e);
+            //e.printStackTrace();
+            //Log.e(TAG, "exception", e);
         }
     }
 
     public static void checkinresponseStoreToCSV(long timestamp, Context context, String response){
 
         String sFileName = "checkInResponse.csv";
-        Log.d("checkinresponse", "entering checkinresponseStoreToCSV");
+        //Log.d("checkinresponse", "entering checkinresponseStoreToCSV");
 
         try{
             File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
@@ -251,13 +341,13 @@ public class Utils {
             csv_writer.close();
 
         }catch (Exception e){
-            e.printStackTrace();
-            android.util.Log.e(TAG, "exception", e);
+            //e.printStackTrace();
+            //Log.e(TAG, "exception", e);
         }
     }
 
     public static void ServiceDestroying_StoreToCSV_onDestroy(long timestamp, String sFileName){
-        Log.d(TAG,"ServiceDestroying_StoreToCSV_onDestroy");
+        //Log.d(TAG,"ServiceDestroying_StoreToCSV_onDestroy");
 
 //        String sFileName = "..._.csv";
 
@@ -267,7 +357,7 @@ public class Utils {
                 root.mkdirs();
             }
 
-            Log.d(TAG, "root : " + root);
+            //Log.d(TAG, "root : " + root);
 
             csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
 
@@ -282,14 +372,14 @@ public class Utils {
             csv_writer.close();
 
         }catch (IOException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
     public static void ServiceDestroying_StoreToCSV_onTaskRemoved(long timestamp, String sFileName){
-        Log.d(TAG,"ServiceDestroying_StoreToCSV_onTaskRemoved");
+        //Log.d(TAG,"ServiceDestroying_StoreToCSV_onTaskRemoved");
 
 //        String sFileName = "..._.csv";
 
@@ -299,7 +389,7 @@ public class Utils {
                 root.mkdirs();
             }
 
-            Log.d(TAG, "root : " + root);
+            //Log.d(TAG, "root : " + root);
 
             csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
 
@@ -314,9 +404,41 @@ public class Utils {
             csv_writer.close();
 
         }catch (IOException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+        }
+    }
+
+    public static void ServiceDestroying_StoreToCSV_onLowMemory(long timestamp, String sFileName){
+        //Log.d(TAG,"ServiceDestroying_StoreToCSV_onLowMemory");
+
+//        String sFileName = "..._.csv";
+
+        try{
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            //Log.d(TAG, "root : " + root);
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
+
+            data.add(new String[]{String.valueOf(timestamp), timeString, "Service killed.(onLowMemory)"});
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        }catch (IOException e){
+            //e.printStackTrace();
+        }catch (Exception e){
+            //e.printStackTrace();
         }
     }
 

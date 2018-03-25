@@ -1,7 +1,5 @@
 package edu.ohio.minuku.model.DataRecord;
 
-import android.util.Log;
-
 import java.util.Calendar;
 import java.util.Date;
 
@@ -27,8 +25,8 @@ public class BatteryDataRecord implements DataRecord{
 
     public BatteryDataRecord(int BatteryLevel, float BatteryPercentage, String BatteryChargingState, boolean isCharging){
         this.creationTime = new Date().getTime();
-        Log.d(TAG, "creationTime : "+creationTime);
-        Log.d(TAG, "creationTime String : "+getmillisecondToDateWithTime(creationTime));
+//        Log.d(TAG, "creationTime : "+creationTime);
+//        Log.d(TAG, "creationTime String : "+getmillisecondToDateWithTime(creationTime));
 //        this.taskDayCount = Constants.daysInSurvey;
 //        this.hour = getmillisecondToHour(creationTime);
         this.BatteryLevel = BatteryLevel;
@@ -36,8 +34,8 @@ public class BatteryDataRecord implements DataRecord{
         this.BatteryChargingState = BatteryChargingState;
         this.isCharging = isCharging;
 
-        Log.d(TAG,"BatteryLevel : "+ this.BatteryLevel+" BatteryPercentage : "+ this.BatteryPercentage
-        +" BatteryChargingState : "+ this.BatteryChargingState +" isCharging : "+ this.isCharging);
+//        Log.d(TAG,"BatteryLevel : "+ this.BatteryLevel+" BatteryPercentage : "+ this.BatteryPercentage
+//            +" BatteryChargingState : "+ this.BatteryChargingState +" isCharging : "+ this.isCharging);
     }
 
     private long getmillisecondToHour(long timeStamp){

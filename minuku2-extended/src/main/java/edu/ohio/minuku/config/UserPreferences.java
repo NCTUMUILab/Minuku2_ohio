@@ -29,7 +29,6 @@ import android.preference.PreferenceManager;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minukucore.user.User;
 
 /**
@@ -92,7 +91,7 @@ public class UserPreferences {
     }
 
     public void setUser(User user) {
-        Log.d(LOG_TAG, "Setting user object." + user.toString());
+//        Log.d(LOG_TAG, "Setting user object." + user.toString());
         writePreference("userobject_firstName", user.getFirstName());
         writePreference("userobject_lastName", user.getLastName());
         writePreference("userobject_userEmail", user.getEmail());

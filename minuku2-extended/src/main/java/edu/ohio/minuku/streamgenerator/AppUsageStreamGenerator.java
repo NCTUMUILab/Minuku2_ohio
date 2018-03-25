@@ -209,7 +209,7 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
             runAppUsageMainThread();
 
             if (!usageAccessPermissionGranted) {
-                Log.d(TAG, "[testing app] user has not granted permission, need to bring them to the setting");
+//                Log.d(TAG, "[testing app] user has not granted permission, need to bring them to the setting");
                 //ask user to grant permission to app.
                 //TODO: we only do this when the app information Is requested
 
@@ -233,7 +233,7 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
 
     public void runAppUsageMainThread(){
 
-        Log.d(TAG, "runAppUsageMainThread") ;
+//        Log.d(TAG, "runAppUsageMainThread") ;
 
         mMainThread = new Handler();
 
@@ -244,11 +244,12 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
                 boolean usageAccessPermissionGranted = checkApplicationUsageAccess();
 
                 if (!usageAccessPermissionGranted) {
-                    Log.d(TAG, "[testing app] user has not granted permission, need to bring them to the setting");
+//                    Log.d(TAG, "[testing app] user has not granted permission, need to bring them to the setting");
                 }else {
                     getScreenStatus();
                     getAppUsageUpdate();
                 }
+
                 mMainThread.postDelayed(this, mainThreadUpdateFrequencyInMilliseconds);
 
             }
@@ -259,7 +260,7 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
 
     @Override
     public void offer(AppUsageDataRecord dataRecord) {
-        Log.e(TAG, "Offer for AppUsage data record does nothing!");
+//        Log.e(TAG, "Offer for AppUsage data record does nothing!");
     }
 
     /**
@@ -287,10 +288,10 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
                         android.os.Process.myUid(), mContext.getPackageName());
 
                 granted = mode == AppOpsManager.MODE_ALLOWED;
-                Log.d(TAG, "[test source being requested]checkApplicationUsageAccess mode mIs : " + mode + " granted: " + granted);
+//                Log.d(TAG, "[test source being requested]checkApplicationUsageAccess mode mIs : " + mode + " granted: " + granted);
 
             } catch (PackageManager.NameNotFoundException e) {
-                Log.d(TAG, "[testing app]checkApplicationUsageAccess somthing mIs wrong");
+//                Log.d(TAG, "[testing app]checkApplicationUsageAccess somthing mIs wrong");
             }
         }
         return granted;
@@ -298,7 +299,7 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
 
     protected void getAppUsageUpdate() {
 
-        Log.d(TAG, "test source being requested [testing app]: getAppUsageUpdate");
+//        Log.d(TAG, "test source being requested [testing app]: getAppUsageUpdate");
         String currentApp = "NA";
 
         /**
@@ -311,9 +312,9 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
 
             List<UsageStats> appList = null;
 
-            Log.d(TAG, "test source being requested [testing app] API 21 query usage between:  " +
-                    String.valueOf( new AppUsageDataRecord().getCurrentTimeInMillis() - mApplicaitonUsageSinceLastDurationInMilliseconds)
-                    + " and " + new AppUsageDataRecord().getCurrentTimeInMillis());
+//            Log.d(TAG, "test source being requested [testing app] API 21 query usage between:  " +
+//                    String.valueOf( new AppUsageDataRecord().getCurrentTimeInMillis() - mApplicaitonUsageSinceLastDurationInMilliseconds)
+//                    + " and " + new AppUsageDataRecord().getCurrentTimeInMillis());
 
 
             //get the application usage statistics
@@ -332,9 +333,9 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
                 SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
                 for (UsageStats usageStats : appList) {
                     mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
-                    Log.d(TAG, "test app:  " + "ScheduleAndSampleManager.getTimeString(usageStats.getLastTimeUsed())" +
-                            " usage stats " + usageStats.getPackageName() + " total time in foreground " + usageStats.getTotalTimeInForeground()/60000
-                            + " between " + "ScheduleAndSampleManager.getTimeString(usageStats.getFirstTimeStamp())" + " and " + "ScheduleAndSampleManager.getTimeString(usageStats.getLastTimeStamp())");
+//                    Log.d(TAG, "test app:  " + "ScheduleAndSampleManager.getTimeString(usageStats.getLastTimeUsed())" +
+//                            " usage stats " + usageStats.getPackageName() + " total time in foreground " + usageStats.getTotalTimeInForeground()/60000
+//                            + " between " + "ScheduleAndSampleManager.getTimeString(usageStats.getFirstTimeStamp())" + " and " + "ScheduleAndSampleManager.getTimeString(usageStats.getLastTimeStamp())");
 
                 }
 
@@ -345,8 +346,8 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
                     mLastestForegroundPackage = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
                     //mLastestForegroundPackageTime = ScheduleAndSampleManager.getTimeString(mySortedMap.get(mySortedMap.lastKey()).getLastTimeUsed());
 
-                    Log.d(TAG, "test app "  +  mLastestForegroundPackage + " time " +
-                            "mLastestForegroundPackageTime");
+//                    Log.d(TAG, "test app "  +  mLastestForegroundPackage + " time " +
+//                            "mLastestForegroundPackageTime");
                 }
 
 
@@ -387,8 +388,8 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
             curRunningForegrndActivity = taskInfo.get(0).topActivity.getClassName();
             curRunningForegrndPackNamge = taskInfo.get(0).topActivity.getPackageName();
 
-            Log.d(TAG, "test app os version " +android.os.Build.VERSION.SDK_INT + " under 21 "
-                    + curRunningForegrndActivity + " " + curRunningForegrndPackNamge );
+//            Log.d(TAG, "test app os version " +android.os.Build.VERSION.SDK_INT + " under 21 "
+//                    + curRunningForegrndActivity + " " + curRunningForegrndPackNamge );
 
             //store the running activity and its package name in the Context Extractor
             if(taskInfo!=null){
@@ -404,11 +405,11 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
         mLastestForegroundActivity=curForegroundActivity;
         mLastestForegroundPackage=curForegroundPackage;
 
-        Log.d(TAG, "[setCurrentForegroundActivityAndPackage] the current running package mIs " + mLastestForegroundActivity + " and the activity mIs " + mLastestForegroundPackage);
+//        Log.d(TAG, "[setCurrentForegroundActivityAndPackage] the current running package mIs " + mLastestForegroundActivity + " and the activity mIs " + mLastestForegroundPackage);
     }
 
     public String getScreenStatus() {
-        Log.e(TAG, "GetScreenStatus called.");
+//        Log.d(TAG, "GetScreenStatus called.");
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
 
             //use isInteractive after api 20
@@ -428,7 +429,7 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
 
         }
 
-        Log.e(TAG, "test source being requested [testing app] SCREEN:  " + Screen_Status);
+//        Log.d(TAG, "test source being requested [testing app] SCREEN:  " + Screen_Status);
 
         return Screen_Status;
     }

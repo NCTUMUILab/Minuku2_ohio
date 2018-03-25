@@ -8,7 +8,6 @@ import org.json.JSONObject;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minukucore.model.DataRecord;
 
 /**
@@ -101,23 +100,23 @@ public class AppUsageDataRecord implements DataRecord{
 //    }
 
     public String getScreen_Status(){
-        Log.e(TAG, "getScreen_Status called.");
+//        Log.e(TAG, "getScreen_Status called.");
 
         return Screen_Status;
     }
 
     public String getLatestUsedApp() {
-        Log.e(TAG, "GetLatestUsedApp called.");
+//        Log.e(TAG, "GetLatestUsedApp called.");
         return Latest_Used_App;
     }
 
     public String getLatestUsedAppTime() {
-        Log.e(TAG, "GetLatestUsedAppTime called.");
+//        Log.e(TAG, "GetLatestUsedAppTime called.");
         return Latest_Used_App_Time;
     }
 
     public String getRecentApps() {
-        Log.e(TAG, "GetRecentApps called.");
+//        Log.e(TAG, "GetRecentApps called.");
         return Recent_Apps;
     }
 

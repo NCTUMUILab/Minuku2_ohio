@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.AnnotationSet;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
@@ -20,7 +19,7 @@ import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
 import edu.ohio.minuku.model.MinukuStreamSnapshot;
 import edu.ohio.minuku.model.Session;
-import edu.ohio.minuku.service.TransportationModeService;
+import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
 import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
 import edu.ohio.minukucore.event.IsDataExpectedEvent;
 import edu.ohio.minukucore.event.NoDataChangeEvent;
@@ -75,7 +74,7 @@ public class MinukuStreamManager implements StreamManager {
             try {
                 MinukuStreamManager.instance = new MinukuStreamManager();
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
         return MinukuStreamManager.instance;
@@ -83,14 +82,14 @@ public class MinukuStreamManager implements StreamManager {
 
     public void updateStreamGenerators() {
         for(StreamGenerator streamGenerator: mRegisteredStreamGenerators.values()) {
-            Log.d(TAG, "Stream generator : " + streamGenerator.getClass() + " \n" +
-                    "Update frequency: " + streamGenerator.getUpdateFrequency() + "\n" +
-                    "Counter: " + counter);
+            //Log.d(TAG, "Stream generator : " + streamGenerator.getClass() + " \n" +
+//                    "Update frequency: " + streamGenerator.getUpdateFrequency() + "\n" +
+//                    "Counter: " + counter);
             if(streamGenerator.getUpdateFrequency() == -1) {
                 continue;
             }
             if(counter % streamGenerator.getUpdateFrequency() == 0) {
-                Log.d(TAG, "Calling update stream generator for " + streamGenerator.getClass());
+                //Log.d(TAG, "Calling update stream generator for " + streamGenerator.getClass());
                 streamGenerator.updateStream();
             }
         }
@@ -113,14 +112,14 @@ public class MinukuStreamManager implements StreamManager {
         }
         for(Object dependsOnClass:s.dependsOnDataRecordType()) {
             if(!mStreamMap.containsKey(dependsOnClass)) {
-                Log.e(TAG, "Stream not found : " + dependsOnClass.toString());
+                //Log.e(TAG, "Stream not found : " + dependsOnClass.toString());
                 throw new StreamNotFoundException();
             }
         }
         mStreamMap.put(clazz, s);
         mRegisteredStreamGenerators.put(clazz, aStreamGenerator);
         aStreamGenerator.onStreamRegistration();
-        Log.d(TAG, "Registered a new stream generator for " + clazz);
+        //Log.d(TAG, "Registered a new stream generator for " + clazz);
     }
 
     @Override
@@ -208,20 +207,20 @@ public class MinukuStreamManager implements StreamManager {
 
     public void setTransportationModeDataRecord(TransportationModeDataRecord transportationModeDataRecord){
 
-        Log.d(TAG, "setTransportationModeDataRecord");
+        //Log.d(TAG, "setTransportationModeDataRecord");
 
-        Log.d(TAG, "test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString());
+        //Log.d(TAG, "test trip incoming transportation: " + transportationModeDataRecord.getConfirmedActivityString());
 
         Boolean addSessionFlag = false;
 
         //the first time we see incoming transportation mode data
         if (this.transportationModeDataRecord==null){
             this.transportationModeDataRecord = transportationModeDataRecord;
-            Log.d(TAG, "test combine test trip original null updated to " + this.transportationModeDataRecord.getConfirmedActivityString());
+            //Log.d(TAG, "test combine test trip original null updated to " + this.transportationModeDataRecord.getConfirmedActivityString());
         }
         else {
 
-            Log.d(TAG, "test combine. NEW: " + transportationModeDataRecord.getConfirmedActivityString() + " vs OLD:" + this.transportationModeDataRecord.getConfirmedActivityString());
+            //Log.d(TAG, "test combine. NEW: " + transportationModeDataRecord.getConfirmedActivityString() + " vs OLD:" + this.transportationModeDataRecord.getConfirmedActivityString());
 
             /**
              * 1. check if the new activity label is different from the previous activity label. IF it is different, we should do something
@@ -229,17 +228,17 @@ public class MinukuStreamManager implements StreamManager {
 
             if (!this.transportationModeDataRecord.getConfirmedActivityString().equals(transportationModeDataRecord.getConfirmedActivityString())) {
 
-                Log.d(TAG, "test combine test trip: the new acitivty is different from the previous!");
+                //Log.d(TAG, "test combine test trip: the new acitivty is different from the previous!");
 
                 /** we first see if the this is the first session **/
-                int sessionCount =  SessionManager.getNumOfSession();
+                int sessionCount = SessionManager.getNumOfSession();
 
                 //if this is the first time seeing a session and the new transportation is neither static nor NA, we should just insert a session
                 if (sessionCount==0
-                        && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
-                        && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
+                        && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                        && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NA)){
 
-                    Log.d(TAG, "test combine addSessionFlag = true there's no session in the db");
+                    //Log.d(TAG, "test combine addSessionFlag = true there's no session in the db");
                     addSessionFlag = true;
                 }
                 //there's exizstint sessions in the DB
@@ -252,14 +251,14 @@ public class MinukuStreamManager implements StreamManager {
                     long endTimeOfLastSession = lastSession.getEndTime();
                     long startTimeOfLastSession = lastSession.getStartTime();
 
-                    Log.d(TAG, "[test combine] session " + sessionIdOfLastSession + " with annotation string " + annotationSet.toString() + " end time " + endTimeOfLastSession + " startTime " + startTimeOfLastSession);
+                    //Log.d(TAG, "[test combine] session " + sessionIdOfLastSession + " with annotation string " + annotationSet.toString() + " end time " + endTimeOfLastSession + " startTime " + startTimeOfLastSession);
 
                     /**
-                     * 2 if the new activity is moving, we will first determine whether this is continuing the previous activity or a new activity. If it is a continutous one we will not add a new session but let the previous activity in the ongoing
+                     * 2 if the new activity is moving, we will first determine whether this is continuing the previous activity or a new activity. If it is a continuous one we will not add a new session but let the previous activity in the ongoing
                      * **/
 
-                    if(!transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
-                            && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)) {
+                    if(!transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                            && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NA)) {
 
                         /** check if the new activity should be combine: if the new transportation mode is the same as the mode of the previous session and the time is 5 minutes **/
 
@@ -268,7 +267,7 @@ public class MinukuStreamManager implements StreamManager {
                         shouldCombineWithLastSession = SessionManager.examineSessionCombinationByActivityAndTime(lastSession, transportationModeDataRecord.getConfirmedActivityString(),now );
 
                         if (shouldCombineWithLastSession){
-                            Log.d(TAG, "test combine we should combine " );
+                            //Log.d(TAG, "test combine we should combine " );
 
                             //modify the endTime of the previous session to empty (because we extend it!). we should also make the notlongenough field to be true.
                             SessionManager.continueLastSession(lastSession);
@@ -278,7 +277,7 @@ public class MinukuStreamManager implements StreamManager {
                         else {
                             //1. end the previous session if the previous transportation is moving
                             addSessionFlag = true;
-                            Log.d(TAG, "test combine: we should not combine the new transportation activity with the last session " );
+                            //Log.d(TAG, "test combine: we should not combine the new transportation activity with the last session " );
 
 
                         }
@@ -287,11 +286,11 @@ public class MinukuStreamManager implements StreamManager {
 
                     //to end a session (the previous is moving)
                     //we first need to check whether the previous is a transportation
-                    if(!this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
-                            && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA)){
+                    if(!this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                            && !this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NA)){
 
                         //first get the last session id, which is the same as the count of the session in the database (it should
-                        Log.d(TAG, "test combine: the previous activity is moving, we're going to end the last session id " + sessionIdOfLastSession );
+                        //Log.d(TAG, "test combine: the previous activity is moving, we're going to end the last session id " + sessionIdOfLastSession );
                         boolean isSessionLongEnough = SessionManager.isSessionLongEnough(SessionManager.SESSION_LONGENOUGH_THRESHOLD_DISTANCE, sessionIdOfLastSession);
 
                         //if we end the current session, we should update its time and set a long enough flag
@@ -301,16 +300,16 @@ public class MinukuStreamManager implements StreamManager {
 
                         //end the current session
                         SessionManager.endCurSession(lastSession);
-                        Log.d(TAG, "test combine: after revmove, now the sesssion manager session list has  " + SessionManager.getInstance().getOngoingSessionList());
+                        //Log.d(TAG, "test combine: after remove, now the sesssion manager session list has  " + SessionManager.getInstance().getOngoingSessionList());
 
                     }
 
                 }
 
                 //if we need to add a session
-                if (addSessionFlag && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
-                        && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_NA) ){
-                    Log.d(TAG, "[test combine] we should add session " + ((int) sessionCount + 1));
+                if (addSessionFlag && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
+                        && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NA) ){
+                    //Log.d(TAG, "[test combine] we should add session " + ((int) sessionCount + 1));
 
                     //insert into the session table;
                     int sessionId = (int) sessionCount + 1;
@@ -321,7 +320,7 @@ public class MinukuStreamManager implements StreamManager {
                     annotation.addTag(Constants.ANNOTATION_TAG_DETECTED_TRANSPORTATOIN_ACTIVITY);
                     session.addAnnotation(annotation);
 
-                    Log.d(TAG, "[test combine] insert the session is with annotation " +session.getAnnotationsSet().toJSONObject().toString());
+                    //Log.d(TAG, "[test combine] insert the session is with annotation " +session.getAnnotationsSet().toJSONObject().toString());
 
 
                     SessionManager.startNewSession(session);
@@ -331,10 +330,10 @@ public class MinukuStreamManager implements StreamManager {
                 /**
                  * if the last activity is walking and the new one is not, we will need to cancel the walking survey if it existed.
                  * **/
-                if(this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT) &&
-                    !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT)){
+                if(this.transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_ON_FOOT) &&
+                    !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_ON_FOOT)){
 
-                    Log.d(TAG, "test canceling: the previous activity is on_foot");
+                    //Log.d(TAG, "test canceling: the previous activity is on_foot");
 
                     cancelWalkingSurveyFlag = true;
 
@@ -343,9 +342,9 @@ public class MinukuStreamManager implements StreamManager {
                 /**
                  * if the new activity is walking, we will need to keep add the location into the ArrayList "locForIndoorOutdoor" in LocationStreamGenerator.
                  * **/
-                if(transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeService.TRANSPORTATION_MODE_NAME_ON_FOOT)){
+                if(transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_ON_FOOT)){
 
-                    Log.d(TAG, "the new activity is on_foot");
+                    //Log.d(TAG, "the new activity is on_foot");
 
                     LocationStreamGenerator.startIndoorOutdoor = true;
 
@@ -353,9 +352,9 @@ public class MinukuStreamManager implements StreamManager {
                     LocationStreamGenerator.startIndoorOutdoor = false;
                 }
 
-                Log.d(TAG, "test canceling: now startIndoorOutdoor is :"+ LocationStreamGenerator.startIndoorOutdoor);
+                //Log.d(TAG, "test canceling: now startIndoorOutdoor is :"+ LocationStreamGenerator.startIndoorOutdoor);
 
-                Log.d(TAG, "test canceling: now cancelWalkingSurveyFlag is :"+ cancelWalkingSurveyFlag);
+                //Log.d(TAG, "test canceling: now cancelWalkingSurveyFlag is :"+ cancelWalkingSurveyFlag);
 
 
 
@@ -363,7 +362,7 @@ public class MinukuStreamManager implements StreamManager {
         }
 
         this.transportationModeDataRecord = transportationModeDataRecord;
-        //        Log.d(TAG, "test trip after update::: " + transportationModeDataRecord.getConfirmedActivityString() + "  the original beocomes " + this.transportationModeDataRecord.getConfirmedActivityString());
+        //        //Log.d(TAG, "test trip after update::: " + transportationModeDataRecord.getConfirmedActivityString() + "  the original beocomes " + this.transportationModeDataRecord.getConfirmedActivityString());
 
 
     }

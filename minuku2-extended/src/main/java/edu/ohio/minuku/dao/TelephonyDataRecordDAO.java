@@ -55,7 +55,7 @@ public class TelephonyDataRecordDAO implements DAO<TelephonyDataRecord> {
             db.insertWithOnConflict(DBHelper.telephony_table, null, values, SQLiteDatabase.CONFLICT_IGNORE);
             //Log.d(TAG, "ADD"+DBHelper.id+"");
         } catch (NullPointerException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         } finally {
             values.clear();
             // Closing database connection

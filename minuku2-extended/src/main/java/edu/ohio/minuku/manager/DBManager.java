@@ -29,7 +29,6 @@ public class DBManager  {
 
     }
 
-    //TODO RESTART the system will be wrong
     public static synchronized DBManager getInstance() {
         if (instance == null) {
             initializeInstance(mLocalDBHelper);
