@@ -176,17 +176,8 @@ public class Constants {
     public static final long INTERNAL_LOCATION_UPDATE_FREQUENCY = 1 * 10 * 1000; // 1 * 300 * 1000
     public static final float LOCATION_MINUMUM_DISPLACEMENT_UPDATE_THRESHOLD = 50 ;
 
-    public static final String DIABETES_LOG_NOTIFICATION_SOURCE = "DIABETES_LOG";
-
     /* from NCTU */
-    public static String current_timer_state_tag = "current"; //for getTag
-
-    public static String current_timer_state = "home";
-
-    public final static String DATE_FORMAT_for_storing = "yyyy-MM-dd HH:mm:ss";
-
-    public final static String home_tag = "home";
-    public final static String timer_move_tag = "timer_move";
+    public static final String NOT_A_NUMBER = "NA";
 
     public static String DEVICE_ID = "NA";
     public static String USER_ID = "N";

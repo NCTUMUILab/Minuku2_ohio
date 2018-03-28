@@ -22,6 +22,9 @@
 
 package edu.ohio.minuku_2;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -39,9 +42,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.provider.Settings;
+import android.support.multidex.MultiDex;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
@@ -87,6 +90,7 @@ import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
+import edu.ohio.minuku.manager.MinukuNotificationManager;
 import edu.ohio.minuku_2.controller.SurveyActivity;
 import edu.ohio.minuku_2.controller.TripListActivity;
 import edu.ohio.minuku_2.controller.sleepingohio;
@@ -105,10 +109,6 @@ public class MainActivity extends AppCompatActivity {
     public static String task="PART"; //default is PART
     ArrayList viewList;
     public final int REQUEST_ID_MULTIPLE_PERMISSIONS=1;
-    public static View timerview,recordview,deviceIdview;
-
-    public static android.support.design.widget.TabLayout mTabs;
-    public static ViewPager mViewPager;
 
     private TextView device_id;
     private TextView num_6_digit;
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView tripStatus;
     private ImageView surveyStatus;
 
-    private Button ohio_setting, ohio_annotate, closeService, tolinkList;
+    private Button ohio_settingSleepTime, ohio_annotate, closeService, tolinkList;
     private String projName = "Ohio";
 
     private int requestCode_setting = 1;
@@ -138,12 +138,12 @@ public class MainActivity extends AppCompatActivity {
 
         Log.e(TAG,"start");
 
+        MultiDex.install(this);
+
         //** Please set your project name. **//
         settingHomepageView();
 
         intentToStartBackground = new Intent(getBaseContext(), BackgroundService.class);
-//        intentToStartSurvey = new Intent(getBaseContext(), SurveyTriggerService.class);
-
 
 
         EventBus.getDefault().register(this);
@@ -231,12 +231,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(MainActivity.this, SurveyActivity.class));
-
             }
         });
 
-        ohio_setting = (Button)findViewById(R.id.Setting);
-        ohio_setting.setOnClickListener(ohio_settinging);
+        ohio_settingSleepTime = (Button)findViewById(R.id.settingSleepTime);
+        ohio_settingSleepTime.setOnClickListener(settingSleepTimeing);
 
         ohio_annotate = (Button)findViewById(R.id.Annotate);
         ohio_annotate.setOnClickListener(ohio_annotateing);
@@ -246,37 +245,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 stopService(intentToStartBackground);
-//                stopService(intentToStartSurvey);
             }
         });
 
-        //TODO deprecated
-            /*startservice = (Button)findViewById(R.id.service);
-            startservice.setOnClickListener(new Button.OnClickListener(){
-
-                @Override
-                public void onClick(View v) {
-
-                    //Maybe useless in this project.
-//                    startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));  // 協助工具
-
-                    Intent intent1 = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);  //usage
-                    startActivity(intent1);
-
-//                    Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS); //notification
-//                    startActivity(intent);
-
-                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));	//location
-
-                }
-
-            });*/
-
         sleepingtime = (TextView)findViewById(R.id.sleepingTime);
-        String sleepStartTime = sharedPrefs.getString("SleepingStartTime","Please select your sleeping time");
-        String sleepEndTime = sharedPrefs.getString("SleepingEndTime","Please select your wake up time");
+        String sleepStartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);//"Please select your sleeping time"
+        String sleepEndTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);//"Please select your wake up time"
 
-        if(!sleepStartTime.equals("Please select your sleeping time")&&!sleepEndTime.equals("Please select your wake up time")){
+        if(!sleepStartTime.equals(Constants.NOT_A_NUMBER) && !sleepEndTime.equals(Constants.NOT_A_NUMBER)){
 
             String[] sleepStartDetail = sleepStartTime.split(":");
 
@@ -303,8 +279,47 @@ public class MainActivity extends AppCompatActivity {
             sleepingtime.setText("Sleep: " + sleepStartHourStr + " to " + sleepEndHourStr);
 
         }
-        else
+        else {
+
             sleepingtime.setText("Set Sleep Time");
+
+            boolean firstTimeSetSleepingTime = sharedPrefs.getBoolean("firstTimeSetSleepingTime", true);
+
+            if(!firstTimeSetSleepingTime){
+
+                //send the notification to remind the user to set their sleeping time
+                NotificationManager mNotificationManager =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                String notificationText = "Please set your sleeping time";
+                Notification notification = getNotification(notificationText);
+
+                mNotificationManager.notify(999, notification);
+            }
+
+            sharedPrefs.edit().putBoolean("firstTimeSetSleepingTime", false).apply();
+
+        }
+    }
+
+    private Notification getNotification(String text){
+
+        Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
+        bigTextStyle.setBigContentTitle("DMS");
+        bigTextStyle.bigText(text);
+
+        Intent resultIntent = new Intent(this, sleepingohio.class);
+        PendingIntent pending = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification.Builder noti = new Notification.Builder(this);
+
+        return noti.setContentTitle(Constants.APP_FULL_NAME)
+                .setContentText(text)
+                .setStyle(bigTextStyle)
+                .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                .setContentIntent(pending)
+                .setAutoCancel(true)
+                .build();
     }
 
     private void startTimerThread() {
@@ -718,9 +733,10 @@ public class MainActivity extends AppCompatActivity {
                         sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", true).apply();
 
                     }
-                    else
-                        sleepingtime.setText("Set Sleep Time");
+                    else {
 
+                        sleepingtime.setText("Set Sleep Time");
+                    }
                     break;
             }
             /*switch (requestCode){
@@ -799,12 +815,13 @@ public class MainActivity extends AppCompatActivity {
     };
 
     //to view sleepingohio
-    private Button.OnClickListener ohio_settinging = new Button.OnClickListener() {
+    private Button.OnClickListener settingSleepTimeing = new Button.OnClickListener() {
         public void onClick(View v) {
             Log.e(TAG,"sleepingohio clicked");
 
-            startActivityForResult(new Intent(MainActivity.this, sleepingohio.class),requestCode_setting);
+            startActivityForResult(new Intent(MainActivity.this, sleepingohio.class), requestCode_setting);
 
+            MainActivity.this.finish();
         }
     };
 

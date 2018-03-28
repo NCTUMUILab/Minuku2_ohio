@@ -145,7 +145,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
 
         //for replay location record
-        startReplayLocationRecordTimer();
+//        startReplayLocationRecordTimer();
 
         this.register();
     }
@@ -178,9 +178,9 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             Log.d(TAG, "dist : " + dist);
 
             //TODO uncomment them when we stop testing
-//            this.latestLatitude.set(location.getLatitude());
-//            this.latestLongitude.set(location.getLongitude());
-//            latestAccuracy = location.getAccuracy();
+            this.latestLatitude.set(location.getLatitude());
+            this.latestLongitude.set(location.getLongitude());
+            latestAccuracy = location.getAccuracy();
 
             //the lastposition update value timestamp
             lastposupdate = new Date().getTime();

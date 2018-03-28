@@ -512,7 +512,8 @@ public class SessionManager {
 
                 long duration = endLocTime - startLocTime;
 
-                //if the session is shorter than a threshold (now - start time < threshold), we should give it a flag, so that it wouldnot show up in the annotation list
+                //if the session is shorter than a threshold (now - start time < threshold),
+                // we should give it a flag, so that it would not show up in the annotation list
                 if (distance < SessionManager.SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION
                         || duration < SessionManager.SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION
                         ){

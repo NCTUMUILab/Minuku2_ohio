@@ -124,7 +124,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
         this.context = context;
 
-        sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
+        sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
 
         year = sharedPrefs.getInt("StartYear", mYear);
         month = sharedPrefs.getInt("StartMonth", mMonth);
@@ -201,7 +201,6 @@ public class WifiReceiver extends BroadcastReceiver {
 
 //                    //Log.d(TAG, "loading UserInform data");
 
-                    //TODO replace the UserInform
                     //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
                     sendingUserInform();
 
@@ -299,6 +298,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
 //                    //Log.d(TAG, "loading Annotated Trip data");
 
+
+                    //TODO don't send the label had been sent
                     sendingAnnotatedTripData();
 
                 }
@@ -525,6 +526,10 @@ public class WifiReceiver extends BroadcastReceiver {
                             "Trip",
                             curr).get();
 
+                latestSessionidFromServer++;
+
+                sharedPrefs.edit().putInt("latestSessionidFromServer", latestSessionidFromServer).apply();
+
             } catch (InterruptedException e) {
                 //e.printStackTrace();
             } catch (ExecutionException e) {
@@ -571,7 +576,6 @@ public class WifiReceiver extends BroadcastReceiver {
 
         String curr = getDateCurrentTimeZone(new Date().getTime());
 
-        //TODO upload to MongoDB
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                 new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,

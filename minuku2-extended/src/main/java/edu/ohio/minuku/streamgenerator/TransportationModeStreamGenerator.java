@@ -200,12 +200,39 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
 
         Log.d(TAG, "Update stream called.");
 
-//        TransportationModeDataRecord transportationModeDataRecord =
-//                new TransportationModeDataRecord(ConfirmedActvitiyString);
+        //detecting the Transportation from the activityRecognition
+        if(MinukuStreamManager.getInstance().getActivityRecognitionDataRecord()!=null){
 
+            ActivityRecognitionDataRecord record = MinukuStreamManager.getInstance().getActivityRecognitionDataRecord();
+
+            if (record!=null) {
+
+                //getting latest Transportation based on the incoming record
+                examineTransportation(record);
+
+                //Log.d(TAG, "[test replay] test trip: after examine transportation the current activity is  is " + getConfirmedActvitiyString() + " the status is " + getCurrentState());
+
+                //showTransportation(getConfirmedActivityString());
+
+            }
+
+            sharedPrefs.edit().putInt("CurrentState", mCurrentState).apply();
+            sharedPrefs.edit().putInt("ConfirmedActivityType", mConfirmedActivityType).apply();
+
+            //write transportation mode record
+            TransportationMode_StoreToCSV(new Date().getTime(), latest_activityRecognitionDataRecord, getConfirmedActvitiyString(), mCurrentState);
+
+            if(record.getMostProbableActivity().getConfidence()!=999){ //conf == 999 means it didn't receive anything from AR
+
+                latest_activityRecognitionDataRecord = record;
+
+                latest_activityRecognitionDataRecord.getProbableActivities();
+            }
+        }
+
+        //store the Transportation to the SQLlite
         TransportationModeDataRecord transportationModeDataRecord =
                 new TransportationModeDataRecord(getConfirmedActvitiyString());
-
 
         Log.d(TAG,"updateStream transportationModeDataRecord : " + ConfirmedActvitiyString);
 
@@ -244,14 +271,7 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
     @Override
     public void onStreamRegistration() {
 
-        /*Intent intent = new Intent(mContext, TransportationModeService.class);
-        if(!TransportationModeService.isServiceRunning()){
-            Log.d(TAG, "[test alarm] going to start TransportationModeService");
-            mContext.startService(intent);
-        }*/
-
-        runMainThread();
-
+//        runMainThread();
     }
 
     public void setTransportationModeDataRecord(String getConfirmedActvitiyString){
@@ -280,18 +300,16 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
         @Override
         public void run() {
 
-            //Log.d(TAG, "TransportationModeRunnable");
-
             if(MinukuStreamManager.getInstance().getActivityRecognitionDataRecord()!=null){
 
-                ActivityRecognitionDataRecord record = MinukuStreamManager.getInstance().getActivityRecognitionDataRecord();//activityRecognitionStreamGenerator.getLastSavedRecord();
+                ActivityRecognitionDataRecord record = MinukuStreamManager.getInstance().getActivityRecognitionDataRecord();
 
                 if (record!=null) {
 
                     //getting latest Transportation based on the incoming record
                     examineTransportation(record);
 
-                    //Log.d("ARService", "[test replay] test trip: after examine transportation the current activity is  is " + getConfirmedActvitiyString() + " the status is " + getCurrentState());
+                    //Log.d(TAG, "[test replay] test trip: after examine transportation the current activity is  is " + getConfirmedActvitiyString() + " the status is " + getCurrentState());
 
                     //showTransportation(getConfirmedActivityString());
 
@@ -310,8 +328,6 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
 
                 }
             }
-            //Log.d(TAG, "TransportationMode's Stream might not start working yet.");
-
         }
     };
 
@@ -1165,9 +1181,12 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
 
             csv_writer.close();
 
-        }catch (Exception e){
+        }catch (IOException e){
+            e.printStackTrace();
+            Log.e(TAG, "exception", e);
+        }/*catch (Exception e){
             //e.printStackTrace();
             //Log.e(TAG, "exception", e);
-        }
+        }*/
     }
 }

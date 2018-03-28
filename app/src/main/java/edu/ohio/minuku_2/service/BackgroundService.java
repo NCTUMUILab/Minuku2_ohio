@@ -38,7 +38,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import edu.ohio.minuku.Utilities.FileHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.MinukuNotificationManager;
@@ -141,8 +140,8 @@ public class BackgroundService extends Service {
             }
 
             /**read test file**/
-            FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
-            FileHelper.readTestFile();
+//            FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
+//            FileHelper.readTestFile();
         }
 
         //TODO Keep eye on the service is working or not.

@@ -97,9 +97,9 @@ public class CSVHelper {
 
         }catch (IOException e){
             //e.printStackTrace();
-        }catch (Exception e){
+        }/*catch (Exception e){
             //e.printStackTrace();
-        }
+        }*/
     }
 
     public static void StoreToCSVButForJson(String dataType, String json){

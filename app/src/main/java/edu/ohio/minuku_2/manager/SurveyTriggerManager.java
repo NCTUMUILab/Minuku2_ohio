@@ -261,7 +261,7 @@ public class SurveyTriggerManager {
 
         //Log.d(TAG, "settingIntervalSampling");
 
-        SharedPreferences sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
+        SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
 
         //Log.d(TAG, "daysInSurvey : "+daysInSurvey);
         Date curDate = new Date(System.currentTimeMillis() + daysInSurvey * Constants.MILLISECONDS_PER_DAY);
@@ -275,8 +275,14 @@ public class SurveyTriggerManager {
         Random random = new Random(now);
         int sample_period;
         //TODO set the start and end time.
-        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", "22:00"); //"22:00"
-        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", "08:00"); //"08:00"
+        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER); //"22:00"
+        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER); //"08:00"
+
+        //if the time havn't been set, don't set the survey time with default.
+        if(sleepingstartTime.equals(Constants.NOT_A_NUMBER) || sleepingendTime.equals(Constants.NOT_A_NUMBER)){
+
+            return;
+        }
 
         //Log.d(TAG, "[test sleeping] sleepingendTime : " + yMdformat+" "+sleepingendTime+":00");
         //Log.d(TAG, "[test sleeping] sleepingstartTime : " + yMdformat+" "+sleepingstartTime+":00");
@@ -424,170 +430,173 @@ public class SurveyTriggerManager {
             /** setting third of the day**/
 
             //get sleep time and get up time from sharedpreference
-            String startSleepingTime = sharedPrefs.getString("SleepingStartTime","22:00");
-            String endSleepingTime = sharedPrefs.getString("SleepingEndTime","08:00");
+            String startSleepingTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);//"22:00"
+            String endSleepingTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);//"08:00"
 
             //Log.d(TAG,"startSleepingTime : "+ startSleepingTime + " endSleepingTime : "+ endSleepingTime);
 
-            //calculate the bed time and gettime for today
-            long bedTime = getSpecialTimeInMillis(today+" "+startSleepingTime+":00");
-            long startDay_settingthird = getSpecialTimeInMillis(today+" "+endSleepingTime+":00");
+            if(!startSleepingTime.equals(Constants.NOT_A_NUMBER) && !endSleepingTime.equals(Constants.NOT_A_NUMBER)) {
 
-            //get the initial point of each third
+                //calculate the bed time and gettime for today
+                long bedTime = getSpecialTimeInMillis(today + " " + startSleepingTime + ":00");
+                long startDay_settingthird = getSpecialTimeInMillis(today + " " + endSleepingTime + ":00");
 
-            //awake time is between the time of gettuping and going to bed
-            long awakeTime = bedTime - startDay_settingthird;
+                //get the initial point of each third
 
-            //the amount for each third
-            long third_interval = (awakeTime)/3;
+                //awake time is between the time of gettuping and going to bed
+                long awakeTime = bedTime - startDay_settingthird;
 
-            //Log.d(TAG, "third_interval is " + third_interval);
+                //the amount for each third
+                long third_interval = (awakeTime) / 3;
 
-            //the endtime of the first, second, third third
-            long endOfFirstThird = startDay_settingthird + third_interval;
-            long endOfSecondThird = startDay_settingthird + third_interval * 2;
-            long endOfThirdThird = startDay_settingthird + third_interval * 3;
+                //Log.d(TAG, "third_interval is " + third_interval);
 
-            //Log.d(TAG, "today is " + today);
-            //Log.d(TAG, "endOfFirstThird is " + endOfFirstThird);
-            //Log.d(TAG, "endOfSecondThird is " + endOfSecondThird);
-            //Log.d(TAG, "endOfThirdThird is " + endOfThirdThird);
+                //the endtime of the first, second, third third
+                long endOfFirstThird = startDay_settingthird + third_interval;
+                long endOfSecondThird = startDay_settingthird + third_interval * 2;
+                long endOfThirdThird = startDay_settingthird + third_interval * 3;
 
-            //initialize
-            testingserverThenFail = false;
+                //Log.d(TAG, "today is " + today);
+                //Log.d(TAG, "endOfFirstThird is " + endOfFirstThird);
+                //Log.d(TAG, "endOfSecondThird is " + endOfSecondThird);
+                //Log.d(TAG, "endOfThirdThird is " + endOfThirdThird);
 
-            //Log.d(TAG, "userid: " + userid);
+                //initialize
+                testingserverThenFail = false;
 
-            //after a day
-            if (!lastTimeSend_today.equals(today)) {
+                //Log.d(TAG, "userid: " + userid);
 
-                sharedPrefs.edit().putString("mobileMissedCount", "").apply();
-                sharedPrefs.edit().putString("randomMissedCount", "").apply();
-                sharedPrefs.edit().putString("OpenCount", "").apply();
+                //after a day
+                if (!lastTimeSend_today.equals(today)) {
 
-                walkoutdoor_sampled = 0;
-                sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
+                    sharedPrefs.edit().putString("mobileMissedCount", "").apply();
+                    sharedPrefs.edit().putString("randomMissedCount", "").apply();
+                    sharedPrefs.edit().putString("OpenCount", "").apply();
 
-                walk_first_sampled = 0;
-                sharedPrefs.edit().putInt("walk_first_sampled", walk_first_sampled).apply();
-                walk_second_sampled = 0;
-                sharedPrefs.edit().putInt("walk_second_sampled", walk_second_sampled).apply();
-                walk_third_sampled = 0;
-                sharedPrefs.edit().putInt("walk_third_sampled", walk_third_sampled).apply();
+                    walkoutdoor_sampled = 0;
+                    sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
 
-                //total 6 surveys a day
+                    walk_first_sampled = 0;
+                    sharedPrefs.edit().putInt("walk_first_sampled", walk_first_sampled).apply();
+                    walk_second_sampled = 0;
+                    sharedPrefs.edit().putInt("walk_second_sampled", walk_second_sampled).apply();
+                    walk_third_sampled = 0;
+                    sharedPrefs.edit().putInt("walk_third_sampled", walk_third_sampled).apply();
+
+                    //total 6 surveys a day
 //                interval_sample_number = 6;
 //                sharedPrefs.edit().putInt("interval_sample_number", interval_sample_number).apply();
 
-                interval_sampled = 0;
-                sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
+                    interval_sampled = 0;
+                    sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
 
-                last_Survey_Time = -999;
-                sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
+                    last_Survey_Time = -999;
+                    sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
 
-                last_Walking_Survey_Time = -999;
-                sharedPrefs.edit().putLong("last_Walking_Survey_Time", last_Walking_Survey_Time).apply();
+                    last_Walking_Survey_Time = -999;
+                    sharedPrefs.edit().putLong("last_Walking_Survey_Time", last_Walking_Survey_Time).apply();
 
-                if(lastTimeSend_today.equals("NA")) {
-                    //setting up the parameter for the survey link
-                    setUpSurveyLink();
+                    if (lastTimeSend_today.equals("NA")) {
+                        //setting up the parameter for the survey link
+                        setUpSurveyLink();
+                    }
+
+                    lastTimeSend_today = today;
+                    sharedPrefs.edit().putString("lastTimeSend_today", lastTimeSend_today).apply();
+
                 }
 
-                lastTimeSend_today = today;
-                sharedPrefs.edit().putString("lastTimeSend_today", lastTimeSend_today).apply();
+                //temporarily remove the trigger limit
+                if (!InSleepingTime(startSleepingTime, endSleepingTime)) {
 
-            }
+                    //Log.d(TAG, "it's not sleeping time");
 
-            //temporarily remove the trigger limit
-            if (!InSleepingTime()) {
+                    /** see if the user is walking in the last minute **/
+                    long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
+                    long lastminute = now - Constants.MILLISECONDS_PER_MINUTE;
 
-                //Log.d(TAG, "it's not sleeping time");
+                    //1. we get walking session
+                    //try : prevent the situation that the session hasn't created
+                    try {
 
-                /** see if the user is walking in the last minute **/
-                long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
-                long lastminute = now - Constants.MILLISECONDS_PER_MINUTE;
+                        int sessionId = SessionManager.getOngoingSessionIdList().get(0);
+                        Session session = SessionManager.getSession(sessionId);
 
-                //1. we get walking session
-                //try : prevent the situation that the session hasn't created
-                try{
+                        //Log.d(TAG, "sessionId : " + sessionId);
 
-                    int sessionId = SessionManager.getOngoingSessionIdList().get(0);
-                    Session session = SessionManager.getSession(sessionId);
+                        //see if the session is walking session
+                        ArrayList<Annotation> annotations = session.getAnnotationsSet().getAnnotationByContent(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_ON_FOOT);
 
-                    //Log.d(TAG, "sessionId : " + sessionId);
+                        //session startTime
+                        long sessionStartTime = session.getStartTime();
 
-                    //see if the session is walking session
-                    ArrayList<Annotation> annotations = session.getAnnotationsSet().getAnnotationByContent(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_ON_FOOT);
+                        //if the session is on foot and has lasted for one minute
+                        if (annotations.size() > 0 && sessionStartTime < lastminute && isWalkingOutdoor(lastminute, now)) {
+                            //Log.d(TAG, "[test sampling] the user has been walking for a minute");
 
-                    //session startTime
-                    long sessionStartTime = session.getStartTime();
+                            walkoutdoor_sampled = sharedPrefs.getInt("walkoutdoor_sampled", 0);
 
-                    //if the session is on foot and has lasted for one minute
-                    if (annotations.size() > 0  && sessionStartTime < lastminute && isWalkingOutdoor(lastminute, now)) {
-                        //Log.d(TAG, "[test sampling] the user has been walking for a minute");
+                            //the user is walking outdoor we need to trigger a survey
+                            if (walkoutdoor_sampled < 3 && sameTripPrevent == false) {
 
-                        walkoutdoor_sampled = sharedPrefs.getInt("walkoutdoor_sampled", 0);
+                                //determine whether to send a walking triggered survey by checking whether there has triggered one survey before
+                                boolean sendSurveyFlag = true;
 
-                        //the user is walking outdoor we need to trigger a survey
-                        if (walkoutdoor_sampled < 3 && sameTripPrevent == false) {
+                                if (now <= endOfFirstThird) {
+                                    if (walk_first_sampled >= 1)
+                                        sendSurveyFlag = false;
+                                } else if (now <= endOfSecondThird && now > endOfFirstThird) {
+                                    if (walk_second_sampled >= 1)
+                                        sendSurveyFlag = false;
+                                } else if (now <= endOfThirdThird && now > endOfSecondThird) {
+                                    if (walk_third_sampled >= 1)
+                                        sendSurveyFlag = false;
+                                }
 
-                            //determine whether to send a walking triggered survey by checking whether there has triggered one survey before
-                            boolean sendSurveyFlag = true;
+                                //send notification
+                                if (sendSurveyFlag) {
+                                    if (isTimeForSurvey(noti_walk))
+                                        triggerWalkingSurvey(endOfFirstThird, endOfSecondThird, endOfFirstThird);
+                                }
 
-                            if (now <= endOfFirstThird) {
-                                if (walk_first_sampled >= 1)
-                                    sendSurveyFlag = false;
-                            } else if (now <= endOfSecondThird && now > endOfFirstThird) {
-                                if (walk_second_sampled >= 1)
-                                    sendSurveyFlag = false;
-                            } else if (now <= endOfThirdThird && now > endOfSecondThird) {
-                                if (walk_third_sampled >= 1)
-                                    sendSurveyFlag = false;
-                            }
-
-                            //send notification
-                            if (sendSurveyFlag){
-                                if (isTimeForSurvey(noti_walk))
-                                    triggerWalkingSurvey(endOfFirstThird, endOfSecondThird, endOfFirstThird);
                             }
 
                         }
 
-                    }
-
-                }catch (IndexOutOfBoundsException e){
+                    } catch (IndexOutOfBoundsException e) {
 //                    //e.printStackTrace();
 //                    //Log.e(TAG, "exception", e);
-                }catch (NullPointerException e){
-                    //e.printStackTrace();
-//                    //Log.e(TAG, "exception", e);
-                }
-
-                //Log.d(TAG, "cancelWalkingSurveyFlag : "+ MinukuStreamManager.cancelWalkingSurveyFlag);
-
-                //TODO: if the walking has ended, we should dismiss the notification
-                if(MinukuStreamManager.cancelWalkingSurveyFlag){
-                    try{
-                        //Log.d(TAG, "Notification canceling");
-
-                        mNotificationManager.cancel(walk_notifyID);
-
-                        //Log.d(TAG, "Notification should be canceled");
-                    }catch (Exception e){
+                    } catch (NullPointerException e) {
                         //e.printStackTrace();
-                        //Log.d(TAG, "No previous walking survey yet.");
-                    }finally {
-                        //Log.d(TAG, "Set the cancelWalkingSurveyFlag back to false");
-                        MinukuStreamManager.cancelWalkingSurveyFlag = false;
+//                    //Log.e(TAG, "exception", e);
                     }
+
+                    //Log.d(TAG, "cancelWalkingSurveyFlag : "+ MinukuStreamManager.cancelWalkingSurveyFlag);
+
+                    //TODO: if the walking has ended, we should dismiss the notification
+                    if (MinukuStreamManager.cancelWalkingSurveyFlag) {
+                        try {
+                            //Log.d(TAG, "Notification canceling");
+
+                            mNotificationManager.cancel(walk_notifyID);
+
+                            //Log.d(TAG, "Notification should be canceled");
+                        } catch (Exception e) {
+                            //e.printStackTrace();
+                            //Log.d(TAG, "No previous walking survey yet.");
+                        } finally {
+                            //Log.d(TAG, "Set the cancelWalkingSurveyFlag back to false");
+                            MinukuStreamManager.cancelWalkingSurveyFlag = false;
+                        }
+                    }
+
+                } else {
+                    //Log.d(TAG, "InSleepingTime true.");
                 }
 
-            }else{
-                //Log.d(TAG, "InSleepingTime true.");
+                SamplingCheck_StoreToCSV(new Date().getTime(), interval_sampled, walkoutdoor_sampled, walk_first_sampled, walk_second_sampled, walk_third_sampled);
+
             }
-
-            SamplingCheck_StoreToCSV(new Date().getTime(), interval_sampled, walkoutdoor_sampled, walk_first_sampled, walk_second_sampled, walk_third_sampled);
-
         }
     };
 
@@ -1053,51 +1062,48 @@ public class SurveyTriggerManager {
 
     }
 
-    public boolean InSleepingTime(){
+    public boolean InSleepingTime(String startSleepingTime, String endSleepingTime){
 
-        String startSleepingTime = sharedPrefs.getString("SleepingStartTime","22:00");
-        String endSleepingTime = sharedPrefs.getString("SleepingEndTime","08:00");
+//        String startSleepingTime = sharedPrefs.getString("SleepingStartTime","22:00");
+//        String endSleepingTime = sharedPrefs.getString("SleepingEndTime","08:00");
 
         //Log.d(TAG, "startSleepingTime : " + startSleepingTime + " endSleepingTime : " + endSleepingTime);
 
-        if(startSleepingTime!=null && endSleepingTime!=null) {
+        String[] startSleepingTimeArray = startSleepingTime.split(":");
+        String[] endSleepingTimeArray = endSleepingTime.split(":");
 
-            String[] startSleepingTimeArray = startSleepingTime.split(":");
-            String[] endSleepingTimeArray = endSleepingTime.split(":");
-
-            //Log.d(TAG, "startSleepingHour : " + startSleepingTimeArray[0] + " startSleepingMin : " + startSleepingTimeArray[1]
+        //Log.d(TAG, "startSleepingHour : " + startSleepingTimeArray[0] + " startSleepingMin : " + startSleepingTimeArray[1]
 //                    + " endSleepingHour : " + endSleepingTimeArray[0] + " endSleepingMin : " + endSleepingTimeArray[1]);
 
-            int startSleepingHour = Integer.valueOf(startSleepingTimeArray[0]);
-            int startSleepingMin = Integer.valueOf(startSleepingTimeArray[1]);
-            int endSleepingHour = Integer.valueOf(endSleepingTimeArray[0]);
-            int endSleepingMin = Integer.valueOf(endSleepingTimeArray[1]);
+        int startSleepingHour = Integer.valueOf(startSleepingTimeArray[0]);
+        int startSleepingMin = Integer.valueOf(startSleepingTimeArray[1]);
+        int endSleepingHour = Integer.valueOf(endSleepingTimeArray[0]);
+        int endSleepingMin = Integer.valueOf(endSleepingTimeArray[1]);
 
-            //Log.d(TAG, "int startSleepingHour : " + String.valueOf(startSleepingHour) + " startSleepingMin : " + String.valueOf(startSleepingMin)
+        //Log.d(TAG, "int startSleepingHour : " + String.valueOf(startSleepingHour) + " startSleepingMin : " + String.valueOf(startSleepingMin)
 //                    + " endSleepingHour : " + String.valueOf(endSleepingHour) + " endSleepingMin : " + String.valueOf(endSleepingMin));
 
-            TimeZone tz = TimeZone.getDefault();
-            java.util.Calendar cal = java.util.Calendar.getInstance(tz);
-            int hour = cal.get(Calendar.HOUR_OF_DAY);
-            int min = cal.get(Calendar.MINUTE);
-            //Log.d(TAG, "hour : " + hour + " min : " + min);
+        TimeZone tz = TimeZone.getDefault();
+        java.util.Calendar cal = java.util.Calendar.getInstance(tz);
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        int min = cal.get(Calendar.MINUTE);
+        //Log.d(TAG, "hour : " + hour + " min : " + min);
 
-            int startSleepingTimeWholeMin = startSleepingHour * 60 + startSleepingMin;
-            int endSleepingTimeWholeMin = endSleepingHour * 60 + endSleepingMin;
-            int currentSleepingTimeWholeMin = hour * 60 + min;
+        int startSleepingTimeWholeMin = startSleepingHour * 60 + startSleepingMin;
+        int endSleepingTimeWholeMin = endSleepingHour * 60 + endSleepingMin;
+        int currentSleepingTimeWholeMin = hour * 60 + min;
 
-            //check the current time is in user's sleeping time or not
-            if(currentSleepingTimeWholeMin <= startSleepingTimeWholeMin
-                    && currentSleepingTimeWholeMin >= endSleepingTimeWholeMin){
+        //check the current time is in user's sleeping time or not
+        if(currentSleepingTimeWholeMin <= startSleepingTimeWholeMin
+                && currentSleepingTimeWholeMin >= endSleepingTimeWholeMin){
 
-                return false;
-            }else{
+            return false;
+        }else{
 
-                return true;
-            }
-
+            return true;
         }
-        return false;
+
+//        return false;
 
     }
 

@@ -101,7 +101,7 @@ public class sleepingohio extends AppCompatActivity {
                 sleepStartTimeRaw = ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf2);
                 sleepEndTimeRaw = ScheduleAndSampleManager.getTimeString(sleepEndTimeLong, sdf2);
 
-                SharedPreferences.Editor editor = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE).edit();
+                SharedPreferences.Editor editor = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE).edit();
                 editor.putString("SleepingStartTime", sleepStartTimeRaw);
                 editor.putString("SleepingEndTime", sleepEndTimeRaw);
                 editor.commit();
