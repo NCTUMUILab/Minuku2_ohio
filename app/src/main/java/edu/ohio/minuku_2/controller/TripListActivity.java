@@ -11,10 +11,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
+import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku_2.R;
@@ -42,6 +44,7 @@ public class TripListActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.triplist_activity);
         liststr = new ArrayList<String>();
         mSessions = new ArrayList<Session>();
@@ -65,12 +68,19 @@ public class TripListActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
+
         initSessionList();
     }
 
     private void initSessionList(){
 
         listview = (ListView)findViewById(R.id.tripList);
+
+        if(Constants.daysInSurvey > 14){
+            TextView emptyView = (TextView) findViewById(R.id.emptyViewText);
+            emptyView.setText("All trips completed.");
+        }
+
         listview.setEmptyView(findViewById(R.id.emptyView));
 
         try{

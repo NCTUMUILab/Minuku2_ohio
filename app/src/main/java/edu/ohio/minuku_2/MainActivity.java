@@ -31,15 +31,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Parcelable;
 import android.provider.Settings;
 import android.support.multidex.MultiDex;
@@ -83,13 +80,12 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
-import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.MinukuNotificationManager;
 import edu.ohio.minuku_2.controller.SurveyActivity;
 import edu.ohio.minuku_2.controller.TripListActivity;
@@ -140,8 +136,26 @@ public class MainActivity extends AppCompatActivity {
 
         MultiDex.install(this);
 
-        //** Please set your project name. **//
-        settingHomepageView();
+        //for testing the over date of the research
+//        Constants.daysInSurvey = 15;
+
+        if(Constants.daysInSurvey > 15){
+
+            setContentView(R.layout.homepage_complete);
+            Button finalSurvey = (Button) findViewById(R.id.finalSurvey);
+            finalSurvey.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+                    String url = "https://osu.az1.qualtrics.com/jfe/form/SV_2sgjKUSdGmrBEln";
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(url));
+                    startActivity(intent);
+                }
+            });
+        }else {
+            settingHomepageView();
+        }
 
         intentToStartBackground = new Intent(getBaseContext(), BackgroundService.class);
 
@@ -322,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
     }
 
-    private void startTimerThread() {
+    /*private void startTimerThread() {
         final Handler handler = new Handler();
         Runnable runnable = new Runnable() {
             @Override
@@ -434,7 +448,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
-    };
+    };*/
 
     private void startSettingSleepingTime(){
         Intent intent = new Intent(this, sleepingohio.class);  //usage
@@ -443,24 +457,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void startpermission(){
         //Maybe useless in this project.
-//                    startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));  // 協助工具
+//        startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));  // 協助工具
 
         Intent intent1 = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);  //usage
         startActivity(intent1);
 
-//                    Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS); //notification
-//                    startActivity(intent);
+//        Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS); //notification
+//        startActivity(intent);
 
         startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));	//location
     }
 
     private void showdialogforuser(){
 
-        //** User ID = Confirmation Number
+        // User ID = Confirmation Number
 
         firstTimeToShowDialogOrNot = false;
 
-        sharedPrefs = getSharedPreferences("edu.umich.minuku_2", MODE_PRIVATE);
+        sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
         sharedPrefs.edit().putBoolean("firstTimeToShowDialogOrNot", firstTimeToShowDialogOrNot).apply();
 
         LinearLayout layout = new LinearLayout(MainActivity.this);
@@ -506,8 +520,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
 
-                        Log.d(TAG, "editText.getText().toString() : "+ editText_confirmNum.getText().toString());
-
                         String inputID = editText_confirmNum.getText().toString();
                         Log.d(TAG,"inputID : "+inputID);
 
@@ -551,7 +563,6 @@ public class MainActivity extends AppCompatActivity {
                                 getStartDate();
 
                                 startService(intentToStartBackground);
-//                                startService(intentToStartSurvey);
 
                                 //Dismiss once everything is OK.
                                 dialog.dismiss();
@@ -601,6 +612,8 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "userInform : " + userInform);
 
+        CSVHelper.userInformStoreToCSV("userInform.csv", new Date().getTime(), userInform);
+
         //In order to set the survey link
         setDaysInSurveyAndTheDayTodayIs(userInform);
 
@@ -638,6 +651,10 @@ public class MainActivity extends AppCompatActivity {
         }catch (JSONException e){
             e.printStackTrace();
         }
+
+        //for testing the over date of the research
+//        Constants.daysInSurvey = 15;
+//        sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
 
     }
 

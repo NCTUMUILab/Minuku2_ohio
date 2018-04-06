@@ -64,7 +64,13 @@ public class SurveyActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.surveypage);
+
+
+        if(Constants.daysInSurvey > 14){
+
+            setContentView(R.layout.surveypage_complete);
+        }else
+            setContentView(R.layout.surveypage);
 
     }
 
@@ -74,7 +80,9 @@ public class SurveyActivity extends Activity {
 
         //Log.d(TAG,"onResume");
 
-        initlinkListohio();
+
+        if(Constants.daysInSurvey <= 14)
+            initlinkListohio();
 
     }
 

@@ -33,13 +33,16 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
+import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku_2.manager.SurveyTriggerManager;
 
 /**
@@ -104,9 +107,26 @@ public class Utils {
         }
 
         storeToCSV_Interval_Samples_Times_split();
+
+        SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
+        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER); //"22:00"
+        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
+
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
+        long startTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepingstartTime, sdf);
+        long endTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepingendTime, sdf);
+
+        Log.d(TAG, "startTimeLong : "+startTimeLong+"| sleepingstartTime : "+sleepingstartTime);
+        Log.d(TAG, "endTimeLong : "+endTimeLong+"| sleepingendTime : "+sleepingendTime);
+
+        long period = (startTimeLong-endTimeLong)/6;
+        Log.d(TAG, "period : "+period);
+
+        sharedPrefs.edit().putLong("period", period).apply();
+
     }
 
-    public static void storeToCSV_IntervalSurveyCreated(long triggeredTimestamp, int surveyNum, String surveyLink, Context context){
+    public static void storeToCSV_IntervalSurveyCreated(long triggeredTimestamp, int surveyNum, String surveyLink, String noti_type,Context context){
 
         String sFileName = "IntervalSurveyState.csv";
 
@@ -130,7 +150,7 @@ public class Utils {
             if(startSurveying) {
                 List<String[]> title = new ArrayList<String[]>();
 
-                title.add(new String[]{"triggeredTime", "Survey #", "clicked", "clickedTime","Survey link"});
+                title.add(new String[]{"triggeredTime", "Survey #", "clicked", "clickedTime","Survey link", "Noti Type","Period Number"});
 
                 csv_writer.writeAll(title);
 
@@ -140,9 +160,11 @@ public class Utils {
 
             String triggeredTimeString = ScheduleAndSampleManager.getTimeString(triggeredTimestamp);
 
+            String periodNum = getPeriodNumForNoti(context, triggeredTimestamp);
+
             List<String[]> data = new ArrayList<String[]>();
 
-            data.add(new String[]{triggeredTimeString, "Survey "+surveyNum, "",  "", surveyLink});
+            data.add(new String[]{triggeredTimeString, "Survey "+surveyNum, "",  "", surveyLink, noti_type, periodNum});
 
             csv_writer.writeAll(data);
 
@@ -152,11 +174,53 @@ public class Utils {
             //e.printStackTrace();
             //Log.e(TAG, "exception", e);
         } catch (IndexOutOfBoundsException e2){
-            e2.printStackTrace();
+            //e2.printStackTrace();
             //Log.e(TAG, "exception", e2);
-
         }
+    }
 
+    public static String getPeriodNumForNoti(Context context, long triggeredTimestamp){
+
+        String periodName = "Period";
+
+        SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
+        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER); //"22:00"
+        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
+
+        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String date = ScheduleAndSampleManager.getTimeString(new Date().getTime(), sdf_date);
+
+        String sleepstartTimeWithDate = date + " " + sleepingstartTime + ":00";
+        String sleepingendTimeWithDate = date + " " + sleepingendTime + ":00";
+
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE);
+        long sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepstartTimeWithDate, sdf);
+        long sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepingendTimeWithDate, sdf);
+
+        long period = sharedPrefs.getLong("period", 0);
+
+        if(triggeredTimestamp >= sleepEndTimeLong && triggeredTimestamp <= (sleepEndTimeLong +period)){
+
+            return periodName + " 1";
+        }else if(triggeredTimestamp > (sleepEndTimeLong + period) && triggeredTimestamp <= (sleepEndTimeLong + 2*period)){
+
+            return periodName + " 2";
+        }else if(triggeredTimestamp > (sleepEndTimeLong + 2*period) && triggeredTimestamp <= (sleepEndTimeLong + 3*period)){
+
+            return periodName + " 3";
+        }else if(triggeredTimestamp > (sleepEndTimeLong + 3*period) && triggeredTimestamp <= (sleepEndTimeLong + 4*period)){
+
+            return periodName + " 4";
+        }else if(triggeredTimestamp > (sleepEndTimeLong + 4*period) && triggeredTimestamp <= (sleepEndTimeLong + 5*period)){
+
+            return periodName + " 5";
+        }else if(triggeredTimestamp > (sleepEndTimeLong + 5*period) && triggeredTimestamp <= (sleepEndTimeLong + 6*period)){
+
+            return periodName + " 6";
+        }else{
+
+            return "Wrong ";
+        }
     }
 
     public static void storeToCSV_IntervalSurveyUpdated(boolean clicked){

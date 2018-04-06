@@ -40,7 +40,6 @@ import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.MinukuNotificationManager;
-import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.DataRecord.ConnectivityDataRecord;
@@ -571,9 +570,10 @@ public class SurveyTriggerManager {
 //                    //Log.e(TAG, "exception", e);
                     }
 
-                    //Log.d(TAG, "cancelWalkingSurveyFlag : "+ MinukuStreamManager.cancelWalkingSurveyFlag);
+                    //TODO deprecated, if the walking has ended, we should dismiss the notification
+                    /*
+                    Log.d(TAG, "cancelWalkingSurveyFlag : "+ MinukuStreamManager.cancelWalkingSurveyFlag);
 
-                    //TODO: if the walking has ended, we should dismiss the notification
                     if (MinukuStreamManager.cancelWalkingSurveyFlag) {
                         try {
                             //Log.d(TAG, "Notification canceling");
@@ -588,7 +588,7 @@ public class SurveyTriggerManager {
                             //Log.d(TAG, "Set the cancelWalkingSurveyFlag back to false");
                             MinukuStreamManager.cancelWalkingSurveyFlag = false;
                         }
-                    }
+                    }*/
 
                 } else {
                     //Log.d(TAG, "InSleepingTime true.");
@@ -939,9 +939,7 @@ public class SurveyTriggerManager {
             int surveyNum = interval_sampled + walkoutdoor_sampled + 1;
 
             Utils.storeToCSV_IntervalSurveyCreated(ScheduleAndSampleManager.getCurrentTimeInMillis()
-                    , surveyNum, linktoShow, mContext);
-
-
+                    , surveyNum, linktoShow, noti_type,mContext);
         }
     }
 

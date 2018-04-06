@@ -4,6 +4,8 @@ import android.os.Environment;
 
 import com.opencsv.CSVWriter;
 
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,6 +23,37 @@ public class CSVHelper {
     public static final String TAG = "CSVHelper";
 
     public static CSVWriter csv_writer = null;
+
+    public static void userInformStoreToCSV(String fileName, long timestamp, JSONObject userInform){
+
+//        String sFileName = "TransportationState.csv";
+
+        try{
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            //Log.d(TAG, "root : " + root);
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+fileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
+
+            data.add(new String[]{timeString, userInform.toString()});
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        }catch (IOException e){
+            //e.printStackTrace();
+        }/*catch (Exception e){
+            //e.printStackTrace();
+        }*/
+    }
 
     public static void storeToCSV_IntervalSurveyUpdated(boolean clicked){
 
@@ -102,9 +135,9 @@ public class CSVHelper {
         }*/
     }
 
-    public static void StoreToCSVButForJson(String dataType, String json){
+    public static void dataUploadingCSV(String dataType, String json){
 
-        String sFileName = "JsonTest.csv"; //Static.csv
+        String sFileName = "DataUploaded.csv"; //Static.csv
 
         try{
             File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);

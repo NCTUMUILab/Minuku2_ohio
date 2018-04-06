@@ -142,7 +142,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         locForIndoorOutdoor = new ArrayList<LatLng>();
 
 //        createCSV();
-        sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
+        sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
 
         //for replay location record
 //        startReplayLocationRecordTimer();

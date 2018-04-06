@@ -22,14 +22,21 @@
 
 package edu.ohio.minuku_2.service;
 
+import android.app.AppOpsManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -170,12 +177,104 @@ public class BackgroundService extends Service {
             }
             //update every minute
             if(showOngoingNotificationCount % 12 == 0) {
+
                 updateOngoingNotification();
+
+                checkAndRequestPermission();
             }
 
             showOngoingNotificationCount++;
         }
     };
+
+    private void checkAndRequestPermission(){
+
+        Log.d(TAG, "checkAndRequestPermission");
+
+        if(!checkLocationPermissions()){
+
+            String text = "Please check your location permission.";
+            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            Notification notification = getPermissionNotification(text, intent);
+            mNotificationManager.notify(MinukuNotificationManager.locationNotificationID, notification);
+        }
+
+        if(!checkAppUsagePermissions()){
+
+            String text = "Please check your usage access permission.";
+            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+            Notification notification = getPermissionNotification(text, intent);
+            mNotificationManager.notify(MinukuNotificationManager.appusageNotificationID, notification);
+        }
+    }
+
+    private boolean checkLocationPermissions() {
+
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {
+
+        }
+
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch(Exception ex) {
+
+        }
+
+        if(!gps_enabled && !network_enabled) {
+
+            //trigger notification
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean checkAppUsagePermissions() {
+
+        //in lollipop there are no app usage; thus, no need to send notification
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return true;
+        }
+
+        try {
+            PackageManager packageManager = getPackageManager();
+            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(getPackageName(), 0);
+            AppOpsManager appOpsManager = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+            int mode = appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, applicationInfo.uid, applicationInfo.packageName);
+
+            return (mode == AppOpsManager.MODE_ALLOWED);
+
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+
+    }
+
+    private Notification getPermissionNotification(String text, Intent resultIntent){
+
+        Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
+        bigTextStyle.setBigContentTitle("DMS");
+        bigTextStyle.bigText(text);
+
+//        Intent resultIntent = new Intent(this, TripListActivity.class);
+        PendingIntent pending = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification.Builder noti = new Notification.Builder(this);
+
+        return noti.setContentTitle(Constants.APP_FULL_NAME)
+                .setContentText(text)
+                .setStyle(bigTextStyle)
+                .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                .setContentIntent(pending)
+                .setAutoCancel(true)
+                .build();
+    }
 
     private Notification getOngoingNotification(String text){
 
@@ -194,7 +293,7 @@ public class BackgroundService extends Service {
 //                .setSmallIcon(R.drawable.dms_icon)
                 .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
                 .setContentIntent(pending)
-                .setAutoCancel(false)
+                .setAutoCancel(true)
                 .setOngoing(true)
                 .build();
     }

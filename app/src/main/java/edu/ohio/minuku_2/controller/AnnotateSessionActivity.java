@@ -335,26 +335,14 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         ques1 = (RadioGroup)findViewById(R.id.ques1);
         ques2 = (RadioGroup)findViewById(R.id.ques2);
-        /*
-        ques2_1 = (RadioGroup)findViewById(R.id.ques2_1);
-        ques2_2 = (RadioGroup)findViewById(R.id.ques2_2);
-        ques2_3 = (RadioGroup)findViewById(R.id.ques2_3);
-        ques2_4 = (RadioGroup)findViewById(R.id.ques2_4);
-        ques2_5 = (RadioGroup)findViewById(R.id.ques2_5);
-        */
+
         ques3 = (RadioGroup)findViewById(R.id.ques3);
         ques4 = (RadioGroup)findViewById(R.id.ques4);
 
 
         mRadioGroups.add(ques1);
         mRadioGroups.add(ques2);
-        /*
-        mRadioGroups.add(ques2_1);
-        mRadioGroups.add(ques2_2);
-        mRadioGroups.add(ques2_3);
-        mRadioGroups.add(ques2_4);
-        mRadioGroups.add(ques2_5);
-        */
+
         mRadioGroups.add(ques3);
         mRadioGroups.add(ques4);
 
@@ -362,13 +350,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         ques4.setVisibility(View.GONE);
 
         ques2.clearCheck();
-/*
-        ques2_1.clearCheck();
-        ques2_2.clearCheck();
-        ques2_3.clearCheck();
-        ques2_4.clearCheck();
-        ques2_5.clearCheck();
-*/
+
 
         question4 = (TextView)findViewById(R.id.question4);
         ans3_1 = (RadioButton)findViewById(R.id.ans3_1);
@@ -378,17 +360,44 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         ans4_2 = (RadioButton)findViewById(R.id.ans4_2);
         ans4_3 = (RadioButton)findViewById(R.id.ans4_3);
 
+
         ques1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 // TODO Auto-generated method stub
 
                 if(checkedId==-1){
+
                     error1=false;
                 }else{
+
                     error1=true;
 //                    ans1=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
                     RadioButton radioButton = (RadioButton) findViewById(checkedId);
                     ans1 = radioButton.getText().toString();
+
+                    RadioButton combineOption = (RadioButton) findViewById(R.id.ans1_8);
+                    final String combine = combineOption.getText().toString();
+
+                    RadioButton deleteOption = (RadioButton) findViewById(R.id.ans1_9);
+                    final String delete = deleteOption.getText().toString();
+
+                    if(ans1.equals(combine) || ans1.equals(delete)){
+
+                        error2 = error3 = error4 = true;
+
+                        //set the question below unavailable
+                        setRadioGroupnotclickable(ques2);
+                        setRadioGroupnotclickable(ques3);
+                        setRadioGroupnotclickable(ques4);
+                        submit.setEnabled(true);
+                    }else {
+
+                        error2 = error3 = error4 = false;
+
+                        setRadioGroupClickable(ques2);
+                        setRadioGroupClickable(ques3);
+                        setRadioGroupClickable(ques4);
+                    }
                 }
             }
         });
@@ -398,8 +407,10 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 // TODO Auto-generated method stub
 
                 if(checkedId==-1){
+
                     error2=false;
                 }else{
+
                     error2=true;
 //                    ans3=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
                     RadioButton radioButton = (RadioButton) findViewById(checkedId);
@@ -407,20 +418,16 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 }
             }
         });
-        /*
-        ques2_1.setOnCheckedChangeListener(ques2_1Listener);
-        ques2_2.setOnCheckedChangeListener(ques2_2Listener);
-        ques2_3.setOnCheckedChangeListener(ques2_3Listener);
-        ques2_4.setOnCheckedChangeListener(ques2_4Listener);
-        ques2_5.setOnCheckedChangeListener(ques2_5Listener);
-        */
+
         ques3.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 // TODO Auto-generated method stub
 
                 if(checkedId==-1){
+
                     error3=false;
                 }else{
+
                     error3=true;
 //                    ans3=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
                     RadioButton radioButton = (RadioButton) findViewById(checkedId);
@@ -429,19 +436,19 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                 //different question on question3 based on question2
                 if(checkedId==R.id.ans3_1){ //Yes
+
                     ques4.setVisibility(View.VISIBLE);
                     question4.setText("When did you leave for this routine trip?");
                     ans4_1.setText("Ahead of schedule"); //"Ahead of schedule", "On time", "Behind schedule"
                     ans4_2.setText("On time");
                     ans4_3.setText("Behind schedule");
-
                 }else if(checkedId==R.id.ans3_2){ //No
+
                     ques4.setVisibility(View.VISIBLE);
                     question4.setText("When did you decide to go to this destination?");
                     ans4_1.setText("Right before");
                     ans4_2.setText("Today");
                     ans4_3.setText("Before today");
-
                 }
             }
         });
@@ -471,36 +478,21 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             if (ESMJSON!=null){
 
                 try {
+
                     answers.add(ESMJSON.getString("ans1"));
                     answers.add(ESMJSON.getString("ans2"));
                     answers.add(ESMJSON.getString("ans3"));
                     answers.add(ESMJSON.getString("ans4"));
-
-
                 } catch (JSONException e) {
                     //e.printStackTrace();
                 }
 
                 //show answer
                 showAnswersInRadioGroup(answers);
-
-
             }
-
-
 
             //disable button
             setRadioGroupnotclickable();
-//            setRadioGroupnotclickable(ques1);
-//            setRadioGroupnotclickable(ques2_1);
-//            setRadioGroupnotclickable(ques2_2);
-//            setRadioGroupnotclickable(ques2_3);
-//            setRadioGroupnotclickable(ques2_4);
-//            setRadioGroupnotclickable(ques2_5);
-//            setRadioGroupnotclickable(ques3);
-//            setRadioGroupnotclickable(ques4);
-
-
         }
 
 
@@ -523,14 +515,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             for (RadioGroup radioGroup: mRadioGroups){
                 showAnswerInRadioGroup(radioGroup,answer);
             }
-//            showAnswerInRadioGroup(ques1,answer);
-//            showAnswerInRadioGroup(ques2_1,ans1);
-//            showAnswerInRadioGroup(ques2_2,ans1);
-//            showAnswerInRadioGroup(ques2_3,ans1);
-//            showAnswerInRadioGroup(ques2_4,ans1);
-//            showAnswerInRadioGroup(ques2_5,ans1);
-//            showAnswerInRadioGroup(ques3,ans3);
-//            showAnswerInRadioGroup(ques4,ans4);
         }
     }
 
@@ -558,6 +542,15 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             ques.getChildAt(i).setEnabled(false);
         }
         submit.setEnabled(false);
+    }
+
+    private void setRadioGroupClickable(RadioGroup ques){
+
+        //make them disabled
+        for (int i = 0; i < ques.getChildCount(); i++) {
+            ques.getChildAt(i).setEnabled(true);
+        }
+        submit.setEnabled(true);
     }
 
     private RadioGroup.OnCheckedChangeListener ques2_1Listener = new RadioGroup.OnCheckedChangeListener() {

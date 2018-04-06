@@ -231,6 +231,9 @@ public class WifiReceiver extends BroadcastReceiver {
                 if(ConnectivityStreamGenerator.mIsWifiConnected){
 
                     //TODO update endtime to get the latest data's time from MongoDB
+
+                    //TODO after update the new endtime, delete the outdated(over 24 hours) data
+
                     //TODO endtime = latest data's time + nextinterval
 
                     long lastSentStarttime = sharedPrefs.getLong("lastSentStarttime", 0);
@@ -289,18 +292,12 @@ public class WifiReceiver extends BroadcastReceiver {
                 // Trip, isAlive
                 if(ConnectivityStreamGenerator.mIsWifiConnected || ConnectivityStreamGenerator.mIsMobileConnected) {
 
-//                    //Log.d(TAG, "loading IsAlive data");
-
-                    //TODO replace the isAlive
-                    //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
-//                    sendingIsAliveData();
-//                    sendingUserInform();
-
 //                    //Log.d(TAG, "loading Annotated Trip data");
 
+                    //TODO update endtime to get the latest data's time from MongoDB
 
-                    //TODO don't send the label had been sent
                     sendingAnnotatedTripData();
+//                    sendingSurveyLinkData();
 
                 }
 
@@ -321,7 +318,7 @@ public class WifiReceiver extends BroadcastReceiver {
         }
 
 //       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=3333333
-//      deviceid=375996574474999&email=none@nobody.com&userid=3333333
+//      deviceid=375996574474999&email=none@nobody.com&userid=333333
         String link = Constants.checkInUrl + "deviceid=" + Constants.DEVICE_ID + "&email=" + Constants.Email+"&userid="+Constants.USER_ID;
         String userInformInString = null;
         JSONObject userInform = null;
@@ -396,7 +393,7 @@ public class WifiReceiver extends BroadcastReceiver {
             data.put("time", currentTimeInSec);
             data.put("timeString", currentTimeString);
 
-            data.put("user_id", Constants.USER_ID);
+            data.put("userid", Constants.USER_ID);
             data.put("group_number", Constants.GROUP_NUM);
             data.put("device_id", Constants.DEVICE_ID);
             data.put("email", Constants.Email);
@@ -427,6 +424,53 @@ public class WifiReceiver extends BroadcastReceiver {
         } catch (ExecutionException e) {
             //e.printStackTrace();
         }*/
+
+    }
+
+    public void sendingSurveyLinkData(){
+
+        //TODO improve it to get the real latest session id
+        int latestSurveyLinkIdFromServer = sharedPrefs.getInt("latestSurveyLinkIdFromServer", 1);
+
+        SQLiteDatabase db = DBManager.getInstance().openDatabase();
+        Cursor surveyCursor = db.rawQuery("SELECT * FROM "+DBHelper.surveyLink_table +
+                " WHERE " + DBHelper.id + " = " + latestSurveyLinkIdFromServer, null); //cause pos start from 0.
+        //Log.d(TAG,"SELECT * FROM "+DBHelper.STREAM_TYPE_LOCATION +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
+
+        JSONObject surveyJson = new JSONObject();
+
+        int rows = surveyCursor.getCount();
+
+        if(rows!=0){
+
+            try {
+
+                surveyCursor.moveToFirst();
+                for (int i = 0; i < rows; i++) {
+                    String timestamp = surveyCursor.getString(2);
+                    String opentime = surveyCursor.getString(3);
+
+                    //Log.d(TAG,"timestamp : "+timestamp+" latitude : "+latitude+" longtitude : "+longtitude+" accuracy : "+accuracy);
+
+                    //convert into second
+                    String timestampInSec = timestamp.substring(0, timestamp.length() - 3);
+
+                    surveyJson.put("trigger time", timestampInSec);
+                    surveyJson.put("open time", opentime);
+
+                    surveyCursor.moveToNext();
+                }
+            }catch (JSONException e){
+
+            }
+
+            CSVHelper.dataUploadingCSV("Survey Link", surveyJson.toString());
+
+            //TODO send to new link or to annotation collection as well
+
+        }
+
+
 
     }
 
@@ -466,7 +510,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 Log.d(TAG, "[checking data] the contentofJSON ESMJSONObject  is " + ESMJSON );
 
                 //adding the id and group number
-                annotatedtripdata.put("user_id", Constants.USER_ID);
+                annotatedtripdata.put("userid", Constants.USER_ID);
                 annotatedtripdata.put("group_number", Constants.GROUP_NUM);
                 annotatedtripdata.put("device_id", Constants.DEVICE_ID);
 
@@ -505,12 +549,12 @@ public class WifiReceiver extends BroadcastReceiver {
 
             String curr = getDateCurrentTimeZone(new Date().getTime());
 
-//            {"user_id":"147866","group_number":"1","device_id":"352875086398624","StartTime":1519629286657,"EndTime":1519630452475,
+//            {"userid":"147866","group_number":"1","device_id":"352875086398624","StartTime":1519629286657,"EndTime":1519630452475,
 //              "StartTimeString":"2018\/02\/26 15:14:46 +0800","EndTimeString":"2018\/02\/26 15:34:12 +0800",
 //              "Annotations":{"openTimes":"[1519632082274]","submitTime":0,"ans1":"Walking outdoors.","ans2":"Yes","ans3":"Yes","ans4":"On time"}}
             Log.d(TAG, "checking data annotatedtrip : "+annotatedtripdata.toString());
 
-            CSVHelper.StoreToCSVButForJson("Trip", annotatedtripdata.toString());
+            CSVHelper.dataUploadingCSV("Trip", annotatedtripdata.toString());
 
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -547,7 +591,7 @@ public class WifiReceiver extends BroadcastReceiver {
         JSONObject data = new JSONObject();
 
         try {
-            data.put("user_id", Constants.USER_ID);
+            data.put("userid", Constants.USER_ID);
             data.put("group_number", Constants.GROUP_NUM);
             data.put("device_id", Constants.DEVICE_ID);
 
@@ -572,7 +616,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
         Log.d(TAG,"checking data Dump : "+ data.toString());
 
-        CSVHelper.StoreToCSVButForJson("Dump", data.toString());
+        CSVHelper.dataUploadingCSV("Dump", data.toString());
 
         String curr = getDateCurrentTimeZone(new Date().getTime());
 
