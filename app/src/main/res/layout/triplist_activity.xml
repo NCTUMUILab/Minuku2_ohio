@@ -17,10 +17,12 @@
         android:layout_gravity="center_horizontal">
 
         <TextView
-            android:text="No trip yet."
+            android:id="@+id/emptyViewText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/emptyViewText"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="No trip yet."
             android:textSize="24sp" />
     </LinearLayout>
 </LinearLayout>

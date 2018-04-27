@@ -34,7 +34,7 @@
                 android:id="@+id/question1"
                 android:paddingTop="16dp"
                 android:paddingLeft="16dp"
-                android:textSize="22sp" />
+                android:textSize="18sp" />
 
             <RadioGroup
                 android:layout_width="match_parent"
@@ -44,73 +44,75 @@
                 android:paddingTop="5dp">
 
                 <RadioButton
-                    android:text="Walking outdoors."
+                    android:text="Walking outdoors"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_1"
                     android:layout_weight="1" />
                 <RadioButton
-                    android:text="Walking indoors."
+                    android:text="Walking indoors"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_2"
                     android:layout_weight="2" />
 
                 <RadioButton
-                    android:text="Riding a bicycle."
+                    android:text="Riding a bicycle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_4"
                     android:layout_weight="4" />
                 <RadioButton
-                    android:text="Driving (I'm the driver)."
+                    android:text="Driving (I'm the driver)"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_5"
                     android:layout_weight="5" />
                 <RadioButton
-                    android:text="Driving (I'm the passenger)."
+                    android:text="Driving (I'm the passenger)"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_6"
                     android:layout_weight="6" />
 
                 <RadioButton
-                    android:text="Taking a bus."
+                    android:text="Taking a bus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_7"
                     android:layout_weight="7" />
+
                 <RadioButton
-                    android:text="Trip is part of previous trip (COMBINE)."
+                    android:text="Other transportation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_8"
-                    android:layout_weight="8" />
-
-                <RadioButton
-                    android:text="Trip is incorrect (DELETE)."
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ans1_9"
                     android:layout_weight="3" />
 
                 <RadioButton
-                    android:text="Other."
+                    android:text="Trip is part of previous trip (COMBINE)"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/ans1_9"
+                    android:layout_weight="8" />
+
+                <RadioButton
+                    android:text="Trip is incorrect (DELETE)"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans1_10"
                     android:layout_weight="3" />
+
             </RadioGroup>
 
             <TextView
-                android:text="Did you complete this trip on your own?"
+                android:text="Did you interact face-to-face during this trip?"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/question2"
                 android:paddingTop="16dp"
                 android:paddingLeft="16dp"
-                android:textSize="22sp"
+                android:textSize="18sp"
                 android:layout_weight="1" />
 
             <RadioGroup
@@ -122,29 +124,36 @@
                 android:paddingTop="5dp">
 
                 <RadioButton
-                    android:text="Yes"
+                    android:text="Not at all"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans2_1"
                     android:layout_weight="1" />
 
                 <RadioButton
-                    android:text="No"
+                    android:text="A few times"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans2_2"
                     android:layout_weight="1" />
 
+                <RadioButton
+                    android:text="Many times"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/ans2_3"
+                    android:layout_weight="1" />
+
             </RadioGroup>
 
             <TextView
-                android:text="Is this trip part of your weekly routine?"
+                android:text="How familiar did this trip feel to you?"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/question3"
                 android:paddingTop="16dp"
                 android:paddingLeft="16dp"
-                android:textSize="22sp"
+                android:textSize="18sp"
                 android:layout_weight="1" />
 
             <RadioGroup
@@ -156,29 +165,38 @@
                 android:paddingTop="5dp">
 
                 <RadioButton
-                    android:text="Yes"
+                    android:text="Not familiar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans3_1"
                     android:layout_weight="1" />
 
                 <RadioButton
-                    android:text="No"
+                    android:text="Somewhat familiar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans3_2"
                     android:layout_weight="1" />
 
+                <RadioButton
+                    android:text="Very familiar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/ans3_3"
+                    android:layout_weight="1" />
+
             </RadioGroup>
 
             <TextView
+                android:id="@+id/question4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/question4"
                 android:layout_weight="1"
                 android:paddingLeft="16dp"
+                android:paddingRight="16dp"
                 android:paddingTop="16dp"
-                android:textSize="22sp" />
+                android:text="When did you decide to go to this destination?"
+                android:textSize="18sp" />
 
             <RadioGroup
                 android:layout_width="match_parent"
@@ -188,18 +206,21 @@
                 android:paddingTop="5dp">
 
                 <RadioButton
+                    android:text='Right before'
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans4_1"
                     android:layout_weight="1" />
 
                 <RadioButton
+                    android:text='Same day'
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans4_2"
                     android:layout_weight="1" />
 
                 <RadioButton
+                    android:text='Prior day'
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ans4_3"

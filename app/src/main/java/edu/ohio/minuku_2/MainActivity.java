@@ -22,9 +22,6 @@
 
 package edu.ohio.minuku_2;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -80,13 +77,11 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
-import edu.ohio.minuku.manager.MinukuNotificationManager;
 import edu.ohio.minuku_2.controller.SurveyActivity;
 import edu.ohio.minuku_2.controller.TripListActivity;
 import edu.ohio.minuku_2.controller.sleepingohio;
@@ -132,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Creating Main activity");
 
-        Log.e(TAG,"start");
 
         MultiDex.install(this);
 
@@ -213,6 +207,8 @@ public class MainActivity extends AppCompatActivity {
 
         /* alertdialog for checking userid */
         sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
+
+        sharedPrefs.edit().putLong("downloadedTime", new Date().getTime()).apply();
 
         sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", false).apply();
 
@@ -296,159 +292,8 @@ public class MainActivity extends AppCompatActivity {
         else {
 
             sleepingtime.setText("Set Sleep Time");
-
-            boolean firstTimeSetSleepingTime = sharedPrefs.getBoolean("firstTimeSetSleepingTime", true);
-
-            if(!firstTimeSetSleepingTime){
-
-                //send the notification to remind the user to set their sleeping time
-                NotificationManager mNotificationManager =
-                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                String notificationText = "Please set your sleeping time";
-                Notification notification = getNotification(notificationText);
-
-                mNotificationManager.notify(999, notification);
-            }
-
-            sharedPrefs.edit().putBoolean("firstTimeSetSleepingTime", false).apply();
-
         }
     }
-
-    private Notification getNotification(String text){
-
-        Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
-        bigTextStyle.setBigContentTitle("DMS");
-        bigTextStyle.bigText(text);
-
-        Intent resultIntent = new Intent(this, sleepingohio.class);
-        PendingIntent pending = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Notification.Builder noti = new Notification.Builder(this);
-
-        return noti.setContentTitle(Constants.APP_FULL_NAME)
-                .setContentText(text)
-                .setStyle(bigTextStyle)
-                .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
-                .setContentIntent(pending)
-                .setAutoCancel(true)
-                .build();
-    }
-
-    /*private void startTimerThread() {
-        final Handler handler = new Handler();
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(10 * 60000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    handler.post(statusRunnable);
-                }
-            }
-        };
-
-        new Thread(runnable).start();
-    }
-
-    Runnable statusRunnable = new Runnable() {
-        @Override
-        public void run() {
-
-            Log.d(TAG, "statusRunnable");
-
-            ArrayList<String> data = new ArrayList<String>();
-            ArrayList<Integer> dataPos = new ArrayList<Integer>();
-            String taskTable = null;
-            Calendar cal = Calendar.getInstance();
-            Date date = new Date();
-            cal.setTime(date);
-            int Year = cal.get(Calendar.YEAR);
-            int Month = cal.get(Calendar.MONTH) + 1;
-            int Day = cal.get(Calendar.DAY_OF_MONTH);
-
-            String startTimeString = makingDataFormat(Year, Month, Day);
-            String endTimeString = makingDataFormat(Year, Month, Day + 1);
-            long startTime = getSpecialTimeInMillis(startTimeString);
-            long endTime = getSpecialTimeInMillis(endTimeString);
-
-            ArrayList<String> results = DBHelper.querySessionsBetweenTimes(startTime, endTime);
-            int countForLight = 0;
-            for(String result : results){
-                String annotation = result.split(Constants.DELIMITER)[4];
-                if(!annotation.equals("")){
-                    countForLight++;
-                }
-            }
-
-            Drawable drawable_red = getResources().getDrawable(R.drawable.circle_red);
-            drawable_red.setBounds(0, 0, (int)(drawable_red.getIntrinsicWidth()*0.5), (int)(drawable_red.getIntrinsicHeight()*0.5));
-
-            Drawable drawable_green = getResources().getDrawable(R.drawable.circle_green);
-            drawable_green.setBounds(0, 0, (int)(drawable_green.getIntrinsicWidth()*0.5), (int)(drawable_green.getIntrinsicHeight()*0.5));
-
-
-            if(countForLight!=results.size()){
-                ohio_annotate.setCompoundDrawables(null, null, drawable_red, null);
-            }else {
-                ohio_annotate.setCompoundDrawables(null, null, drawable_green, null);
-            }
-
-            dataPos = new ArrayList<Integer>();
-
-            taskTable = DBHelper.surveyLink_table;
-
-            int tripCursorNum = -1;
-
-            try {
-                SQLiteDatabase db = DBManager.getInstance().openDatabase();
-
-                Cursor tripCursor = db.rawQuery("SELECT " + DBHelper.openFlag_col + ", " + DBHelper.link_col + " FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
-                        + DBHelper.TIME + " BETWEEN" + " '" + startTime + "' " + "AND" + " '" + endTime + "' ORDER BY " + DBHelper.TIME + " DESC", null);
-
-                Log.d(TAG, "SELECT " + DBHelper.openFlag_col + ", " + DBHelper.link_col + " FROM " + taskTable + " WHERE " //+ DBHelper.Trip_id + " ='" + position + "'" +" AND "
-                        + DBHelper.TIME + " BETWEEN" + " '" + startTime + "' " + "AND" + " '" + endTime + "' ORDER BY " + DBHelper.TIME + " DESC");
-
-                tripCursorNum = tripCursor.getCount()-1;
-                //get all data from cursor
-                int i = 0;
-                if (tripCursor.moveToFirst()) {
-                    do {
-                        int eachdataInCursor = tripCursor.getInt(0);
-                        String link = tripCursor.getString(1);
-
-                        Log.d(TAG, " 0 : " + eachdataInCursor + ", 1 : " + link);
-
-                        if (eachdataInCursor == 0) { //0 represent they haven't click into it.
-                            dataPos.add(i);
-                        }
-                        i++;
-                        data.add(link);
-                        Log.d(TAG, " link : " + link);
-
-                        Log.d(TAG, " tripCursor.moveToFirst()");
-                    } while (tripCursor.moveToNext());
-                } else
-                    Log.d(TAG, " tripCursor.moveToFirst() else");
-                tripCursor.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            if (!dataPos.isEmpty()) {
-                tolinkList.setCompoundDrawables(null, null, drawable_red, null);
-                sharedPrefs.edit().putBoolean("SurveyStatus", true).apply();
-            } else {
-                tolinkList.setCompoundDrawables(null, null, drawable_green, null);
-                sharedPrefs.edit().putBoolean("SurveyStatus", false).apply();
-
-            }
-        }
-    };*/
 
     private void startSettingSleepingTime(){
         Intent intent = new Intent(this, sleepingohio.class);  //usage
@@ -456,21 +301,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startpermission(){
-        //Maybe useless in this project.
-//        startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));  // 協助工具
 
         Intent intent1 = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);  //usage
         startActivity(intent1);
-
-//        Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS); //notification
-//        startActivity(intent);
 
         startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));	//location
     }
 
     private void showdialogforuser(){
-
-        // User ID = Confirmation Number
 
         firstTimeToShowDialogOrNot = false;
 
@@ -534,9 +372,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                         else {
 
-                            if(!Utils.isEmailValid(inputEmail)){
-                                Toast.makeText(MainActivity.this,"Error, it is not an Email format",Toast.LENGTH_SHORT).show();
-                            }else {
+//                            if(!Utils.isEmailValid(inputEmail)){
+//                                Toast.makeText(MainActivity.this,"Error, it is not an Email format",Toast.LENGTH_SHORT).show();
+//                            }else {
 
                                 Log.d(TAG, "participant ID" + inputID);
                                 Log.d(TAG, "group number" + inputID.substring(0, 1));
@@ -567,7 +405,7 @@ public class MainActivity extends AppCompatActivity {
                                 //Dismiss once everything is OK.
                                 dialog.dismiss();
                                 MainActivity.this.finish();
-                            }
+//                            }
                         }
                         Log.d(TAG,"setPositiveButton");
 
@@ -611,8 +449,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Log.d(TAG, "userInform : " + userInform);
-
-        CSVHelper.userInformStoreToCSV("userInform.csv", new Date().getTime(), userInform);
 
         //In order to set the survey link
         setDaysInSurveyAndTheDayTodayIs(userInform);
@@ -675,7 +511,7 @@ public class MainActivity extends AppCompatActivity {
     private void setMidnightStart(JSONObject userInform){
 
         try{
-            //1519645071 firstcheckin
+
             long firstcheckin = userInform.getLong("firstcheckin") * Constants.MILLISECONDS_PER_SECOND;
 
             SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE);
@@ -697,8 +533,6 @@ public class MainActivity extends AppCompatActivity {
 
             long firstresearchday = ScheduleAndSampleManager.getTimeInMillis(firstresearchdate,sdf_now);
 
-//            String firstcheckinDate = ScheduleAndSampleManager.getTimeString(firstcheckin, sdf_now);
-
             Constants.midnightstart = firstresearchday;
 
             sharedPrefs.edit().putLong("midnightstart", Constants.midnightstart).apply();
@@ -710,7 +544,6 @@ public class MainActivity extends AppCompatActivity {
         }catch (JSONException e){
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -756,38 +589,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
             }
-            /*switch (requestCode){
-                case 2:
-                    Log.d(TAG," case 2 ");
-                    boolean tripstatusfromList = sharedPrefs.getBoolean("TripStatus", false);
-                    boolean surveystatusfromList = sharedPrefs.getBoolean("SurveyStatus", false);
-
-                    Log.d(TAG,"tripstatusfromList : " + tripstatusfromList + " , surveystatusfromList : " + surveystatusfromList);
-
-                    Drawable drawable_red = getResources().getDrawable(R.drawable.circle_red);
-                    drawable_red.setBounds(0, 0, (int)(drawable_red.getIntrinsicWidth()*0.5), (int)(drawable_red.getIntrinsicHeight()*0.5));
-//            ScaleDrawable sd_red = new ScaleDrawable(drawable_red, 0, 30f, 30f);
-
-                    Drawable drawable_green = getResources().getDrawable(R.drawable.circle_green);
-                    drawable_green.setBounds(0, 0, (int)(drawable_green.getIntrinsicWidth()*0.5), (int)(drawable_green.getIntrinsicHeight()*0.5));
-//            ScaleDrawable sd_green = new ScaleDrawable(drawable_green, 0, 30f, 30f);
-
-                    if(tripstatusfromList)
-                        ohio_annotate.setCompoundDrawables(null, null, drawable_red, null);
-//                        tripStatus.setImageResource(R.drawable.circle_red);
-                    else
-                        ohio_annotate.setCompoundDrawables(null, null, drawable_green, null);
-//                        tripStatus.setImageResource(R.drawable.circle_green);
-
-                    if(surveystatusfromList)
-                        tolinkList.setCompoundDrawables(null, null, drawable_red, null);
-//                        surveyStatus.setImageResource(R.drawable.circle_red);
-                    else
-                        tolinkList.setCompoundDrawables(null, null, drawable_green, null);
-//                        surveyStatus.setImageResource(R.drawable.circle_green);
-
-                    break;
-            }*/
         }
     }
 
@@ -811,16 +612,6 @@ public class MainActivity extends AppCompatActivity {
             return String.valueOf(date);
     }
 
-    public String makingDataFormat(int year,int month,int date){
-        String dataformat= "";
-
-//        dataformat = addZero(year)+"-"+addZero(month)+"-"+addZero(date)+" "+addZero(hour)+":"+addZero(min)+":00";
-        dataformat = addZero(year)+"/"+addZero(month)+"/"+addZero(date)+" "+"00:00:00";
-        Log.d(TAG,"dataformat : " + dataformat);
-
-        return dataformat;
-    }
-
     //to view sleepingohio
     private Button.OnClickListener ohio_annotateing = new Button.OnClickListener() {
         public void onClick(View v) {
@@ -841,10 +632,6 @@ public class MainActivity extends AppCompatActivity {
             MainActivity.this.finish();
         }
     };
-
-    protected void showToast(String aText) {
-        Toast.makeText(this, aText, Toast.LENGTH_SHORT).show();
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -955,11 +742,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-
-                //TODO after they permit all the permission, then start the work.
-//                startService(new Intent(getBaseContext(), BackgroundService.class));
-//                startTimerThread();
-
             }
         }
     }
@@ -993,7 +775,6 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... params) {
 
             String result=null;
-//            String url = params[0];
 
             HttpURLConnection connection = null;
             BufferedReader reader = null;

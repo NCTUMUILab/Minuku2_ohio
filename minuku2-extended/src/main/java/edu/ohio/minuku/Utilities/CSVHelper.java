@@ -4,15 +4,15 @@ import android.os.Environment;
 
 import com.opencsv.CSVWriter;
 
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.config.Constants;
+import edu.ohio.minuku.logger.Log;
 
 /**
  * Created by Lawrence on 2018/3/19.
@@ -24,37 +24,6 @@ public class CSVHelper {
 
     public static CSVWriter csv_writer = null;
 
-    public static void userInformStoreToCSV(String fileName, long timestamp, JSONObject userInform){
-
-//        String sFileName = "TransportationState.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            //Log.d(TAG, "root : " + root);
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+fileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-            String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
-
-            data.add(new String[]{timeString, userInform.toString()});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            //e.printStackTrace();
-        }/*catch (Exception e){
-            //e.printStackTrace();
-        }*/
-    }
-
     public static void storeToCSV_IntervalSurveyUpdated(boolean clicked){
 
         String sFileName = "IntervalSurveyState.csv";
@@ -64,8 +33,6 @@ public class CSVHelper {
         try {
 
             File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
-
-//            Log.d(TAG, "root : " + root);
 
             if (!root.exists()) {
                 root.mkdirs();
@@ -80,14 +47,38 @@ public class CSVHelper {
             else
                 clickedString = "No";
 
+            //get overall data
+            ArrayList<String> resultInArray = DataHandler.getSurveys();
+
+            int openCount = 0;
+
+            float rate;
+
+            for(int index = 0; index < resultInArray.size();index++){
+
+                String openOrNot = resultInArray.get(index).split(Constants.DELIMITER)[5];
+
+                Log.d(TAG, "[test show link] open flag : "+ openOrNot);
+
+                if(openOrNot.equals("1"))
+                    openCount++;
+            }
+
+            Log.d(TAG, "[test show link] openCount : "+ openCount + " resultInArray size : "+resultInArray.size());
+
+            rate = (float)openCount/resultInArray.size() * 100;
+
+            String rateString = String.format("%.2f", rate);
+
+
             csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
 
             List<String[]> data = new ArrayList<String[]>();
 
             if(clicked)
-                data.add(new String[]{"", "", clickedString, clickedTimeString,""});
+                data.add(new String[]{"", "", clickedString, clickedTimeString, "", "", "", rateString+"%"});
             else
-                data.add(new String[]{"", "", clickedString, "",""});
+                data.add(new String[]{"", "", clickedString, "", "", "", "", rateString+"%"});
 
             csv_writer.writeAll(data);
 
@@ -140,7 +131,9 @@ public class CSVHelper {
         String sFileName = "DataUploaded.csv"; //Static.csv
 
         try{
+
             File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+
             if (!root.exists()) {
                 root.mkdirs();
             }

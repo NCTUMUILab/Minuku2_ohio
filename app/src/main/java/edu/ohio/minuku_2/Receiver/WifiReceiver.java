@@ -99,6 +99,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private static final String postTripUrl = "http://mcog.asc.ohio-state.edu/apps/tripdump/";
     private static final String postDumpUrl = "http://mcog.asc.ohio-state.edu/apps/devicedump/";
+    private static final String postSurveyLinkUrl = "http://mcog.asc.ohio-state.edu/apps/surveydump/";
 
     public static int mainThreadUpdateFrequencyInSeconds = 10; //originally 10s.
     public static int sendingUserInformThreadUpdateFrequencyInSeconds = 3;
@@ -174,12 +175,9 @@ public class WifiReceiver extends BroadcastReceiver {
             // not connected to the internet
 //            //Log.d(TAG, "no Network" ) ;
             if(runnable!=null) {
-                //TODO check the switch of the wifi and mobile could keep the runnable run.
-//                //Log.d(TAG, "killing thread" ) ;
-//                mMainThread.removeCallbacks(runnable);
+
             }
         }
-
     }
 
     public void SendingUserInformThread(){
@@ -243,73 +241,66 @@ public class WifiReceiver extends BroadcastReceiver {
                         //initialize
                         long startstartTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,min));
                         startTime = sharedPrefs.getLong("StartTime", startstartTime); //default
-//                        //Log.d(TAG,"StartTimeString : " + getTimeString(startTime));
+                        //Log.d(TAG,"StartTimeString : " + getTimeString(startTime));
 
 
                         //initialize
                         long startendTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour+1,min));
                         endTime = sharedPrefs.getLong("EndTime", startendTime);
-//                        //Log.d(TAG,"EndTimeString : " + getTimeString(endTime));
+                        //Log.d(TAG,"EndTimeString : " + getTimeString(endTime));
 
                     }else{
+
                         //if it do reponse the setting with initialize ones
                         startTime = Long.valueOf(lastSentStarttime);
-//                        //Log.d(TAG,"StartTimeString : " + getTimeString(startTime));
+                        //Log.d(TAG,"StartTimeString : " + getTimeString(startTime));
 
                         long nextinterval = 1 * 60 * 60000; //1 hr
 
                         endTime = Long.valueOf(lastSentStarttime) + nextinterval;
-//                        //Log.d(TAG,"EndTimeString : " + getTimeString(endTime));
-
+                        //Log.d(TAG,"EndTimeString : " + getTimeString(endTime));
                     }
 
                     nowTime = new Date().getTime();
-//                    //Log.d(TAG,"NowTimeString : " + getTimeString(nowTime));
-//                    //Log.d(TAG,"NowTime : " + nowTime);
+                    //Log.d(TAG,"NowTimeString : " + getTimeString(nowTime));
+                    //Log.d(TAG,"NowTime : " + nowTime);
 
                     if(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected == true) {
 
                         sendingDumpData();
 
                         //setting nextime interval
-                        latestUpdatedTime = endTime;
+                        //improve it to get the value from the server
+//                        latestUpdatedTime = endTime;
                         startTime = latestUpdatedTime;
 
-                        long nextinterval = 1 * 60 * 60000; //1 hr
+                        long nextinterval = Constants.MILLISECONDS_PER_HOUR; //1 hr
 
                         endTime = startTime + nextinterval;
 
-//                        //Log.d(TAG,"latestUpdatedTime : " + latestUpdatedTime);
-//                        //Log.d(TAG,"latestUpdatedTime + 1 hour : " + latestUpdatedTime + nextinterval);
+                        //Log.d(TAG,"latestUpdatedTime : " + latestUpdatedTime);
+                        //Log.d(TAG,"latestUpdatedTime + 1 hour : " + latestUpdatedTime + nextinterval);
 
                         //update the last data's startTime.
                         sharedPrefs.edit().putLong("lastSentStarttime", startTime).apply();
-
                     }
-
                 }
 
                 // Trip, isAlive
                 if(ConnectivityStreamGenerator.mIsWifiConnected || ConnectivityStreamGenerator.mIsMobileConnected) {
 
-//                    //Log.d(TAG, "loading Annotated Trip data");
-
-                    //TODO update endtime to get the latest data's time from MongoDB
-
                     sendingAnnotatedTripData();
-//                    sendingSurveyLinkData();
 
+                    sendingSurveyLinkData();
                 }
 
                 mMainThread.postDelayed(this, mainThreadUpdateFrequencyInMilliseconds);
-
             }
         };
 
         mMainThread.post(runnable);
     }
 
-    //TODO same function in MainAcitvity, need to intergrate.
     //the replacement function of IsAlive
     private void sendingUserInform(){
 
@@ -336,16 +327,18 @@ public class WifiReceiver extends BroadcastReceiver {
             userInform = new JSONObject(userInformInString);
 
         } catch (InterruptedException e) {
-//            //e.printStackTrace();
+
         } catch (ExecutionException e) {
-//            //e.printStackTrace();
+
         } catch (JSONException e){
-//            //e.printStackTrace();
+
         } catch (NullPointerException e){
-//            //e.printStackTrace();
+
         }
 
 //        //Log.d(TAG, "userInform : " + userInform);
+
+        //....calculate the day by itself
 
         //In order to set the survey link
 //        setDaysInSurvey(userInform);
@@ -355,75 +348,15 @@ public class WifiReceiver extends BroadcastReceiver {
     private void setDaysInSurvey(JSONObject userInform){
 
         try{
+
             Constants.daysInSurvey = userInform.getInt("daysinsurvey");
 
             sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
 
-//            //Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
+            Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
         }catch (JSONException e){
-            //e.printStackTrace();
+
         }
-
-    }
-
-    private void setMidnightStart(JSONObject userInform){
-
-        try{
-            Constants.midnightstart = userInform.getLong("midnightstart");
-
-            sharedPrefs.edit().putLong("midnightstart", Constants.midnightstart).apply();
-
-//            //Log.d(TAG, "midnightstart : "+ Constants.midnightstart);
-        }catch (JSONException e){
-            //e.printStackTrace();
-        }
-
-    }
-
-    private void sendingIsAliveData(){
-
-        //making isAlive
-        JSONObject data = new JSONObject();
-        try {
-            long currentTime = new Date().getTime();
-            String currentTimeString = getTimeString(currentTime);
-
-            long currentTimeInSec = currentTime/Constants.MILLISECONDS_PER_SECOND;
-
-            data.put("time", currentTimeInSec);
-            data.put("timeString", currentTimeString);
-
-            data.put("userid", Constants.USER_ID);
-            data.put("group_number", Constants.GROUP_NUM);
-            data.put("device_id", Constants.DEVICE_ID);
-            data.put("email", Constants.Email);
-
-        }catch (JSONException e){
-            //e.printStackTrace();
-        }
-
-        //Log.d(TAG,"checking data IsAlive : "+ data.toString());
-
-        //TODO wait for the URL to send the isAlive data
-        /*try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                        postIsAliveUrl_insert + Constants.DEVICE_ID,
-                        data.toString(),
-                        "isAlive",
-                        curr).get();
-            else
-                new HttpAsyncPostJsonTask().execute(
-                        postIsAliveUrl_insert + Constants.DEVICE_ID,
-                        data.toString(),
-                        "isAlive",
-                        curr).get();
-
-        } catch (InterruptedException e) {
-            //e.printStackTrace();
-        } catch (ExecutionException e) {
-            //e.printStackTrace();
-        }*/
 
     }
 
@@ -432,10 +365,13 @@ public class WifiReceiver extends BroadcastReceiver {
         //TODO improve it to get the real latest session id
         int latestSurveyLinkIdFromServer = sharedPrefs.getInt("latestSurveyLinkIdFromServer", 1);
 
+        long timeOfData = -999;
+
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
         Cursor surveyCursor = db.rawQuery("SELECT * FROM "+DBHelper.surveyLink_table +
-                " WHERE " + DBHelper.id + " = " + latestSurveyLinkIdFromServer, null); //cause pos start from 0.
-        //Log.d(TAG,"SELECT * FROM "+DBHelper.STREAM_TYPE_LOCATION +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
+                " WHERE " + DBHelper.id + " = " + latestSurveyLinkIdFromServer + " and " + DBHelper.openFlag_col + " <> -1", null); //cause pos start from 0.
+
+        //where openflag != -1, implies it hasn't been opened or missed, set as clickedtime
 
         JSONObject surveyJson = new JSONObject();
 
@@ -447,44 +383,91 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 surveyCursor.moveToFirst();
                 for (int i = 0; i < rows; i++) {
-                    String timestamp = surveyCursor.getString(2);
-                    String opentime = surveyCursor.getString(3);
 
-                    //Log.d(TAG,"timestamp : "+timestamp+" latitude : "+latitude+" longtitude : "+longtitude+" accuracy : "+accuracy);
+                    String timestamp = surveyCursor.getString(2);
+                    String clickedtime = surveyCursor.getString(3);
 
                     //convert into second
                     String timestampInSec = timestamp.substring(0, timestamp.length() - 3);
 
-                    surveyJson.put("trigger time", timestampInSec);
-                    surveyJson.put("open time", opentime);
+                    surveyJson.put("userid", Constants.USER_ID);
+                    surveyJson.put("group_number", Constants.GROUP_NUM);
+                    surveyJson.put("device_id", Constants.DEVICE_ID);
+
+                    surveyJson.put("dataType", "SurveyLink");
+
+                    surveyJson.put("triggerTime", timestampInSec);
+                    surveyJson.put("triggerTimeString", ScheduleAndSampleManager.getTimeString(Long.valueOf(timestamp)));
+
+                    surveyJson.put("clickedtime", clickedtime.substring(0, clickedtime.length() - 3));
+                    surveyJson.put("clickedOrNot", surveyCursor.getString(5));
+
 
                     surveyCursor.moveToNext();
+
+                    timeOfData = Long.valueOf(timestamp);
                 }
             }catch (JSONException e){
 
             }
 
+            String curr = getDateCurrentTimeZone(new Date().getTime());
+
+            Log.d(TAG, "[show data response] SurveyLink data :"+surveyJson.toString());
+
             CSVHelper.dataUploadingCSV("Survey Link", surveyJson.toString());
 
-            //TODO send to new link or to annotation collection as well
+            String timeInServer;
 
+            try {
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                    timeInServer = new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                            postSurveyLinkUrl,
+                            surveyJson.toString(),
+                            "SurveyLink",
+                            curr).get();
+                else
+                    timeInServer = new HttpAsyncPostJsonTask().execute(
+                            postSurveyLinkUrl,
+                            surveyJson.toString(),
+                            "SurveyLink",
+                            curr).get();
+
+                CSVHelper.dataUploadingCSV("Survey Link", "After sending : "+timeInServer);
+
+                Log.d(TAG, "[show data response] SurveyLink timeInServer : "+timeInServer);
+
+                JSONObject lasttimeInServerJson = new JSONObject(timeInServer);
+
+                Log.d(TAG, "[show data response] before to next iteration check : "+Long.valueOf(lasttimeInServerJson.getString("lastinsert")));
+
+                long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
+
+                if(timeOfData == fromServer){
+
+                    latestSurveyLinkIdFromServer++;
+                    sharedPrefs.edit().putInt("latestSurveyLinkIdFromServer", latestSurveyLinkIdFromServer).apply();
+                }
+            } catch (InterruptedException e) {
+            } catch (ExecutionException e) {
+            } catch (JSONException e){
+            }
         }
-
-
-
     }
 
     public void sendingAnnotatedTripData(){
-
-        //Log.d(TAG, "sendingAnnotatedTripData") ;
 
         //getting the latest sessionid from the server side
         //TODO improve it to get the real latest session id
         int latestSessionidFromServer = sharedPrefs.getInt("latestSessionidFromServer", 1);
 
+        long endTimeOfJson = -999;
+
         Session mSession = null;
 
         try {
+
             mSession = SessionManager.getSession(latestSessionidFromServer);
 
             //No session yet, wait for next time.
@@ -514,6 +497,8 @@ public class WifiReceiver extends BroadcastReceiver {
                 annotatedtripdata.put("group_number", Constants.GROUP_NUM);
                 annotatedtripdata.put("device_id", Constants.DEVICE_ID);
 
+                annotatedtripdata.put("dataType", "Trip");
+
                 //adding the time info.
                 long sessionStartTime = mSession.getStartTime();
                 long sessionEndTime = mSession.getEndTime();
@@ -539,10 +524,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 Log.d(TAG, "[checking data] the contentofJSON ESMJSONObject is " + ESMJSON );
 
-                //TODO didn't work, add into the jsonObject.
                 //adding the annotations data
                 annotatedtripdata.put("Annotations", ESMJSON);
 
+                endTimeOfJson = EndTime;
             } catch (JSONException e) {
                 //e.printStackTrace();
             }
@@ -552,36 +537,50 @@ public class WifiReceiver extends BroadcastReceiver {
 //            {"userid":"147866","group_number":"1","device_id":"352875086398624","StartTime":1519629286657,"EndTime":1519630452475,
 //              "StartTimeString":"2018\/02\/26 15:14:46 +0800","EndTimeString":"2018\/02\/26 15:34:12 +0800",
 //              "Annotations":{"openTimes":"[1519632082274]","submitTime":0,"ans1":"Walking outdoors.","ans2":"Yes","ans3":"Yes","ans4":"On time"}}
-            Log.d(TAG, "checking data annotatedtrip : "+annotatedtripdata.toString());
+            Log.d(TAG, "[show data response] checking data annotatedtrip : "+annotatedtripdata.toString());
 
             CSVHelper.dataUploadingCSV("Trip", annotatedtripdata.toString());
 
+            String lastTimeInServer;
+
             try {
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                    new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                    lastTimeInServer = new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
                             postTripUrl,
                             annotatedtripdata.toString(),
                             "Trip",
                             curr).get();
                 else
-                    new HttpAsyncPostJsonTask().execute(
+                    lastTimeInServer = new HttpAsyncPostJsonTask().execute(
                             postTripUrl,
                             annotatedtripdata.toString(),
                             "Trip",
                             curr).get();
 
-                latestSessionidFromServer++;
+                Log.d(TAG, "[show data response] Trip lastTimeInServer : " + lastTimeInServer);
 
-                sharedPrefs.edit().putInt("latestSessionidFromServer", latestSessionidFromServer).apply();
+                CSVHelper.dataUploadingCSV("Trip", "After sending : " + lastTimeInServer);
+
+                JSONObject lasttimeInServerJson = new JSONObject(lastTimeInServer);
+
+                Log.d(TAG, "[show data response] before to next iteration check : " + Long.valueOf(lasttimeInServerJson.getString("lastinsert")));
+
+                long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
+
+
+                if(endTimeOfJson == fromServer){
+
+                    latestSessionidFromServer++;
+
+                    sharedPrefs.edit().putInt("latestSessionidFromServer", latestSessionidFromServer).apply();
+                }
 
             } catch (InterruptedException e) {
-                //e.printStackTrace();
             } catch (ExecutionException e) {
-                //e.printStackTrace();
+            } catch (JSONException e){
             }
-
         }
-
     }
 
     public void sendingDumpData(){
@@ -598,10 +597,10 @@ public class WifiReceiver extends BroadcastReceiver {
             long startTimeInSec = startTime/Constants.MILLISECONDS_PER_SECOND;
             long endTimeInSec = endTime/Constants.MILLISECONDS_PER_SECOND;
 
-            data.put("start", startTimeInSec);
-            data.put("end", endTimeInSec);
-            data.put("startTimeString", getTimeString(startTime));
-            data.put("endTimeString", getTimeString(endTime));
+            data.put("StartTime", startTimeInSec);
+            data.put("EndTime", endTimeInSec);
+            data.put("StartTimeString", getTimeString(startTime));
+            data.put("EndTimeString", getTimeString(endTime));
         }catch (JSONException e){
             //e.printStackTrace();
         }
@@ -614,32 +613,46 @@ public class WifiReceiver extends BroadcastReceiver {
         storeBattery(data);
         storeAppUsage(data);
 
-        Log.d(TAG,"checking data Dump : "+ data.toString());
+        Log.d(TAG,"[show data response] checking data Dump : "+ data.toString());
 
         CSVHelper.dataUploadingCSV("Dump", data.toString());
 
         String curr = getDateCurrentTimeZone(new Date().getTime());
 
+        String lastTimeInServer;
+
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                lastTimeInServer = new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
                     postDumpUrl,
                     data.toString(),
                     "Dump",
                     curr).get();
             else
-                new HttpAsyncPostJsonTask().execute(
+                lastTimeInServer = new HttpAsyncPostJsonTask().execute(
                         postDumpUrl,
                         data.toString(),
                         "Dump",
                         curr).get();
 
-        } catch (InterruptedException e) {
-            //e.printStackTrace();
-        } catch (ExecutionException e) {
-            //e.printStackTrace();
-        }
+            Log.d(TAG, "[show data response] Dump lastTimeInServer : "+lastTimeInServer);
 
+            CSVHelper.dataUploadingCSV("Dump", "After sending : "+lastTimeInServer);
+
+            JSONObject lasttimeInServerJson = new JSONObject(lastTimeInServer);
+
+            Log.d(TAG, "[show data response] before to next iteration check : " + Long.valueOf(lasttimeInServerJson.getString("lastinsert")));
+
+            long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
+
+            //update latestUpdatedTime; due to the format from the server is divided by 1000
+            //we get the time unit is second; thus, we have to convert into millis
+            latestUpdatedTime = fromServer * 1000;
+
+        } catch (InterruptedException e) {
+        } catch (ExecutionException e) {
+        } catch (JSONException e){
+        }
     }
 
     //use HTTPAsyncTask to poHttpAsyncPostJsonTaskst data
@@ -654,14 +667,15 @@ public class WifiReceiver extends BroadcastReceiver {
             String dataType = params[2];
             String lastSyncTime = params[3];
 
-            postJSON(url, data, dataType, lastSyncTime);
+            result = postJSON(url, data, dataType, lastSyncTime);
 
             return result;
         }
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            //Log.d(TAG, "get http post result " + result);
+
+            Log.d(TAG, "[show data response] get http post result " + result);
         }
 
     }
@@ -838,51 +852,8 @@ public class WifiReceiver extends BroadcastReceiver {
                 data.put("TransportationMode",transportationAndtimestampsJson);
 
             }
-
-            //TODO deprecated, implement with JSONObject
-            /*
-            JSONObject transportationAndtimestampsJson = new JSONObject();
-
-            JSONArray transportations = new JSONArray();
-            JSONArray timestampsInSec = new JSONArray();
-
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.transportationMode_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
-            //Log.d(TAG,"SELECT * FROM "+DBHelper.transportationMode_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
-
-            int rows = transCursor.getCount();
-
-            //Log.d(TAG, "rows : "+rows);
-
-            if(rows!=0){
-                transCursor.moveToFirst();
-                for(int i=0;i<rows;i++) {
-                    String timestamp = transCursor.getString(1);
-                    String transportation = transCursor.getString(2);
-
-                    //Log.d(TAG,"transportation : "+transportation+" timestamp : "+timestamp);
-
-                    transportations.put(transportation);
-
-                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
-
-                    timestampsInSec.put(timestampInSec);
-
-                    transCursor.moveToNext();
-                }
-
-                transportationAndtimestampsJson.put("Transportation",transportations);
-                transportationAndtimestampsJson.put("timestamps",timestampsInSec);
-
-
-                data.put("TransportationMode",transportationAndtimestampsJson);
-
-            }*/
-
         }catch (JSONException e){
-            //e.printStackTrace();
         }catch(NullPointerException e){
-            //e.printStackTrace();
         }
 
         //Log.d(TAG,"data : "+ data.toString());
@@ -927,55 +898,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 }
 
                 data.put("Location",locationAndtimestampsJson);
-
             }
-
-            //TODO deprecated, implement with JSONObject
-            /*JSONObject locationAndtimestampsJson = new JSONObject();
-
-            JSONArray accuracys = new JSONArray();
-            JSONArray longtitudes = new JSONArray();
-            JSONArray latitudes = new JSONArray();
-            JSONArray timestampsInSec = new JSONArray();
-
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.STREAM_TYPE_LOCATION +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
-            //Log.d(TAG,"SELECT * FROM "+DBHelper.STREAM_TYPE_LOCATION +" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
-
-            int rows = transCursor.getCount();
-
-            //Log.d(TAG, "rows : "+rows);
-
-            if(rows!=0){
-                transCursor.moveToFirst();
-                for(int i=0;i<rows;i++) {
-                    String timestamp = transCursor.getString(1);
-                    String latitude = transCursor.getString(2);
-                    String longtitude = transCursor.getString(3);
-                    String accuracy = transCursor.getString(4);
-
-                    //Log.d(TAG,"timestamp : "+timestamp+" latitude : "+latitude+" longtitude : "+longtitude+" accuracy : "+accuracy);
-
-                    accuracys.put(accuracy);
-                    longtitudes.put(longtitude);
-                    latitudes.put(latitude);
-
-                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
-
-                    timestampsInSec.put(timestampInSec);
-
-                    transCursor.moveToNext();
-                }
-
-                locationAndtimestampsJson.put("Accuracy",accuracys);
-                locationAndtimestampsJson.put("Longtitudes",longtitudes);
-                locationAndtimestampsJson.put("Latitudes",latitudes);
-                locationAndtimestampsJson.put("timestamps",timestampsInSec);
-
-                data.put("Location",locationAndtimestampsJson);
-
-            }*/
-
         }catch (JSONException e){
             //e.printStackTrace();
         }catch(NullPointerException e){
@@ -1064,92 +987,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 }
 
                 data.put("ActivityRecognition",arAndtimestampsJson);
-
             }
-
-            //TODO deprecated, implement with JSONObject
-            /*JSONObject arAndtimestampsJson = new JSONObject();
-
-            JSONArray mostProbableActivityz = new JSONArray();
-            JSONArray probableActivitiesz = new JSONArray();
-            JSONArray timestampsInSec = new JSONArray();
-
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.activityRecognition_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
-            //Log.d(TAG,"SELECT * FROM "+DBHelper.activityRecognition_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
-
-            int rows = transCursor.getCount();
-
-            //Log.d(TAG, "rows : "+rows);
-
-            if(rows!=0){
-                transCursor.moveToFirst();
-                for(int i=0;i<rows;i++) {
-                    String timestamp = transCursor.getString(1);
-                    String mostProbableActivity = transCursor.getString(2);
-                    String probableActivities = transCursor.getString(3);
-
-                    //split the mostProbableActivity into "type:conf"
-                    String[] subMostActivity = mostProbableActivity.split(",");
-
-                    String type = subMostActivity[0].split("=")[1];
-                    String confidence = subMostActivity[1].split("=")[1].replaceAll("]","");
-
-                    mostProbableActivity = type+":"+confidence;
-
-                    //choose the top two of the probableActivities and split it into "type:conf"
-                    String[] subprobableActivities = probableActivities.split("\\,");
-//                    //Log.d(TAG, "subprobableActivities : "+ subprobableActivities);
-
-                    int lastIndex = 0;
-                    int count = 0;
-
-                    while(lastIndex != -1){
-
-                        lastIndex = probableActivities.indexOf("DetectedActivity",lastIndex);
-
-                        if(lastIndex != -1){
-                            count ++;
-                            lastIndex += "DetectedActivity".length();
-                        }
-                    }
-
-                    if(count == 1){
-                        String type1 = subprobableActivities[0].split("=")[1];
-                        String confidence1 = subprobableActivities[1].split("=")[1].replaceAll("]","");
-
-                        probableActivities = type1+":"+confidence1;
-
-                    }else if(count > 1){
-                        String type1 = subprobableActivities[0].split("=")[1];
-                        String confidence1 = subprobableActivities[1].split("=")[1].replaceAll("]","");
-                        String type2 = subprobableActivities[2].split("=")[1];
-                        String confidence2 = subprobableActivities[3].split("=")[1].replaceAll("]","");
-
-                        probableActivities = type1+":"+confidence1+","+type2+":"+confidence2;
-
-                    }
-
-                    //Log.d(TAG,"timestamp : "+timestamp+", mostProbableActivity : "+mostProbableActivity+", probableActivities : "+probableActivities);
-
-                    mostProbableActivityz.put(mostProbableActivity);
-                    probableActivitiesz.put(probableActivities);
-
-                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
-
-                    timestampsInSec.put(timestampInSec);
-
-                    transCursor.moveToNext();
-                }
-
-                arAndtimestampsJson.put("MostProbableActivity",mostProbableActivityz);
-                arAndtimestampsJson.put("ProbableActivities",probableActivitiesz);
-                arAndtimestampsJson.put("timestamps",timestampsInSec);
-
-                data.put("ActivityRecognition",arAndtimestampsJson);
-
-            }*/
-
         }catch (JSONException e){
             //e.printStackTrace();
         }catch(NullPointerException e){
@@ -1207,74 +1045,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 }
 
                 data.put("Ringer",ringerAndtimestampsJson);
-
             }
-
-            //TODO deprecated, implement with JSONObject
-            /*JSONObject ringerAndtimestampsJson = new JSONObject();
-
-            JSONArray StreamVolumeSystems = new JSONArray();
-            JSONArray StreamVolumeVoicecalls = new JSONArray();
-            JSONArray StreamVolumeRings = new JSONArray();
-            JSONArray StreamVolumeNotifications = new JSONArray();
-            JSONArray StreamVolumeMusics = new JSONArray();
-            JSONArray AudioModes = new JSONArray();
-            JSONArray RingerModes = new JSONArray();
-            JSONArray timestampsInSec = new JSONArray();
-
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.ringer_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
-            //Log.d(TAG,"SELECT * FROM "+DBHelper.ringer_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
-
-            int rows = transCursor.getCount();
-
-            //Log.d(TAG, "rows : "+rows);
-
-            if(rows!=0){
-                transCursor.moveToFirst();
-                for(int i=0;i<rows;i++) {
-                    String timestamp = transCursor.getString(1);
-                    String RingerMode = transCursor.getString(2);
-                    String AudioMode = transCursor.getString(3);
-                    String StreamVolumeMusic = transCursor.getString(4);
-                    String StreamVolumeNotification = transCursor.getString(5);
-                    String StreamVolumeRing = transCursor.getString(6);
-                    String StreamVolumeVoicecall = transCursor.getString(7);
-                    String StreamVolumeSystem = transCursor.getString(8);
-
-                    //Log.d(TAG,"timestamp : "+timestamp+" RingerMode : "+RingerMode+" AudioMode : "+AudioMode+
-//                            " StreamVolumeMusic : "+StreamVolumeMusic+" StreamVolumeNotification : "+StreamVolumeNotification
-//                            +" StreamVolumeRing : "+StreamVolumeRing +" StreamVolumeVoicecall : "+StreamVolumeVoicecall
-//                            +" StreamVolumeSystem : "+StreamVolumeSystem);
-
-                    StreamVolumeSystems.put(StreamVolumeSystem);
-                    StreamVolumeVoicecalls.put(StreamVolumeVoicecall);
-                    StreamVolumeRings.put(StreamVolumeRing);
-                    StreamVolumeNotifications.put(StreamVolumeNotification);
-                    StreamVolumeMusics.put(StreamVolumeMusic);
-                    AudioModes.put(AudioMode);
-                    RingerModes.put(RingerMode);
-
-                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
-
-                    timestampsInSec.put(timestampInSec);
-
-                    transCursor.moveToNext();
-                }
-
-                ringerAndtimestampsJson.put("RingerMode",RingerModes);
-                ringerAndtimestampsJson.put("AudioMode",AudioModes);
-                ringerAndtimestampsJson.put("StreamVolumeMusic",StreamVolumeMusics);
-                ringerAndtimestampsJson.put("StreamVolumeNotification",StreamVolumeNotifications);
-                ringerAndtimestampsJson.put("StreamVolumeRing",StreamVolumeRings);
-                ringerAndtimestampsJson.put("StreamVolumeVoicecall",StreamVolumeVoicecalls);
-                ringerAndtimestampsJson.put("StreamVolumeSystem",StreamVolumeSystems);
-                ringerAndtimestampsJson.put("timestamps",timestampsInSec);
-
-                data.put("Ringer",ringerAndtimestampsJson);
-
-            }*/
-
         }catch (JSONException e){
             //e.printStackTrace();
         }catch(NullPointerException e){
@@ -1334,72 +1105,6 @@ public class WifiReceiver extends BroadcastReceiver {
                 data.put("Connectivity",connectivityAndtimestampsJson);
 
             }
-
-            //TODO deprecated, implement with JSONObject
-            /*JSONObject connectivityAndtimestampsJson = new JSONObject();
-
-            JSONArray IsMobileConnecteds = new JSONArray();
-            JSONArray IsWifiConnecteds = new JSONArray();
-            JSONArray IsMobileAvailables = new JSONArray();
-            JSONArray IsWifiAvailables = new JSONArray();
-            JSONArray IsConnecteds = new JSONArray();
-            JSONArray IsNetworkAvailables = new JSONArray();
-            JSONArray NetworkTypes = new JSONArray();
-            JSONArray timestampsInSec = new JSONArray();
-
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.connectivity_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
-            //Log.d(TAG,"SELECT * FROM "+DBHelper.connectivity_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
-
-            int rows = transCursor.getCount();
-
-            //Log.d(TAG, "rows : "+rows);
-
-            if(rows!=0){
-                transCursor.moveToFirst();
-                for(int i=0;i<rows;i++) {
-                    String timestamp = transCursor.getString(1);
-                    String NetworkType = transCursor.getString(2);
-                    String IsNetworkAvailable = transCursor.getString(3);
-                    String IsConnected = transCursor.getString(4);
-                    String IsWifiAvailable = transCursor.getString(5);
-                    String IsMobileAvailable = transCursor.getString(6);
-                    String IsWifiConnected = transCursor.getString(7);
-                    String IsMobileConnected = transCursor.getString(8);
-
-                    //Log.d(TAG,"timestamp : "+timestamp+" NetworkType : "+NetworkType+" IsNetworkAvailable : "+IsNetworkAvailable
-//                            +" IsConnected : "+IsConnected+" IsWifiAvailable : "+IsWifiAvailable
-//                            +" IsMobileAvailable : "+IsMobileAvailable +" IsWifiConnected : "+IsWifiConnected
-//                            +" IsMobileConnected : "+IsMobileConnected);
-
-                    IsMobileConnecteds.put(IsMobileConnected);
-                    IsWifiConnecteds.put(IsWifiConnected);
-                    IsMobileAvailables.put(IsMobileAvailable);
-                    IsWifiAvailables.put(IsWifiAvailable);
-                    IsConnecteds.put(IsConnected);
-                    IsNetworkAvailables.put(IsNetworkAvailable);
-                    NetworkTypes.put(NetworkType);
-
-                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
-
-                    timestampsInSec.put(timestampInSec);
-
-                    transCursor.moveToNext();
-                }
-
-                connectivityAndtimestampsJson.put("NetworkType",NetworkTypes);
-                connectivityAndtimestampsJson.put("IsNetworkAvailable",IsNetworkAvailables);
-                connectivityAndtimestampsJson.put("IsConnected",IsConnecteds);
-                connectivityAndtimestampsJson.put("IsWifiAvailable",IsWifiAvailables);
-                connectivityAndtimestampsJson.put("IsMobileAvailable",IsMobileAvailables);
-                connectivityAndtimestampsJson.put("IsWifiConnected",IsWifiConnecteds);
-                connectivityAndtimestampsJson.put("IsMobileConnected",IsMobileConnecteds);
-                connectivityAndtimestampsJson.put("timestamps",timestampsInSec);
-
-                data.put("Connectivity",connectivityAndtimestampsJson);
-
-            }*/
-
         }catch (JSONException e){
             //e.printStackTrace();
         }catch(NullPointerException e){
@@ -1450,60 +1155,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 }
 
                 data.put("Battery", batteryAndtimestampsJson);
-
             }
-
-            //TODO deprecated, implement with JSONObject
-            /*JSONObject batteryAndtimestampsJson = new JSONObject();
-
-            JSONArray BatteryLevels = new JSONArray();
-            JSONArray BatteryPercentages = new JSONArray();
-            JSONArray BatteryChargingStates = new JSONArray();
-            JSONArray isChargings = new JSONArray();
-            JSONArray timestampsInSec = new JSONArray();
-
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.battery_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
-            //Log.d(TAG,"SELECT * FROM "+DBHelper.battery_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
-
-            int rows = transCursor.getCount();
-
-            //Log.d(TAG, "rows : "+rows);
-
-            if(rows!=0){
-                transCursor.moveToFirst();
-                for(int i=0;i<rows;i++) {
-                    String timestamp = transCursor.getString(1);
-                    String BatteryLevel = transCursor.getString(2);
-                    String BatteryPercentage = transCursor.getString(3);
-                    String BatteryChargingState = transCursor.getString(4);
-                    String isCharging = transCursor.getString(5);
-
-                    //Log.d(TAG,"timestamp : "+timestamp+" BatteryLevel : "+BatteryLevel+" BatteryPercentage : "+
-//                            BatteryPercentage+" BatteryChargingState : "+BatteryChargingState+" isCharging : "+isCharging);
-
-                    BatteryLevels.put(BatteryLevel);
-                    BatteryPercentages.put(BatteryPercentage);
-                    BatteryChargingStates.put(BatteryChargingState);
-                    isChargings.put(isCharging);
-
-                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
-
-                    timestampsInSec.put(timestampInSec);
-
-                    transCursor.moveToNext();
-                }
-
-                batteryAndtimestampsJson.put("BatteryLevel",BatteryLevels);
-                batteryAndtimestampsJson.put("BatteryPercentage",BatteryPercentages);
-                batteryAndtimestampsJson.put("BatteryChargingState",BatteryChargingStates);
-                batteryAndtimestampsJson.put("isCharging",isChargings);
-                batteryAndtimestampsJson.put("timestamps",timestampsInSec);
-
-                data.put("Battery",batteryAndtimestampsJson);
-
-            }*/
-
         }catch (JSONException e){
             //e.printStackTrace();
         }catch(NullPointerException e){
@@ -1524,7 +1176,6 @@ public class WifiReceiver extends BroadcastReceiver {
 
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.appUsage_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
-            //Log.d(TAG,"SELECT * FROM "+DBHelper.appUsage_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
 
             int rows = transCursor.getCount();
 
@@ -1552,56 +1203,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 }
 
                 data.put("AppUsage",appUsageAndtimestampsJson);
-
             }
-
-            //TODO deprecated, implement with JSONObject
-            /*JSONObject appUsageAndtimestampsJson = new JSONObject();
-
-            JSONArray ScreenStatusz = new JSONArray();
-            JSONArray Latest_Used_Apps = new JSONArray();
-            JSONArray Latest_Foreground_Activitys = new JSONArray();
-            JSONArray timestampsInSec = new JSONArray();
-
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor transCursor = db.rawQuery("SELECT * FROM "+DBHelper.appUsage_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null); //cause pos start from 0.
-            //Log.d(TAG,"SELECT * FROM "+DBHelper.appUsage_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ");
-
-            int rows = transCursor.getCount();
-
-            //Log.d(TAG, "rows : "+rows);
-
-            if(rows!=0){
-                transCursor.moveToFirst();
-                for(int i=0;i<rows;i++) {
-                    String timestamp = transCursor.getString(1);
-                    String ScreenStatus = transCursor.getString(2);
-                    String Latest_Used_App = transCursor.getString(3);
-                    String Latest_Foreground_Activity = transCursor.getString(4);
-
-                    //Log.d(TAG,"timestamp : "+timestamp+" ScreenStatus : "+ScreenStatus+" Latest_Used_App : "+Latest_Used_App+" Latest_Foreground_Activity : "+Latest_Foreground_Activity);
-
-                    ScreenStatusz.put(ScreenStatus);
-                    Latest_Used_Apps.put(Latest_Used_App);
-                    Latest_Foreground_Activitys.put(Latest_Foreground_Activity);
-
-                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
-
-                    timestampsInSec.put(timestampInSec);
-
-                    transCursor.moveToNext();
-                }
-
-                appUsageAndtimestampsJson.put("ScreenStatus",ScreenStatusz);
-                appUsageAndtimestampsJson.put("Latest_Used_App",Latest_Used_Apps);
-//                appUsageAndtimestampsJson.put("Latest_Foreground_Activity",Latest_Foreground_Activitys);
-                appUsageAndtimestampsJson.put("timestamps",timestampsInSec);
-
-                data.put("AppUsage",appUsageAndtimestampsJson);
-
-            }*/
-
-
         }catch (JSONException e){
             //e.printStackTrace();
         }catch(NullPointerException e){
@@ -1700,7 +1302,7 @@ public class WifiReceiver extends BroadcastReceiver {
         }
 
     }
-    //TODO remember the format is different from the normal one.
+
     public static String getTimeString(long time){
 
         SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_Dash);

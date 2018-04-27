@@ -10,20 +10,12 @@
         android:layout_height="wrap_content"
         android:paddingLeft="16dp"
         android:paddingTop="16dp"
-        android:text="Please set your sleep hours. "
-        android:textSize="24sp" />
-
-    <TextView
-        android:text="(The app won't trigger the notification at your sleeping time.)"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/description2"
-        android:paddingLeft="16dp"
-        android:paddingTop="16dp" />
+        android:text="Please set your sleep hours below. Note that the app will not send notifications during your selected sleep period."
+        android:textSize="22sp" />
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="16dp" />
 
     <TextView
         android:text="When do you usually go to sleep?"
@@ -35,11 +27,13 @@
         android:paddingTop="16dp" />
 
     <Button
-        android:text="Please select your sleeping time"
-        android:layout_width="278dp"
-        android:layout_height="37dp"
         android:id="@+id/sleepStarttime"
-        android:layout_marginLeft="16dp" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|center"
+        android:gravity="center"
+        android:text="BED TIME"
+        android:textSize="22sp" />
 
     <Space
         android:layout_width="match_parent"
@@ -54,22 +48,23 @@
         android:textSize="24sp" />
 
     <Button
-        android:text="Please select your wake up time"
-        android:layout_width="278dp"
-        android:layout_height="37dp"
         android:id="@+id/sleepEndtime"
-        android:layout_marginLeft="16dp" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|center"
+        android:text="WAKE TIME"
+        android:textSize="22sp" />
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="145dp" />
+        android:layout_height="49dp" />
 
     <Button
-        android:text="confirm"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:id="@+id/confirm"
-        android:layout_marginLeft="226dp"
-        android:layout_marginRight="16dp" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="confirm"
+        android:textSize="22sp" />
 
 </LinearLayout>

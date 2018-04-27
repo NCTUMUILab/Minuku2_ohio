@@ -3,18 +3,17 @@ package edu.ohio.minuku_2.controller;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,7 +21,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -30,7 +28,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.vision.barcode.Barcode;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,9 +56,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     private final String TAG = "AnnotateSessionActivity";
 
-    public static float GOOGLE_MAP_DEFAULT_ZOOM_LEVEL = 13;
-    public static LatLng GOOGLE_MAP_DEFAULT_CAMERA_CENTER = new LatLng(24, 120);
-
     private int mSessionId;
     private Session mSession;
     private TextView time, question3, question4;
@@ -75,32 +69,20 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     private String ans1, ans2, ans3, ans4, activityType, tripType; //, preplan;
     private boolean error1, error2, error3, error4, error4_2;
 
-    private Context mContext;
-    private MapFragment map;
-    private MapView mMapView;
-    private Barcode.GeoPoint geoPoint;
     private GoogleMap mGoogleMap;
 
     private Button submit;
-    private ArrayList<String> results;
     private ArrayList<RadioGroup> mRadioGroups;
     private Bundle bundle;
-    private String ongoing;
 
     private ArrayList<Long> mESMOpenTimes;
     private long mESMSubmitTime = 0;
-
-
-    private Spinner activityspinner, preplanspinner, tripspinner;
-    final String[] activityString = {"Choose an activity", "Static", "Biking", "In a car. (I'm the driver)",
-            "In a car. (I'm NOT the driver)", "Taking a bus", "Walking outdoors", "Walking indoors"};
-    final String[] preplanString = {"Did you have preplaned this trip?","Yes", "No"};
-    final String[] tripString = {"This is a clear trip", "This is not a clear trip", "This is same with the previous trip"};
 
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.annotate_activity_ohio);
+
         error1 = false;
         error2 = false;
         error3 = false;
@@ -114,8 +96,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         bundle = getIntent().getExtras();
         mSessionId = Integer.parseInt(bundle.getString("sessionkey_id"));
 
-        //Log.d(TAG,"[test show trip]  on create session id: : " + mSessionId);
-
+        //Log.d(TAG,"[test show trip] on create session id: : " + mSessionId);
 
         MapFragment mapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.Mapfragment);
@@ -166,22 +147,12 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     private void showRecordingVizualization(final int sessionId){
 
-        //Log.d(TAG,"[test show trip] enter showRecordingVizualization ");
-        //validate map
-        setUpMapIfNeeded();
-
-        //Log.d(TAG, "[test show trip] aftr setUpMapIfNeeded");
-
         //draw map
         if (mGoogleMap!=null){
-
-            //Log.d(TAG, "[test show trip] Google Map is not null");
-//                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(VisualizationManager. GOOGLE_MAP_DEFAULT_CAMERA_CENTER, 13));
 
             //if we're reviewing a previous session ( the trip is not ongoing), get session from the database (note that we have to use session id to check instead of a session instance)
             if (!SessionManager.isSessionOngoing(sessionId)) {
 
-                //Log.d(TAG, "[test show trip] the session is NOT in the currently recording session, we should query database");
                 //because there could be many points for already ended trace, so we use asynch to download the annotations
 
                 try{
@@ -191,31 +162,21 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                         new LoadDataAsyncTask().execute(sessionId).get();
 
                 }catch(InterruptedException e) {
-                    //Log.d(TAG,"InterruptedException");
-                    //e.printStackTrace();
+
                 } catch (ExecutionException e) {
-                    //Log.d(TAG,"ExecutionException");
-                    //e.printStackTrace();
+
                 }
-
-
             }
             //the recording is ongoing, so we periodically query the database to show the latest path
-            //TODO: draw my current location from the starting point.
             else {
 
-                //Log.d(TAG, "[test show trip] the session is in the currently recording session");
-
                 try{
-
-                    //Log.d(TAG, "[test show trip] the session is in the currently recording session, update map!!! Get new points!");
 
                     //get location points to draw on the map..
                     ArrayList<LatLng> points = getLocationPointsToDrawOnMap(sessionId);
 
-                    LatLng startLatLng;
                     //we use endLatLng, which is the user's current location as the center of the camera
-                    LatLng endLatLng;
+                    LatLng startLatLng, endLatLng;
 
                     //only has one point
                     if (points.size()==1){
@@ -236,7 +197,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
 
                 }catch (IllegalArgumentException e){
-                    ////Log.e(LOG_TAG, "Could not unregister receiver " + e.getMessage()+"");
+                    Log.e(TAG, "Could not unregister receiver " + e.getMessage()+"");
                 }
 
             }
@@ -247,8 +208,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     public void showMapWithPaths(GoogleMap map, ArrayList<LatLng> points, LatLng cameraCenter, LatLng startLatLng, LatLng endLatLng) {
 
-        //Log.d(TAG, "[test show trips] in showMapWithPaths");
-
         //map option
         GoogleMapOptions options = new GoogleMapOptions();
         options.tiltGesturesEnabled(false);
@@ -257,8 +216,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         //center the map
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(cameraCenter, 13));
 
-        // Marker start = map.addMarker(new MarkerOptions().position(startLatLng));
-
         //draw linges between points and add end and start points
         PolylineOptions pathPolyLineOption = new PolylineOptions().color(Color.RED).geodesic(true);
         pathPolyLineOption.addAll(points);
@@ -266,7 +223,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         //draw lines
         Polyline path = map.addPolyline(pathPolyLineOption);
 
-        /**after getting the start and ened point of location trace, we put a marker**/
+        //after getting the start and ened point of location trace, we put a marker
         map.addMarker(new MarkerOptions().position(startLatLng).title("Start"))
                 .setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         map.addMarker(new MarkerOptions().position(endLatLng).title("End"));
@@ -274,8 +231,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     }
 
     public void showMapWithPathsAndCurLocation(GoogleMap map, ArrayList<LatLng> points, LatLng curLoc) {
-
-        //Log.d(TAG, "[test show trips] in showMapWithPathssAndCurLocation");
 
         map.clear();
 
@@ -290,7 +245,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         //center the map
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
 
-        // Marker start = map.addMarker(new MarkerOptions().position(startLatLng));
         Marker me =  map.addMarker(new MarkerOptions()
                 .position(curLoc)
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.mylocation))
@@ -318,17 +272,18 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         //{"Entire_session":true,"Tag":["ESM"],"Content":"{\"ans1\":\"Walking outdoors.\",\"ans2\":\"Food\",\"ans3\":\"No\",\"ans4\":\"Right before\"}"}
         if (annotations.size()>0){
-            try {
-                String content = annotations.get(0).getContent();
-                ESMJSON = new JSONObject(content);
-                //Log.d(TAG, "[test show trip] the contentofJSON ESMJSONObject  is " + ESMJSON );
-                labelStr = ESMJSON.getString("ans1");
 
+            try {
+
+                String content = annotations.get(0).getContent();
+
+                ESMJSON = new JSONObject(content);
+
+                labelStr = ESMJSON.getString("ans1");
             } catch (JSONException e) {
-                //e.printStackTrace();
+
             }
         }
-
 
         submit = (Button)findViewById(R.id.submit);
         submit.setOnClickListener(submitting);
@@ -347,8 +302,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         mRadioGroups.add(ques4);
 
 
-        ques4.setVisibility(View.GONE);
-
         ques2.clearCheck();
 
 
@@ -363,7 +316,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         ques1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // TODO Auto-generated method stub
 
                 if(checkedId==-1){
 
@@ -371,14 +323,14 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 }else{
 
                     error1=true;
-//                    ans1=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
+
                     RadioButton radioButton = (RadioButton) findViewById(checkedId);
                     ans1 = radioButton.getText().toString();
 
-                    RadioButton combineOption = (RadioButton) findViewById(R.id.ans1_8);
+                    RadioButton combineOption = (RadioButton) findViewById(R.id.ans1_9);
                     final String combine = combineOption.getText().toString();
 
-                    RadioButton deleteOption = (RadioButton) findViewById(R.id.ans1_9);
+                    RadioButton deleteOption = (RadioButton) findViewById(R.id.ans1_10);
                     final String delete = deleteOption.getText().toString();
 
                     if(ans1.equals(combine) || ans1.equals(delete)){
@@ -386,9 +338,9 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                         error2 = error3 = error4 = true;
 
                         //set the question below unavailable
-                        setRadioGroupnotclickable(ques2);
-                        setRadioGroupnotclickable(ques3);
-                        setRadioGroupnotclickable(ques4);
+                        setRadioGroupNotclickable(ques2);
+                        setRadioGroupNotclickable(ques3);
+                        setRadioGroupNotclickable(ques4);
                         submit.setEnabled(true);
                     }else {
 
@@ -404,7 +356,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         ques2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // TODO Auto-generated method stub
 
                 if(checkedId==-1){
 
@@ -429,27 +380,11 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 }else{
 
                     error3=true;
-//                    ans3=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
+
                     RadioButton radioButton = (RadioButton) findViewById(checkedId);
                     ans3 = radioButton.getText().toString();
                 }
 
-                //different question on question3 based on question2
-                if(checkedId==R.id.ans3_1){ //Yes
-
-                    ques4.setVisibility(View.VISIBLE);
-                    question4.setText("When did you leave for this routine trip?");
-                    ans4_1.setText("Ahead of schedule"); //"Ahead of schedule", "On time", "Behind schedule"
-                    ans4_2.setText("On time");
-                    ans4_3.setText("Behind schedule");
-                }else if(checkedId==R.id.ans3_2){ //No
-
-                    ques4.setVisibility(View.VISIBLE);
-                    question4.setText("When did you decide to go to this destination?");
-                    ans4_1.setText("Right before");
-                    ans4_2.setText("Today");
-                    ans4_3.setText("Before today");
-                }
             }
         });
 
@@ -458,10 +393,12 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 // TODO Auto-generated method stub
 
                 if(checkedId==-1){
+
                     error4 =false;
                 }else{
+
                     error4 =true;
-//                    ans4=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
+
                     RadioButton radioButton = (RadioButton) findViewById(checkedId);
                     ans4 = radioButton.getText().toString();
                 }
@@ -469,8 +406,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         });
 
 
-        /** if the session is ongoing or has been labeld.  we show the answer, and disable the buttons **/
-
+        //if the session is ongoing or has been labeled.  we show the answer, and disable the buttons
         if (SessionManager.isSessionOngoing(mSession.getId()) || !labelStr.equals("No Label")){
 
             ArrayList<String > answers = new ArrayList<String>();
@@ -484,7 +420,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                     answers.add(ESMJSON.getString("ans3"));
                     answers.add(ESMJSON.getString("ans4"));
                 } catch (JSONException e) {
-                    //e.printStackTrace();
+
                 }
 
                 //show answer
@@ -492,17 +428,16 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             }
 
             //disable button
-            setRadioGroupnotclickable();
+            setRadioGroupNotclickable();
         }
-
-
     }
 
 
-    private void setRadioGroupnotclickable() {
+    private void setRadioGroupNotclickable() {
 
         for (RadioGroup radioGroup: mRadioGroups){
-            setRadioGroupnotclickable(radioGroup);
+
+            setRadioGroupNotclickable(radioGroup);
         }
     }
 
@@ -513,6 +448,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         for (String answer: answers){
 
             for (RadioGroup radioGroup: mRadioGroups){
+
                 showAnswerInRadioGroup(radioGroup,answer);
             }
         }
@@ -520,14 +456,13 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     private void showAnswerInRadioGroup(RadioGroup ques, String ans){
 
-        //Log.d(TAG, "[test show trip] find radio button group " + ques.getChildCount());
-        //Log.d(TAG, "[test show trip] find radio button having text " + ans );
         //make them disabled
         for (int i = 0; i < ques.getChildCount(); i++) {
+
             RadioButton button =(RadioButton) ques.getChildAt(i);
 
             if (button.getText().toString().equals(ans)){
-                //Log.d(TAG, "[test show trip] find radio button we find the child " + button.getText());
+
                 button.setChecked(true);
             }
 
@@ -535,10 +470,11 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     }
 
 
-    private void setRadioGroupnotclickable(RadioGroup ques){
+    private void setRadioGroupNotclickable(RadioGroup ques){
 
         //make them disabled
         for (int i = 0; i < ques.getChildCount(); i++) {
+
             ques.getChildAt(i).setEnabled(false);
         }
         submit.setEnabled(false);
@@ -548,6 +484,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         //make them disabled
         for (int i = 0; i < ques.getChildCount(); i++) {
+
             ques.getChildAt(i).setEnabled(true);
         }
         submit.setEnabled(true);
@@ -558,9 +495,10 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             // TODO Auto-generated method stub
 
             if(checkedId==-1){
-                error2=false;
 
+                error2=false;
             }else{
+
                 error2=true;
 //                    ans2=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
                 ques2_2.setOnCheckedChangeListener(null);
@@ -588,14 +526,14 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     private RadioGroup.OnCheckedChangeListener ques2_2Listener = new RadioGroup.OnCheckedChangeListener() {
         public void onCheckedChanged(RadioGroup group, int checkedId) {
-            // TODO Auto-generated method stub
 
             if(checkedId==-1){
-                error2=false;
 
+                error2=false;
             }else{
+
                 error2=true;
-//                    ans2=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
+
                 ques2_1.setOnCheckedChangeListener(null);
                 ques2_1.clearCheck();
                 ques2_1.setOnCheckedChangeListener(ques2_1Listener);
@@ -621,14 +559,14 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     private RadioGroup.OnCheckedChangeListener ques2_3Listener = new RadioGroup.OnCheckedChangeListener() {
         public void onCheckedChanged(RadioGroup group, int checkedId) {
-            // TODO Auto-generated method stub
 
             if(checkedId==-1){
-                error2=false;
 
+                error2=false;
             }else{
+
                 error2=true;
-//                    ans2=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
+
                 ques2_1.setOnCheckedChangeListener(null);
                 ques2_1.clearCheck();
                 ques2_1.setOnCheckedChangeListener(ques2_1Listener);
@@ -644,6 +582,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 ques2_5.setOnCheckedChangeListener(null);
                 ques2_5.clearCheck();
                 ques2_5.setOnCheckedChangeListener(ques2_5Listener);
+
                 RadioButton radioButton = (RadioButton) findViewById(checkedId);
                 ans2 = radioButton.getText().toString();
             }
@@ -653,14 +592,14 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     private RadioGroup.OnCheckedChangeListener ques2_4Listener = new RadioGroup.OnCheckedChangeListener() {
         public void onCheckedChanged(RadioGroup group, int checkedId) {
-            // TODO Auto-generated method stub
 
             if(checkedId==-1){
-                error2=false;
 
+                error2=false;
             }else{
+
                 error2=true;
-//                    ans2=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
+
                 ques2_1.setOnCheckedChangeListener(null);
                 ques2_1.clearCheck();
                 ques2_1.setOnCheckedChangeListener(ques2_1Listener);
@@ -676,6 +615,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 ques2_5.setOnCheckedChangeListener(null);
                 ques2_5.clearCheck();
                 ques2_5.setOnCheckedChangeListener(ques2_5Listener);
+
                 RadioButton radioButton = (RadioButton) findViewById(checkedId);
                 ans2 = radioButton.getText().toString();
             }
@@ -685,14 +625,13 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     private RadioGroup.OnCheckedChangeListener ques2_5Listener = new RadioGroup.OnCheckedChangeListener() {
         public void onCheckedChanged(RadioGroup group, int checkedId) {
-            // TODO Auto-generated method stub
 
             if(checkedId==-1){
-                error2=false;
 
+                error2=false;
             }else{
                 error2=true;
-//                    ans2=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
+
                 ques2_1.setOnCheckedChangeListener(null);
                 ques2_1.clearCheck();
                 ques2_1.setOnCheckedChangeListener(ques2_1Listener);
@@ -715,16 +654,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         }
     };
-
-    private void setUpMapIfNeeded() {
-
-        //Log.d(TAG,"test show trip setUpMapIfNeeded");
-
-
-//        mGoogleMap = map.getMap();
-//        mGoogleMap.getMapAsync(this);
-
-    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {

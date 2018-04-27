@@ -1040,6 +1040,38 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+    public static ArrayList<String> querySurveyLinks() {
+
+        ArrayList<String> rows = new ArrayList<String>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + surveyLink_table + " order by " + generateTime_col;
+
+            //Log.d(TAG, "[querySurveyLinkBetweenTimes] the query statement is " +sql);
+
+            Cursor cursor = db.rawQuery(sql, null);
+            int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+                }
+                rows.add(curRow);
+            }
+            cursor.close();
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+        return rows;
+
+    }
+
     public static String queryLatestSurveyLink() {
 
         String result = "";
@@ -1114,10 +1146,39 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+    public static ArrayList<String> getSurveysAreOpenedOrMissed(){
+
+        ArrayList<String> resultInArray = new ArrayList<>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT "+openFlag_col +" FROM " + surveyLink_table + " order by " + generateTime_col;
+            Cursor cursor = db.rawQuery(sql, null);
+
+            cursor.moveToFirst();
+            int rowCount = cursor.getCount();
+
+            for (int i=0; i<rowCount; i++){
+
+                String value = cursor.getString(0);
+
+                resultInArray.add(value);
+            }
+
+            cursor.close();
+        }catch(Exception e){
+
+        }
+
+        DBManager.getInstance().closeDatabase();
+
+        return resultInArray;
+    }
+
     public static void updateSurveyMissTime(String _id, String colName){
 
-        //TODO: the user should be able to specify the database because each study may have a different database.
-       //Log.d(TAG, "put survey " + _id + " to table " + surveyLink_table);
+        Log.d(TAG, "[test show link] updateSurveyMissTime check");
 
         String where = id + " = " +  _id;
 
@@ -1141,8 +1202,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static void updateSurveyOpenTime(String _id){
 
-        //TODO: the user should be able to specify the database because each study may have a different database.
-       //Log.d(TAG, "put survey " + _id + " to table " + surveyLink_table);
+        Log.d(TAG, "[test show link] updateSurveyOpenTime check");
 
         String where = id + " = " +  _id;
 
@@ -1157,7 +1217,7 @@ public class DBHelper extends SQLiteOpenHelper {
             db.update(surveyLink_table, values, where, null);
 
         }catch(Exception e){
-            //e.printStackTrace();
+
         }
 
         DBManager.getInstance().closeDatabase();

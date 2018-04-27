@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
@@ -102,8 +103,13 @@ public class Utils {
 
         //14 is the total of the research days
         int countOfDaysInSurvey = 14 - Constants.daysInSurvey;
-        for(int DaysInSurvey = 0; DaysInSurvey <= countOfDaysInSurvey; DaysInSurvey++ ){
+        for(int DaysInSurvey = 1; DaysInSurvey <= countOfDaysInSurvey; DaysInSurvey++ ){
+
+            Log.d(TAG, "[test alarm] DaysInSurvey : "+DaysInSurvey);
+
             SurveyTriggerManager.settingIntervalSampling(DaysInSurvey, context);
+
+            storeToCSV_IntervalSamplesTimes();
         }
 
         storeToCSV_Interval_Samples_Times_split();
@@ -126,6 +132,53 @@ public class Utils {
 
     }
 
+    public static void storeToCSV_IntervalSamplesTimes(){
+
+        String sFileName = "Interval_Samples_Times.csv";
+
+        sFileName = sFileName.replace("/","-");
+
+        try {
+
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+
+            //Log.d(TAG, "root : " + root);
+
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            //Log.d(TAG, "interval_sampled_times : "+interval_sampled_times);
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            String[] addToCSVFile = new String[]{};
+            List<String> addToCSV = new ArrayList<String>();
+
+            for(int index=0 ; index < SurveyTriggerManager.interval_sampled_times.size() ; index++){
+
+                addToCSV.add(ScheduleAndSampleManager.getTimeString(SurveyTriggerManager.interval_sampled_times.get(index)));
+            }
+
+            addToCSVFile = addToCSV.toArray(addToCSVFile);
+
+            data.add(addToCSVFile);
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        } catch(IOException e) {
+
+        } catch (IndexOutOfBoundsException e2){
+
+        }
+
+    }
+
+
     public static void storeToCSV_IntervalSurveyCreated(long triggeredTimestamp, int surveyNum, String surveyLink, String noti_type,Context context){
 
         String sFileName = "IntervalSurveyState.csv";
@@ -142,6 +195,30 @@ public class Utils {
                 root.mkdirs();
             }
 
+            //get overall data
+            ArrayList<String> resultInArray = DataHandler.getSurveys();
+
+            int openCount = 0;
+
+            float rate;
+
+            for(int index = 0; index < resultInArray.size();index++){
+
+                String openOrNot = resultInArray.get(index).split(Constants.DELIMITER)[5];
+
+                Log.d(TAG, "[test show link] open flag : "+ openOrNot);
+
+                if(openOrNot.equals("1"))
+                    openCount++;
+            }
+
+            Log.d(TAG, "[test show link] openCount : "+ openCount + " resultInArray size : "+resultInArray.size());
+
+            rate = (float)openCount/resultInArray.size() * 100;
+
+            String rateString = String.format("%.2f", rate);
+
+
             csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
 
             SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
@@ -150,7 +227,7 @@ public class Utils {
             if(startSurveying) {
                 List<String[]> title = new ArrayList<String[]>();
 
-                title.add(new String[]{"triggeredTime", "Survey #", "clicked", "clickedTime","Survey link", "Noti Type","Period Number"});
+                title.add(new String[]{"triggeredTime", "Survey #", "clicked", "clickedTime","Survey link", "Noti Type","Period Number", "Overall rate"});
 
                 csv_writer.writeAll(title);
 
@@ -164,7 +241,7 @@ public class Utils {
 
             List<String[]> data = new ArrayList<String[]>();
 
-            data.add(new String[]{triggeredTimeString, "Survey "+surveyNum, "",  "", surveyLink, noti_type, periodNum});
+            data.add(new String[]{triggeredTimeString, "Survey "+surveyNum, "",  "", surveyLink, noti_type, periodNum, rateString+"%"});
 
             csv_writer.writeAll(data);
 
@@ -222,44 +299,6 @@ public class Utils {
             return "Wrong ";
         }
     }
-
-    public static void storeToCSV_IntervalSurveyUpdated(boolean clicked){
-
-        String sFileName = "IntervalSurveyState.csv";
-
-        //Log.d(TAG, "sFileName : " + sFileName);
-
-        try {
-
-            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
-
-            //Log.d(TAG, "root : " + root);
-
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-            data.add(new String[]{"", "", String.valueOf(clicked), ""});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        } catch(IOException e) {
-            //e.printStackTrace();
-//            Log.e(TAG, "exception", e);
-        } catch (IndexOutOfBoundsException e2){
-            e2.printStackTrace();
-//            Log.e(TAG, "exception", e2);
-
-        }
-
-    }
-
 
     private static void storeToCSV_Interval_Samples_Times_split(){
 

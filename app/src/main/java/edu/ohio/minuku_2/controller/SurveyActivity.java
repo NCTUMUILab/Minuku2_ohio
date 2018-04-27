@@ -10,9 +10,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.drawable.Drawable;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -65,30 +66,38 @@ public class SurveyActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
 
-        if(Constants.daysInSurvey > 14){
+        if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
+
+            setContentView(R.layout.surveypage_day0);
+        }else if(Constants.daysInSurvey > 14){
 
             setContentView(R.layout.surveypage_complete);
-        }else
+        }else {
             setContentView(R.layout.surveypage);
-
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        //Log.d(TAG,"onResume");
+        if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
 
+            setContentView(R.layout.surveypage_day0);
+        }else if(Constants.daysInSurvey > 14){
 
-        if(Constants.daysInSurvey <= 14)
+            setContentView(R.layout.surveypage_complete);
+        }else {
+            setContentView(R.layout.surveypage);
+        }
+
+        if(Constants.daysInSurvey <= 14 && Constants.daysInSurvey >= 1)
             initlinkListohio();
-
     }
 
     private void initlinkListohio(){
-
-        //Log.d(TAG,"initlinkListohio");
 
         sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
 
@@ -131,10 +140,10 @@ public class SurveyActivity extends Activity {
             public void onClick(View view) {
 
                 try{
+
                     mNotificationManager.cancel(notifyID);
                 }catch (Exception e){
-                    //e.printStackTrace();
-                    //Log.d(TAG, "no old test notification");
+
                 }
 
                 triggerSurveyByButton();
@@ -149,6 +158,7 @@ public class SurveyActivity extends Activity {
     private void setSurveyButtonsAvailable(Button survey_Button, int correspondingSize){
 
         if(surveyDatas.size() < correspondingSize){
+
             survey_Button.setClickable(false);
             survey_Button.setText(TEXT_Unavailable);
         }else{
@@ -164,9 +174,8 @@ public class SurveyActivity extends Activity {
                 survey_Button.setText(TEXT_MISSED);
                 survey_Button.setClickable(false);
             }else{
-                Drawable drawable = getResources().getDrawable(R.drawable.surveybutton_available_style);
-                survey_Button.setBackground(drawable);
-                survey_Button.setTextColor(getResources().getColor(R.color.black));
+                survey_Button.setBackgroundColor(Color.RED);
+                survey_Button.setTextColor(getResources().getColor(R.color.white));
                 survey_Button.setText(TEXT_Available);
             }
 
@@ -225,13 +234,9 @@ public class SurveyActivity extends Activity {
     }
 
     private void surveyButtonsWork(int buttonNumber){
-        // if the user click it, don't show notification
-        /*try{
-            mNotificationManager.cancel(notifyID);
-        }catch (Exception e){
-            //e.printStackTrace();
-            //Log.d(TAG, "no old test notification");
-        }*/
+
+        //record if the user have clicked the survey button
+        sharedPrefs.edit().putBoolean("Period"+buttonNumber,false).apply();
 
         try{
 
@@ -252,10 +257,8 @@ public class SurveyActivity extends Activity {
 
             startActivity(resultIntent);
         }catch (IndexOutOfBoundsException e){
-            //e.printStackTrace();
-            //Log.d(TAG, "No data yet.");
-        }
 
+        }
     }
 
     @Override
@@ -348,9 +351,7 @@ public class SurveyActivity extends Activity {
     public String makingDataFormat(int year,int month,int date){
         String dataformat= "";
 
-//        dataformat = addZero(year)+"-"+addZero(month)+"-"+addZero(date)+" "+addZero(hour)+":"+addZero(min)+":00";
         dataformat = addZero(year)+"/"+addZero(month)+"/"+addZero(date)+" "+"00:00:00";
-        //Log.d(TAG,"dataformat : " + dataformat);
 
         return dataformat;
     }

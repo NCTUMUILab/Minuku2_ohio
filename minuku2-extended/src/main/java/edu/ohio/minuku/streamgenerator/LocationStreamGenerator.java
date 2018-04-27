@@ -185,8 +185,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             //the lastposition update value timestamp
             lastposupdate = new Date().getTime();
 
-            StoreToCSV(lastposupdate,location.getLatitude(),location.getLongitude(),location.getAccuracy());
-
             Log.d(TAG,"onLocationChanged latestLatitude : "+ latestLatitude +" latestLongitude : "+ latestLongitude);
             Log.d(TAG,"onLocationChanged location : "+this.location);
 
@@ -393,36 +391,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             }
 
             data.add(new String[]{String.valueOf(timestamp), timeString, String.valueOf(latLngs), String.valueOf(dist)});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    public void StoreToCSV(long timestamp, double latitude, double longitude, float accuracy){
-
-        Log.d(TAG,"StoreToCSV");
-
-        String sFileName = "LocationOnChange.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-//            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy"});
-            String timeString = getTimeString(timestamp);
-
-            data.add(new String[]{String.valueOf(timestamp),timeString,String.valueOf(latitude),String.valueOf(longitude),String.valueOf(accuracy)});
 
             csv_writer.writeAll(data);
 

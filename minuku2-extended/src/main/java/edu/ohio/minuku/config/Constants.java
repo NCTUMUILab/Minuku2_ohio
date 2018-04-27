@@ -185,7 +185,7 @@ public class Constants {
     public static String Email = "";
 
     public static int downloadedDayInSurvey = -1;
-    public static int daysInSurvey = -1;
+    public static int daysInSurvey;
     public static long midnightstart = -999;
     public static long FirstTime_ToInitializeIntervalSurvey = -999;
 

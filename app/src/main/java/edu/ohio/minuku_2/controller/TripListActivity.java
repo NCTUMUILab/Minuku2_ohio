@@ -45,9 +45,15 @@ public class TripListActivity extends Activity {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.triplist_activity);
-        liststr = new ArrayList<String>();
-        mSessions = new ArrayList<Session>();
+        if(Constants.daysInSurvey == 0|| Constants.daysInSurvey == -1){
+
+            setContentView(R.layout.triplist_day0);
+        }else{
+
+            setContentView(R.layout.triplist_activity);
+            liststr = new ArrayList<String>();
+            mSessions = new ArrayList<Session>();
+        }
     }
 
 
@@ -69,7 +75,9 @@ public class TripListActivity extends Activity {
     public void onResume() {
         super.onResume();
 
-        initSessionList();
+        if(Constants.daysInSurvey != 0 && Constants.daysInSurvey != -1) {
+            initSessionList();
+        }
     }
 
     private void initSessionList(){

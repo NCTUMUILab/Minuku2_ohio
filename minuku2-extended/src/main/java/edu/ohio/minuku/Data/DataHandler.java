@@ -138,6 +138,20 @@ public class DataHandler {
         return result;
     }
 
+    public static ArrayList<String> getSurveysAreOpenedOrMissed(){
+
+        ArrayList<String> resultInArray = DBHelper.getSurveysAreOpenedOrMissed();
+
+        return resultInArray;
+    }
+
+    public static ArrayList<String> getSurveys(){
+
+        ArrayList<String> resultInArray = DBHelper.querySurveyLinks();
+
+        return resultInArray;
+    }
+
     public static void updateSurveyMissTime(String id, String colName){
         //Log.d(TAG, "updateSurveyMissTime");
         DBHelper.updateSurveyMissTime(id, colName);

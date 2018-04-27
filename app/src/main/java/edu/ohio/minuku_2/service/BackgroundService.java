@@ -57,6 +57,7 @@ import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
 import edu.ohio.minuku_2.Receiver.WifiReceiver;
 import edu.ohio.minuku_2.Utils;
 import edu.ohio.minuku_2.controller.TripListActivity;
+import edu.ohio.minuku_2.controller.sleepingohio;
 import edu.ohio.minuku_2.manager.InstanceManager;
 import edu.ohio.minuku_2.manager.SurveyTriggerManager;
 
@@ -91,8 +92,6 @@ public class BackgroundService extends Service {
         intentFilter = new IntentFilter();
         intentFilter.addAction(CONNECTIVITY_ACTION);
         mWifiReceiver = new WifiReceiver();
-
-
     }
 
     @Override
@@ -168,13 +167,15 @@ public class BackgroundService extends Service {
         @Override
         public void run() {
 
-//            Log.d(TAG, "updateStreamManagerRunnable");
+            Log.d(TAG, "updateStreamManagerRunnable");
+
             try {
+
                 streamManager.updateStreamGenerators();
             }catch (Exception e){
-//                e.printStackTrace();
-//                Log.e(TAG, "exception", e);
+
             }
+
             //update every minute
             if(showOngoingNotificationCount % 12 == 0) {
 
@@ -184,8 +185,54 @@ public class BackgroundService extends Service {
             }
 
             showOngoingNotificationCount++;
+
+            //send sleeptime check if it didn't being set after the time they downloaded the app
+            long downloadedTime = sharedPrefs.getLong("downloadedTime", -1);
+
+            long currentTime = new Date().getTime();
+
+            if(currentTime - downloadedTime > Constants.MILLISECONDS_PER_MINUTE * 30){
+
+                String sleepStartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
+                String sleepEndTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
+
+                if(sleepStartTime.equals(Constants.NOT_A_NUMBER) || sleepEndTime.equals(Constants.NOT_A_NUMBER)){
+
+                    //send the notification to remind the user to set their sleeping time
+                    NotificationManager mNotificationManager =
+                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                    String notificationText = "Please select your sleep period.";
+
+                    Notification notification = getSleepNotification(notificationText);
+
+                    mNotificationManager.notify(999, notification);
+                }
+
+            }
+
         }
     };
+
+    private Notification getSleepNotification(String text){
+
+        Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
+        bigTextStyle.setBigContentTitle("DMS");
+        bigTextStyle.bigText(text);
+
+        Intent resultIntent = new Intent(this, sleepingohio.class);
+        PendingIntent pending = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification.Builder noti = new Notification.Builder(this);
+
+        return noti.setContentTitle(Constants.APP_FULL_NAME)
+                .setContentText(text)
+                .setStyle(bigTextStyle)
+                .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                .setContentIntent(pending)
+                .setAutoCancel(true)
+                .build();
+    }
 
     private void checkAndRequestPermission(){
 
@@ -377,8 +424,6 @@ public class BackgroundService extends Service {
 
         sharedPrefs.edit().putString("ongoingNotificationText", ongoingNotificationText).apply();
 
-        Utils.ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), "SamplingCheck.csv");
-
         Utils.ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), "TransportationMode.csv");
         Utils.ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), "TransportationState.csv");
         Utils.ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), "windowdata.csv");
@@ -401,8 +446,6 @@ public class BackgroundService extends Service {
 
         sharedPrefs.edit().putString("ongoingNotificationText", ongoingNotificationText).apply();
 
-        Utils.ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), "SamplingCheck.csv");
-
         Utils.ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), "TransportationMode.csv");
         Utils.ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), "TransportationState.csv");
         Utils.ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), "windowdata.csv");
@@ -416,8 +459,6 @@ public class BackgroundService extends Service {
     @Override
     public void onLowMemory(){
         super.onLowMemory();
-
-        Utils.ServiceDestroying_StoreToCSV_onLowMemory(new Date().getTime(), "SamplingCheck.csv");
 
         sharedPrefs.edit().putString("ongoingNotificationText", ongoingNotificationText).apply();
 

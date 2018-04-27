@@ -116,7 +116,7 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
                 today_yesterday = "Yesterday";
             }
 
-            sessionTitle = today_yesterday + " " + timeLabel + "-" + labelStr;
+            sessionTitle = today_yesterday + " " + timeLabel + "    " + labelStr;
 
 
             //if there's annotation in the session and the session is not ongoing
@@ -124,6 +124,10 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
                 //if they've edited, put the text in green
                 textView.setTextColor(Color.GRAY);
 
+                if(labelStr.equals("Combine")||labelStr.equals("Delete")){
+
+                    textView.setVisibility(View.GONE);
+                }
             }
             //if there's no annotation or the session is ongoing
             else {
@@ -148,22 +152,24 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
     private String getLabelFromAns1(String labelStr){
 
         switch (labelStr){
-            case "Walking outdoors.": //ans1
-                return "Walking";
-            case "Walking indoors.": //ans1
-                return "Walking";
-            case "Riding a bicycle.":
-                return "Biking";
-            case "Driving (I'm the driver).":
-                return "Driving";
-            case "Driving (I'm the passenger).":
-                return "Driving";
-            case "Trip is part of previous trip (COMBINE).":
+            case "Walking outdoors": //ans1
+                return "Walk";
+            case "Walking indoors": //ans1
+                return "Walk";
+            case "Riding a bicycle":
+                return "Bike";
+            case "Driving (I'm the driver)":
+                return "Drive";
+            case "Driving (I'm the passenger)":
+                return "Drive";
+            case "Trip is part of previous trip (COMBINE)":
                 return "Combine";
-            case "Taking a bus.":
-                return "on the bus";
-            case "Trip is incorrect (DELETE).":
+            case "Taking a bus":
+                return "Bus";
+            case "Trip is incorrect (DELETE)":
                 return "Delete";
+            case "Other transportation":
+                return "Other";
             default:
                 return "";
         }
