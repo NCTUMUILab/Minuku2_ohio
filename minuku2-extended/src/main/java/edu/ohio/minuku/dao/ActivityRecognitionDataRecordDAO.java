@@ -14,7 +14,6 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 
 import edu.ohio.minuku.Data.DBHelper;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
 import edu.ohio.minukucore.dao.DAO;
@@ -53,7 +52,7 @@ public class ActivityRecognitionDataRecordDAO implements DAO<ActivityRecognition
     @Override
     public void add(ActivityRecognitionDataRecord entity) throws DAOException {
 
-        Log.d(TAG, "Adding ActivityRecognition data record.");
+//        Log.d(TAG, "Adding ActivityRecognition data record.");
         //TODO store in CSV file.
 
         ContentValues values = new ContentValues();
@@ -70,7 +69,7 @@ public class ActivityRecognitionDataRecordDAO implements DAO<ActivityRecognition
             db.insert(DBHelper.activityRecognition_table, null, values);
         }
         catch(NullPointerException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             values.clear();
@@ -88,8 +87,8 @@ public class ActivityRecognitionDataRecordDAO implements DAO<ActivityRecognition
         int ProbableActivitiesrow = ProbableActivitiesCursor.getCount();
         int ProbableActivitiescol = ProbableActivitiesCursor.getColumnCount();
 
-        Log.d(TAG,"MostProbableActivityrow : " + MostProbableActivityrow +" MostProbableActivitycol : " + MostProbableActivitycol+
-                " ProbableActivitiesrow : " + ProbableActivitiesrow+ " ProbableActivitiescol : " + ProbableActivitiescol);
+//        Log.d(TAG,"MostProbableActivityrow : " + MostProbableActivityrow +" MostProbableActivitycol : " + MostProbableActivitycol+
+//                " ProbableActivitiesrow : " + ProbableActivitiesrow+ " ProbableActivitiescol : " + ProbableActivitiescol);
     }
 
     @Override

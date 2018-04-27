@@ -2,7 +2,6 @@ package edu.ohio.minuku.Utilities;
 
 import android.content.Context;
 import android.os.Environment;
-import android.util.Log;
 
 import com.google.android.gms.location.DetectedActivity;
 
@@ -41,7 +40,7 @@ public class FileHelper {
             try {
                 FileHelper.instance = new FileHelper(context);
             } catch (Exception e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
         return FileHelper.instance;
@@ -72,14 +71,14 @@ public class FileHelper {
 				}
 				
 				String pathfilename = Environment.getExternalStorageDirectory()+ Constants.PACKAGE_DIRECTORY_PATH+directory_name+ filename;
-				//Log.d(LOG_TAG, "[writeStringToFile] the file name is " + pathfilename + " the content is " + content);
+				////Log.d(LOG_TAG, "[writeStringToFile] the file name is " + pathfilename + " the content is " + content);
 				File file = new File(pathfilename);
 				FileWriter filewriter = new FileWriter(file, true);
 				BufferedWriter out = new BufferedWriter(filewriter);
 				out.write(content);
 				out.close();
 			}catch (IOException e) {
-				Log.e(LOG_TAG, e.getMessage()+"");
+				//Log.e(LOG_TAG, e.getMessage()+"");
 				
 			}
 		}
@@ -112,7 +111,7 @@ public class FileHelper {
 
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+//            ex.printStackTrace();
             return null;
         }
         
@@ -130,7 +129,7 @@ public class FileHelper {
         String filePath="";
         while(i!=file.length){
             filePath = file[i].getAbsolutePath();
-            Log.d(LOG_TAG, "[readFilesFromInDirectory] " + i+" " +   filePath);
+            //Log.d(LOG_TAG, "[readFilesFromInDirectory] " + i+" " +   filePath);
         }
 
     }
@@ -173,15 +172,15 @@ public class FileHelper {
                 }
             }
 
-//            Log.d(LOG_TAG, "[readTestFile] " + latest_activitiesStr + " : " + " lat:" + lat + " lng " + lng);
+//            //Log.d(LOG_TAG, "[readTestFile] " + latest_activitiesStr + " : " + " lat:" + lat + " lng " + lng);
 
 
-            Log.d(LOG_TAG, "[readTestFile] read latest_activitiesStr " + latest_activitiesStr);
+            //Log.d(LOG_TAG, "[readTestFile] read latest_activitiesStr " + latest_activitiesStr);
 
 
             //get activity from the activity string
             String [] activities = latest_activitiesStr.split(";;");
-            Log.d(LOG_TAG, "[readTestFile] read activity " + activities);
+            //Log.d(LOG_TAG, "[readTestFile] read activity " + activities);
 
             List<DetectedActivity> activityList = new ArrayList<DetectedActivity>();
 
@@ -193,16 +192,16 @@ public class FileHelper {
                     DetectedActivity activity= new DetectedActivity(
                             ActivityRecognitionStreamGenerator.getActivityTypeFromName(activityStr),confidence);
                     activityList.add(activity);
-                    Log.d(LOG_TAG, "[readTestFile] activity " + activity + " : " + confidence);
+                    //Log.d(LOG_TAG, "[readTestFile] activity " + activity + " : " + confidence);
                 }
 
                 //create record for the activity
                 ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
                 record.setProbableActivities(activityList);
                 record.setMostProbableActivity(activityList.get(0));
-                // Log.d("ARService", "[test replay] load activity is " + activityList.toString() + "  most probable activit is " + activityList.get(0));
+                // //Log.d("ARService", "[test replay] load activity is " + activityList.toString() + "  most probable activit is " + activityList.get(0));
                 record.setTimestamp(time);
-                Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
+                //Log.d(LOG_TAG, "[readTestFile] readline " + lines[i]);
 
                 //add to the AR service so that we can replay later
                 ActivityRecognitionService.addActivityRecognitionRecord(record);
@@ -248,7 +247,7 @@ public class FileHelper {
                     recursiveFileFind(file);
                 }
                 i++;
-                Log.d(LOG_TAG, "[recursiveFileFind] " + i+" " +   filePath);
+                //Log.d(LOG_TAG, "[recursiveFileFind] " + i+" " +   filePath);
             }
         }
     }

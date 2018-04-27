@@ -9,7 +9,6 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 
 import edu.ohio.minuku.Data.DBHelper;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.model.DataRecord.AppUsageDataRecord;
 import edu.ohio.minukucore.dao.DAO;
@@ -36,7 +35,7 @@ public class AppUsageDataRecordDAO implements DAO<AppUsageDataRecord>{
 
     @Override
     public void add(AppUsageDataRecord entity) throws DAOException {
-        Log.d(TAG, "Adding AppUsage data record.");
+//        Log.d(TAG, "Adding AppUsage data record.");
 
         ContentValues values = new ContentValues();
 
@@ -53,7 +52,7 @@ public class AppUsageDataRecordDAO implements DAO<AppUsageDataRecord>{
             db.insert(DBHelper.appUsage_table, null, values);
         }
         catch(NullPointerException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             values.clear();

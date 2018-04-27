@@ -1,7 +1,5 @@
 package edu.ohio.minuku.model.DataRecord;
 
-import android.util.Log;
-
 import java.util.Calendar;
 import java.util.Date;
 
@@ -41,9 +39,9 @@ public class RingerDataRecord implements DataRecord {
         this.StreamVolumeVoicecall = StreamVolumeVoicecall;
         this.StreamVolumeSystem = StreamVolumeSystem;
 
-        Log.d(TAG,"mRingerMode : "+ RingerMode +" mAudioMode : "+ AudioMode+" mStreamVolumeMusic : "+ StreamVolumeMusic
-                +" mStreamVolumeNotification : "+ StreamVolumeNotification+" mStreamVolumeRing : "+ StreamVolumeRing
-                +" mStreamVolumeVoicecall : "+ StreamVolumeVoicecall +" mStreamVolumeSystem : "+ StreamVolumeSystem);
+//        Log.d(TAG,"mRingerMode : "+ RingerMode +" mAudioMode : "+ AudioMode+" mStreamVolumeMusic : "+ StreamVolumeMusic
+//                +" mStreamVolumeNotification : "+ StreamVolumeNotification+" mStreamVolumeRing : "+ StreamVolumeRing
+//                +" mStreamVolumeVoicecall : "+ StreamVolumeVoicecall +" mStreamVolumeSystem : "+ StreamVolumeSystem);
 
     }
 

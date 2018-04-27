@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +40,7 @@ public class BatteryDataRecordDAO implements DAO<BatteryDataRecord> {
 
     @Override
     public void add(BatteryDataRecord entity) throws DAOException {
-        Log.d(TAG, "Adding Battery data record.");
+//        Log.d(TAG, "Adding Battery data record.");
 
         ContentValues values = new ContentValues();
 
@@ -59,7 +58,7 @@ public class BatteryDataRecordDAO implements DAO<BatteryDataRecord> {
             db.insert(DBHelper.battery_table, null, values);
         }
         catch(NullPointerException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             values.clear();
@@ -83,10 +82,10 @@ public class BatteryDataRecordDAO implements DAO<BatteryDataRecord> {
         int isChargingrow = isChargingCursor.getCount();
         int isChargingcol = isChargingCursor.getColumnCount();
 
-        Log.d(TAG,"BatteryLevelrow : " + BatteryLevelrow +" BatteryLevelcol : " + BatteryLevelcol
-                + "BatteryPercentagerow"+ BatteryPercentagerow +" BatteryPercentagecol : " + BatteryPercentagecol
-                + " BatteryChargingStaterow : " + BatteryChargingStaterow +" BatteryChargingStatecol : " + BatteryChargingStatecol
-                +" isChargingrow : " + isChargingrow +" isChargingcol : " + isChargingcol);
+//        Log.d(TAG,"BatteryLevelrow : " + BatteryLevelrow +" BatteryLevelcol : " + BatteryLevelcol
+//                + "BatteryPercentagerow"+ BatteryPercentagerow +" BatteryPercentagecol : " + BatteryPercentagecol
+//                + " BatteryChargingStaterow : " + BatteryChargingStaterow +" BatteryChargingStatecol : " + BatteryChargingStatecol
+//                +" isChargingrow : " + isChargingrow +" isChargingcol : " + isChargingcol);
     }
 
     @Override

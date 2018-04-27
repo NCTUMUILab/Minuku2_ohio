@@ -41,7 +41,7 @@ public class ConnectivityDataRecordDAO implements DAO<ConnectivityDataRecord>{
 
     @Override
     public void add(ConnectivityDataRecord entity) throws DAOException {
-        Log.d(TAG, "Adding Connectivity data record.");
+//        Log.d(TAG, "Adding Connectivity data record.");
 
         ContentValues values = new ContentValues();
 
@@ -62,7 +62,7 @@ public class ConnectivityDataRecordDAO implements DAO<ConnectivityDataRecord>{
             db.insert(DBHelper.connectivity_table, null, values);
         }
         catch(NullPointerException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             values.clear();
@@ -88,10 +88,10 @@ public class ConnectivityDataRecordDAO implements DAO<ConnectivityDataRecord>{
         int IsWifiConnectedrow = IsWifiConnectedCursor.getCount();
         int IsMobileConnectedrow = IsMobileConnectedCursor.getCount();
 
-        Log.d(TAG,"NetworkTyperow : " + NetworkTyperow +" IsNetworkAvailablerow : " + IsNetworkAvailablerow
-                + "IsConnectedrow"+ IsConnectedrow +" IsWifiAvailablerow : " + IsWifiAvailablerow
-                + " IsMobileAvailablerow : " + IsMobileAvailablerow +" IsWifiConnectedrow : "
-                + IsWifiConnectedrow+" IsMobileConnectedrow : " + IsMobileConnectedrow);
+//        Log.d(TAG,"NetworkTyperow : " + NetworkTyperow +" IsNetworkAvailablerow : " + IsNetworkAvailablerow
+//                + "IsConnectedrow"+ IsConnectedrow +" IsWifiAvailablerow : " + IsWifiAvailablerow
+//                + " IsMobileAvailablerow : " + IsMobileAvailablerow +" IsWifiConnectedrow : "
+//                + IsWifiConnectedrow+" IsMobileConnectedrow : " + IsMobileConnectedrow);
     }
 
     @Override

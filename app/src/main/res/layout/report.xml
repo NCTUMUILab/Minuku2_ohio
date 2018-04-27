@@ -35,7 +35,7 @@
         android:text="結束日期"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/endtime"
+        android:id="@+id/sleepEndtime"
         android:layout_weight="0.15"
         android:textSize="36sp"
         android:paddingLeft="16dp" />

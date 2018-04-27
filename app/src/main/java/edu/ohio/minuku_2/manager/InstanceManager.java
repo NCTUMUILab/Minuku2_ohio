@@ -46,7 +46,6 @@ import edu.ohio.minuku.dao.TransportationModeDAO;
 import edu.ohio.minuku.dao.UserSubmissionStatsDAO;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuSituationManager;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
@@ -66,9 +65,6 @@ import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
 import edu.ohio.minuku.streamgenerator.RingerStreamGenerator;
 import edu.ohio.minuku.streamgenerator.TelephonyStreamGenerator;
 import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
-import edu.ohio.minuku_2.dao.CheckFamiliarOrNotDAO;
-import edu.ohio.minuku_2.model.CheckFamiliarOrNotDataRecord;
-import edu.ohio.minuku_2.question.QuestionConfig;
 
 /**
  * Created by neerajkumar on 8/28/16.
@@ -140,9 +136,6 @@ public class InstanceManager {
         TelephonyDataRecordDAO telephonyDataRecordDAO = new TelephonyDataRecordDAO(getApplicationContext());
         daoManager.registerDaoFor(TelephonyDataRecord.class, telephonyDataRecordDAO);
 
-        CheckFamiliarOrNotDAO checkFamiliarOrNotDAO = new CheckFamiliarOrNotDAO(getApplicationContext());
-        daoManager.registerDaoFor(CheckFamiliarOrNotDataRecord.class, checkFamiliarOrNotDAO);
-
 //        LocationNoGoogleDataRecordDAO locationNoGoogleDataRecordDAO = new LocationNoGoogleDataRecordDAO(getApplicationContext());
 //        daoManager.registerDaoFor(LocationNoGoogleDataRecord.class, locationNoGoogleDataRecordDAO);
 
@@ -191,7 +184,7 @@ public class InstanceManager {
         //QuestionnaireManager questionnaireManager = new QuestionnaireManager(getApplicationContext());
 
         //create questionnaires
-        QuestionConfig.getInstance().setUpQuestions(getApplicationContext());
+//        QuestionConfig.getInstance().setUpQuestions(getApplicationContext());
 
         // Fetch tags
 //        Model tagsModel = Model.getInstance();
@@ -206,12 +199,12 @@ public class InstanceManager {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 }
                 //
                 try {
-                    Log.d(LOG_TAG, "initialize: getting mUserSubmissionStats from future ");
+                    //Log.d(LOG_TAG, "initialize: getting mUserSubmissionStats from future ");
                      mUserSubmissionStats = submissionStatsFuture.get();
                     //date check - ensuring that every day we have a new instance of submission
                     // stats. Needs to be tested
@@ -219,20 +212,20 @@ public class InstanceManager {
                     if(!areDatesEqual((new Date().getTime()), mUserSubmissionStats.getCreationTime())
                             || mUserSubmissionStats==null) {
                         if(mUserSubmissionStats == null)
-                            Log.d(LOG_TAG, "initialize: userSubmissionStats is null");
-                        Log.d(LOG_TAG, "initialize: userSubmissionStats is either null or we have a new date." +
-                                "Creating new userSubmissionStats object");
+                            //Log.d(LOG_TAG, "initialize: userSubmissionStats is null");
+                        //Log.d(LOG_TAG, "initialize: userSubmissionStats is either null or we have a new date." +
+//                                "Creating new userSubmissionStats object");
                         mUserSubmissionStats = new UserSubmissionStats();
 
                     }
                     EventBus.getDefault().post(mUserSubmissionStats);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    Log.d(LOG_TAG, "initialize: Creating mUserSubmissionStats");
+                    //e.printStackTrace();
+                    //Log.d(LOG_TAG, "initialize: Creating mUserSubmissionStats");
                     //gotUserStatsFromDatabase(null);
                 } catch (ExecutionException e) {
-                    e.printStackTrace();
-                    Log.d(LOG_TAG, "initialize: Creating mUserSubmissionStats");
+                    //e.printStackTrace();
+                    //Log.d(LOG_TAG, "initialize: Creating mUserSubmissionStats");
                     //gotUserStatsFromDatabase(null);
                 } finally {
                     EventBus.getDefault().post(new DecrementLoadingProcessCountEvent());
@@ -245,10 +238,10 @@ public class InstanceManager {
     public UserSubmissionStats getUserSubmissionStats() {
             if((mUserSubmissionStats == null) || !areDatesEqual((new Date().getTime()), mUserSubmissionStats.getCreationTime())) {
                 if(mUserSubmissionStats == null)
-                    Log.d(LOG_TAG, "getUserSubmissionStats: userSubmissionStats is null");
+                    //Log.d(LOG_TAG, "getUserSubmissionStats: userSubmissionStats is null");
 
-                Log.d(LOG_TAG, "getUserSubmissionStats: userSubmissionStats is either null or we have a new date." +
-                                "Creating new userSubmissionStats object");
+                //Log.d(LOG_TAG, "getUserSubmissionStats: userSubmissionStats is either null or we have a new date." +
+//                                "Creating new userSubmissionStats object");
             mUserSubmissionStats = new UserSubmissionStats();
         }
         return mUserSubmissionStats;
@@ -259,7 +252,7 @@ public class InstanceManager {
             MinukuDAOManager.getInstance().getDaoFor(UserSubmissionStats.class).update(null,
                     aUserSubmissionStats);
         } catch (Exception e) {
-            Log.e(LOG_TAG, "Could not upload user stats via DAO.");
+            //Log.e(LOG_TAG, "Could not upload user stats via DAO.");
         }
 
         mUserSubmissionStats = aUserSubmissionStats;
@@ -267,25 +260,25 @@ public class InstanceManager {
     }
 
     protected boolean areDatesEqual(long currentTime, long previousTime) {
-        Log.d(LOG_TAG, "Checking if the both dates are the same");
+        //Log.d(LOG_TAG, "Checking if the both dates are the same");
 
         Calendar currentDate = Calendar.getInstance();
         Calendar previousDate = Calendar.getInstance();
 
         currentDate.setTimeInMillis(currentTime);
         previousDate.setTimeInMillis(previousTime);
-        Log.d(LOG_TAG, "Current Year:" + currentDate.get(Calendar.YEAR) + " Previous Year:" + previousDate.get(Calendar.YEAR));
-        Log.d(LOG_TAG, "Current Day:" + currentDate.get(Calendar.DAY_OF_YEAR) + " Previous Day:" + previousDate.get(Calendar.DAY_OF_YEAR));
-        Log.d(LOG_TAG, "Current Month:" + currentDate.get(Calendar.MONTH) + " Previous Month:" + previousDate.get(Calendar.MONTH));
+        //Log.d(LOG_TAG, "Current Year:" + currentDate.get(Calendar.YEAR) + " Previous Year:" + previousDate.get(Calendar.YEAR));
+        //Log.d(LOG_TAG, "Current Day:" + currentDate.get(Calendar.DAY_OF_YEAR) + " Previous Day:" + previousDate.get(Calendar.DAY_OF_YEAR));
+        //Log.d(LOG_TAG, "Current Month:" + currentDate.get(Calendar.MONTH) + " Previous Month:" + previousDate.get(Calendar.MONTH));
 
         boolean sameDay = (currentDate.get(Calendar.YEAR) == previousDate.get(Calendar.YEAR)) &&
                 (currentDate.get(Calendar.DAY_OF_YEAR) == previousDate.get(Calendar.DAY_OF_YEAR)) &&
                 (currentDate.get(Calendar.MONTH) == previousDate.get(Calendar.MONTH));
 
-        if(sameDay)
-            Log.d(LOG_TAG, "it is the same day, should not create a new object");
-        else
-            Log.d(LOG_TAG, "it is not the same day - a new day, should create a new object");
+//        if(sameDay)
+            //Log.d(LOG_TAG, "it is the same day, should not create a new object");
+//        else
+            //Log.d(LOG_TAG, "it is not the same day - a new day, should create a new object");
         return sameDay;
     }
 

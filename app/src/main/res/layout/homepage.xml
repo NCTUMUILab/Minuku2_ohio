@@ -77,8 +77,8 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             android:background="@drawable/button_style"
-            android:paddingLeft="20dp"
             android:text="Trips"
+            android:textAlignment="center"
             android:textColor="#666666"
             android:textSize="30sp" />
 
@@ -107,8 +107,8 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             android:background="@drawable/button_style"
-            android:paddingLeft="20dp"
             android:text="Surveys"
+            android:textAlignment="center"
             android:textColor="#666666"
             android:textSize="30sp"
             android:visibility="visible" />
@@ -133,12 +133,13 @@
         android:textSize="25sp" />
 
     <Button
-        android:id="@+id/Setting"
+        android:id="@+id/settingSleepTime"
         android:layout_width="130dp"
         android:layout_height="50dp"
         android:layout_gravity="center_horizontal"
         android:background="@drawable/button_style"
         android:text="Sleep time"
+        android:textAlignment="center"
         android:textColor="#666666"
         android:textSize="18sp" />
 

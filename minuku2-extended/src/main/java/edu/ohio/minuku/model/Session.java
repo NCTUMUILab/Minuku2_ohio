@@ -1,7 +1,5 @@
 package edu.ohio.minuku.model;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 
 public class Session {

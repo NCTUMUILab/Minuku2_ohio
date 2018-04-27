@@ -73,10 +73,10 @@
         <activity android:name=".controller.home"></activity>
         <activity android:name=".controller.timer_move"></activity>
         <activity android:name=".controller.timer_site"></activity>
-        <activity android:name=".controller.Ohio.sleepingohio"></activity>
-        <activity android:name=".controller.Ohio.recordinglistohio"></activity>
-        <activity android:name=".controller.Ohio.AnnotateSessionActivity"></activity>
-        <activity android:name=".controller.Ohio.SurveyActivity"></activity>
+        <activity android:name=".controller.sleepingohio"></activity>
+        <activity android:name=".controller.TripListActivity"></activity>
+        <activity android:name=".controller.AnnotateSessionActivity"></activity>
+        <activity android:name=".controller.SurveyActivity"></activity>
 
         <activity android:name=".MainActivity"
             android:label="@string/app_name"
@@ -135,25 +135,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
-        <receiver
-            android:name=".Receiver.ConnectivityChangeReceiver"
-            android:enabled="true" >
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-            </intent-filter>
-        </receiver>
-
-        <receiver
-            android:name=".Receiver.DateChangedReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.DATE_CHANGED" />
-                <action android:name="android.intent.action.TIME_SET" />
-            </intent-filter>
-        </receiver>
-
 
     <!--
             <receiver

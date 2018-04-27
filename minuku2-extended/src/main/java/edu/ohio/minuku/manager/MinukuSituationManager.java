@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minukucore.event.ActionEvent;
 import edu.ohio.minukucore.event.IsDataExpectedEvent;
 import edu.ohio.minukucore.event.NoDataChangeEvent;
@@ -62,11 +61,11 @@ public class MinukuSituationManager implements SituationManager {
 
     @Override
     public void onStateChange(StreamSnapshot snapshot, StateChangeEvent aStateChangeEvent) {
-        Log.d(TAG, "Calling is state change event on situation manager "
-                + "Type:" + aStateChangeEvent.getType());
+        //Log.d(TAG, "Calling is state change event on situation manager "
+//                + "Type:" + aStateChangeEvent.getType());
         if(!registeredSituationMap.containsKey(aStateChangeEvent.getType())) {
-            Log.d(TAG, "Situation list for (state change)" +
-                    aStateChangeEvent.getType() + " is null. Returning.");
+            //Log.d(TAG, "Situation list for (state change)" +
+//                    aStateChangeEvent.getType() + " is null. Returning.");
             return;
         }
         for(Situation situation: registeredSituationMap.get(aStateChangeEvent.getType())) {
@@ -80,15 +79,15 @@ public class MinukuSituationManager implements SituationManager {
 
     @Override
     public void onNoDataChange(StreamSnapshot snapshot, NoDataChangeEvent aNoDataChangeEvent) {
-        Log.d(TAG, "Calling no data change event on situation manager "
-                + "Type:" + aNoDataChangeEvent.getType());
+        //Log.d(TAG, "Calling no data change event on situation manager "
+//                + "Type:" + aNoDataChangeEvent.getType());
         if(!registeredSituationMap.containsKey(aNoDataChangeEvent.getType())) {
-            Log.d(TAG, "Situation list for (no data change)" +
-                    aNoDataChangeEvent.getType() + " is null. Returning.");
+            //Log.d(TAG, "Situation list for (no data change)" +
+//                    aNoDataChangeEvent.getType() + " is null. Returning.");
             return;
         }
         for(Situation situation: registeredSituationMap.get(aNoDataChangeEvent.getType())) {
-            Log.d(TAG, "Creation action event for situation " + situation.getClass());
+            //Log.d(TAG, "Creation action event for situation " + situation.getClass());
             ActionEvent actionEvent = situation.assertSituation(snapshot, aNoDataChangeEvent);
             if(actionEvent != null) {
                 EventBus.getDefault().post(actionEvent);
@@ -99,11 +98,11 @@ public class MinukuSituationManager implements SituationManager {
     @Override
     public void onIsDataExpected(StreamSnapshot snapshot,
                                  IsDataExpectedEvent aIsDataExpectedEvent) {
-        Log.d(TAG, "Calling is data expected event on situation manager "
-                + "Type:" + aIsDataExpectedEvent.getType());
+        //Log.d(TAG, "Calling is data expected event on situation manager "
+//                + "Type:" + aIsDataExpectedEvent.getType());
         if(!registeredSituationMap.containsKey(aIsDataExpectedEvent.getType())) {
-            Log.d(TAG, "Situation list for (data expected)"
-                    + aIsDataExpectedEvent.getType() + " is null. Returning.");
+            //Log.d(TAG, "Situation list for (data expected)"
+//                    + aIsDataExpectedEvent.getType() + " is null. Returning.");
             return;
         }
         for(Situation situation: registeredSituationMap.get(aIsDataExpectedEvent.getType())) {
@@ -118,19 +117,19 @@ public class MinukuSituationManager implements SituationManager {
     @Override
     public <T extends Situation> boolean register(T s) throws DataRecordTypeNotFound {
 
-        Log.d(TAG, "Registering situation " + s.getClass().getSimpleName().toString());
+        //Log.d(TAG, "Registering situation " + s.getClass().getSimpleName().toString());
 
         for(Class<? extends DataRecord> type: s.dependsOnDataRecordType()) {
             try {
                 MinukuStreamManager.getInstance().getStreamFor(type);
-                Log.d(TAG, "Registered situation successfully: " +
-                        s.getClass().getSimpleName().toString());
+                //Log.d(TAG, "Registered situation successfully: " +
+//                        s.getClass().getSimpleName().toString());
                 if(!registeredSituationMap.containsKey(type)) {
                     registeredSituationMap.put(type, new HashSet<Situation>());
                 }
                 return registeredSituationMap.get(type).add(s);
             } catch (StreamNotFoundException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 throw new DataRecordTypeNotFound();
             }
         }

@@ -13,6 +13,7 @@ import com.opencsv.CSVWriter;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -64,18 +65,16 @@ public class ActivityRecognitionService extends IntentService {
     public ActivityRecognitionService() {
         super("ActivityRecognitionService");
 
-        Log.d("ARService", "[test AR service start]ActivityRecognitionService starts again! !");
-
-        //mActivityRecognitionManager = ContextManager.getActivityRecognitionManager();
+//        Log.d("ARService", "[test AR service start]ActivityRecognitionService starts again! !");
 
         if (!isServiceRunning()){
             serviceInstance = this;
-            Log.d("ARService", "[test AR service start] the servic is not running, start replay");
+//            Log.d("ARService", "[test AR service start] the servic is not running, start replay");
 
             //testing the record in csv file
 //            startReplayARRecordTimer();
         }else {
-            Log.d("ARService", "[test AR service start] the servic is arleady running, do not start replay");
+//            Log.d("ARService", "[test AR service start] the servic is arleady running, do not start replay");
         }
 
 //        startARRecordExpirationTimer();
@@ -84,7 +83,7 @@ public class ActivityRecognitionService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        Log.d(TAG, "[test replay] entering onHandleIntent");
+//        Log.d(TAG, "[test replay] entering onHandleIntent");
 
         /**  move to TriggerManager  **/
         //TODO triggerManager situationManager, triggerManager: replace ModeWork.work. , situationManager: replace ModeWork.condition. 放transportationManager(In Minuku).
@@ -92,10 +91,11 @@ public class ActivityRecognitionService extends IntentService {
             try {
                 mActivityRecognitionStreamGenerator = (ActivityRecognitionStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(ActivityRecognitionDataRecord.class);
             }catch (StreamNotFoundException e){
-                e.printStackTrace();
+//                e.printStackTrace();
             }
             ActivityRecognitionResult activity = ActivityRecognitionResult.extractResult(intent);
 
+            //TODO uncomment them when we stop testing
             mProbableActivities = activity.getProbableActivities();
             mMostProbableActivity = activity.getMostProbableActivity();
             detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
@@ -107,23 +107,18 @@ public class ActivityRecognitionService extends IntentService {
             record.setMostProbableActivity(mMostProbableActivity);
             record.setDetectedtime(detectedtime);
 
-
-            Log.d(TAG, "[test replay] [test ActivityRecognition]" +   mMostProbableActivity.toString());
             try {
                 if (mProbableActivities != null && mMostProbableActivity != null){
 
                      /*  cancel setting because we want to directly feed activity data in the test file */
                     mActivityRecognitionStreamGenerator.setActivitiesandDetectedtime(mProbableActivities, mMostProbableActivity, detectedtime);
 
-
-                    Log.d(TAG, "[test replay] before store to CSV in AR Service");
                     //write transportation mode with the received activity data
                     StoreToCSV(new Date().getTime(), record, record);
 
                 }
 
             }catch(Exception e){
-                e.printStackTrace();
             }
 
             stopARRecordExpirationTimer();
@@ -135,7 +130,7 @@ public class ActivityRecognitionService extends IntentService {
     public void RePlayActivityRecordTimerTask() {
 
 
-        Log.d("ARService", "[test AR service start]RePlayActivityRecordTimerTask starts again! !");
+//        Log.d("ARService", "[test AR service start]RePlayActivityRecordTimerTask starts again! !");
 
         ReplayTimerTask = new TimerTask() {
 
@@ -158,7 +153,7 @@ public class ActivityRecognitionService extends IntentService {
                         mMostProbableActivity = activityRecognitionDataRecord.getMostProbableActivity();
                         detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
 
-                        Log.d("ARService", "[test replay] test trip going to feed " +   activityRecognitionDataRecord.getDetectedtime() +  " :"  +  activityRecognitionDataRecord.getProbableActivities()  +  " : " +activityRecognitionDataRecord.getMostProbableActivity()    + " at index " + activityRecordCurIndex  + " to the AR streamgenerator");
+//                        Log.d("ARService", "[test replay] test trip going to feed " +   activityRecognitionDataRecord.getDetectedtime() +  " :"  +  activityRecognitionDataRecord.getProbableActivities()  +  " : " +activityRecognitionDataRecord.getMostProbableActivity()    + " at index " + activityRecordCurIndex  + " to the AR streamgenerator");
 
                         //user the record from mActivityRecognitionRecords to update the  mActivityRecognitionStreamGenerator
                         mActivityRecognitionStreamGenerator.setActivitiesandDetectedtime(mProbableActivities, mMostProbableActivity, detectedtime);
@@ -169,7 +164,7 @@ public class ActivityRecognitionService extends IntentService {
 
 
                     }catch (StreamNotFoundException e){
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
 
 
@@ -200,7 +195,7 @@ public class ActivityRecognitionService extends IntentService {
                     try {
                         mActivityRecognitionStreamGenerator = (ActivityRecognitionStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(ActivityRecognitionDataRecord.class);
                     }catch (StreamNotFoundException e){
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
 
                     ActivityRecognitionDataRecord activityRecognitionDataRecord
@@ -352,10 +347,12 @@ public class ActivityRecognitionService extends IntentService {
 
             csv_writer.close();
 
-        }catch (Exception e){
+        }catch (IOException e){
+            e.printStackTrace();
+        }/*catch (Exception e){
             e.printStackTrace();
             android.util.Log.e(TAG, "exception", e);
-        }
+        }*/
     }
 
 

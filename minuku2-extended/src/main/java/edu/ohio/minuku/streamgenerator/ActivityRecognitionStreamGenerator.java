@@ -222,6 +222,7 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
 //                mDAO.query_counting();
             } catch (DAOException e) {
                 e.printStackTrace();
+                Log.e(TAG, "exception", e);
                 return false;
             }
 

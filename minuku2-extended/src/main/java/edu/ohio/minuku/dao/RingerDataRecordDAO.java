@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import java.util.List;
 import java.util.UUID;
@@ -45,7 +44,7 @@ public class RingerDataRecordDAO implements DAO<RingerDataRecord> {
     @Override
     public void add(RingerDataRecord entity) throws DAOException {
 
-        Log.d(TAG, "Adding Ringer data record.");
+//        Log.d(TAG, "Adding Ringer data record.");
 
         ContentValues values = new ContentValues();
 
@@ -66,7 +65,7 @@ public class RingerDataRecordDAO implements DAO<RingerDataRecord> {
             db.insert(DBHelper.ringer_table, null, values);
         }
         catch(NullPointerException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             values.clear();
@@ -97,12 +96,12 @@ public class RingerDataRecordDAO implements DAO<RingerDataRecord> {
         int StreamVolumeSystemrow = StreamVolumeSystemCursor.getCount();
         int StreamVolumeSystemcol = StreamVolumeSystemCursor.getColumnCount();
 
-        Log.d(TAG,"RingerModerow : " + RingerModerow +" RingerModecol : " + RingerModecol+ "StreamVolumeMusicrow"+ StreamVolumeMusicrow
-                +" StreamVolumeMusiccol : " + StreamVolumeMusiccol+ " StreamVolumeNotificationrow : " + StreamVolumeNotificationrow
-                +" StreamVolumeNotificationcol : " + StreamVolumeNotificationcol+" StreamVolumeRingrow : " + StreamVolumeRingrow
-                +" StreamVolumeRingcol : " + StreamVolumeRingcol +" StreamVolumeVoicecallrow : " + StreamVolumeVoicecallrow
-                +" StreamVolumeVoicecallcol : " + StreamVolumeVoicecallcol+" StreamVolumeSystemrow : " + StreamVolumeSystemrow
-                +" StreamVolumeSystemcol : " + StreamVolumeSystemcol);
+//        Log.d(TAG,"RingerModerow : " + RingerModerow +" RingerModecol : " + RingerModecol+ "StreamVolumeMusicrow"+ StreamVolumeMusicrow
+//                +" StreamVolumeMusiccol : " + StreamVolumeMusiccol+ " StreamVolumeNotificationrow : " + StreamVolumeNotificationrow
+//                +" StreamVolumeNotificationcol : " + StreamVolumeNotificationcol+" StreamVolumeRingrow : " + StreamVolumeRingrow
+//                +" StreamVolumeRingcol : " + StreamVolumeRingcol +" StreamVolumeVoicecallrow : " + StreamVolumeVoicecallrow
+//                +" StreamVolumeVoicecallcol : " + StreamVolumeVoicecallcol+" StreamVolumeSystemrow : " + StreamVolumeSystemrow
+//                +" StreamVolumeSystemcol : " + StreamVolumeSystemcol);
     }
 
     @Override

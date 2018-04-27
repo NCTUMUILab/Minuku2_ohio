@@ -122,8 +122,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     LocationDataRecordDAO mDAO;
 
-    public static LocationDataRecord toCheckFamiliarOrNotLocationDataRecord;
-
     private SharedPreferences sharedPrefs;
 
     public LocationStreamGenerator(Context applicationContext) {
@@ -141,8 +139,10 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
         startIndoorOutdoor = false;
 
+        locForIndoorOutdoor = new ArrayList<LatLng>();
+
 //        createCSV();
-        sharedPrefs = context.getSharedPreferences("edu.umich.minuku_2", context.MODE_PRIVATE);
+        sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
 
         //for replay location record
 //        startReplayLocationRecordTimer();
@@ -185,8 +185,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             //the lastposition update value timestamp
             lastposupdate = new Date().getTime();
 
-            StoreToCSV(lastposupdate,location.getLatitude(),location.getLongitude(),location.getAccuracy());
-
             Log.d(TAG,"onLocationChanged latestLatitude : "+ latestLatitude +" latestLongitude : "+ latestLongitude);
             Log.d(TAG,"onLocationChanged location : "+this.location);
 
@@ -214,9 +212,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
         this.latestLatitude.set(latestLatitudeFromSharedPref);
         this.latestLongitude.set(latestLongitudeFromSharedPref);
-
-//        this.latestLatitude.set(-999.0);
-//        this.latestLongitude.set(-999.0);
 
         if (GooglePlayServicesUtil.isGooglePlayServicesAvailable(mApplicationContext)
                 == ConnectionResult.SUCCESS) {
@@ -314,7 +309,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 //        Log.e(TAG,"[test replay] newlocationDataRecord latestLatitude : "+ latestLatitude.get()+" latestLongitude : "+ latestLongitude.get() + "  session_id " +  session_id);
 
         MinukuStreamManager.getInstance().setLocationDataRecord(newlocationDataRecord);
-        toCheckFamiliarOrNotLocationDataRecord = newlocationDataRecord;
 
         mStream.add(newlocationDataRecord);
         Log.d(TAG, "Location to be sent to event bus" + newlocationDataRecord);
@@ -407,36 +401,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         }
     }
 
-    public void StoreToCSV(long timestamp, double latitude, double longitude, float accuracy){
-
-        Log.d(TAG,"StoreToCSV");
-
-        String sFileName = "LocationOnChange.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-//            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy"});
-            String timeString = getTimeString(timestamp);
-
-            data.add(new String[]{String.valueOf(timestamp),timeString,String.valueOf(latitude),String.valueOf(longitude),String.valueOf(accuracy)});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-    }
-
     public static String getTimeString(long time){
 
         SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
@@ -447,7 +411,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     public static void addLocationDataRecord(LocationDataRecord record) {
         getLocationDataRecords().add(record);
-        android.util.Log.d("LocationStreamGenerator", "[test replay] adding " +   record.toString()  + " to LocationRecords in LocationStreamGenerator");
+        Log.d("LocationStreamGenerator", "[test replay] adding " +   record.toString()  + " to LocationRecords in LocationStreamGenerator");
     }
 
     public static ArrayList<LocationDataRecord> getLocationDataRecords() {

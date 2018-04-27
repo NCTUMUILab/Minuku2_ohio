@@ -1,7 +1,5 @@
 package edu.ohio.minuku.model.DataRecord;
 
-import android.util.Log;
-
 import java.util.Calendar;
 import java.util.Date;
 
@@ -50,9 +48,9 @@ public class TelephonyDataRecord implements DataRecord {
         this.LTESignalStrength = LTESignalStrength;
         this.CdmaSignalStrengthLevel = CdmaSignalStrengthLevel;
 
-        Log.d(TAG,"mNetworkOperatorName : "+ NetworkOperatorName +" mCallState : "+ CallState+" mPhoneSignalType : "+ PhoneSignalType
-                +" mGsmSignalStrength : "+ GsmSignalStrength+" mLTESignalStrength : "+ LTESignalStrength
-                +" mCdmaSignalStrenthLevel : "+ CdmaSignalStrengthLevel);
+//        Log.d(TAG,"mNetworkOperatorName : "+ NetworkOperatorName +" mCallState : "+ CallState+" mPhoneSignalType : "+ PhoneSignalType
+//                +" mGsmSignalStrength : "+ GsmSignalStrength+" mLTESignalStrength : "+ LTESignalStrength
+//                +" mCdmaSignalStrenthLevel : "+ CdmaSignalStrengthLevel);
     }
 
     private long getmillisecondToHour(long timeStamp){

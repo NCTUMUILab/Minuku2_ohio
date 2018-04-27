@@ -45,7 +45,7 @@ public class TransportationModeDAO implements DAO<TransportationModeDataRecord>{
 //                TransportationModeDAO.instance = new TransportationModeDAO();
                 Log.d("TransportationModeDAO","getInstance without context.");
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
         return TransportationModeDAO.instance;
@@ -58,7 +58,7 @@ public class TransportationModeDAO implements DAO<TransportationModeDataRecord>{
 
     @Override
     public void add(TransportationModeDataRecord entity) throws DAOException {
-        Log.d(TAG, "Adding transportationMode data record.");
+//        Log.d(TAG, "Adding transportationMode data record.");
 
         ContentValues values = new ContentValues();
 
@@ -73,7 +73,7 @@ public class TransportationModeDAO implements DAO<TransportationModeDataRecord>{
             db.insert(DBHelper.transportationMode_table, null, values);
         }
         catch(NullPointerException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             values.clear();
@@ -88,7 +88,7 @@ public class TransportationModeDAO implements DAO<TransportationModeDataRecord>{
         int transportationrow = transportationCursor.getCount();
         int transportationcol = transportationCursor.getColumnCount();
 
-        Log.d(TAG,"transportationrow : " + transportationrow +" transportationcol : " + transportationcol);
+//        Log.d(TAG,"transportationrow : " + transportationrow +" transportationcol : " + transportationcol);
 
     }
 

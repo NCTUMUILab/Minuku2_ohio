@@ -31,7 +31,6 @@ import java.util.concurrent.Future;
 
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.config.UserPreferences;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.model.UserSubmissionStats;
 import edu.ohio.minukucore.dao.DAO;
 import edu.ohio.minukucore.dao.DAOException;
@@ -77,7 +76,7 @@ public class UserSubmissionStatsDAO implements DAO<UserSubmissionStats> {
     @Override
     public void update(UserSubmissionStats oldEntity, UserSubmissionStats newEntity)
             throws DAOException {
-        Log.d(TAG, "Adding note data record.");
+//        Log.d(TAG, "Adding note data record.");
         /*
         Firebase userStatsRef = new Firebase(Constants.FIREBASE_URL_USER_SUBMISSION_STATS)
                 .child(myUserEmail)

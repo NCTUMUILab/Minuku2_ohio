@@ -53,6 +53,8 @@ public class Constants {
     public static final String DATE_FORMAT_HOUR_MIN_AMPM = "hh:mm a";
     public static final String DATE_FORMAT_DATE_TEXT = "MMM dd";
     public static final String DATE_FORMAT_DATE_TEXT_HOUR_MIN = "MMM dd HH:mm";
+    public static final String DATE_FORMAT_DATE_TEXT_HOUR_MIN_AMPM = "MMM dd hh:mm a";
+
     public static final String DATE_FORMAT_DATE_TEXT_HOUR_MIN_SEC = "MMM dd  HH:mm:ss";
     public static final int DATA_FORMAT_TYPE_NOW=0;
     public static final int DATA_FORMAT_TYPE_DAY=1;
@@ -169,21 +171,13 @@ public class Constants {
     public static final String BUNDLE_KEY_FOR_QUESTIONNAIRE_ID = "QUESTIONNAIRE_ID";
     public static final String BUNDLE_KEY_FOR_NOTIFICATION_SOURCE = "NOTIFICATION_SOURCE";
     public static final String APP_NAME = "DMS";
+    public static final String APP_FULL_NAME = "Daily Mobility Study";
     public static final String RUNNING_APP_DECLARATION = APP_NAME + " is running in the background";
     public static final long INTERNAL_LOCATION_UPDATE_FREQUENCY = 1 * 10 * 1000; // 1 * 300 * 1000
     public static final float LOCATION_MINUMUM_DISPLACEMENT_UPDATE_THRESHOLD = 50 ;
 
-    public static final String DIABETES_LOG_NOTIFICATION_SOURCE = "DIABETES_LOG";
-
     /* from NCTU */
-    public static String current_timer_state_tag = "current"; //for getTag
-
-    public static String current_timer_state = "home";
-
-    public final static String DATE_FORMAT_for_storing = "yyyy-MM-dd HH:mm:ss";
-
-    public final static String home_tag = "home";
-    public final static String timer_move_tag = "timer_move";
+    public static final String NOT_A_NUMBER = "NA";
 
     public static String DEVICE_ID = "NA";
     public static String USER_ID = "N";
@@ -191,7 +185,7 @@ public class Constants {
     public static String Email = "";
 
     public static int downloadedDayInSurvey = -1;
-    public static int daysInSurvey = -1;
+    public static int daysInSurvey;
     public static long midnightstart = -999;
     public static long FirstTime_ToInitializeIntervalSurvey = -999;
 
