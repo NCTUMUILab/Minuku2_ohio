@@ -84,7 +84,7 @@ import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku_2.controller.SurveyActivity;
 import edu.ohio.minuku_2.controller.TripListActivity;
-import edu.ohio.minuku_2.controller.sleepingohio;
+import edu.ohio.minuku_2.controller.Sleepingohio;
 import edu.ohio.minuku_2.service.BackgroundService;
 
 public class MainActivity extends AppCompatActivity {
@@ -296,7 +296,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startSettingSleepingTime(){
-        Intent intent = new Intent(this, sleepingohio.class);  //usage
+
+        Intent intent = new Intent(this, Sleepingohio.class);  //usage
         startActivity(intent);
     }
 
@@ -612,7 +613,7 @@ public class MainActivity extends AppCompatActivity {
             return String.valueOf(date);
     }
 
-    //to view sleepingohio
+    //to view Sleepingohio
     private Button.OnClickListener ohio_annotateing = new Button.OnClickListener() {
         public void onClick(View v) {
             Log.e(TAG,"recordinglist_ohio clicked");
@@ -622,12 +623,12 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    //to view sleepingohio
+    //to view Sleepingohio
     private Button.OnClickListener settingSleepTimeing = new Button.OnClickListener() {
         public void onClick(View v) {
-            Log.e(TAG,"sleepingohio clicked");
+            Log.e(TAG,"Sleepingohio clicked");
 
-            startActivityForResult(new Intent(MainActivity.this, sleepingohio.class), requestCode_setting);
+            startActivityForResult(new Intent(MainActivity.this, Sleepingohio.class), requestCode_setting);
 
             MainActivity.this.finish();
         }

@@ -128,7 +128,7 @@ public class Utils {
         long period = (startTimeLong-endTimeLong)/6;
         Log.d(TAG, "period : "+period);
 
-        sharedPrefs.edit().putLong("period", period).apply();
+        sharedPrefs.edit().putLong("PeriodLong", period).apply();
 
     }
 
@@ -274,7 +274,7 @@ public class Utils {
         long sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepstartTimeWithDate, sdf);
         long sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepingendTimeWithDate, sdf);
 
-        long period = sharedPrefs.getLong("period", 0);
+        long period = sharedPrefs.getLong("PeriodLong", 0);
 
         if(triggeredTimestamp >= sleepEndTimeLong && triggeredTimestamp <= (sleepEndTimeLong +period)){
 

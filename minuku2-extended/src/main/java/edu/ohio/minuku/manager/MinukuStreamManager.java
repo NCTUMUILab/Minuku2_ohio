@@ -215,6 +215,7 @@ public class MinukuStreamManager implements StreamManager {
 
         //the first time we see incoming transportation mode data
         if (this.transportationModeDataRecord==null){
+
             this.transportationModeDataRecord = transportationModeDataRecord;
             //Log.d(TAG, "test combine test trip original null updated to " + this.transportationModeDataRecord.getConfirmedActivityString());
         }

@@ -69,11 +69,7 @@
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyB18KD96La4JEUy-RZQteYPULSfuXfxwGo" />
 
-        <activity android:name=".controller.report"></activity>
-        <activity android:name=".controller.home"></activity>
-        <activity android:name=".controller.timer_move"></activity>
-        <activity android:name=".controller.timer_site"></activity>
-        <activity android:name=".controller.sleepingohio"></activity>
+        <activity android:name=".controller.Sleepingohio"></activity>
         <activity android:name=".controller.TripListActivity"></activity>
         <activity android:name=".controller.AnnotateSessionActivity"></activity>
         <activity android:name=".controller.SurveyActivity"></activity>
@@ -111,21 +107,10 @@
         <activity android:name="com.desmond.squarecamera.CameraActivity" />
 
         <service
-            android:name=".service.SurveyTriggerService"
-            android:enabled="true"
-            android:exported="true">
-        </service>
-
-        <service
             android:name=".service.BackgroundService"
             android:enabled="true"
             android:exported="true">
         </service>
-
-        <!--<service android:name="edu.ohio.minuku.manager.MinukuNotificationManager"-->
-            <!--android:enabled="true"-->
-            <!--android:exported="true">-->
-        <!--</service>-->
 
         <receiver
             android:name=".BootCompleteReceiver"
@@ -135,19 +120,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
-    <!--
-            <receiver
-                android:name=".Receiver.WifiReceiver"
-                android:enabled="true"
-                android:exported="true">
-                <intent-filter>
-                    <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
-                    <action android:name="android.net.wifi.STATE_CHANGE"/>
-                    <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
-                </intent-filter>
-            </receiver>
-    -->
 
         <meta-data
             android:name="com.google.android.gms.version"

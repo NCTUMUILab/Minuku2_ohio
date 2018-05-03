@@ -57,7 +57,7 @@ import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
 import edu.ohio.minuku_2.Receiver.WifiReceiver;
 import edu.ohio.minuku_2.Utils;
 import edu.ohio.minuku_2.controller.TripListActivity;
-import edu.ohio.minuku_2.controller.sleepingohio;
+import edu.ohio.minuku_2.controller.Sleepingohio;
 import edu.ohio.minuku_2.manager.InstanceManager;
 import edu.ohio.minuku_2.manager.SurveyTriggerManager;
 
@@ -141,7 +141,7 @@ public class BackgroundService extends Service {
                 runMainThread();
                 InstanceManager.getInstance(this);
                 SessionManager.getInstance(this);
-                SurveyTriggerManager.getInstance(this);
+                SurveyTriggerManager.getInstance(getApplicationContext());
                 Log.d(TAG, "Managers have been initialized. ");
             }
 
@@ -150,7 +150,6 @@ public class BackgroundService extends Service {
 //            FileHelper.readTestFile();
         }
 
-        //TODO Keep eye on the service is working or not.
         return START_REDELIVER_INTENT;
     }
 
@@ -220,7 +219,7 @@ public class BackgroundService extends Service {
         bigTextStyle.setBigContentTitle("DMS");
         bigTextStyle.bigText(text);
 
-        Intent resultIntent = new Intent(this, sleepingohio.class);
+        Intent resultIntent = new Intent(this, Sleepingohio.class);
         PendingIntent pending = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Notification.Builder noti = new Notification.Builder(this);

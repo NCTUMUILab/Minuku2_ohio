@@ -30,9 +30,9 @@ import edu.ohio.minuku_2.Utils;
  * Created by Lawrence on 2017/7/5.
  */
 
-public class sleepingohio extends AppCompatActivity {
+public class Sleepingohio extends AppCompatActivity {
 
-    final String TAG = "sleepingohio";
+    final String TAG = "Sleepingohio";
 
     private Context mContext;
     private Button sleepStarttime, sleepEndtime, confirm;
@@ -42,7 +42,7 @@ public class sleepingohio extends AppCompatActivity {
 
     private SharedPreferences sharedPrefs;
 
-    public sleepingohio(){}
+    public Sleepingohio(){}
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +52,6 @@ public class sleepingohio extends AppCompatActivity {
         mContext = getApplicationContext();
 
         initsettingohio();
-
     }
 
     public void initsettingohio(){
@@ -74,12 +73,13 @@ public class sleepingohio extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
+
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
 
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
 
-            sleepingohio.this.finish();
+            Sleepingohio.this.finish();
 
             return true;
         }
@@ -94,24 +94,24 @@ public class sleepingohio extends AppCompatActivity {
             Log.d(TAG, "sleepEndtime from button : "+sleepEndtime.getText());
 
             if(sleepStarttime.getText().equals("BED TIME"))
-                Toast.makeText(sleepingohio.this,"Please select your bed time", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Sleepingohio.this,"Please select your bed time", Toast.LENGTH_SHORT).show();
             else if(sleepEndtime.getText().equals("WAKE TIME"))
-                Toast.makeText(sleepingohio.this,"Please select your wake time", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Sleepingohio.this,"Please select your wake time", Toast.LENGTH_SHORT).show();
             else {
 
                 SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM); //, Locale.US
                 long sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepStarttime.getText().toString(), sdf);
                 long sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepEndtime.getText().toString(), sdf);
 
-                Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeRaw);
-                Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeRaw);
+                Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
+                Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
 
                 SimpleDateFormat sdf2 = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
                 sleepStartTimeRaw = ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf2);
                 sleepEndTimeRaw = ScheduleAndSampleManager.getTimeString(sleepEndTimeLong, sdf2);
 
-//                Log.d(TAG, "SleepingStartTime Raw : "+sleepStartTimeRaw);
-//                Log.d(TAG, "SleepingEndTime Raw : "+sleepEndTimeRaw);
+                Log.d(TAG, "SleepingStartTime Raw : "+sleepStartTimeRaw);
+                Log.d(TAG, "SleepingEndTime Raw : "+sleepEndTimeRaw);
 
                 boolean firstTimeEnterSleepTimePage = sharedPrefs.getBoolean("FirstTimeEnterSleepTimePage", false);
 
@@ -123,9 +123,23 @@ public class sleepingohio extends AppCompatActivity {
                 sharedPrefs.edit().putString("SleepingStartTime", sleepStartTimeRaw).apply();
                 sharedPrefs.edit().putString("SleepingEndTime", sleepEndTimeRaw).apply();
 
+                SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+                String sleepStartDate = ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf_date);
+                String endStartDate = ScheduleAndSampleManager.getTimeString(sleepEndTimeLong, sdf_date);
+
+                //imply that the user always sleep over midnight
+                if(sleepStartDate.equals(endStartDate)){
+
+                    sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
+                }else{
+
+                    sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
+                }
+
+
                 Utils.settingAllDaysIntervalSampling(getApplicationContext());
 
-                Intent intent = new Intent(sleepingohio.this, MainActivity.class);
+                Intent intent = new Intent(Sleepingohio.this, MainActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("SleepingStartTime", sleepStartTimeRaw);
                 bundle.putString("SleepingEndTime", sleepEndTimeRaw);
@@ -133,7 +147,7 @@ public class sleepingohio extends AppCompatActivity {
 
                 setResult(1, intent);
 
-                sleepingohio.this.finish();
+                Sleepingohio.this.finish();
 
                 startActivity(intent);
             }
@@ -208,7 +222,7 @@ public class sleepingohio extends AppCompatActivity {
             final Calendar c = Calendar.getInstance();
             int hour = c.get(Calendar.HOUR_OF_DAY);
             int minute = c.get(Calendar.MINUTE);
-            new CustomTimePickerDialog(sleepingohio.this, new TimePickerDialog.OnTimeSetListener(){
+            new CustomTimePickerDialog(Sleepingohio.this, new TimePickerDialog.OnTimeSetListener(){
                 @Override
                 public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 
@@ -253,7 +267,7 @@ public class sleepingohio extends AppCompatActivity {
             final Calendar c = Calendar.getInstance();
             int hour = c.get(Calendar.HOUR_OF_DAY);
             int minute = c.get(Calendar.MINUTE);
-            new CustomTimePickerDialog(sleepingohio.this, new TimePickerDialog.OnTimeSetListener(){
+            new CustomTimePickerDialog(Sleepingohio.this, new TimePickerDialog.OnTimeSetListener(){
                 @Override
                 public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 
