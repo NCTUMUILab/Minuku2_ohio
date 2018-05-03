@@ -268,21 +268,6 @@ public class WifiReceiver extends BroadcastReceiver {
                     if(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected == true) {
 
                         sendingDumpData();
-
-                        //setting nextime interval
-                        //improve it to get the value from the server
-//                        latestUpdatedTime = endTime;
-                        startTime = latestUpdatedTime;
-
-                        long nextinterval = Constants.MILLISECONDS_PER_HOUR; //1 hr
-
-                        endTime = startTime + nextinterval;
-
-                        //Log.d(TAG,"latestUpdatedTime : " + latestUpdatedTime);
-                        //Log.d(TAG,"latestUpdatedTime + 1 hour : " + latestUpdatedTime + nextinterval);
-
-                        //update the last data's startTime.
-                        sharedPrefs.edit().putLong("lastSentStarttime", startTime).apply();
                     }
                 }
 
@@ -589,6 +574,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
         JSONObject data = new JSONObject();
 
+        long endTimeOfJson = -999;
+
         try {
             data.put("userid", Constants.USER_ID);
             data.put("group_number", Constants.GROUP_NUM);
@@ -601,6 +588,8 @@ public class WifiReceiver extends BroadcastReceiver {
             data.put("EndTime", endTimeInSec);
             data.put("StartTimeString", getTimeString(startTime));
             data.put("EndTimeString", getTimeString(endTime));
+
+            endTimeOfJson = endTimeInSec;
         }catch (JSONException e){
             //e.printStackTrace();
         }
@@ -645,10 +634,28 @@ public class WifiReceiver extends BroadcastReceiver {
 
             long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
 
-            //update latestUpdatedTime; due to the format from the server is divided by 1000
-            //we get the time unit is second; thus, we have to convert into millis
-            latestUpdatedTime = fromServer * 1000;
+            //check the data is sent completely
+            if(endTimeOfJson == fromServer) {
 
+                //update latestUpdatedTime; due to the format from the server is divided by 1000
+                //we get the time unit is second; thus, we have to convert into millis
+                latestUpdatedTime = fromServer * 1000;
+
+                //setting nextime interval
+                //improve it to get the value from the server
+                startTime = latestUpdatedTime;
+
+                endTime = startTime + Constants.MILLISECONDS_PER_HOUR;
+
+                //Log.d(TAG,"latestUpdatedTime : " + latestUpdatedTime);
+                //Log.d(TAG,"latestUpdatedTime + 1 hour : " + latestUpdatedTime + nextinterval);
+
+                Log.d(TAG, "[show data response] next iteration startTime : " + startTime);
+                Log.d(TAG, "[show data response] next iteration endTime : " + endTime);
+
+                //update the last data's startTime.
+                sharedPrefs.edit().putLong("lastSentStarttime", startTime).apply();
+            }
         } catch (InterruptedException e) {
         } catch (ExecutionException e) {
         } catch (JSONException e){

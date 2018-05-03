@@ -194,8 +194,6 @@ public class Constants {
     public static String Interval_Sample = "Interval_Sample";
     public static String Setting_Interval_Sample = "Setting_Interval_Sample";
 
-    public static boolean tabpos = false;
-
     public static final String ACTIVITY_CONFIDENCE_CONNECTOR = ":";
 
 }
