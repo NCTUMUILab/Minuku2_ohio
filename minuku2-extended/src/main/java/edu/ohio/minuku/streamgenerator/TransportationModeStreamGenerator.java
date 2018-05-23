@@ -1,7 +1,6 @@
 package edu.ohio.minuku.streamgenerator;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
@@ -239,7 +238,15 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
         mStream.add(transportationModeDataRecord);
         Log.d(TAG, "TransportationMode to be sent to event bus" + transportationModeDataRecord);
 
-        MinukuStreamManager.getInstance().setTransportationModeDataRecord(transportationModeDataRecord);
+
+        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+        Constants.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey);
+
+        //TODO uncomment it when real testing
+        if(Constants.daysInSurvey != 0 && Constants.daysInSurvey != -1 && Constants.daysInSurvey != Constants.downloadedDayInSurvey) {
+
+            MinukuStreamManager.getInstance().setTransportationModeDataRecord(transportationModeDataRecord);
+        }
 
         // also post an event.
         EventBus.getDefault().post(transportationModeDataRecord);

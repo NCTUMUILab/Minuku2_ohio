@@ -153,6 +153,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     @Override
     public void onLocationChanged(Location location) {
+
         if (location != null) {
             Log.d(TAG, "GPS: "
                     + location.getLatitude() + ", "
@@ -186,7 +187,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             lastposupdate = new Date().getTime();
 
             Log.d(TAG,"onLocationChanged latestLatitude : "+ latestLatitude +" latestLongitude : "+ latestLongitude);
-            Log.d(TAG,"onLocationChanged location : "+this.location);
 
             if(startIndoorOutdoor){
                 LatLng latLng = new LatLng(latestLatitude.get(), latestLongitude.get());

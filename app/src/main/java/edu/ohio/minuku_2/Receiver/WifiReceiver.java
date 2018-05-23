@@ -92,6 +92,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
+    private String versionNumber = "v5";
+
     public static final int HTTP_TIMEOUT = 10000; // millisecond
     public static final int SOCKET_TIMEOUT = 20000; // millisecond
 
@@ -239,13 +241,12 @@ public class WifiReceiver extends BroadcastReceiver {
                     if(lastSentStarttime == 0){
                         //if it doesn't reponse the setting with initialize ones
                         //initialize
-                        long startstartTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,min));
+                        long startstartTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,0));
                         startTime = sharedPrefs.getLong("StartTime", startstartTime); //default
                         //Log.d(TAG,"StartTimeString : " + getTimeString(startTime));
 
-
                         //initialize
-                        long startendTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour+1,min));
+                        long startendTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour+1,0));
                         endTime = sharedPrefs.getLong("EndTime", startendTime);
                         //Log.d(TAG,"EndTimeString : " + getTimeString(endTime));
 
@@ -255,7 +256,7 @@ public class WifiReceiver extends BroadcastReceiver {
                         startTime = Long.valueOf(lastSentStarttime);
                         //Log.d(TAG,"StartTimeString : " + getTimeString(startTime));
 
-                        long nextinterval = 1 * 60 * 60000; //1 hr
+                        long nextinterval = Constants.MILLISECONDS_PER_HOUR; //1 hr
 
                         endTime = Long.valueOf(lastSentStarttime) + nextinterval;
                         //Log.d(TAG,"EndTimeString : " + getTimeString(endTime));
@@ -350,6 +351,8 @@ public class WifiReceiver extends BroadcastReceiver {
         //TODO improve it to get the real latest session id
         int latestSurveyLinkIdFromServer = sharedPrefs.getInt("latestSurveyLinkIdFromServer", 1);
 
+        Log.d(TAG, "[check query] latestSurveyLinkIdFromServer : "+ latestSurveyLinkIdFromServer);
+
         long timeOfData = -999;
 
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
@@ -362,6 +365,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
         int rows = surveyCursor.getCount();
 
+        Log.d(TAG, "[check query] latestSurveyLinkIdFromServer rows : "+ rows);
+
         if(rows!=0){
 
             try {
@@ -370,6 +375,8 @@ public class WifiReceiver extends BroadcastReceiver {
                 for (int i = 0; i < rows; i++) {
 
                     String timestamp = surveyCursor.getString(2);
+
+                    //same as openedTime might be null when the user missed it.
                     String clickedtime = surveyCursor.getString(3);
 
                     //convert into second
@@ -378,19 +385,26 @@ public class WifiReceiver extends BroadcastReceiver {
                     surveyJson.put("userid", Constants.USER_ID);
                     surveyJson.put("group_number", Constants.GROUP_NUM);
                     surveyJson.put("device_id", Constants.DEVICE_ID);
-
+                    surveyJson.put("version", versionNumber);
                     surveyJson.put("dataType", "SurveyLink");
 
                     surveyJson.put("triggerTime", timestampInSec);
                     surveyJson.put("triggerTimeString", ScheduleAndSampleManager.getTimeString(Long.valueOf(timestamp)));
 
-                    surveyJson.put("clickedtime", clickedtime.substring(0, clickedtime.length() - 3));
-                    surveyJson.put("clickedOrNot", surveyCursor.getString(5));
+                    surveyJson.put("clickedtime", clickedtime);
+                    /*if(!clickedtime.equals("")){
 
+                        surveyJson.put("clickedtime", clickedtime.substring(0, clickedtime.length() - 3));
+                    }else{
+
+                        surveyJson.put("clickedtime", clickedtime);
+                    }*/
+
+                    surveyJson.put("clickedOrNot", surveyCursor.getString(5));
 
                     surveyCursor.moveToNext();
 
-                    timeOfData = Long.valueOf(timestamp);
+                    timeOfData = Long.valueOf(timestampInSec);
                 }
             }catch (JSONException e){
 
@@ -400,7 +414,12 @@ public class WifiReceiver extends BroadcastReceiver {
 
             Log.d(TAG, "[show data response] SurveyLink data :"+surveyJson.toString());
 
-            CSVHelper.dataUploadingCSV("Survey Link", surveyJson.toString());
+            try {
+
+                CSVHelper.dataUploadingCSV("Survey Link", surveyJson.getString("triggerTimeString"));
+            }catch (JSONException e){
+
+            }
 
             String timeInServer;
 
@@ -419,8 +438,6 @@ public class WifiReceiver extends BroadcastReceiver {
                             "SurveyLink",
                             curr).get();
 
-                CSVHelper.dataUploadingCSV("Survey Link", "After sending : "+timeInServer);
-
                 Log.d(TAG, "[show data response] SurveyLink timeInServer : "+timeInServer);
 
                 JSONObject lasttimeInServerJson = new JSONObject(timeInServer);
@@ -429,9 +446,20 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
 
+//                CSVHelper.dataUploadingCSV("Survey Link", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
+
+                Log.d(TAG, "[check query] going to change the latest id");
+
+                Log.d(TAG, "[check query] timeOfData : " +timeOfData);
+                Log.d(TAG, "[check query] fromServer : " +fromServer);
+                Log.d(TAG, "[check query] timeOfData == fromServer ? "+ (timeOfData == fromServer));
+
                 if(timeOfData == fromServer){
 
                     latestSurveyLinkIdFromServer++;
+
+                    Log.d(TAG, "[check query] updated latestSurveyLinkIdFromServer "+ latestSurveyLinkIdFromServer);
+
                     sharedPrefs.edit().putInt("latestSurveyLinkIdFromServer", latestSurveyLinkIdFromServer).apply();
                 }
             } catch (InterruptedException e) {
@@ -481,6 +509,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 annotatedtripdata.put("userid", Constants.USER_ID);
                 annotatedtripdata.put("group_number", Constants.GROUP_NUM);
                 annotatedtripdata.put("device_id", Constants.DEVICE_ID);
+                annotatedtripdata.put("version", versionNumber);
 
                 annotatedtripdata.put("dataType", "Trip");
 
@@ -524,7 +553,12 @@ public class WifiReceiver extends BroadcastReceiver {
 //              "Annotations":{"openTimes":"[1519632082274]","submitTime":0,"ans1":"Walking outdoors.","ans2":"Yes","ans3":"Yes","ans4":"On time"}}
             Log.d(TAG, "[show data response] checking data annotatedtrip : "+annotatedtripdata.toString());
 
-            CSVHelper.dataUploadingCSV("Trip", annotatedtripdata.toString());
+            try {
+
+                CSVHelper.dataUploadingCSV("Trip", "Going to send the data with EndTime : " + annotatedtripdata.getString("EndTimeString"));
+            }catch (JSONException e){
+
+            }
 
             String lastTimeInServer;
 
@@ -545,16 +579,15 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 Log.d(TAG, "[show data response] Trip lastTimeInServer : " + lastTimeInServer);
 
-                CSVHelper.dataUploadingCSV("Trip", "After sending : " + lastTimeInServer);
-
                 JSONObject lasttimeInServerJson = new JSONObject(lastTimeInServer);
 
                 Log.d(TAG, "[show data response] before to next iteration check : " + Long.valueOf(lasttimeInServerJson.getString("lastinsert")));
 
                 long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
 
+//                CSVHelper.dataUploadingCSV("Trip", "After sending, getting from the server, the latest EndTime : " + ScheduleAndSampleManager.getTimeString(fromServer*Constants.MILLISECONDS_PER_SECOND));
 
-                if(endTimeOfJson == fromServer){
+                if(endTimeOfJson == fromServer * Constants.MILLISECONDS_PER_SECOND){
 
                     latestSessionidFromServer++;
 
@@ -577,9 +610,12 @@ public class WifiReceiver extends BroadcastReceiver {
         long endTimeOfJson = -999;
 
         try {
+
             data.put("userid", Constants.USER_ID);
             data.put("group_number", Constants.GROUP_NUM);
             data.put("device_id", Constants.DEVICE_ID);
+            data.put("version", versionNumber);
+            data.put("dataType", "Dump");
 
             long startTimeInSec = startTime/Constants.MILLISECONDS_PER_SECOND;
             long endTimeInSec = endTime/Constants.MILLISECONDS_PER_SECOND;
@@ -604,7 +640,11 @@ public class WifiReceiver extends BroadcastReceiver {
 
         Log.d(TAG,"[show data response] checking data Dump : "+ data.toString());
 
-        CSVHelper.dataUploadingCSV("Dump", data.toString());
+        try {
+            CSVHelper.dataUploadingCSV("Dump", "Going to send the data with EndTime : " + data.getString("EndTimeString"));
+        }catch (JSONException e){
+
+        }
 
         String curr = getDateCurrentTimeZone(new Date().getTime());
 
@@ -626,13 +666,13 @@ public class WifiReceiver extends BroadcastReceiver {
 
             Log.d(TAG, "[show data response] Dump lastTimeInServer : "+lastTimeInServer);
 
-            CSVHelper.dataUploadingCSV("Dump", "After sending : "+lastTimeInServer);
-
             JSONObject lasttimeInServerJson = new JSONObject(lastTimeInServer);
 
             Log.d(TAG, "[show data response] before to next iteration check : " + Long.valueOf(lasttimeInServerJson.getString("lastinsert")));
 
             long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
+
+//            CSVHelper.dataUploadingCSV("Dump", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
 
             //check the data is sent completely
             if(endTimeOfJson == fromServer) {
@@ -683,8 +723,18 @@ public class WifiReceiver extends BroadcastReceiver {
         protected void onPostExecute(String result) {
 
             Log.d(TAG, "[show data response] get http post result " + result);
-        }
 
+            try {
+
+                JSONObject lasttimeInServerJson = new JSONObject(result);
+
+                long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
+
+                CSVHelper.dataUploadingCSV("Response", "After sending, getting from the server, the latest EndTime : " + ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
+            }catch (JSONException e){
+
+            }
+        }
     }
 
     public HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
@@ -748,8 +798,7 @@ public class WifiReceiver extends BroadcastReceiver {
             //Log.d(TAG, "[postJSON] the result response code is " + responseCode);
             //Log.d(TAG, "[postJSON] the result is " + result);
 
-        }
-        catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             //e.printStackTrace();
         } catch (KeyManagementException e) {
             //e.printStackTrace();

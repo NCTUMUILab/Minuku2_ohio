@@ -42,6 +42,7 @@ public class Constants {
     public static final String DATE_FORMAT_NOW_NO_ZONE_Slash = "yyyy/MM/dd HH:mm:ss";
     public static final String DATE_FORMAT_NOW_DAY_Slash = "yyyy/MM/dd";
     public static final String DATE_FORMAT_NOW_NO_ZONE = "yyyy-MM-dd HH:mm:ss";
+    public final static String DATE_FORMAT_NOW_HOUR_MIN_AMPM = "yyyy-MM-dd hh:mm a";
     public static final String DATE_FORMAT_NOW_DAY = "yyyy-MM-dd";
     public static final String DATE_FORMAT_NOW_HOUR = "yyyy-MM-dd HH";
     public static final String DATE_FORMAT_NOW_HOUR_MIN = "yyyy-MM-dd HH:mm";
@@ -54,6 +55,7 @@ public class Constants {
     public static final String DATE_FORMAT_DATE_TEXT = "MMM dd";
     public static final String DATE_FORMAT_DATE_TEXT_HOUR_MIN = "MMM dd HH:mm";
     public static final String DATE_FORMAT_DATE_TEXT_HOUR_MIN_AMPM = "MMM dd hh:mm a";
+    public static final String DATE_FORMAT_AMPM = "a";
 
     public static final String DATE_FORMAT_DATE_TEXT_HOUR_MIN_SEC = "MMM dd  HH:mm:ss";
     public static final int DATA_FORMAT_TYPE_NOW=0;
@@ -185,7 +187,7 @@ public class Constants {
     public static String Email = "";
 
     public static int downloadedDayInSurvey = -1;
-    public static int daysInSurvey;
+    public static int daysInSurvey = -1;
     public static long midnightstart = -999;
     public static long FirstTime_ToInitializeIntervalSurvey = -999;
 

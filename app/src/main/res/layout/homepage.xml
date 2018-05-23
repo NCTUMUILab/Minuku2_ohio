@@ -26,6 +26,16 @@
             android:textSize="24sp"
             android:textColor="#ffffff" />
 
+        <TextView
+            android:id="@+id/app_version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:paddingRight="30dp"
+            android:text="v5"
+            android:textColor="#ffffff"
+            android:textSize="24sp" />
+
     </android.support.v7.widget.Toolbar>
 
 

@@ -17,8 +17,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,11 +41,9 @@ public class SurveyActivity extends Activity {
 
     private Button testButton,
         survey1_Button, survey2_Button, survey3_Button, survey4_Button, survey5_Button, survey6_Button;
-    private TextView totalView, missedView, openedView, lastOpenedView, mobileMissedView, randomMissedView;
-    private ListView listview;
-    private ArrayList<String> data;
 
-    private ArrayList<String> surveyDatas;
+    private ArrayList<String> surveyDatas = new ArrayList<>();
+    private ArrayList<String> links = new ArrayList<>();
 
     private int notifyID = 1;
 
@@ -113,8 +109,22 @@ public class SurveyActivity extends Activity {
         long startTime = ScheduleAndSampleManager.getTimeInMillis(startTimeString, sdf2);
         long endTime = startTime + Constants.MILLISECONDS_PER_DAY;
 
+        Log.d(TAG, "[test mobile triggering] startTime : "+startTimeString);
+
         //format : id;link_col;generateTime_col;openTime_col;missedTime_col;openFlag_col;surveyType_col
         surveyDatas = DBHelper.querySurveyLinkBetweenTimes(startTime, endTime);
+
+        Log.d(TAG, "[test mobile triggering] surveyDatas size : "+surveyDatas.size());
+
+        for(String data : surveyDatas){
+
+            String link = data.split(Constants.DELIMITER)[1];
+
+            links.add(link);
+
+            Log.d(TAG, "[test mobile triggering] link : "+link);
+
+        }
 
         survey1_Button = (Button) findViewById(R.id.survey1_button);
         survey2_Button = (Button) findViewById(R.id.survey2_button);
@@ -134,52 +144,95 @@ public class SurveyActivity extends Activity {
 
 
         //for testing, could deprecate it after we complete all the work
-        testButton = (Button) findViewById(R.id.triggerButton);
-        testButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                try{
-
-                    mNotificationManager.cancel(notifyID);
-                }catch (Exception e){
-
-                }
-
-                triggerSurveyByButton();
-                addSurveyLinkToDB();
-
-            }
-        });
+//        testButton = (Button) findViewById(R.id.triggerButton);
+//        testButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                try{
+//
+//                    mNotificationManager.cancel(notifyID);
+//                }catch (Exception e){
+//
+//                }
+//
+//                triggerSurveyByButton();
+//                addSurveyLinkToDB();
+//
+//            }
+//        });
 
 
     }
 
     private void setSurveyButtonsAvailable(Button survey_Button, int correspondingSize){
 
-        if(surveyDatas.size() < correspondingSize){
+        boolean setUnavaliable = true;
+        int correspondingIndex = -1;
 
-            survey_Button.setClickable(false);
+        Log.d(TAG, "[test mobile triggering] setSurveyButtonsAvailable");
+
+        Log.d(TAG, "[test mobile triggering] links size : "+links.size());
+
+        for(int index = 0 ;index < links.size();index ++){
+
+            String getSurveyNumber1 = links.get(index).split("n=")[1];
+            String getSurveyNumber2 = getSurveyNumber1.split("&m=")[0];
+
+            int linkNum = Integer.valueOf(getSurveyNumber2);
+
+            Log.d(TAG, "[test mobile triggering] linkNum : "+linkNum);
+            Log.d(TAG, "[test mobile triggering] correspondingSize : "+correspondingSize);
+
+            if(linkNum == correspondingSize){
+
+                correspondingIndex = index;
+                setUnavaliable = false;
+                break;
+            }
+        }
+
+        Log.d(TAG, "[test mobile triggering] setUnavaliable : "+setUnavaliable);
+
+        if(setUnavaliable){
+
+            survey_Button.setBackgroundColor(Color.LTGRAY);
+            survey_Button.setTextColor(Color.DKGRAY);
+
             survey_Button.setText(TEXT_Unavailable);
+            survey_Button.setClickable(false);
         }else{
 
-            String surveyData = surveyDatas.get(correspondingSize-1);
+            String surveyData = surveyDatas.get(correspondingIndex);
 
             String openFlag = surveyData.split(Constants.DELIMITER)[5];
 
+            Log.d(TAG, "[test mobile triggering] surveyData : "+surveyData);
+
+            Log.d(TAG, "[test mobile triggering] openFlag : "+openFlag);
+
             if(openFlag.equals("1")){
+
+                survey_Button.setBackgroundColor(Color.LTGRAY);
+                survey_Button.setTextColor(Color.DKGRAY);
+
                 survey_Button.setText(TEXT_COMPLETED);
                 survey_Button.setClickable(false);
             }else if(openFlag.equals("0")){
+
+                survey_Button.setBackgroundColor(Color.LTGRAY);
+                survey_Button.setTextColor(Color.DKGRAY);
+
                 survey_Button.setText(TEXT_MISSED);
                 survey_Button.setClickable(false);
             }else{
+
                 survey_Button.setBackgroundColor(Color.RED);
                 survey_Button.setTextColor(getResources().getColor(R.color.white));
                 survey_Button.setText(TEXT_Available);
             }
-
         }
+
     }
 
     private void setSurveyButtonsWork(){
@@ -258,6 +311,7 @@ public class SurveyActivity extends Activity {
             startActivity(resultIntent);
         }catch (IndexOutOfBoundsException e){
 
+            Log.d(TAG, "[test mobile triggering] IndexOutOfBoundsException");
         }
     }
 
