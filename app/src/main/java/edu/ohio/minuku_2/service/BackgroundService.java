@@ -86,13 +86,7 @@ public class BackgroundService extends Service {
 
     public BackgroundService() {
         super();
-        streamManager = MinukuStreamManager.getInstance();
-//        mNotificationManager = new MinukuNotificationManager();
-        mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_THREAD_SIZE);
 
-        intentFilter = new IntentFilter();
-        intentFilter.addAction(CONNECTIVITY_ACTION);
-        mWifiReceiver = new WifiReceiver();
     }
 
     @Override
@@ -100,6 +94,13 @@ public class BackgroundService extends Service {
 
         sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
 
+        streamManager = MinukuStreamManager.getInstance();
+
+        mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_THREAD_SIZE);
+
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(CONNECTIVITY_ACTION);
+        mWifiReceiver = new WifiReceiver();
     }
 
     @Override
