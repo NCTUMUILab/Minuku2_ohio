@@ -142,9 +142,10 @@ public class BackgroundService extends Service {
                 runMainThread();
                 InstanceManager.getInstance(this);
                 SessionManager.getInstance(this);
-                SurveyTriggerManager.getInstance(getApplicationContext());
                 Log.d(TAG, "Managers have been initialized. ");
             }
+
+            SurveyTriggerManager.getInstance(getApplicationContext());
 
             /**read test file**/
 //            FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
@@ -210,6 +211,7 @@ public class BackgroundService extends Service {
 
             }catch (Exception e){
 
+                isBackgroundServiceRunning = false;
                 CSVHelper.storeToCSV("CheckRunnable.csv", Utils.getStackTrace(e));
             }
         }
