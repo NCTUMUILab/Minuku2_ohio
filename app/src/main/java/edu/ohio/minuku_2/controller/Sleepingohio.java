@@ -38,9 +38,13 @@ public class Sleepingohio extends AppCompatActivity {
     private Button sleepStarttime, sleepEndtime, confirm;
     private final static int TIME_PICKER_INTERVAL = 30;
 
-    private String sleepStartTimeRaw, sleepEndTimeRaw;
+    private String sleepStartTimeRaw, sleepEndTimeRaw, todayDate;
 
     private SharedPreferences sharedPrefs;
+
+    private long sleepStartTimeLong= -999, sleepEndTimeLong= -999;
+    private String sleepStartTimeHour = "", sleepEndTimeHour = "";
+    private String sleepStartTimeMin = "", sleepEndTimeMin = "";
 
     public Sleepingohio(){}
 
@@ -69,6 +73,9 @@ public class Sleepingohio extends AppCompatActivity {
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         getSupportActionBar().setCustomView(R.layout.actionbar_new);
 
+        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+
     }
 
     @Override
@@ -93,15 +100,53 @@ public class Sleepingohio extends AppCompatActivity {
             Log.d(TAG, "sleepStarttime from button : "+sleepStarttime.getText());
             Log.d(TAG, "sleepEndtime from button : "+sleepEndtime.getText());
 
+            //Get date
+            SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+            String todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+            String tomorrDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis()+Constants.MILLISECONDS_PER_DAY, sdf_date);
+
+            String sleepStartTimeAMPM = sleepStarttime.getText().toString().split(" ")[1];
+            String sleepEndTimeAMPM = sleepEndtime.getText().toString().split(" ")[1];
+
+            Log.d(TAG, "sleepStartTimeAMPM : "+sleepStartTimeAMPM);
+            Log.d(TAG, "sleepEndTimeAMPM : "+sleepEndTimeAMPM);
+
+            long sleepStartTimeCheck = -999, sleepEndTimeCheck = -999;
+
+            if(!sleepStartTimeAMPM.equals(sleepEndTimeAMPM)){
+
+                //we add the date to get the accurate range
+                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN); //, Locale.US
+                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepStartTimeHour+":"+sleepStartTimeMin, sdf_);
+                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(tomorrDate+" "+sleepEndTimeHour+":"+sleepEndTimeMin, sdf_);
+
+                sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
+            }else {
+
+                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN);
+                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepStartTimeHour+":"+sleepStartTimeMin, sdf_);
+                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepEndTimeHour+":"+sleepEndTimeMin, sdf_);
+
+                sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
+            }
+
+            Log.d(TAG, "sleepStartTimeCheck : "+sleepStartTimeCheck);
+            Log.d(TAG, "sleepEndTimeCheck : "+sleepEndTimeCheck);
+
             if(sleepStarttime.getText().equals("BED TIME"))
                 Toast.makeText(Sleepingohio.this,"Please select your bed time", Toast.LENGTH_SHORT).show();
             else if(sleepEndtime.getText().equals("WAKE TIME"))
                 Toast.makeText(Sleepingohio.this,"Please select your wake time", Toast.LENGTH_SHORT).show();
+            else if((sleepEndTimeCheck - sleepStartTimeCheck) > 12 * Constants.MILLISECONDS_PER_HOUR ||
+                    (sleepEndTimeCheck - sleepStartTimeCheck) < 3 * Constants.MILLISECONDS_PER_HOUR){
+
+                Toast.makeText(Sleepingohio.this,"Please check your bed and wake times. Your sleep schedule must be between 3 and 12 hours long.", Toast.LENGTH_SHORT).show();
+            }
             else {
 
-                SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM); //, Locale.US
-                long sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepStarttime.getText().toString(), sdf);
-                long sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepEndtime.getText().toString(), sdf);
+//                SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM); //, Locale.US
+//                long sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepStarttime.getText().toString(), sdf);
+//                long sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepEndtime.getText().toString(), sdf);
 
                 Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
                 Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
@@ -122,20 +167,6 @@ public class Sleepingohio extends AppCompatActivity {
 
                 sharedPrefs.edit().putString("SleepingStartTime", sleepStartTimeRaw).apply();
                 sharedPrefs.edit().putString("SleepingEndTime", sleepEndTimeRaw).apply();
-
-                SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
-                String sleepStartDate = ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf_date);
-                String endStartDate = ScheduleAndSampleManager.getTimeString(sleepEndTimeLong, sdf_date);
-
-                //imply that the user always sleep over midnight
-                if(sleepStartDate.equals(endStartDate)){
-
-                    sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
-                }else{
-
-                    sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
-                }
-
 
                 Utils.settingAllDaysIntervalSampling(getApplicationContext());
 
@@ -237,6 +268,25 @@ public class Sleepingohio extends AppCompatActivity {
 
                     if(hourOfDay<10)
                         hour = "0" + String.valueOf(hourOfDay);
+
+                    if(minute<10)
+                        min = "0" + String.valueOf(minute);
+
+                    Log.d(TAG, "starttime raw hour : "+hour);
+                    Log.d(TAG, "starttime raw min : "+min);
+
+                    sleepStartTimeHour = hour;
+                    sleepStartTimeMin = min;
+
+                    SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN);
+                    sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+hour+":"+min, sdf);
+
+                    Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
+                    Log.d(TAG, "SleepEndTime Long : "+ScheduleAndSampleManager.getTimeString(sleepStartTimeLong));
+
+
+                    if(hourOfDay<10)
+                        hour = "0" + String.valueOf(hourOfDay);
                     else if(hourOfDay > 12) {
 //                        hour = String.valueOf(hourOfDay - 12);
                         hourOfDay = hourOfDay - 12;
@@ -245,11 +295,15 @@ public class Sleepingohio extends AppCompatActivity {
                             hour = "0" + String.valueOf(hourOfDay);
                         else
                             hour = String.valueOf(hourOfDay);
-
                     }
 
-                    if(minute<10)
-                        min = "0" + String.valueOf(minute);
+                    if(am_pm.equals("am")){
+
+                        if(hour.equals("00")){
+
+                            hour = "12";
+                        }
+                    }
 
                     sleepStarttime.setText( hour + ":" + min + " " + am_pm);
 
@@ -280,6 +334,25 @@ public class Sleepingohio extends AppCompatActivity {
                     else
                         am_pm = "pm";
 
+                    if(hourOfDay < 10)
+                        hour = "0" + String.valueOf(hourOfDay);
+
+                    if(minute < 10)
+                        min = "0" + String.valueOf(minute);
+
+                    Log.d(TAG, "endtime raw hour : "+hour);
+                    Log.d(TAG, "endtime raw min : "+min);
+
+                    sleepEndTimeHour = hour;
+                    sleepEndTimeMin = min;
+
+                    SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN); //, Locale.US
+                    sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+hour+":"+min, sdf);
+
+                    Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
+                    Log.d(TAG, "SleepEndTime Long : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
+
+
                     if(hourOfDay<10)
                         hour = "0" + String.valueOf(hourOfDay);
                     else if(hourOfDay > 12) {
@@ -292,8 +365,14 @@ public class Sleepingohio extends AppCompatActivity {
                             hour = String.valueOf(hourOfDay);
 
                     }
-                    if(minute<10)
-                        min = "0" + String.valueOf(minute);
+
+                    if(am_pm.equals("am")){
+
+                        if(hour.equals("00")){
+
+                            hour = "12";
+                        }
+                    }
 
                     sleepEndtime.setText( hour + ":" + min + " " + am_pm);
 

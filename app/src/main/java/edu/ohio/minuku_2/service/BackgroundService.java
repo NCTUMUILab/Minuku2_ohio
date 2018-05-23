@@ -45,6 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.MinukuNotificationManager;
@@ -56,8 +57,8 @@ import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
 import edu.ohio.minuku_2.Receiver.WifiReceiver;
 import edu.ohio.minuku_2.Utils;
-import edu.ohio.minuku_2.controller.TripListActivity;
 import edu.ohio.minuku_2.controller.Sleepingohio;
+import edu.ohio.minuku_2.controller.TripListActivity;
 import edu.ohio.minuku_2.manager.InstanceManager;
 import edu.ohio.minuku_2.manager.SurveyTriggerManager;
 
@@ -81,7 +82,7 @@ public class BackgroundService extends Service {
 
     private int showOngoingNotificationCount = 0;
 
-    private boolean mRunning;
+    public static boolean isBackgroundServiceRunning = false;
 
     public BackgroundService() {
         super();
@@ -96,8 +97,9 @@ public class BackgroundService extends Service {
 
     @Override
     public void onCreate() {
-//        Log.d(TAG, "onCreate");
-        mRunning = false;
+
+        sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
+
     }
 
     @Override
@@ -105,36 +107,34 @@ public class BackgroundService extends Service {
 
 //        Log.d(TAG, "onStartCommand");
 
-//        Log.d(TAG, "test service awake "+ TAG + ", isServiceRunning : "+ mRunning);
+//        Log.d(TAG, "test service awake "+ TAG + ", isServiceRunning : "+ isBackgroundServiceRunning);
 
-        sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
 
         mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
         //make the WifiReceiver start sending data to the server.
         registerReceiver(mWifiReceiver, intentFilter);
 
-        //we use an alarm to keep the service awake
-        /*Log.d(TAG, "[test alarm] going to set alarm");
-
-        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
-        alarm.set(
-                AlarmManager.RTC_WAKEUP,
-                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
-                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
-        );*/
 
         ongoingNotificationText = sharedPrefs.getString("ongoingNotificationText", "0 New Trips");
+
+        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+
+        if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1){
+
+            ongoingNotificationText = "Part B begins tomorrow and lasts 2 weeks.";
+        }
 
         // building the ongoing notification to the foreground
         startForeground(ongoingNotificationID, getOngoingNotification(ongoingNotificationText));
 
 
-        if ((flags & START_FLAG_REDELIVERY)!=0 || !mRunning) {
+        if ((flags & START_FLAG_REDELIVERY)!=0 || !isBackgroundServiceRunning) {
 
             Log.d(TAG, "Initialize the Manager");
 
-            mRunning = true;
+            isBackgroundServiceRunning = true;
+
             // do something
 
             if(!InstanceManager.isInitialized()) {
@@ -171,45 +171,46 @@ public class BackgroundService extends Service {
             try {
 
                 streamManager.updateStreamGenerators();
-            }catch (Exception e){
 
-            }
+                //update every minute
+                if(showOngoingNotificationCount % 12 == 0) {
 
-            //update every minute
-            if(showOngoingNotificationCount % 12 == 0) {
+                    updateOngoingNotification();
 
-                updateOngoingNotification();
-
-                checkAndRequestPermission();
-            }
-
-            showOngoingNotificationCount++;
-
-            //send sleeptime check if it didn't being set after the time they downloaded the app
-            long downloadedTime = sharedPrefs.getLong("downloadedTime", -1);
-
-            long currentTime = new Date().getTime();
-
-            if(currentTime - downloadedTime > Constants.MILLISECONDS_PER_MINUTE * 30){
-
-                String sleepStartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
-                String sleepEndTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
-
-                if(sleepStartTime.equals(Constants.NOT_A_NUMBER) || sleepEndTime.equals(Constants.NOT_A_NUMBER)){
-
-                    //send the notification to remind the user to set their sleeping time
-                    NotificationManager mNotificationManager =
-                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                    String notificationText = "Please select your sleep period.";
-
-                    Notification notification = getSleepNotification(notificationText);
-
-                    mNotificationManager.notify(999, notification);
+                    checkAndRequestPermission();
                 }
 
-            }
+                showOngoingNotificationCount++;
 
+                //send sleeptime check if it didn't being set after the time they downloaded the app
+                long downloadedTime = sharedPrefs.getLong("downloadedTime", -1);
+
+                long currentTime = new Date().getTime();
+
+                if(currentTime - downloadedTime > Constants.MILLISECONDS_PER_MINUTE * 30){
+
+                    String sleepStartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
+                    String sleepEndTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
+
+                    if(sleepStartTime.equals(Constants.NOT_A_NUMBER) || sleepEndTime.equals(Constants.NOT_A_NUMBER)){
+
+                        //send the notification to remind the user to set their sleeping time
+                        NotificationManager mNotificationManager =
+                                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                        String notificationText = "Please select your sleep period.";
+
+                        Notification notification = getSleepNotification(notificationText);
+
+                        mNotificationManager.notify(999, notification);
+                    }
+
+                }
+
+            }catch (Exception e){
+
+                CSVHelper.storeToCSV("CheckRunnable.csv", Utils.getStackTrace(e));
+            }
         }
     };
 
@@ -379,6 +380,13 @@ public class BackgroundService extends Service {
             ongoingNotificationText = unfilledTrips + " New Trip";
         }
 
+        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+
+        if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1){
+
+            ongoingNotificationText = "Part B begins tomorrow and lasts 2 weeks.";
+        }
+
         Notification note = getOngoingNotification(ongoingNotificationText);
 
         // using the same tag and Id causes the new notification to replace an existing one
@@ -419,6 +427,8 @@ public class BackgroundService extends Service {
 
         stopTheSessionByServiceClose();
 
+        isBackgroundServiceRunning = false;
+
         mNotificationManager.cancel(ongoingNotificationID);
 
         sharedPrefs.edit().putString("ongoingNotificationText", ongoingNotificationText).apply();
@@ -442,6 +452,8 @@ public class BackgroundService extends Service {
 //        stopTheSessionByServiceClose();
 
         mNotificationManager.cancel(ongoingNotificationID);
+
+        isBackgroundServiceRunning = false;
 
         sharedPrefs.edit().putString("ongoingNotificationText", ongoingNotificationText).apply();
 

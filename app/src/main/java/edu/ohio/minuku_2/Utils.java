@@ -33,6 +33,8 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -99,6 +101,14 @@ public class Utils {
         }
     }
 
+    public static String getStackTrace(final Throwable throwable) {
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw, true);
+        throwable.printStackTrace(pw);
+        return sw.getBuffer().toString();
+    }
+
+
     public static void settingAllDaysIntervalSampling(Context context){
 
         //14 is the total of the research days
@@ -125,7 +135,18 @@ public class Utils {
         Log.d(TAG, "startTimeLong : "+startTimeLong+"| sleepingstartTime : "+sleepingstartTime);
         Log.d(TAG, "endTimeLong : "+endTimeLong+"| sleepingendTime : "+sleepingendTime);
 
-        long period = (startTimeLong-endTimeLong)/6;
+        boolean wakeSleepDateIsSame = sharedPrefs.getBoolean("WakeSleepDateIsSame", false);
+
+        long period=-999;
+
+        if(wakeSleepDateIsSame){
+
+            period = (startTimeLong-endTimeLong + Constants.MILLISECONDS_PER_DAY)/6;
+        }else {
+
+            period = (startTimeLong-endTimeLong)/6;
+        }
+
         Log.d(TAG, "period : "+period);
 
         sharedPrefs.edit().putLong("PeriodLong", period).apply();

@@ -118,7 +118,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean firstTimeToShowDialogOrNot;
     private SharedPreferences sharedPrefs;
 
-    private Intent intentToStartSurvey, intentToStartBackground;
+    private Intent intentToStartBackground;
+
+    private boolean isTheUser;
 
     public static final int REFRESH_FREQUENCY = 3; //10s, 10000ms
 
@@ -129,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         MultiDex.install(this);
+
+        sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
 
         //for testing the over date of the research
 //        Constants.daysInSurvey = 15;
@@ -153,6 +157,15 @@ public class MainActivity extends AppCompatActivity {
 
         intentToStartBackground = new Intent(getBaseContext(), BackgroundService.class);
 
+        isTheUser = sharedPrefs.getBoolean("isTheUser", false);
+
+        Log.d(TAG, "[test service] isBackgroundServiceRunning : "+BackgroundService.isBackgroundServiceRunning);
+        Log.d(TAG, "[test service] isTheUser : "+isTheUser);
+
+        if(isTheUser && !BackgroundService.isBackgroundServiceRunning){
+
+            startService(intentToStartBackground);
+        }
 
         EventBus.getDefault().register(this);
 
@@ -206,7 +219,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.homepage);
 
         /* alertdialog for checking userid */
-        sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
 
         sharedPrefs.edit().putLong("downloadedTime", new Date().getTime()).apply();
 
@@ -402,6 +414,9 @@ public class MainActivity extends AppCompatActivity {
                                 getStartDate();
 
                                 startService(intentToStartBackground);
+
+                                isTheUser = true;
+                                sharedPrefs.edit().putBoolean("isTheUser", isTheUser).apply();
 
                                 //Dismiss once everything is OK.
                                 dialog.dismiss();
