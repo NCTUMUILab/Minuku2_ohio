@@ -129,7 +129,7 @@ public class BackgroundService extends Service {
         startForeground(ongoingNotificationID, getOngoingNotification(ongoingNotificationText));
 
 
-        if ((flags & START_FLAG_REDELIVERY)!=0 || !isBackgroundServiceRunning) {
+        if (!isBackgroundServiceRunning) {
 
             Log.d(TAG, "Initialize the Manager");
 
@@ -138,6 +138,7 @@ public class BackgroundService extends Service {
             // do something
 
             if(!InstanceManager.isInitialized()) {
+
                 runMainThread();
                 InstanceManager.getInstance(this);
                 SessionManager.getInstance(this);
