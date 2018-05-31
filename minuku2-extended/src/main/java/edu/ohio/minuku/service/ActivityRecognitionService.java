@@ -232,7 +232,7 @@ public class ActivityRecognitionService extends IntentService {
 
     public void startReplayARRecordTimer() {
 
-        Log.d("ARService", "[test AR service start] startReplayARRecordTimer starts !");
+//        Log.d("ARService", "[test AR service start] startReplayARRecordTimer starts !");
 
         //set a new Timer
         ReplayTimer = new Timer();

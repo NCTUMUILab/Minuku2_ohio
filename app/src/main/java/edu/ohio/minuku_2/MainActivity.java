@@ -81,10 +81,9 @@ import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
-import edu.ohio.minuku.logger.Log;
+import edu.ohio.minuku_2.controller.Sleepingohio;
 import edu.ohio.minuku_2.controller.SurveyActivity;
 import edu.ohio.minuku_2.controller.TripListActivity;
-import edu.ohio.minuku_2.controller.Sleepingohio;
 import edu.ohio.minuku_2.service.BackgroundService;
 
 public class MainActivity extends AppCompatActivity {
@@ -127,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "Creating Main activity");
+//        Log.d(TAG, "Creating Main activity");
 
 
         MultiDex.install(this);
@@ -159,8 +158,8 @@ public class MainActivity extends AppCompatActivity {
 
         isTheUser = sharedPrefs.getBoolean("isTheUser", false);
 
-        Log.d(TAG, "[test service] isBackgroundServiceRunning : "+BackgroundService.isBackgroundServiceRunning);
-        Log.d(TAG, "[test service] isTheUser : "+isTheUser);
+//        Log.d(TAG, "[test service] isBackgroundServiceRunning : "+BackgroundService.isBackgroundServiceRunning);
+//        Log.d(TAG, "[test service] isTheUser : "+isTheUser);
 
         if(isTheUser && !BackgroundService.isBackgroundServiceRunning){
 
@@ -199,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
 
         int Hour = cal.get(Calendar.HOUR_OF_DAY);
         int Min = cal.get(Calendar.MINUTE);
-        Log.d(TAG, "Year : "+Year+" Month : "+Month+" Day : "+Day+" Hour : "+Hour+" Min : "+Min);
+//        Log.d(TAG, "Year : "+Year+" Month : "+Month+" Day : "+Day+" Hour : "+Hour+" Min : "+Min);
 
         sharedPrefs.edit().putInt("StartYear", Year).apply();
         sharedPrefs.edit().putInt("StartMonth", Month).apply();
@@ -208,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
         sharedPrefs.edit().putInt("StartHour", Hour).apply();
         sharedPrefs.edit().putInt("StartMin", Min).apply();
 
-        Log.d(TAG, "Start Year : " + Year + " Month : " + Month + " Day : " + Day + " daysInSurvey : " + Constants.daysInSurvey);
+//        Log.d(TAG, "Start Year : " + Year + " Month : " + Month + " Day : " + Day + " daysInSurvey : " + Constants.daysInSurvey);
 
     }
 
@@ -225,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
         sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", false).apply();
 
         firstTimeToShowDialogOrNot = sharedPrefs.getBoolean("firstTimeToShowDialogOrNot", true);
-        Log.d(TAG,"firstTimeToShowDialogOrNot : "+firstTimeToShowDialogOrNot);
+//        Log.d(TAG,"firstTimeToShowDialogOrNot : "+firstTimeToShowDialogOrNot);
 
         Constants.USER_ID = sharedPrefs.getString("userid","NA");
 
@@ -372,10 +371,10 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(View view) {
 
                         String inputID = editText_confirmNum.getText().toString();
-                        Log.d(TAG,"inputID : "+inputID);
+//                        Log.d(TAG,"inputID : "+inputID);
 
                         String inputEmail = editText_Email.getText().toString();
-                        Log.d(TAG,"inputEmail : "+inputEmail);
+//                        Log.d(TAG,"inputEmail : "+inputEmail);
 
                         if(Utils.isConfirmNumInvalid(inputID)){
                             Toast.makeText(MainActivity.this,"Error, please try re-entering the number provided",Toast.LENGTH_SHORT).show();
@@ -389,8 +388,8 @@ public class MainActivity extends AppCompatActivity {
 //                                Toast.makeText(MainActivity.this,"Error, it is not an Email format",Toast.LENGTH_SHORT).show();
 //                            }else {
 
-                                Log.d(TAG, "participant ID" + inputID);
-                                Log.d(TAG, "group number" + inputID.substring(0, 1));
+//                                Log.d(TAG, "participant ID" + inputID);
+//                                Log.d(TAG, "group number" + inputID.substring(0, 1));
 
                                 sharedPrefs.edit().putString("userid", inputID).apply();
                                 Constants.USER_ID = sharedPrefs.getString("userid", "NA");
@@ -423,7 +422,7 @@ public class MainActivity extends AppCompatActivity {
                                 MainActivity.this.finish();
 //                            }
                         }
-                        Log.d(TAG,"setPositiveButton");
+//                        Log.d(TAG,"setPositiveButton");
 
                     }
                 });
@@ -444,7 +443,7 @@ public class MainActivity extends AppCompatActivity {
         String userInformInString = null;
         JSONObject userInform = null;
 
-        Log.d(TAG, "user inform link : "+ link);
+//        Log.d(TAG, "user inform link : "+ link);
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -464,7 +463,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        Log.d(TAG, "userInform : " + userInform);
+//        Log.d(TAG, "userInform : " + userInform);
 
         //In order to set the survey link
         setDaysInSurveyAndTheDayTodayIs(userInform);
@@ -499,7 +498,7 @@ public class MainActivity extends AppCompatActivity {
 
             sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
 
-            Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
+//            Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
         }catch (JSONException e){
             e.printStackTrace();
         }
@@ -517,7 +516,7 @@ public class MainActivity extends AppCompatActivity {
 
             sharedPrefs.edit().putInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey).apply();
 
-            Log.d(TAG, "downloadedDayInSurvey : "+ Constants.downloadedDayInSurvey);
+//            Log.d(TAG, "downloadedDayInSurvey : "+ Constants.downloadedDayInSurvey);
         }catch (JSONException e){
             e.printStackTrace();
         }
@@ -532,20 +531,20 @@ public class MainActivity extends AppCompatActivity {
 
             SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE);
 
-            Log.d(TAG, "firstcheckin : "+ firstcheckin);
-            Log.d(TAG, "firstcheckin String : "+ ScheduleAndSampleManager.getTimeString(firstcheckin, sdf_now));
+//            Log.d(TAG, "firstcheckin : "+ firstcheckin);
+//            Log.d(TAG, "firstcheckin String : "+ ScheduleAndSampleManager.getTimeString(firstcheckin, sdf_now));
 
             sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
 
             long firstcheckinAfteraDay = firstcheckin + Constants.MILLISECONDS_PER_DAY;
 
-            Log.d(TAG, "firstcheckinAfteraDay : "+ firstcheckinAfteraDay);
+//            Log.d(TAG, "firstcheckinAfteraDay : "+ firstcheckinAfteraDay);
 
             String firstresearchdate = ScheduleAndSampleManager.getTimeString(firstcheckinAfteraDay, sdf_now);
 
             firstresearchdate = firstresearchdate + " 00:00:00";
 
-            Log.d(TAG, "firstcheckinAfteraDay String : "+ firstresearchdate);
+//            Log.d(TAG, "firstcheckinAfteraDay String : "+ firstresearchdate);
 
             long firstresearchday = ScheduleAndSampleManager.getTimeInMillis(firstresearchdate,sdf_now);
 
@@ -553,7 +552,7 @@ public class MainActivity extends AppCompatActivity {
 
             sharedPrefs.edit().putLong("midnightstart", Constants.midnightstart).apply();
 
-            Log.d(TAG, "midnightstart : "+ Constants.midnightstart);
+//            Log.d(TAG, "midnightstart : "+ Constants.midnightstart);
 
             sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", true).apply();
 
@@ -614,7 +613,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             Date mDate = sdf.parse(givenDateFormat);
             timeInMilliseconds = mDate.getTime();
-            Log.d(TAG,"Date in milli :: " + timeInMilliseconds);
+//            Log.d(TAG,"Date in milli :: " + timeInMilliseconds);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -631,7 +630,7 @@ public class MainActivity extends AppCompatActivity {
     //to view Sleepingohio
     private Button.OnClickListener ohio_annotateing = new Button.OnClickListener() {
         public void onClick(View v) {
-            Log.e(TAG,"recordinglist_ohio clicked");
+//            Log.e(TAG,"recordinglist_ohio clicked");
 
             startActivityForResult(new Intent(MainActivity.this, TripListActivity.class), 2);
 
@@ -641,7 +640,7 @@ public class MainActivity extends AppCompatActivity {
     //to view Sleepingohio
     private Button.OnClickListener settingSleepTimeing = new Button.OnClickListener() {
         public void onClick(View v) {
-            Log.e(TAG,"Sleepingohio clicked");
+//            Log.e(TAG,"Sleepingohio clicked");
 
             startActivityForResult(new Intent(MainActivity.this, Sleepingohio.class), requestCode_setting);
 
@@ -664,7 +663,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkAndRequestPermissions() {
 
-        Log.e(TAG,"checkingAndRequestingPermissions");
+//        Log.e(TAG,"checkingAndRequestingPermissions");
 
         int permissionReadExternalStorage = ContextCompat.checkSelfPermission(this,
                 android.Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -711,7 +710,7 @@ public class MainActivity extends AppCompatActivity {
         if(permissionStatus==PackageManager.PERMISSION_GRANTED){
             Constants.DEVICE_ID = mngr.getDeviceId();
 
-            Log.e(TAG,"DEVICE_ID"+Constants.DEVICE_ID+" : "+mngr.getDeviceId());
+//            Log.e(TAG,"DEVICE_ID"+Constants.DEVICE_ID+" : "+mngr.getDeviceId());
 
         }
     }
@@ -750,7 +749,7 @@ public class MainActivity extends AppCompatActivity {
                             && perms.get(android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
                             && perms.get(android.Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
                             && perms.get(android.Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED){
-                        android.util.Log.d("permission", "[permission test]all permission granted");
+//                        Log.d("permission", "[permission test]all permission granted");
                         //permission_ok=1;
                         startServiceWork();
                     } else {
@@ -776,13 +775,13 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe
     public void incrementLoadingProcessCount(IncrementLoadingProcessCountEvent event) {
         Integer loadingCount = loadingProcessCount.incrementAndGet();
-        Log.d(TAG, "Incrementing loading processes count: " + loadingCount);
+//        Log.d(TAG, "Incrementing loading processes count: " + loadingCount);
     }
 
     @Subscribe
     public void decrementLoadingProcessCountEvent(DecrementLoadingProcessCountEvent event) {
         Integer loadingCount = loadingProcessCount.decrementAndGet();
-        Log.d(TAG, "Decrementing loading processes count: " + loadingCount);
+//        Log.d(TAG, "Decrementing loading processes count: " + loadingCount);
     }
 
     private class HttpAsyncGetUserInformFromServer extends AsyncTask<String, Void, String> {
@@ -810,7 +809,7 @@ public class MainActivity extends AppCompatActivity {
 
                 while ((line = reader.readLine()) != null) {
                     buffer.append(line+"\n");
-                    Log.d(TAG, "Response : " + line);
+//                    Log.d(TAG, "Response : " + line);
                 }
 
                 return buffer.toString();
@@ -838,7 +837,7 @@ public class MainActivity extends AppCompatActivity {
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            Log.d(TAG, "get http post result " + result);
+//            Log.d(TAG, "get http post result " + result);
 
         }
 

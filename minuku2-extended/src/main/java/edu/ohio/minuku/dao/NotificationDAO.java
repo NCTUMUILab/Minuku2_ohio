@@ -29,7 +29,6 @@ import java.util.concurrent.Future;
 
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.config.UserPreferences;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minukucore.dao.DAO;
 import edu.ohio.minukucore.dao.DAOException;
 import edu.ohio.minukucore.event.ShowNotificationEvent;
@@ -54,7 +53,7 @@ public class NotificationDAO implements DAO<ShowNotificationEvent> {
 
     @Override
     public void add(ShowNotificationEvent entity) throws DAOException {
-        Log.d(TAG, "Adding notification data record.");
+//        Log.d(TAG, "Adding notification data record.");
         /*
         Firebase notificationListRef = new Firebase(Constants.FIREBASE_URL_NOTIFICATIONS)
                 .child(myUserEmail)

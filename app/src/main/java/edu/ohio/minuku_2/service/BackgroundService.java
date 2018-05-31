@@ -22,11 +22,13 @@
 
 package edu.ohio.minuku_2.service;
 
+import android.app.AlarmManager;
 import android.app.AppOpsManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -66,6 +68,7 @@ public class BackgroundService extends Service {
 
     private static final String TAG = "BackgroundService";
 
+    final static String CHECK_RUNNABLE_ACTION = "checkRunnable";
     final static String CONNECTIVITY_ACTION = "android.net.conn.CONNECTIVITY_CHANGE";
     WifiReceiver mWifiReceiver;
     IntentFilter intentFilter;
@@ -83,11 +86,23 @@ public class BackgroundService extends Service {
     private int showOngoingNotificationCount = 0;
 
     public static boolean isBackgroundServiceRunning = false;
+    public static boolean isBackgroundRunnableRunning = false;
 
     public BackgroundService() {
         super();
+
+    }
+
+    @Override
+    public void onCreate() {
+
+        sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
+
+        isBackgroundServiceRunning = false;
+        isBackgroundRunnableRunning = false;
+
         streamManager = MinukuStreamManager.getInstance();
-//        mNotificationManager = new MinukuNotificationManager();
+
         mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_THREAD_SIZE);
 
         intentFilter = new IntentFilter();
@@ -96,25 +111,31 @@ public class BackgroundService extends Service {
     }
 
     @Override
-    public void onCreate() {
-
-        sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
-
-    }
-
-    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
 //        Log.d(TAG, "onStartCommand");
 
-//        Log.d(TAG, "test service awake "+ TAG + ", isServiceRunning : "+ isBackgroundServiceRunning);
+        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundServiceRunning ? "+isBackgroundServiceRunning);
+        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundRunnableRunning ? "+isBackgroundRunnableRunning);
 
-
-        mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
         //make the WifiReceiver start sending data to the server.
         registerReceiver(mWifiReceiver, intentFilter);
 
+
+        IntentFilter checkRunnableFilter = new IntentFilter(CHECK_RUNNABLE_ACTION);
+
+        registerReceiver(CheckRunnableReceiver, checkRunnableFilter);
+
+        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+        alarm.set(
+                AlarmManager.RTC_WAKEUP,
+                System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+                PendingIntent.getBroadcast(this, 0, new Intent(CHECK_RUNNABLE_ACTION), 0)
+        );
+
+
+        mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
         ongoingNotificationText = sharedPrefs.getString("ongoingNotificationText", "0 New Trips");
 
@@ -129,21 +150,27 @@ public class BackgroundService extends Service {
         startForeground(ongoingNotificationID, getOngoingNotification(ongoingNotificationText));
 
 
-        if ((flags & START_FLAG_REDELIVERY)!=0 || !isBackgroundServiceRunning) {
+        if (!isBackgroundServiceRunning) {
 
             Log.d(TAG, "Initialize the Manager");
 
             isBackgroundServiceRunning = true;
 
             // do something
+            CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to judge the condition is ? "+(!InstanceManager.isInitialized()));
 
             if(!InstanceManager.isInitialized()) {
+
+                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to start the runnable.");
+
                 runMainThread();
+
                 InstanceManager.getInstance(this);
                 SessionManager.getInstance(this);
-                SurveyTriggerManager.getInstance(getApplicationContext());
                 Log.d(TAG, "Managers have been initialized. ");
             }
+
+            SurveyTriggerManager.getInstance(getApplicationContext());
 
             /**read test file**/
 //            FileHelper fileHelper = FileHelper.getInstance(getApplicationContext());
@@ -157,7 +184,7 @@ public class BackgroundService extends Service {
 
         mScheduledExecutorService.scheduleAtFixedRate(
                 updateStreamManagerRunnable,
-                10,
+                Constants.STREAM_UPDATE_DELAY,
                 Constants.STREAM_UPDATE_FREQUENCY,
                 TimeUnit.SECONDS);
     }
@@ -168,7 +195,12 @@ public class BackgroundService extends Service {
 
             Log.d(TAG, "updateStreamManagerRunnable");
 
+            CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundServiceRunning ? "+isBackgroundServiceRunning);
+            CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundRunnableRunning ? "+isBackgroundRunnableRunning);
+
             try {
+
+                isBackgroundRunnableRunning = true;
 
                 streamManager.updateStreamGenerators();
 
@@ -209,6 +241,7 @@ public class BackgroundService extends Service {
 
             }catch (Exception e){
 
+                isBackgroundRunnableRunning = false;
                 CSVHelper.storeToCSV("CheckRunnable.csv", Utils.getStackTrace(e));
             }
         }
@@ -428,6 +461,7 @@ public class BackgroundService extends Service {
         stopTheSessionByServiceClose();
 
         isBackgroundServiceRunning = false;
+        isBackgroundRunnableRunning = false;
 
         mNotificationManager.cancel(ongoingNotificationID);
 
@@ -443,6 +477,7 @@ public class BackgroundService extends Service {
 //        TransportationModeStreamGenerator.mScheduledExecutorService.shutdown();
 
         unregisterReceiver(mWifiReceiver);
+        unregisterReceiver(CheckRunnableReceiver);
     }
 
     @Override
@@ -454,6 +489,7 @@ public class BackgroundService extends Service {
         mNotificationManager.cancel(ongoingNotificationID);
 
         isBackgroundServiceRunning = false;
+        isBackgroundRunnableRunning = false;
 
         sharedPrefs.edit().putString("ongoingNotificationText", ongoingNotificationText).apply();
 
@@ -479,4 +515,34 @@ public class BackgroundService extends Service {
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
+    BroadcastReceiver CheckRunnableReceiver = new BroadcastReceiver() {
+
+        public void onReceive(Context context, Intent intent) {
+
+            if (intent.getAction().equals(CHECK_RUNNABLE_ACTION)) {
+
+                Log.d(TAG, "[check runnable] going to check if the runnable is running");
+
+                if(!isBackgroundRunnableRunning){
+
+                    Log.d(TAG, "[check runnable] the runnable is not running, going to restart it.");
+
+                    runMainThread();
+
+                    Log.d(TAG, "[check runnable] the runnable is restarted.");
+                }
+
+                PendingIntent pi = PendingIntent.getBroadcast(BackgroundService.this, 0, new Intent(CHECK_RUNNABLE_ACTION), 0);
+
+                AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+                alarm.set(
+                        AlarmManager.RTC_WAKEUP,
+                        System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+                        pi
+                );
+            }
+        }
+    };
+
 }
