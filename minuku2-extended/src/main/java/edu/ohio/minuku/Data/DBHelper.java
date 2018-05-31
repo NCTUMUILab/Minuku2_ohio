@@ -940,7 +940,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
             DBManager.getInstance().closeDatabase();
 
-            edu.ohio.minuku.logger.Log.d(TAG, "test combine: completing updating end time for sesssion" + id );
+//            Log.d(TAG, "test combine: completing updating end time for sesssion" + id );
 
         }catch(Exception e){
 
@@ -978,7 +978,7 @@ public class DBHelper extends SQLiteOpenHelper {
             //e.printStackTrace();
         }
 
-        edu.ohio.minuku.logger.Log.d(TAG, "test trip: completing updating end time for sesssion" + id );
+//        Log.d(TAG, "test trip: completing updating end time for sesssion" + id );
 
     }
 
@@ -1178,7 +1178,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static void updateSurveyMissTime(String _id, String colName){
 
-        Log.d(TAG, "[test show link] updateSurveyMissTime check");
+//        Log.d(TAG, "[test show link] updateSurveyMissTime check");
 
         String where = id + " = " +  _id;
 
@@ -1202,7 +1202,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static void updateSurveyOpenTime(String _id){
 
-        Log.d(TAG, "[test show link] updateSurveyOpenTime check");
+//        Log.d(TAG, "[test show link] updateSurveyOpenTime check");
 
         String where = id + " = " +  _id;
 

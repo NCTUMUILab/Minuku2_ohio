@@ -115,7 +115,7 @@ public class Utils {
         int countOfDaysInSurvey = 14 - Constants.daysInSurvey;
         for(int DaysInSurvey = 1; DaysInSurvey <= countOfDaysInSurvey; DaysInSurvey++ ){
 
-            Log.d(TAG, "[test alarm] DaysInSurvey : "+DaysInSurvey);
+//            Log.d(TAG, "[test alarm] DaysInSurvey : "+DaysInSurvey);
 
             SurveyTriggerManager.settingIntervalSampling(DaysInSurvey, context);
 
@@ -132,8 +132,8 @@ public class Utils {
         long startTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepingstartTime, sdf);
         long endTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepingendTime, sdf);
 
-        Log.d(TAG, "startTimeLong : "+startTimeLong+"| sleepingstartTime : "+sleepingstartTime);
-        Log.d(TAG, "endTimeLong : "+endTimeLong+"| sleepingendTime : "+sleepingendTime);
+//        Log.d(TAG, "startTimeLong : "+startTimeLong+"| sleepingstartTime : "+sleepingstartTime);
+//        Log.d(TAG, "endTimeLong : "+endTimeLong+"| sleepingendTime : "+sleepingendTime);
 
         boolean wakeSleepDateIsSame = sharedPrefs.getBoolean("WakeSleepDateIsSame", false);
 
@@ -147,7 +147,7 @@ public class Utils {
             period = (startTimeLong-endTimeLong)/6;
         }
 
-        Log.d(TAG, "period : "+period);
+//        Log.d(TAG, "period : "+period);
 
         sharedPrefs.edit().putLong("PeriodLong", period).apply();
 
@@ -227,13 +227,13 @@ public class Utils {
 
                 String openOrNot = resultInArray.get(index).split(Constants.DELIMITER)[5];
 
-                Log.d(TAG, "[test show link] open flag : "+ openOrNot);
+//                Log.d(TAG, "[test show link] open flag : "+ openOrNot);
 
                 if(openOrNot.equals("1"))
                     openCount++;
             }
 
-            Log.d(TAG, "[test show link] openCount : "+ openCount + " resultInArray size : "+resultInArray.size());
+//            Log.d(TAG, "[test show link] openCount : "+ openCount + " resultInArray size : "+resultInArray.size());
 
             rate = (float)openCount/resultInArray.size() * 100;
 

@@ -43,7 +43,7 @@ public class SurveyActivity extends Activity {
         survey1_Button, survey2_Button, survey3_Button, survey4_Button, survey5_Button, survey6_Button;
 
     private ArrayList<String> surveyDatas = new ArrayList<>();
-    private ArrayList<String> links = new ArrayList<>();
+    private ArrayList<Integer> linkNums = new ArrayList<>();
 
     private int notifyID = 1;
 
@@ -62,7 +62,7 @@ public class SurveyActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
+//        Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
 
         if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
 
@@ -109,20 +109,28 @@ public class SurveyActivity extends Activity {
         long startTime = ScheduleAndSampleManager.getTimeInMillis(startTimeString, sdf2);
         long endTime = startTime + Constants.MILLISECONDS_PER_DAY;
 
-        Log.d(TAG, "[test mobile triggering] startTime : "+startTimeString);
+//        Log.d(TAG, "[test mobile triggering] startTime : "+startTimeString);
+
+        surveyDatas = new ArrayList<>();
+        linkNums = new ArrayList<>();
 
         //format : id;link_col;generateTime_col;openTime_col;missedTime_col;openFlag_col;surveyType_col
         surveyDatas = DBHelper.querySurveyLinkBetweenTimes(startTime, endTime);
 
-        Log.d(TAG, "[test mobile triggering] surveyDatas size : "+surveyDatas.size());
+//        Log.d(TAG, "[test mobile triggering] surveyDatas size : "+surveyDatas.size());
 
         for(String data : surveyDatas){
 
             String link = data.split(Constants.DELIMITER)[1];
 
-            links.add(link);
+            String getSurveyNumber1 = link.split("n=")[1];
+            String getSurveyNumber2 = getSurveyNumber1.split("&m=")[0];
 
-            Log.d(TAG, "[test mobile triggering] link : "+link);
+            int linkNum = Integer.valueOf(getSurveyNumber2);
+
+            linkNums.add(linkNum);
+
+//            Log.d(TAG, "[test mobile triggering] link : "+link);
 
         }
 
@@ -170,29 +178,17 @@ public class SurveyActivity extends Activity {
         boolean setUnavaliable = true;
         int correspondingIndex = -1;
 
-        Log.d(TAG, "[test mobile triggering] setSurveyButtonsAvailable");
+//        Log.d(TAG, "[test mobile triggering] setSurveyButtonsAvailable");
 
-        Log.d(TAG, "[test mobile triggering] links size : "+links.size());
+//        Log.d(TAG, "[test mobile triggering] links size : "+linkNums.size());
 
-        for(int index = 0 ;index < links.size();index ++){
+        if(linkNums.contains(correspondingSize)){
 
-            String getSurveyNumber1 = links.get(index).split("n=")[1];
-            String getSurveyNumber2 = getSurveyNumber1.split("&m=")[0];
-
-            int linkNum = Integer.valueOf(getSurveyNumber2);
-
-            Log.d(TAG, "[test mobile triggering] linkNum : "+linkNum);
-            Log.d(TAG, "[test mobile triggering] correspondingSize : "+correspondingSize);
-
-            if(linkNum == correspondingSize){
-
-                correspondingIndex = index;
-                setUnavaliable = false;
-                break;
-            }
+            correspondingIndex = linkNums.lastIndexOf(correspondingSize);
+            setUnavaliable = false;
         }
 
-        Log.d(TAG, "[test mobile triggering] setUnavaliable : "+setUnavaliable);
+//        Log.d(TAG, "[test mobile triggering] setUnavaliable : "+setUnavaliable);
 
         if(setUnavaliable){
 
@@ -203,13 +199,15 @@ public class SurveyActivity extends Activity {
             survey_Button.setClickable(false);
         }else{
 
+//            Log.d(TAG, "[test mobile triggering] correspondingIndex : "+correspondingIndex);
+//            Log.d(TAG, "[test mobile triggering] surveyDatas size : "+surveyDatas.size());
+
             String surveyData = surveyDatas.get(correspondingIndex);
 
             String openFlag = surveyData.split(Constants.DELIMITER)[5];
 
-            Log.d(TAG, "[test mobile triggering] surveyData : "+surveyData);
-
-            Log.d(TAG, "[test mobile triggering] openFlag : "+openFlag);
+//            Log.d(TAG, "[test mobile triggering] surveyData : "+surveyData);
+//            Log.d(TAG, "[test mobile triggering] openFlag : "+openFlag);
 
             if(openFlag.equals("1")){
 
@@ -225,6 +223,14 @@ public class SurveyActivity extends Activity {
 
                 survey_Button.setText(TEXT_MISSED);
                 survey_Button.setClickable(false);
+
+                //check the missed is for the mobile or the random
+
+                //if it's random one, check there is a mobile survey in next period.
+
+                //if there is, set to here.
+//                setSurveyButtonsAvailable(survey_Button, correspondingSize+1);
+
             }else{
 
                 survey_Button.setBackgroundColor(Color.RED);
@@ -291,28 +297,52 @@ public class SurveyActivity extends Activity {
         //record if the user have clicked the survey button
         sharedPrefs.edit().putBoolean("Period"+buttonNumber,false).apply();
 
-        try{
+        if(linkNums.contains(buttonNumber)){
 
-            String surveyData = surveyDatas.get(buttonNumber-1);
+            try{
 
-            //set opened time.
-            //if they click it, set the openFlag to 1.
-            String id = surveyData.split(Constants.DELIMITER)[0];
-            DataHandler.updateSurveyOpenFlagAndTime(id);
+                String surveyData = surveyDatas.get(linkNums.lastIndexOf(buttonNumber));
 
-            //get the link in the surveyLink table.
-            String link = surveyData.split(Constants.DELIMITER)[1];
+                //set opened time.
+                //if they click it, set the openFlag to 1.
+                String id = surveyData.split(Constants.DELIMITER)[0];
+                DataHandler.updateSurveyOpenFlagAndTime(id);
 
-            //Log.d(TAG, "the "+ buttonNumber +" link is : "+link);
+                //get the link in the surveyLink table.
+                String link = surveyData.split(Constants.DELIMITER)[1];
 
-            Intent resultIntent = new Intent(Intent.ACTION_VIEW);
-            resultIntent.setData(Uri.parse(link)); //get the link from adapter
+                //Log.d(TAG, "the "+ buttonNumber +" link is : "+link);
 
-            startActivity(resultIntent);
-        }catch (IndexOutOfBoundsException e){
+                //check the link is for the mobile or random
+                String getSurveyTypeNumber = link.split("&m=")[1];
 
-            Log.d(TAG, "[test mobile triggering] IndexOutOfBoundsException");
+                int linkNum = Integer.valueOf(getSurveyTypeNumber);
+
+                if(linkNum == 1){
+
+                    int walkoutdoor_sampled = sharedPrefs.getInt("walkoutdoor_sampled", 0);
+
+                    walkoutdoor_sampled++;
+                    sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
+
+                }else {
+
+                    int random_sampled = sharedPrefs.getInt("interval_sampled", 0);
+
+                    random_sampled++;
+                    sharedPrefs.edit().putInt("interval_sampled", random_sampled).apply();
+                }
+
+                Intent resultIntent = new Intent(Intent.ACTION_VIEW);
+                resultIntent.setData(Uri.parse(link)); //get the link from adapter
+
+                startActivity(resultIntent);
+            }catch (IndexOutOfBoundsException e){
+
+                Log.d(TAG, "[test mobile triggering] IndexOutOfBoundsException");
+            }
         }
+
     }
 
     @Override

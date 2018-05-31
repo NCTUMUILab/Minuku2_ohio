@@ -22,8 +22,6 @@
 
 package edu.ohio.minukucore.event;
 
-import android.util.Log;
-
 import java.util.Map;
 
 public class ShowNotificationEventBuilder {
@@ -74,7 +72,7 @@ public class ShowNotificationEventBuilder {
     }
 
     public ShowNotificationEvent createShowNotificationEvent() {
-        Log.d(TAG, "Returing show notification event for " + title);
+//        Log.d(TAG, "Returing show notification event for " + title);
         return new ShowNotificationEvent(title,
                 message,
                 iconID,
