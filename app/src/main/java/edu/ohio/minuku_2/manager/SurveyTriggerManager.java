@@ -52,6 +52,8 @@ public class SurveyTriggerManager {
 
     private ScheduledExecutorService mScheduledExecutorService;
 
+    private int alarmCheckCount = 0;
+
     public static final int REFRESH_FREQUENCY = 20; //20s, 10000ms
     public static final int BACKGROUND_RECORDING_INITIAL_DELAY = 0;
 
@@ -452,7 +454,16 @@ public class SurveyTriggerManager {
         @Override
         public void run() {
 
-            confirmAlarmExist();
+            if(alarmCheckCount == 30) {
+
+                Log.d(TAG, "confirmAlarmExist");
+
+                confirmAlarmExist();
+                alarmCheckCount = 0;
+            }else {
+
+                alarmCheckCount++;
+            }
 
             userid = Constants.DEVICE_ID;
 
@@ -981,9 +992,8 @@ public class SurveyTriggerManager {
 
     //add to DB in order to display it in the SurveyActivity.java
     public void addSurveyLinkToDB(String noti_type){
-        //Log.d(TAG, "addSurveyLinkToDB");
 
-//        settingMissedClickedCount();
+        //Log.d(TAG, "addSurveyLinkToDB");
 
         dailyResponseNum++;
         sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
@@ -997,25 +1007,11 @@ public class SurveyTriggerManager {
             mob = "0";
         }
 
-//        try {
-//            ConnectivityDataRecord connectivityDataRecord = ConnectivityStreamGenerator.toOtherconnectDataRecord;
-//
-//            if (connectivityDataRecord.getIsMobileConnected()) {
-//                mob = "1";
-//            } else {
-//                mob = "0";
-//            }
-//        }catch (Exception e){
-//            //e.printStackTrace();
-//            mob = "0";
-//        }
-
         //before the place it was dailySurveyNum
         int daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
 
         int periodNum = getPeriodNum(ScheduleAndSampleManager.getCurrentTimeInMillis());
 
-        // + "&w=" + weekNum
         String linktoShow = link + "?p="+participantID + "&g=" + groupNum + "&d=" + daysInSurvey + "&n=" + periodNum + "&m=" + mob;
 
         ContentValues values = new ContentValues();
@@ -1037,9 +1033,8 @@ public class SurveyTriggerManager {
         finally {
 
             values.clear();
-            DBManager.getInstance().closeDatabase(); // Closing database connection
+            DBManager.getInstance().closeDatabase();
 
-            //TODO record to the log: IntervalSurveyState.csv
             // +1 is because it will be add after this function but we show the afterPlus one.
             int surveyNum = interval_sampled + walkoutdoor_sampled + 1;
 
@@ -1233,7 +1228,7 @@ public class SurveyTriggerManager {
                 Log.d(TAG, "[test alarm] IntervalSampleReceiver isTimeForSurvey : " + isTimeToSurvey);
 
 
-                if (interval_sampled < 3 && isTimeToSurvey) {
+                if (interval_sampled < 6 && isTimeToSurvey) {
 
                     CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Conditions is satisfied, going to trigger the notification.");
 

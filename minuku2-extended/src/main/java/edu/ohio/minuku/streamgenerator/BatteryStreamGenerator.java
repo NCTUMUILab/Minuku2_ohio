@@ -76,7 +76,7 @@ public class BatteryStreamGenerator extends AndroidStreamGenerator<BatteryDataRe
         EventBus.getDefault().post(batteryDataRecord);
         try {
             mDAO.add(batteryDataRecord);
-            mDAO.query_counting();
+//            mDAO.query_counting();
         } catch (DAOException e) {
             e.printStackTrace();
             return false;

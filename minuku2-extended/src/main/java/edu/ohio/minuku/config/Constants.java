@@ -129,7 +129,7 @@ public class Constants {
     // Prompt service related constants
     public static final long PROMPT_SERVICE_REPEAT_MILLISECONDS = MILLISECONDS_PER_MINUTE * 30;
     public static final int STREAM_UPDATE_DELAY = 10;
-    public static final int STREAM_UPDATE_FREQUENCY = 5;
+    public static final int STREAM_UPDATE_FREQUENCY = 10;
     public static final int STREAM_UPDATE_THREAD_SIZE = 1;
     //changing from 50 mins to 15 mins, users were getting it close to bedtime
     public static final int DIARY_NOTIFICATION_SERVICE_REPEAT_MILLISECONDS = 15 * 60 * 1000; //15 minutes

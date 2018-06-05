@@ -252,7 +252,7 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
         EventBus.getDefault().post(transportationModeDataRecord);
         try {
             mDAO.add(transportationModeDataRecord);
-            mDAO.query_counting();
+//            mDAO.query_counting();
 
         } catch (DAOException e) {
 //            e.printStackTrace();
