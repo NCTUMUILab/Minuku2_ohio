@@ -137,10 +137,12 @@ public class Utils {
 
         boolean wakeSleepDateIsSame = sharedPrefs.getBoolean("WakeSleepDateIsSame", false);
 
-        long period=-999;
+        long period;
 
         if(wakeSleepDateIsSame){
 
+            //TODO should changed 6 into the total surveys count in each day
+            //TODO change the sharedPrefs into one day one PeriodLong
             period = (startTimeLong-endTimeLong + Constants.MILLISECONDS_PER_DAY)/6;
         }else {
 

@@ -22,7 +22,6 @@
 
 package edu.ohio.minuku_2;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -92,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
     //private TextView compensationMessage;
 
     private AtomicInteger loadingProcessCount = new AtomicInteger(0);
-    private ProgressDialog loadingProgressDialog;
 
     private int mYear, mMonth, mDay;
 

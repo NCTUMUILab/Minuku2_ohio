@@ -719,31 +719,32 @@ public class SurveyTriggerManager {
 
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Period Number is "+ periodNum);
 
-        if(periodNum > 1) {
-
-            if (noti_type.equals(noti_walk)) {
-
-                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "It is a mobile survey.");
-
-                //get last period
-                int lastPeriodNum = periodNum - 1;
-
-                boolean isLastPeriodNotClicked = sharedPrefs.getBoolean("Period"+lastPeriodNum,true);
-
-                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "LastPeriod has not clicked "+ isLastPeriodNotClicked + "(P.S. the mobile one might set by clicked for the mechanism.)");
-
-                if(isLastPeriodNotClicked){
-
-                    sharedPrefs.edit().putInt("CurrPeriodNum", lastPeriodNum).apply();
-
-                    Log.d(TAG, "[test new trigger] isLastPeriodNotClicked : "+isLastPeriodNotClicked);
-
-                    return isLastPeriodNotClicked;
-                }
-
-                //else get the current one
-            }
-        }
+        //TODO deprecated
+//        if(periodNum > 1) {
+//
+//            if (noti_type.equals(noti_walk)) {
+//
+//                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "It is a mobile survey.");
+//
+//                //get last period
+//                int lastPeriodNum = periodNum - 1;
+//
+//                boolean isLastPeriodNotClicked = sharedPrefs.getBoolean("Period"+lastPeriodNum,true);
+//
+//                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "LastPeriod has not clicked "+ isLastPeriodNotClicked + "(P.S. the mobile one might set by clicked for the mechanism.)");
+//
+//                if(isLastPeriodNotClicked){
+//
+//                    sharedPrefs.edit().putInt("CurrPeriodNum", lastPeriodNum).apply();
+//
+//                    Log.d(TAG, "[test new trigger] isLastPeriodNotClicked : "+isLastPeriodNotClicked);
+//
+//                    return isLastPeriodNotClicked;
+//                }
+//
+//                //else get the current one
+//            }
+//        }
 
         //if it's a mobile triggered or have been clicked; true
 
@@ -1127,6 +1128,9 @@ public class SurveyTriggerManager {
                 DataHandler.updateSurveyMissTime(id, DBHelper.missedTime_col);
             }
         }
+
+        //TODO check the period have jumped or not
+        //
     }
 
     private void triggerQualtrics(String noti_type){
