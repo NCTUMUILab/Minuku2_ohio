@@ -108,7 +108,7 @@ public class RingerStreamGenerator extends AndroidStreamGenerator<RingerDataReco
         EventBus.getDefault().post(ringerDataRecord);
         try {
             mDAO.add(ringerDataRecord);
-            mDAO.query_counting();
+//            mDAO.query_counting();
         } catch (DAOException e) {
             e.printStackTrace();
             return false;

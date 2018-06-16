@@ -524,13 +524,20 @@ public class BackgroundService extends Service {
 
                 Log.d(TAG, "[check runnable] going to check if the runnable is running");
 
+                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to check if the runnable is running");
+                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "is the runnable running ? "+isBackgroundRunnableRunning);
+
                 if(!isBackgroundRunnableRunning){
 
                     Log.d(TAG, "[check runnable] the runnable is not running, going to restart it.");
 
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "the runnable is not running, going to restart it");
+
                     runMainThread();
 
                     Log.d(TAG, "[check runnable] the runnable is restarted.");
+
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "the runnable is restarted");
                 }
 
                 PendingIntent pi = PendingIntent.getBroadcast(BackgroundService.this, 0, new Intent(CHECK_RUNNABLE_ACTION), 0);

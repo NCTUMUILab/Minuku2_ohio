@@ -108,7 +108,7 @@ public class ConnectivityStreamGenerator extends AndroidStreamGenerator<Connecti
         EventBus.getDefault().post(connectivityDataRecord);
         try {
             mDAO.add(connectivityDataRecord);
-            mDAO.query_counting();
+//            mDAO.query_counting();
         } catch (DAOException e) {
             e.printStackTrace();
             return false;

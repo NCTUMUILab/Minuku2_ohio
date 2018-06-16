@@ -92,7 +92,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v5";
+    private String versionNumber = "v7";
 
     public static final int HTTP_TIMEOUT = 10000; // millisecond
     public static final int SOCKET_TIMEOUT = 20000; // millisecond
@@ -491,7 +491,7 @@ public class WifiReceiver extends BroadcastReceiver {
         //tell if the session has been labeled. It is in the annotaiton with ESM tag
         ArrayList<Annotation> annotations = mSession.getAnnotationsSet().getAnnotationByTag("ESM");
 
-        JSONObject ESMJSON=null;
+        JSONObject ESMJSON = null;
 
         //{"Entire_session":true,"Tag":["ESM"],"Content":"{\"ans1\":\"Walking outdoors.\",\"ans2\":\"Food\",\"ans3\":\"No\",\"ans4\":\"Right before\"}"}
         if (annotations.size()>0){
@@ -541,7 +541,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 //adding the annotations data
                 annotatedtripdata.put("Annotations", ESMJSON);
 
-                endTimeOfJson = EndTime;
+                endTimeOfJson = EndTime * Constants.MILLISECONDS_PER_SECOND;
             } catch (JSONException e) {
                 //e.printStackTrace();
             }
@@ -585,7 +585,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
 
-//                CSVHelper.dataUploadingCSV("Trip", "After sending, getting from the server, the latest EndTime : " + ScheduleAndSampleManager.getTimeString(fromServer*Constants.MILLISECONDS_PER_SECOND));
+                CSVHelper.dataUploadingCSV("Trip", "After sending, getting from the server, the latest EndTime : " + ScheduleAndSampleManager.getTimeString(fromServer*Constants.MILLISECONDS_PER_SECOND));
+
+                Log.d(TAG, "endTimeOfJson : "+endTimeOfJson);
+                Log.d(TAG, "fromServer : "+fromServer * Constants.MILLISECONDS_PER_SECOND);
 
                 if(endTimeOfJson == fromServer * Constants.MILLISECONDS_PER_SECOND){
 

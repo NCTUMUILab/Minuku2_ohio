@@ -2,22 +2,25 @@ package edu.ohio.minuku_2.controller;
 
 import android.app.ActionBar;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
-import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.TimePicker;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.Locale;
 
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
@@ -53,7 +56,8 @@ public class Sleepingohio extends AppCompatActivity {
         setContentView(R.layout.settingsleeptimepage);
 
         sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
-        mContext = getApplicationContext();
+//        mContext = getApplicationContext();
+        mContext = Sleepingohio.this;
 
         initsettingohio();
     }
@@ -116,16 +120,16 @@ public class Sleepingohio extends AppCompatActivity {
             if(!sleepStartTimeAMPM.equals(sleepEndTimeAMPM)){
 
                 //we add the date to get the accurate range
-                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN); //, Locale.US
-                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepStartTimeHour+":"+sleepStartTimeMin, sdf_);
-                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(tomorrDate+" "+sleepEndTimeHour+":"+sleepEndTimeMin, sdf_);
+                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
+                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepStartTimeHour+":"+sleepStartTimeMin + " " + sleepStartTimeAMPM, sdf_);
+                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(tomorrDate+" "+sleepEndTimeHour+":"+sleepEndTimeMin + " " + sleepEndTimeAMPM, sdf_);
 
                 sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
             }else {
 
-                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN);
-                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepStartTimeHour+":"+sleepStartTimeMin, sdf_);
-                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepEndTimeHour+":"+sleepEndTimeMin, sdf_);
+                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
+                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepStartTimeHour+":"+sleepStartTimeMin + " " + sleepStartTimeAMPM, sdf_);
+                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepEndTimeHour+":"+sleepEndTimeMin + " " + sleepEndTimeAMPM, sdf_);
 
                 sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
             }
@@ -246,138 +250,262 @@ public class Sleepingohio extends AppCompatActivity {
         }
     }
 
+    private int getIndex(Spinner spinner, String myString){
+
+        int index;
+
+        for (int i=0;i<spinner.getCount();i++){
+
+            if (spinner.getItemAtPosition(i).equals(myString)){
+
+                index = i;
+                return index;
+            }
+        }
+
+        //return 定點 by default
+        return 0;
+    }
+
     private Button.OnClickListener starttimeing = new Button.OnClickListener() {
         public void onClick(View v) {
-            //Log.e(TAG,"sleepStarttime clicked");
 
-            final Calendar c = Calendar.getInstance();
-            int hour = c.get(Calendar.HOUR_OF_DAY);
-            int minute = c.get(Calendar.MINUTE);
-            new CustomTimePickerDialog(Sleepingohio.this, new TimePickerDialog.OnTimeSetListener(){
+            final LayoutInflater inflater = LayoutInflater.from(mContext);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            final View layout = inflater.inflate(R.layout.timesetting_dialog,null);
+
+            final Spinner spinner_hour = (Spinner) layout.findViewById(R.id.spinner_hour);
+            final Spinner spinner_min = (Spinner) layout.findViewById(R.id.spinner_min);
+            final Spinner spinner_ampm = (Spinner) layout.findViewById(R.id.spinner_ampm);
+
+            final String[] hour_options = {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"};
+            final String[] min_options = {"00", "30"};
+            final String[] ampm_options = {"am", "pm"};
+
+            final ArrayAdapter<String> hourList = new ArrayAdapter<>(mContext,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    hour_options);
+
+            final ArrayAdapter<String> minList = new ArrayAdapter<>(mContext,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    min_options);
+
+            final ArrayAdapter<String> ampmList = new ArrayAdapter<>(mContext,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    ampm_options);
+
+            spinner_hour.setAdapter(hourList);
+            spinner_min.setAdapter(minList);
+            spinner_ampm.setAdapter(ampmList);
+
+            SimpleDateFormat sdf_hh = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_small);
+            SimpleDateFormat sdf_mm = new SimpleDateFormat(Constants.DATE_FORMAT_MIN);
+            SimpleDateFormat sdf_a = new SimpleDateFormat(Constants.DATE_FORMAT_AMPM);
+
+            long currentTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+            String currentHour = ScheduleAndSampleManager.getTimeString(currentTime, sdf_hh);
+            String currentMin = ScheduleAndSampleManager.getTimeString(currentTime, sdf_mm);
+            String currentAmpm = ScheduleAndSampleManager.getTimeString(currentTime, sdf_a);
+
+            //set the closest time in minutes
+            int currentMinInt = Integer.valueOf(currentMin);
+            String exactMin;
+
+            //if closer to "30"
+            if(currentMinInt > 15 && currentMinInt <= 45)
+                exactMin = "30";
+            else
+                exactMin = "00";
+
+            Log.d(TAG, "currentHour : "+currentHour);
+            Log.d(TAG, "currentMin : "+currentMin);
+            Log.d(TAG, "exactMin : "+exactMin);
+            Log.d(TAG, "currentAmpm : "+currentAmpm);
+            Log.d(TAG, "currentAmpm toLowerCase : "+currentAmpm.toLowerCase());
+
+            Log.d(TAG, "getIndex(spinner_hour, exactHour) : "+ getIndex(spinner_hour, currentHour));
+            Log.d(TAG, "getIndex(spinner_min, currentMin) : "+ getIndex(spinner_min, exactMin));
+            Log.d(TAG, "getIndex(spinner_ampm, currentAmpm) : "+ getIndex(spinner_ampm, currentAmpm.toLowerCase()));
+
+            spinner_hour.setSelection(getIndex(spinner_hour, currentHour));
+            spinner_min.setSelection(getIndex(spinner_min, exactMin));
+            spinner_ampm.setSelection(getIndex(spinner_ampm, currentAmpm.toLowerCase()));
+
+            builder.setView(layout)
+                    .setPositiveButton(R.string.ok, null)
+                    .setNegativeButton("cancel", null);
+
+            final AlertDialog mAlertDialog = builder.create();
+            mAlertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
                 @Override
-                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                public void onShow(final DialogInterface dialogInterface) {
 
-                    String hour=String.valueOf(hourOfDay);
-                    String min =String.valueOf(minute);
-                    String am_pm;
+                    Button button = mAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                    button.setOnClickListener(new View.OnClickListener() {
 
-                    if(hourOfDay < 12)
-                        am_pm = "am";
-                    else
-                        am_pm = "pm";
+                        @Override
+                        public void onClick(View view) {
 
-                    if(hourOfDay<10)
-                        hour = "0" + String.valueOf(hourOfDay);
+                            //set spinners with the current time
+                            String selectedHour = spinner_hour.getSelectedItem().toString();
+                            String selectedMin = spinner_min.getSelectedItem().toString();
+                            String selectedAmpm = spinner_ampm.getSelectedItem().toString();
 
-                    if(minute<10)
-                        min = "0" + String.valueOf(minute);
+                            String hour=String.valueOf(selectedHour);
+                            String min =String.valueOf(selectedMin);
+                            String am_pm = selectedAmpm;
 
-                    Log.d(TAG, "starttime raw hour : "+hour);
-                    Log.d(TAG, "starttime raw min : "+min);
+                            Log.d(TAG, "starttime raw hour : "+hour);
+                            Log.d(TAG, "starttime raw min : "+min);
 
-                    sleepStartTimeHour = hour;
-                    sleepStartTimeMin = min;
+                            sleepStartTimeHour = hour;
+                            sleepStartTimeMin = min;
 
-                    SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN);
-                    sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+hour+":"+min, sdf);
+                            SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
+                            sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+hour+":"+min+" "+am_pm, sdf);
 
-                    Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
-                    Log.d(TAG, "SleepEndTime Long : "+ScheduleAndSampleManager.getTimeString(sleepStartTimeLong));
+                            Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
+                            Log.d(TAG, "SleepStartTime Long : "+ScheduleAndSampleManager.getTimeString(sleepStartTimeLong));
 
+                            if(am_pm.equals("am")){
 
-                    if(hourOfDay<10)
-                        hour = "0" + String.valueOf(hourOfDay);
-                    else if(hourOfDay > 12) {
-//                        hour = String.valueOf(hourOfDay - 12);
-                        hourOfDay = hourOfDay - 12;
+                                if(hour.equals("00")){
 
-                        if(hourOfDay<10)
-                            hour = "0" + String.valueOf(hourOfDay);
-                        else
-                            hour = String.valueOf(hourOfDay);
-                    }
+                                    hour = "12";
+                                }
+                            }
 
-                    if(am_pm.equals("am")){
+                            sleepStarttime.setText( hour + ":" + min + " " + am_pm);
 
-                        if(hour.equals("00")){
-
-                            hour = "12";
+                            dialogInterface.dismiss();
                         }
-                    }
-
-                    sleepStarttime.setText( hour + ":" + min + " " + am_pm);
-
+                    });
                 }
+            });
 
-            }, hour, minute, false).show();
-
+            mAlertDialog.show();
         }
     };
 
     private Button.OnClickListener endtimeing = new Button.OnClickListener() {
         public void onClick(View v) {
-            //Log.e(TAG,"sleepEndtime clicked");
 
-            final Calendar c = Calendar.getInstance();
-            int hour = c.get(Calendar.HOUR_OF_DAY);
-            int minute = c.get(Calendar.MINUTE);
-            new CustomTimePickerDialog(Sleepingohio.this, new TimePickerDialog.OnTimeSetListener(){
+            final LayoutInflater inflater = LayoutInflater.from(mContext);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            final View layout = inflater.inflate(R.layout.timesetting_dialog,null);
+
+            final Spinner spinner_hour = (Spinner) layout.findViewById(R.id.spinner_hour);
+            final Spinner spinner_min = (Spinner) layout.findViewById(R.id.spinner_min);
+            final Spinner spinner_ampm = (Spinner) layout.findViewById(R.id.spinner_ampm);
+
+            final String[] hour_options = {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"};
+            final String[] min_options = {"00", "30"};
+            final String[] ampm_options = {"am", "pm"};
+
+            final ArrayAdapter<String> hourList = new ArrayAdapter<>(mContext,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    hour_options);
+
+            final ArrayAdapter<String> minList = new ArrayAdapter<>(mContext,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    min_options);
+
+            final ArrayAdapter<String> ampmList = new ArrayAdapter<>(mContext,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    ampm_options);
+
+            spinner_hour.setAdapter(hourList);
+            spinner_min.setAdapter(minList);
+            spinner_ampm.setAdapter(ampmList);
+
+            SimpleDateFormat sdf_hh = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_small);
+            SimpleDateFormat sdf_mm = new SimpleDateFormat(Constants.DATE_FORMAT_MIN);
+            SimpleDateFormat sdf_a = new SimpleDateFormat(Constants.DATE_FORMAT_AMPM);
+
+            long currentTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+            String currentHour = ScheduleAndSampleManager.getTimeString(currentTime, sdf_hh);
+            String currentMin = ScheduleAndSampleManager.getTimeString(currentTime, sdf_mm);
+            String currentAmpm = ScheduleAndSampleManager.getTimeString(currentTime, sdf_a);
+
+            //set the closest time in minutes
+            int currentMinInt = Integer.valueOf(currentMin);
+            String exactMin;
+
+            //if closer to "30"
+            if(currentMinInt > 15 && currentMinInt <= 45)
+                exactMin = "30";
+            else
+                exactMin = "00";
+
+            Log.d(TAG, "currentHour : "+currentHour);
+            Log.d(TAG, "currentMin : "+currentMin);
+            Log.d(TAG, "exactMin : "+exactMin);
+            Log.d(TAG, "currentAmpm : "+currentAmpm);
+            Log.d(TAG, "currentAmpm toLowerCase : "+currentAmpm.toLowerCase());
+
+            Log.d(TAG, "getIndex(spinner_hour, exactHour) : "+ getIndex(spinner_hour, currentHour));
+            Log.d(TAG, "getIndex(spinner_min, currentMin) : "+ getIndex(spinner_min, exactMin));
+            Log.d(TAG, "getIndex(spinner_ampm, currentAmpm) : "+ getIndex(spinner_ampm, currentAmpm.toLowerCase()));
+
+            spinner_hour.setSelection(getIndex(spinner_hour, currentHour));
+            spinner_min.setSelection(getIndex(spinner_min, exactMin));
+            spinner_ampm.setSelection(getIndex(spinner_ampm, currentAmpm.toLowerCase()));
+
+            builder.setView(layout)
+                    .setPositiveButton(R.string.ok, null)
+                    .setNegativeButton("cancel", null);
+
+            final AlertDialog mAlertDialog = builder.create();
+            mAlertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
                 @Override
-                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                public void onShow(final DialogInterface dialogInterface) {
 
-                    String hour=String.valueOf(hourOfDay);
-                    String min =String.valueOf(minute);
-                    String am_pm;
+                    Button button = mAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                    button.setOnClickListener(new View.OnClickListener() {
 
-                    if(hourOfDay < 12)
-                        am_pm = "am";
-                    else
-                        am_pm = "pm";
+                        @Override
+                        public void onClick(View view) {
 
-                    if(hourOfDay < 10)
-                        hour = "0" + String.valueOf(hourOfDay);
+                            //set spinners with the current time
+                            String selectedHour = spinner_hour.getSelectedItem().toString();
+                            String selectedMin = spinner_min.getSelectedItem().toString();
+                            String selectedAmpm = spinner_ampm.getSelectedItem().toString();
 
-                    if(minute < 10)
-                        min = "0" + String.valueOf(minute);
+                            String hour=String.valueOf(selectedHour);
+                            String min =String.valueOf(selectedMin);
+                            String am_pm = selectedAmpm;
 
-                    Log.d(TAG, "endtime raw hour : "+hour);
-                    Log.d(TAG, "endtime raw min : "+min);
+                            Log.d(TAG, "endtime raw hour : "+hour);
+                            Log.d(TAG, "endtime raw min : "+min);
 
-                    sleepEndTimeHour = hour;
-                    sleepEndTimeMin = min;
+                            sleepEndTimeHour = hour;
+                            sleepEndTimeMin = min;
 
-                    SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN); //, Locale.US
-                    sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+hour+":"+min, sdf);
+                            SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
+                            sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+hour+":"+min+" "+am_pm, sdf);
 
-                    Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
-                    Log.d(TAG, "SleepEndTime Long : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
+                            Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
+                            Log.d(TAG, "SleepEndTime Long : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
 
+                            if(am_pm.equals("am")){
 
-                    if(hourOfDay<10)
-                        hour = "0" + String.valueOf(hourOfDay);
-                    else if(hourOfDay > 12) {
-//                        hour = String.valueOf(hourOfDay - 12);
-                        hourOfDay = hourOfDay - 12;
+                                if(hour.equals("00")){
 
-                        if(hourOfDay<10)
-                            hour = "0" + String.valueOf(hourOfDay);
-                        else
-                            hour = String.valueOf(hourOfDay);
+                                    hour = "12";
+                                }
+                            }
 
-                    }
+                            sleepEndtime.setText( hour + ":" + min + " " + am_pm);
 
-                    if(am_pm.equals("am")){
-
-                        if(hour.equals("00")){
-
-                            hour = "12";
+                            dialogInterface.dismiss();
                         }
-                    }
+                    });
+                };
+            });
 
-                    sleepEndtime.setText( hour + ":" + min + " " + am_pm);
-
-                }
-            }, hour, minute, false).show();
+            mAlertDialog.show();
         }
     };
 

@@ -19,7 +19,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Random;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.CSVHelper;
+import edu.ohio.minuku.Utilities.RandomNumber;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
@@ -52,6 +53,8 @@ public class SurveyTriggerManager {
 
     private ScheduledExecutorService mScheduledExecutorService;
 
+    private int alarmCheckCount = 0;
+
     public static final int REFRESH_FREQUENCY = 20; //20s, 10000ms
     public static final int BACKGROUND_RECORDING_INITIAL_DELAY = 0;
 
@@ -69,9 +72,10 @@ public class SurveyTriggerManager {
     //qua is equal to interval now
 
     public static ArrayList<Long> interval_sampled_times;
+    public static List<String> interval_sampled_times_bound;
 
     private static int interval_sample_number = 6;
-    private static int interval_sample_threshold = 2;
+    private static int interval_sample_threshold = 4;
 
     private static int interval_sampled;
     private int walkoutdoor_sampled;
@@ -253,9 +257,13 @@ public class SurveyTriggerManager {
 
 
         interval_sampled_times = new ArrayList<>();
-        ArrayList<Long> times = new ArrayList<Long>();
+        interval_sampled_times_bound = new ArrayList<>();
+        ArrayList<Long> times = new ArrayList<>();
+        ArrayList<String> time_bounds = new ArrayList<>();
+
         long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
-        Random random = new Random(now);
+//        Random random = new Random(now);
+//        RandomNumber randomNumber = new RandomNumber();
         int sample_period;
         //TODO set the start and end time.
         String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER); //"22:00"
@@ -289,7 +297,9 @@ public class SurveyTriggerManager {
 
         long sub_startTime = surveyStartTime;
         long sub_endTime  = surveyEndTime;
-        long min_interval = (surveyEndTime - surveyStartTime)/(interval_sample_number + interval_sample_threshold); //90 * 60 * 1000  (e-s)/10
+//        long min_interval = (surveyEndTime - surveyStartTime)/(interval_sample_number + interval_sample_threshold); //90 * 60 * 1000  (e-s)/10
+
+        long min_interval = (surveyEndTime - surveyStartTime)/interval_sample_number;
 
         //1. first get the entire sampling period
 
@@ -301,7 +311,10 @@ public class SurveyTriggerManager {
                 //Log.d(TAG, "interval_sample_number : "+i);
 
                 //2. divide the period by the number of sample
-                sample_period = (int) (sub_endTime - sub_startTime);
+//                sample_period = (int) (sub_endTime - sub_startTime);
+
+                //sample the period from the start time to before 30 mins of the end time
+                sample_period = (int) (min_interval - Constants.MILLISECONDS_PER_HOUR);
 
                 try {
 
@@ -309,12 +322,15 @@ public class SurveyTriggerManager {
                     //Log.d(TAG, "interval_sample_number : "+interval_sample_number);
                     //Log.d(TAG, "i : "+i);
 
-                    int sub_sample_period = sample_period / (interval_sample_number - i);
+//                    int sub_sample_period = sample_period / (interval_sample_number - i);
+                    int sub_sample_period = sample_period;
 
                     //Log.d(TAG, "sub_sample_period : "+sub_sample_period);
 
                     //3. random within the sub sample period
-                    long time = random.nextInt(sub_sample_period) + sub_startTime;
+//                    long time = random.nextInt(sub_sample_period) + sub_startTime;
+                    long time = new RandomNumber().random(sub_sample_period) + sub_startTime;
+                    Log.d(TAG, "[test alarm] sub_sample_period random number : "+(time - sub_startTime));
 
                     //Log.d(TAG, "testRandom semi sampling: the " + i + " sampling period is from " + getTimeString(sub_startTime) + " to " + getTimeString(sub_endTime) +
 //                        " divided by " + (interval_sample_number-i) + " each period is " + (sub_sample_period/60/1000) + " minutes long, " + " the sampled time within the period is " +
@@ -327,7 +343,10 @@ public class SurveyTriggerManager {
 
                     //5. the next startime is the previous sample time + min interval. We do this to ensure that the next sampled time is
                     //not too close to the previous sampled time.
-                    sub_startTime = time + min_interval;
+//                    sub_startTime = time + min_interval;
+                    sub_startTime += min_interval;
+
+                    time_bounds.add(ScheduleAndSampleManager.getTimeString(sub_startTime));
 
                     //Log.d(TAG, "testRandom semi sampling: the new start time is " + getTimeString(sub_startTime));
 
@@ -350,7 +369,15 @@ public class SurveyTriggerManager {
                 long firstTime = times.get(time_index-1);
                 long secondTime = times.get(time_index);
 
-                if(secondTime - firstTime < Constants.MILLISECONDS_PER_HOUR){
+                Log.d(TAG, "[test alarm] time_index : " + time_index);
+                Log.d(TAG, "[test alarm] firstTime : "+ ScheduleAndSampleManager.getTimeString(firstTime));
+                Log.d(TAG, "[test alarm] secondTime : "+ ScheduleAndSampleManager.getTimeString(secondTime));
+                Log.d(TAG, "[test alarm] secondTime - firstTime : "+ (secondTime - firstTime));
+                Log.d(TAG, "[test alarm] MILLISECONDS_PER_HOUR : " + Constants.MILLISECONDS_PER_HOUR);
+
+                Log.d(TAG, "[test alarm] is over an hour ? " +((secondTime - firstTime) < Constants.MILLISECONDS_PER_HOUR));
+
+                if((secondTime - firstTime) < Constants.MILLISECONDS_PER_HOUR){
 
                     havingAnHourInterval = false;
                     break;
@@ -367,6 +394,7 @@ public class SurveyTriggerManager {
         if (times!=null) {
 
             interval_sampled_times = times;
+            interval_sampled_times_bound = time_bounds;
             for (int i = 0; i < times.size(); i++) {
 
                 long time = times.get(i);
@@ -452,7 +480,16 @@ public class SurveyTriggerManager {
         @Override
         public void run() {
 
-            confirmAlarmExist();
+            if(alarmCheckCount == 30) {
+
+                Log.d(TAG, "confirmAlarmExist");
+
+                confirmAlarmExist();
+                alarmCheckCount = 0;
+            }else {
+
+                alarmCheckCount++;
+            }
 
             userid = Constants.DEVICE_ID;
 
@@ -708,31 +745,32 @@ public class SurveyTriggerManager {
 
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Period Number is "+ periodNum);
 
-        if(periodNum > 1) {
-
-            if (noti_type.equals(noti_walk)) {
-
-                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "It is a mobile survey.");
-
-                //get last period
-                int lastPeriodNum = periodNum - 1;
-
-                boolean isLastPeriodNotClicked = sharedPrefs.getBoolean("Period"+lastPeriodNum,true);
-
-                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "LastPeriod has not clicked "+ isLastPeriodNotClicked + "(P.S. the mobile one might set by clicked for the mechanism.)");
-
-                if(isLastPeriodNotClicked){
-
-                    sharedPrefs.edit().putInt("CurrPeriodNum", lastPeriodNum).apply();
-
-                    Log.d(TAG, "[test new trigger] isLastPeriodNotClicked : "+isLastPeriodNotClicked);
-
-                    return isLastPeriodNotClicked;
-                }
-
-                //else get the current one
-            }
-        }
+        //TODO deprecated
+//        if(periodNum > 1) {
+//
+//            if (noti_type.equals(noti_walk)) {
+//
+//                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "It is a mobile survey.");
+//
+//                //get last period
+//                int lastPeriodNum = periodNum - 1;
+//
+//                boolean isLastPeriodNotClicked = sharedPrefs.getBoolean("Period"+lastPeriodNum,true);
+//
+//                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "LastPeriod has not clicked "+ isLastPeriodNotClicked + "(P.S. the mobile one might set by clicked for the mechanism.)");
+//
+//                if(isLastPeriodNotClicked){
+//
+//                    sharedPrefs.edit().putInt("CurrPeriodNum", lastPeriodNum).apply();
+//
+//                    Log.d(TAG, "[test new trigger] isLastPeriodNotClicked : "+isLastPeriodNotClicked);
+//
+//                    return isLastPeriodNotClicked;
+//                }
+//
+//                //else get the current one
+//            }
+//        }
 
         //if it's a mobile triggered or have been clicked; true
 
@@ -981,9 +1019,8 @@ public class SurveyTriggerManager {
 
     //add to DB in order to display it in the SurveyActivity.java
     public void addSurveyLinkToDB(String noti_type){
-        //Log.d(TAG, "addSurveyLinkToDB");
 
-//        settingMissedClickedCount();
+        //Log.d(TAG, "addSurveyLinkToDB");
 
         dailyResponseNum++;
         sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
@@ -997,25 +1034,11 @@ public class SurveyTriggerManager {
             mob = "0";
         }
 
-//        try {
-//            ConnectivityDataRecord connectivityDataRecord = ConnectivityStreamGenerator.toOtherconnectDataRecord;
-//
-//            if (connectivityDataRecord.getIsMobileConnected()) {
-//                mob = "1";
-//            } else {
-//                mob = "0";
-//            }
-//        }catch (Exception e){
-//            //e.printStackTrace();
-//            mob = "0";
-//        }
-
         //before the place it was dailySurveyNum
         int daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
 
         int periodNum = getPeriodNum(ScheduleAndSampleManager.getCurrentTimeInMillis());
 
-        // + "&w=" + weekNum
         String linktoShow = link + "?p="+participantID + "&g=" + groupNum + "&d=" + daysInSurvey + "&n=" + periodNum + "&m=" + mob;
 
         ContentValues values = new ContentValues();
@@ -1037,9 +1060,8 @@ public class SurveyTriggerManager {
         finally {
 
             values.clear();
-            DBManager.getInstance().closeDatabase(); // Closing database connection
+            DBManager.getInstance().closeDatabase();
 
-            //TODO record to the log: IntervalSurveyState.csv
             // +1 is because it will be add after this function but we show the afterPlus one.
             int surveyNum = interval_sampled + walkoutdoor_sampled + 1;
 
@@ -1132,6 +1154,9 @@ public class SurveyTriggerManager {
                 DataHandler.updateSurveyMissTime(id, DBHelper.missedTime_col);
             }
         }
+
+        //TODO check the period have jumped or not
+        //
     }
 
     private void triggerQualtrics(String noti_type){
@@ -1233,7 +1258,7 @@ public class SurveyTriggerManager {
                 Log.d(TAG, "[test alarm] IntervalSampleReceiver isTimeForSurvey : " + isTimeToSurvey);
 
 
-                if (interval_sampled < 3 && isTimeToSurvey) {
+                if (interval_sampled < 6 && isTimeToSurvey) {
 
                     CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Conditions is satisfied, going to trigger the notification.");
 

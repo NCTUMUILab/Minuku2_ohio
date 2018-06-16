@@ -157,7 +157,7 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
 
                 try {
                     mDAO.add(appUsageDataRecord);
-                    mDAO.query_counting();
+//                    mDAO.query_counting();
                 } catch (DAOException e) {
                     e.printStackTrace();
                     return false;
@@ -178,7 +178,7 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
 
                 try {
                     mDAO.add(appUsageDataRecord);
-                    mDAO.query_counting();
+//                    mDAO.query_counting();
                 } catch (DAOException e) {
                     e.printStackTrace();
                     return false;

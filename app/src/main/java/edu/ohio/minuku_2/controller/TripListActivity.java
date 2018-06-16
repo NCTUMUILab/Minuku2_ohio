@@ -1,7 +1,6 @@
 package edu.ohio.minuku_2.controller;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -127,7 +126,6 @@ public class TripListActivity extends Activity {
      */
     private class ListSessionAsyncTask extends AsyncTask<String, Void, ArrayList<Session> > {
 
-        private ProgressDialog dialog = null;
         private Context mContext = null;
 
         public ListSessionAsyncTask(Context context){
@@ -138,16 +136,11 @@ public class TripListActivity extends Activity {
         @Override
         protected void onPreExecute() {
 //            Log.d(TAG,"[test show trip] onPreExecute");
-            this.dialog = ProgressDialog.show(TripListActivity.this, "Working...","Loading...",true,false);
         }
 
 
         @Override
         protected void onPostExecute(ArrayList<Session> sessions) {
-
-            if (this.dialog.isShowing()) {
-                this.dialog.dismiss();
-            }
 
             mSessions = sessions;
 

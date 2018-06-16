@@ -25,6 +25,7 @@ public class CSVHelper {
     public static final String CSV_ALARM_CHECK = "Alarm_check.csv";
     public static final String CSV_RUNNABLE_CHECK = "Runnable_check.csv";
     public static final String CSV_RESET_INTERVALSAMPLES_CHECK = "ResetIntervalSamples_check.csv";
+    public static final String CSV_Interval_Samples_Times = "Interval_Samples_Times.csv";
 
     public static CSVWriter csv_writer = null;
 
@@ -55,6 +56,35 @@ public class CSVHelper {
 
                 textInList.add(texts[index]);
             }
+
+            String[] textInArray = textInList.toArray(new String[0]);
+
+            data.add(textInArray);
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        }catch (IOException e){
+            //e.printStackTrace();
+        }/*catch (Exception e){
+            //e.printStackTrace();
+        }*/
+    }
+
+    public static void storeToCSV(String fileName, List<String> textInList){
+
+        try{
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            //Log.d(TAG, "root : " + root);
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+fileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
 
             String[] textInArray = textInList.toArray(new String[0]);
 

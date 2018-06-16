@@ -1,7 +1,6 @@
 package edu.ohio.minuku_2.controller;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -840,7 +839,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     //use Asynk task to load sessions
     private class LoadDataAsyncTask extends AsyncTask<Integer, Void, ArrayList<LatLng>> {
-        private final ProgressDialog dialog = new ProgressDialog(AnnotateSessionActivity.this);
 
         @Override
         protected ArrayList<LatLng> doInBackground(Integer... params) {
@@ -855,9 +853,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         @Override
         protected void onPreExecute() {
             //Log.d(TAG, "[test show trip] onPreExecute ");
-
-            this.dialog.setMessage("Loading...");
-            this.dialog.show();
         }
 
         // onPostExecute displays the results of the AsyncTask.
@@ -878,16 +873,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 showMapWithPaths(mGoogleMap, points, middleLagLng, startLatLng, endLatLng);
             }
 
-            if (this.dialog.isShowing()) {
-                this.dialog.dismiss();
-            }
         }
 
-
-
-
     }
-
-
 
 }
