@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:paddingRight="30dp"
-            android:text="v6"
+            android:text="v7"
             android:textColor="#ffffff"
             android:textSize="24sp" />
 

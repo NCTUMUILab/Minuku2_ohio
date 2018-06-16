@@ -19,7 +19,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Random;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.CSVHelper;
+import edu.ohio.minuku.Utilities.RandomNumber;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
@@ -71,9 +72,10 @@ public class SurveyTriggerManager {
     //qua is equal to interval now
 
     public static ArrayList<Long> interval_sampled_times;
+    public static List<String> interval_sampled_times_bound;
 
     private static int interval_sample_number = 6;
-    private static int interval_sample_threshold = 2;
+    private static int interval_sample_threshold = 4;
 
     private static int interval_sampled;
     private int walkoutdoor_sampled;
@@ -255,9 +257,13 @@ public class SurveyTriggerManager {
 
 
         interval_sampled_times = new ArrayList<>();
-        ArrayList<Long> times = new ArrayList<Long>();
+        interval_sampled_times_bound = new ArrayList<>();
+        ArrayList<Long> times = new ArrayList<>();
+        ArrayList<String> time_bounds = new ArrayList<>();
+
         long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
-        Random random = new Random(now);
+//        Random random = new Random(now);
+//        RandomNumber randomNumber = new RandomNumber();
         int sample_period;
         //TODO set the start and end time.
         String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER); //"22:00"
@@ -291,7 +297,9 @@ public class SurveyTriggerManager {
 
         long sub_startTime = surveyStartTime;
         long sub_endTime  = surveyEndTime;
-        long min_interval = (surveyEndTime - surveyStartTime)/(interval_sample_number + interval_sample_threshold); //90 * 60 * 1000  (e-s)/10
+//        long min_interval = (surveyEndTime - surveyStartTime)/(interval_sample_number + interval_sample_threshold); //90 * 60 * 1000  (e-s)/10
+
+        long min_interval = (surveyEndTime - surveyStartTime)/interval_sample_number;
 
         //1. first get the entire sampling period
 
@@ -303,7 +311,10 @@ public class SurveyTriggerManager {
                 //Log.d(TAG, "interval_sample_number : "+i);
 
                 //2. divide the period by the number of sample
-                sample_period = (int) (sub_endTime - sub_startTime);
+//                sample_period = (int) (sub_endTime - sub_startTime);
+
+                //sample the period from the start time to before 30 mins of the end time
+                sample_period = (int) (min_interval - Constants.MILLISECONDS_PER_HOUR);
 
                 try {
 
@@ -311,12 +322,15 @@ public class SurveyTriggerManager {
                     //Log.d(TAG, "interval_sample_number : "+interval_sample_number);
                     //Log.d(TAG, "i : "+i);
 
-                    int sub_sample_period = sample_period / (interval_sample_number - i);
+//                    int sub_sample_period = sample_period / (interval_sample_number - i);
+                    int sub_sample_period = sample_period;
 
                     //Log.d(TAG, "sub_sample_period : "+sub_sample_period);
 
                     //3. random within the sub sample period
-                    long time = random.nextInt(sub_sample_period) + sub_startTime;
+//                    long time = random.nextInt(sub_sample_period) + sub_startTime;
+                    long time = new RandomNumber().random(sub_sample_period) + sub_startTime;
+                    Log.d(TAG, "[test alarm] sub_sample_period random number : "+(time - sub_startTime));
 
                     //Log.d(TAG, "testRandom semi sampling: the " + i + " sampling period is from " + getTimeString(sub_startTime) + " to " + getTimeString(sub_endTime) +
 //                        " divided by " + (interval_sample_number-i) + " each period is " + (sub_sample_period/60/1000) + " minutes long, " + " the sampled time within the period is " +
@@ -329,7 +343,10 @@ public class SurveyTriggerManager {
 
                     //5. the next startime is the previous sample time + min interval. We do this to ensure that the next sampled time is
                     //not too close to the previous sampled time.
-                    sub_startTime = time + min_interval;
+//                    sub_startTime = time + min_interval;
+                    sub_startTime += min_interval;
+
+                    time_bounds.add(ScheduleAndSampleManager.getTimeString(sub_startTime));
 
                     //Log.d(TAG, "testRandom semi sampling: the new start time is " + getTimeString(sub_startTime));
 
@@ -352,7 +369,15 @@ public class SurveyTriggerManager {
                 long firstTime = times.get(time_index-1);
                 long secondTime = times.get(time_index);
 
-                if(secondTime - firstTime < Constants.MILLISECONDS_PER_HOUR){
+                Log.d(TAG, "[test alarm] time_index : " + time_index);
+                Log.d(TAG, "[test alarm] firstTime : "+ ScheduleAndSampleManager.getTimeString(firstTime));
+                Log.d(TAG, "[test alarm] secondTime : "+ ScheduleAndSampleManager.getTimeString(secondTime));
+                Log.d(TAG, "[test alarm] secondTime - firstTime : "+ (secondTime - firstTime));
+                Log.d(TAG, "[test alarm] MILLISECONDS_PER_HOUR : " + Constants.MILLISECONDS_PER_HOUR);
+
+                Log.d(TAG, "[test alarm] is over an hour ? " +((secondTime - firstTime) < Constants.MILLISECONDS_PER_HOUR));
+
+                if((secondTime - firstTime) < Constants.MILLISECONDS_PER_HOUR){
 
                     havingAnHourInterval = false;
                     break;
@@ -369,6 +394,7 @@ public class SurveyTriggerManager {
         if (times!=null) {
 
             interval_sampled_times = times;
+            interval_sampled_times_bound = time_bounds;
             for (int i = 0; i < times.size(); i++) {
 
                 long time = times.get(i);

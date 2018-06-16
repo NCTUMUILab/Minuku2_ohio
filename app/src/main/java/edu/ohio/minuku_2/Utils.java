@@ -43,6 +43,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.ohio.minuku.Data.DataHandler;
+import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.logger.Log;
@@ -117,9 +118,25 @@ public class Utils {
 
 //            Log.d(TAG, "[test alarm] DaysInSurvey : "+DaysInSurvey);
 
+            List<String> comment = new ArrayList<>();
+
+            comment.clear();
+            comment.add("Trigger times");
+            CSVHelper.storeToCSV(CSVHelper.CSV_Interval_Samples_Times, comment);
+
             SurveyTriggerManager.settingIntervalSampling(DaysInSurvey, context);
 
             storeToCSV_IntervalSamplesTimes();
+
+            comment.clear();
+            comment.add("Times Boundary");
+            CSVHelper.storeToCSV(CSVHelper.CSV_Interval_Samples_Times, comment);
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_Interval_Samples_Times, SurveyTriggerManager.interval_sampled_times_bound);
+
+            comment.clear();
+            comment.add("");
+            CSVHelper.storeToCSV(CSVHelper.CSV_Interval_Samples_Times, comment);
         }
 
         storeToCSV_Interval_Samples_Times_split();

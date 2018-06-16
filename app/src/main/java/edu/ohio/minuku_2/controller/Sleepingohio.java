@@ -20,6 +20,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
@@ -119,14 +120,14 @@ public class Sleepingohio extends AppCompatActivity {
             if(!sleepStartTimeAMPM.equals(sleepEndTimeAMPM)){
 
                 //we add the date to get the accurate range
-                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM);
+                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
                 sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepStartTimeHour+":"+sleepStartTimeMin + " " + sleepStartTimeAMPM, sdf_);
                 sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(tomorrDate+" "+sleepEndTimeHour+":"+sleepEndTimeMin + " " + sleepEndTimeAMPM, sdf_);
 
                 sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
             }else {
 
-                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM);
+                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
                 sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepStartTimeHour+":"+sleepStartTimeMin + " " + sleepStartTimeAMPM, sdf_);
                 sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+sleepEndTimeHour+":"+sleepEndTimeMin + " " + sleepEndTimeAMPM, sdf_);
 
@@ -361,7 +362,7 @@ public class Sleepingohio extends AppCompatActivity {
                             sleepStartTimeHour = hour;
                             sleepStartTimeMin = min;
 
-                            SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM);
+                            SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
                             sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+hour+":"+min+" "+am_pm, sdf);
 
                             Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
@@ -482,7 +483,7 @@ public class Sleepingohio extends AppCompatActivity {
                             sleepEndTimeHour = hour;
                             sleepEndTimeMin = min;
 
-                            SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM);
+                            SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
                             sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(todayDate+" "+hour+":"+min+" "+am_pm, sdf);
 
                             Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
