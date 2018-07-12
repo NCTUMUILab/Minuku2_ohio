@@ -53,7 +53,6 @@ public class ActivityRecognitionDataRecordDAO implements DAO<ActivityRecognition
     public void add(ActivityRecognitionDataRecord entity) throws DAOException {
 
 //        Log.d(TAG, "Adding ActivityRecognition data record.");
-        //TODO store in CSV file.
 
         ContentValues values = new ContentValues();
 

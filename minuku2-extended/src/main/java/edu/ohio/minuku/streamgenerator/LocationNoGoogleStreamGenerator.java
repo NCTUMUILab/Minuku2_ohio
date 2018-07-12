@@ -251,7 +251,7 @@ public class LocationNoGoogleStreamGenerator extends AndroidStreamGenerator<Loca
 //        Criteria criteria = new Criteria();	//資訊提供者選取標準
 //        bestProvider = lms.getBestProvider(criteria, true);
         try {
-            //TODO
+
             Location location = lms.getLastKnownLocation(LocationManager.GPS_PROVIDER);    //使用GPS定位座標
 
             Log.d(TAG, "latitude : "+ location.getLatitude()+"longitude : "+ location.getLongitude());

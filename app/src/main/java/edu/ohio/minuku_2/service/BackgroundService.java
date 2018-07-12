@@ -113,8 +113,6 @@ public class BackgroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-//        Log.d(TAG, "onStartCommand");
-
         CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundServiceRunning ? "+isBackgroundServiceRunning);
         CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundRunnableRunning ? "+isBackgroundRunnableRunning);
 
@@ -127,7 +125,7 @@ public class BackgroundService extends Service {
 
         registerReceiver(CheckRunnableReceiver, checkRunnableFilter);
 
-        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+        AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarm.set(
                 AlarmManager.RTC_WAKEUP,
                 System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
@@ -135,7 +133,7 @@ public class BackgroundService extends Service {
         );
 
 
-        mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         ongoingNotificationText = sharedPrefs.getString("ongoingNotificationText", "0 New Trips");
 
@@ -383,7 +381,8 @@ public class BackgroundService extends Service {
 //        Log.d(TAG,"updateOngoingNotification");
 
         //check how much trips hasn't been filled
-        ArrayList<Session> recentSessions = SessionManager.getRecentSessions();
+//        ArrayList<Session> recentSessions = SessionManager.getRecentSessions();
+        ArrayList<Session> recentSessions = SessionManager.getRecentNotBeenCombinedSessions();
         ArrayList<Integer> ongoingSessionList = SessionManager.getOngoingSessionIdList();
 
         int unfilledTrips = 0;
@@ -429,8 +428,10 @@ public class BackgroundService extends Service {
     }
 
     private void stopTheSessionByServiceClose(){
+
         //if the background service is killed, set the end time of the ongoing trip (if any) using the current timestamp
         if (SessionManager.getOngoingSessionIdList().size()>0){
+
             Session session = SessionManager.getSession(SessionManager.getOngoingSessionIdList().get(0)) ;
 
 //            Log.d(TAG, "test ondestory trip get session in onDestroy " + session.getId() + " time: " + session.getStartTime() + " - " + session.getEndTime());

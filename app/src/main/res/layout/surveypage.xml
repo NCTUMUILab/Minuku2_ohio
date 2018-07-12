@@ -23,8 +23,20 @@
         android:layout_centerInParent="true"
         android:gravity="center"
         android:orientation="vertical"
-        android:weightSum="12">
+        android:weightSum="13">
 
+
+        <TextView
+            android:id="@+id/surveyDayView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1"
+            android:gravity="right"
+            android:text="Day "
+            android:textSize="20sp" />
 
         <LinearLayout
             android:layout_width="match_parent"

@@ -232,7 +232,8 @@ public class MinukuStreamManager implements StreamManager {
                 //Log.d(TAG, "test combine test trip: the new acitivty is different from the previous!");
 
                 /** we first see if the this is the first session **/
-                int sessionCount = SessionManager.getNumOfSession();
+                Session lastSession = SessionManager.getLastSession();
+                int sessionCount = lastSession.getId();
 
                 //if this is the first time seeing a session and the new transportation is neither static nor NA, we should just insert a session
                 if (sessionCount==0
@@ -246,7 +247,6 @@ public class MinukuStreamManager implements StreamManager {
                 else if (sessionCount>0){
 
                     //get the latest session (Which should be the ongoing one)
-                    Session lastSession = SessionManager.getLastSession();
                     int sessionIdOfLastSession = lastSession.getId();
                     AnnotationSet annotationSet = lastSession.getAnnotationsSet();
                     long endTimeOfLastSession = lastSession.getEndTime();
@@ -320,9 +320,8 @@ public class MinukuStreamManager implements StreamManager {
                     annotation.setContent(transportationModeDataRecord.getConfirmedActivityString());
                     annotation.addTag(Constants.ANNOTATION_TAG_DETECTED_TRANSPORTATOIN_ACTIVITY);
                     session.addAnnotation(annotation);
-
-                    //Log.d(TAG, "[test combine] insert the session is with annotation " +session.getAnnotationsSet().toJSONObject().toString());
-
+                    session.setIsSent(Constants.SESSION_SHOULDNT_BEEN_SENT_FLAG);
+                    session.setIsCombined(Constants.SESSION_NEVER_GET_COMBINED_FLAG);
 
                     SessionManager.startNewSession(session);
 

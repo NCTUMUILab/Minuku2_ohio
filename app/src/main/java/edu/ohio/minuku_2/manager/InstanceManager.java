@@ -171,10 +171,6 @@ public class InstanceManager {
         TelephonyStreamGenerator telephonyStreamGenerator =
                 new TelephonyStreamGenerator(getApplicationContext());
 
-        //TODO deprecated by triggering the service after the user enter their email and confirmNum
-//        CheckFamiliarOrNotStreamGenerator checkFamiliarOrNotStreamGenerator =
-//                new CheckFamiliarOrNotStreamGenerator(getApplicationContext());
-
         // All situations must be registered AFTER the stream generators are registers.
         MinukuSituationManager situationManager = MinukuSituationManager.getInstance();
 

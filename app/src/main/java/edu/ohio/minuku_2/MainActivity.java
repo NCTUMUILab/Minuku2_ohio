@@ -42,6 +42,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
@@ -76,6 +77,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
@@ -119,22 +121,18 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isTheUser;
 
-    public static final int REFRESH_FREQUENCY = 3; //10s, 10000ms
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        Log.d(TAG, "Creating Main activity");
-
 
         MultiDex.install(this);
 
         sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
 
         //for testing the over date of the research
-//        Constants.daysInSurvey = 15;
 
-        if(Constants.daysInSurvey > 15){
+        if(Constants.daysInSurvey > Constants.finalday){
 
             setContentView(R.layout.homepage_complete);
             Button finalSurvey = (Button) findViewById(R.id.finalSurvey);
@@ -176,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void createShortCut(){
+
         Intent shortcutintent = new Intent("com.android.launcher.action.INSTALL_SHORTCUT");
         shortcutintent.putExtra("duplicate", false);
         shortcutintent.putExtra(Intent.EXTRA_SHORTCUT_NAME, getString(R.string.app_name));
@@ -216,8 +215,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.homepage);
 
         /* alertdialog for checking userid */
+        long downloadtime = -999;
+        try {
 
-        sharedPrefs.edit().putLong("downloadedTime", new Date().getTime()).apply();
+            PackageManager pm = getPackageManager();
+            downloadtime = pm.getPackageInfo(Constants.appNameString, 0).firstInstallTime;
+        }catch (PackageManager.NameNotFoundException e){
+
+            Log.e(TAG, "Exception", e);
+        }
+
+        Log.d(TAG, "downloadtime : "+ScheduleAndSampleManager.getTimeString(downloadtime));
+
+//        sharedPrefs.edit().putLong("downloadedTime", new Date().getTime()).apply();
+        sharedPrefs.edit().putLong("downloadedTime", downloadtime).apply();
 
         sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", false).apply();
 
@@ -249,6 +260,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
+
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to Survey Page");
+
                 startActivity(new Intent(MainActivity.this, SurveyActivity.class));
             }
         });
@@ -277,10 +291,12 @@ public class MainActivity extends AppCompatActivity {
 
             int sleepStartHour = Integer.valueOf(sleepStartDetail[0]);
             String sleepStartHourStr = "";
-            if(sleepStartHour<12)
+            if(sleepStartHour<12 && sleepStartHour > 0)
                 sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" am";
             else if(sleepStartHour==12)
                 sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" pm";
+            else if(sleepStartHour==0)
+                sleepStartHourStr = "12"+":"+sleepStartDetail[1]+" am";
             else
                 sleepStartHourStr = String.valueOf(sleepStartHour-12)+":"+sleepStartDetail[1]+" pm";
 
@@ -288,10 +304,12 @@ public class MainActivity extends AppCompatActivity {
 
             int sleepEndHour = Integer.valueOf(sleepEndDetail[0]);
             String sleepEndHourStr = "";
-            if(sleepEndHour<12)
+            if(sleepEndHour<12 && sleepEndHour > 0)
                 sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" am";
             else if(sleepEndHour==12)
                 sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" pm";
+            else if(sleepEndHour==0)
+                sleepEndHourStr = "12"+":"+sleepEndDetail[1]+" am";
             else
                 sleepEndHourStr = String.valueOf(sleepEndHour-12)+":"+sleepEndDetail[1]+" pm";
 
@@ -572,11 +590,14 @@ public class MainActivity extends AppCompatActivity {
                         String[] sleepStartDetail = sleepStartTime.split(":");
 
                         int sleepStartHour = Integer.valueOf(sleepStartDetail[0]);
+
                         String sleepStartHourStr = "";
-                        if(sleepStartHour<12)
+                        if(sleepStartHour<=12 && sleepStartHour > 0)
                             sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" am";
                         else if(sleepStartHour==12)
                             sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" pm";
+                        else if(sleepStartHour==0)
+                            sleepStartHourStr = "12"+":"+sleepStartDetail[1]+" am";
                         else
                             sleepStartHourStr = String.valueOf(sleepStartHour-12)+":"+sleepStartDetail[1]+" pm";
 
@@ -584,16 +605,21 @@ public class MainActivity extends AppCompatActivity {
 
                         int sleepEndHour = Integer.valueOf(sleepEndDetail[0]);
                         String sleepEndHourStr = "";
-                        if(sleepEndHour<12)
+                        if(sleepEndHour<=12 && sleepEndHour > 0)
                             sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" am";
                         else if(sleepEndHour==12)
                             sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" pm";
+                        else if(sleepEndHour==0)
+                            sleepEndHourStr = "12"+":"+sleepEndDetail[1]+" am";
                         else
                             sleepEndHourStr = String.valueOf(sleepEndHour-12)+":"+sleepEndDetail[1]+" pm";
 
                         sleepingtime.setText("Sleep: " + sleepStartHourStr + " to " + sleepEndHourStr);
 
                         sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", true).apply();
+
+                        Log.d(TAG, "sleepStartHour : "+sleepStartHour);
+                        Log.d(TAG, "sleepEndHour : "+sleepEndHour);
 
                     }
                     else {
@@ -630,6 +656,8 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
 //            Log.e(TAG,"recordinglist_ohio clicked");
 
+            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to Trips Page");
+
             startActivityForResult(new Intent(MainActivity.this, TripListActivity.class), 2);
 
         }
@@ -639,6 +667,8 @@ public class MainActivity extends AppCompatActivity {
     private Button.OnClickListener settingSleepTimeing = new Button.OnClickListener() {
         public void onClick(View v) {
 //            Log.e(TAG,"Sleepingohio clicked");
+
+            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to SleepTime Page");
 
             startActivityForResult(new Intent(MainActivity.this, Sleepingohio.class), requestCode_setting);
 

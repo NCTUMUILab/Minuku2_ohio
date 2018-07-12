@@ -95,7 +95,6 @@ public class ConnectivityStreamGenerator extends AndroidStreamGenerator<Connecti
     public boolean updateStream() {
 
         Log.d(TAG, "updateStream called");
-        //TODO get service data
         ConnectivityDataRecord connectivityDataRecord =
                 new ConnectivityDataRecord(mNetworkType,mIsNetworkAvailable, mIsConnected, mIsWifiAvailable,
                         mIsMobileAvailable, mIsWifiConnected, mIsMobileConnected);
@@ -175,8 +174,6 @@ public class ConnectivityStreamGenerator extends AndroidStreamGenerator<Connecti
 
             for (Network network : networks) {
                 activeNetwork = mConnectivityManager.getNetworkInfo(network);
-
-                //TODO try catch it in NullpointerException
 
                 try {
                     if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {

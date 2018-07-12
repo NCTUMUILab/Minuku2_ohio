@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -38,6 +39,8 @@ import edu.ohio.minuku_2.R;
 public class SurveyActivity extends Activity {
 
     private final static String TAG = "SurveyActivity";
+
+    private TextView surveyDayText;
 
     private Button testButton,
         survey1_Button, survey2_Button, survey3_Button, survey4_Button, survey5_Button, survey6_Button;
@@ -67,7 +70,7 @@ public class SurveyActivity extends Activity {
         if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
 
             setContentView(R.layout.surveypage_day0);
-        }else if(Constants.daysInSurvey > 14){
+        }else if(Constants.daysInSurvey > Constants.finalday){
 
             setContentView(R.layout.surveypage_complete);
         }else {
@@ -82,14 +85,14 @@ public class SurveyActivity extends Activity {
         if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
 
             setContentView(R.layout.surveypage_day0);
-        }else if(Constants.daysInSurvey > 14){
+        }else if(Constants.daysInSurvey > Constants.finalday){
 
             setContentView(R.layout.surveypage_complete);
         }else {
             setContentView(R.layout.surveypage);
         }
 
-        if(Constants.daysInSurvey <= 14 && Constants.daysInSurvey >= 1)
+        if(Constants.daysInSurvey <= Constants.finalday && Constants.daysInSurvey >= 1)
             initlinkListohio();
     }
 
@@ -116,6 +119,9 @@ public class SurveyActivity extends Activity {
 
         //format : id;link_col;generateTime_col;openTime_col;missedTime_col;openFlag_col;surveyType_col
         surveyDatas = DBHelper.querySurveyLinkBetweenTimes(startTime, endTime);
+
+        surveyDayText = (TextView) findViewById(R.id.surveyDayView);
+        surveyDayText.setText("Day "+Constants.daysInSurvey+"/"+Constants.finalday);
 
 //        Log.d(TAG, "[test mobile triggering] surveyDatas size : "+surveyDatas.size());
 
@@ -293,6 +299,8 @@ public class SurveyActivity extends Activity {
     }
 
     private void surveyButtonsWork(int buttonNumber){
+
+        DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Survey " + buttonNumber);
 
         //record if the user have clicked the survey button
         sharedPrefs.edit().putBoolean("Period"+buttonNumber,false).apply();

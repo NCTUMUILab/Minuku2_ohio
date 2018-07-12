@@ -22,6 +22,7 @@ public class CSVHelper {
 
     public static final String TAG = "CSVHelper";
 
+    public static final String CSV_SESSION_CONCAT_CHECK = "Session_concat.csv";
     public static final String CSV_ALARM_CHECK = "Alarm_check.csv";
     public static final String CSV_RUNNABLE_CHECK = "Runnable_check.csv";
     public static final String CSV_RESET_INTERVALSAMPLES_CHECK = "ResetIntervalSamples_check.csv";

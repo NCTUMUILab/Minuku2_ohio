@@ -15,7 +15,10 @@ public class Session {
 	protected AnnotationSet mAnnotationSet;
 	private boolean mIsLongEnough = true ;
 	private boolean mIsModified = false;
-    //TODO: this should be defined based on what's being activated.
+    private int mIsSent;
+    private int mIsCombined;
+
+    // this should be defined based on what's being activated.
     ArrayList<String> mContextSourceNames;
 
 	public Session (int sessionId){
@@ -59,6 +62,14 @@ public class Session {
         for (int i=0; i<contextsources.length; i++){
             addContextSourceType(contextsources[i]);
         }
+    }
+
+    public void setIsSent(int isSent){
+        mIsSent = isSent;
+    }
+
+    public int getIsSent(){
+        return mIsSent;
     }
 
     public boolean isLongEnough() {
@@ -152,5 +163,12 @@ public class Session {
         mAnnotationSet.addAnnotation(annotation);
 
     }
-	
+
+    public int getIsCombined() {
+        return mIsCombined;
+    }
+
+    public void setIsCombined(int isCombined) {
+        this.mIsCombined = isCombined;
+    }
 }
