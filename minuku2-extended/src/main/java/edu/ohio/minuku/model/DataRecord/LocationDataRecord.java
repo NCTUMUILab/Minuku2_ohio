@@ -68,6 +68,18 @@ public class LocationDataRecord implements DataRecord {
         this.sessionid = sessionid;
     }
 
+    public LocationDataRecord(float latitude, float longitude, float Accuracy, float Speed, String sessionid){
+
+        this.creationTime = new Date().getTime();
+//        this.taskDayCount = Constants.daysInSurvey;
+//        this.hour = getmillisecondToHour(creationTime);
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.Accuracy = Accuracy;
+        this.Speed = Speed;
+        this.sessionid = sessionid;
+    }
+
     public LocationDataRecord(float latitude, float longitude, float Accuracy){
 
         this.creationTime = new Date().getTime();
@@ -89,7 +101,7 @@ public class LocationDataRecord implements DataRecord {
 
     }
 
-    public LocationDataRecord(float latitude, float longitude, float Accuracy, float Altitude, float Speed, float Bearing, String Provider) {
+    public LocationDataRecord(float latitude, float longitude, float Accuracy, float Altitude, float Speed, float Bearing, String Provider, String sessionid) {
         this.creationTime = new Date().getTime();
         this.latitude = latitude;
         this.longitude = longitude;
@@ -98,7 +110,7 @@ public class LocationDataRecord implements DataRecord {
         this.Speed = Speed;
         this.Bearing = Bearing;
         this.Provider = Provider;
-
+        this.sessionid = sessionid;
     }
 
     public LocationDataRecord(float latitude, float longitude) {

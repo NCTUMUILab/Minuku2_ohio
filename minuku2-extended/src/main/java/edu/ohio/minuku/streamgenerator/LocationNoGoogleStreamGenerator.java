@@ -18,9 +18,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
+import edu.ohio.minuku.Utilities.CSVHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.LocationNoGoogleDataRecordDAO;
 import edu.ohio.minuku.logger.Log;
@@ -83,11 +84,6 @@ public class LocationNoGoogleStreamGenerator extends AndroidStreamGenerator<Loca
 
         this.context = applicationContext;
 
-       /*while(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-            //如果GPS或網路定位開啟，呼叫locationServiceInitial()更新位置
-            //如果GPS或網路定位沒開啟，繼續等
-
-        }*/
 
         this.register();
 
@@ -323,9 +319,8 @@ public class LocationNoGoogleStreamGenerator extends AndroidStreamGenerator<Loca
             longitude.set(location.getLongitude());
             accuracy = location.getAccuracy();
 
-            long lastposupdate = new Date().getTime();
-
-            StoreToCSV(lastposupdate,location.getLatitude(),location.getLongitude(),location.getAccuracy());
+            CSVHelper.storeToCSV(CSVHelper.CSV_LOCATION_NOGOOGLE, ScheduleAndSampleManager.getCurrentTimeString(), String.valueOf(location.getLatitude())
+                    , String.valueOf(location.getLongitude()), String.valueOf(location.getAccuracy()), String.valueOf(location.getProvider()));
         }
 
         @Override
@@ -355,10 +350,12 @@ public class LocationNoGoogleStreamGenerator extends AndroidStreamGenerator<Loca
         locationManager = (LocationManager) context.getSystemService(LOCATION_SERVICE);
 
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, locationListener);
+
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Constants.MILLISECONDS_PER_SECOND * 5, 0, locationListener);
         }catch (SecurityException e){
             e.printStackTrace();
             try{
+
                 // delay 5 second, wait for user confirmed.
                 Thread.sleep(5000);
 
@@ -368,12 +365,10 @@ public class LocationNoGoogleStreamGenerator extends AndroidStreamGenerator<Loca
 
             onStreamRegistration();
         }
+
 //        waitingForPermission();
 
-
-
         Log.d(TAG, "Stream " + TAG + " registered successfully");
-
     }
 
     @Override

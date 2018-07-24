@@ -214,7 +214,7 @@ public class SessionManager {
 
         boolean islongEnough= true;
         boolean isModified = false;
-        //longEnough flag
+
         if (!separated[DBHelper.COL_INDEX_SESSION_LONG_ENOUGH_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_LONG_ENOUGH_FLAG].equals("")){
             islongEnough = Boolean.parseBoolean(separated[DBHelper.COL_INDEX_SESSION_LONG_ENOUGH_FLAG]);
         }
@@ -231,6 +231,11 @@ public class SessionManager {
         if (!separated[DBHelper.COL_INDEX_SESSION_COMBINEDORNOT_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_COMBINEDORNOT_FLAG].equals("")) {
 
             session.setIsCombined(Integer.valueOf(separated[DBHelper.COL_INDEX_SESSION_COMBINEDORNOT_FLAG]));
+        }
+
+        if (!separated[DBHelper.COL_INDEX_SESSION_PERIODNUMBER_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_PERIODNUMBER_FLAG].equals("")) {
+
+            session.setPeriodNum(Integer.valueOf(separated[DBHelper.COL_INDEX_SESSION_PERIODNUMBER_FLAG]));
         }
 
         session.setLongEnough(islongEnough);
@@ -250,7 +255,6 @@ public class SessionManager {
         } catch (JSONException e) {
             //e.printStackTrace();
         }
-
 
         //set annotationset if there is one
         if (annotateionSetJSONArray!=null){
@@ -321,7 +325,7 @@ public class SessionManager {
     public static Session getSession (int sessionId) {
 
         Session session = null;
-        String sessionStr =  DBHelper.querySession(sessionId).get(0);
+        String sessionStr = DBHelper.querySession(sessionId).get(0);
         //Log.d(TAG, "[test combine]query session from LocalDB is " + sessionStr);
         session = convertStringToSession(sessionStr);
         //Log.d(TAG, " test combine  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());

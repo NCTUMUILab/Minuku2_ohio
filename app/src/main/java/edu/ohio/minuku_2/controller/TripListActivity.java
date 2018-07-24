@@ -157,8 +157,6 @@ public class TripListActivity extends Activity {
             );
 
             listview.setAdapter(ohioListAdapter);
-
-
         }
 
         /*

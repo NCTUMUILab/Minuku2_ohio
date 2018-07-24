@@ -8,6 +8,7 @@
         android:id="@+id/message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
         android:layout_weight="1"
         android:gravity="center"
@@ -17,16 +18,9 @@
     <com.google.android.gms.maps.MapView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/mapView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_weight="5">
+        android:layout_height="0dp"
+        android:layout_weight="8">
 
     </com.google.android.gms.maps.MapView>
-
-    <!--<fragment
-        class="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="209dp"
-        android:id="@+id/MapfragmentInDialog" />-->
 
 </LinearLayout>

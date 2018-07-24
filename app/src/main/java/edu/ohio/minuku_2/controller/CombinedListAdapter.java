@@ -43,6 +43,7 @@ public class CombinedListAdapter extends ArrayAdapter<Session> {
         View vi = convertView;
 
         if(convertView==null) {
+
             vi = inflater.inflate(R.layout.combined_list_item, null);
         }
 
@@ -67,14 +68,15 @@ public class CombinedListAdapter extends ArrayAdapter<Session> {
 
         //{"Entire_session":true,"Tag":["ESM"],"Content":"{\"ans1\":\"Walking outdoors.\",\"ans2\":\"Food\",\"ans3\":\"No\",\"ans4\":\"Right before\"}"}
         if (annotations.size()>0){
+
             try {
+
                 String content = annotations.get(0).getContent();
                 JSONObject contentJSON = new JSONObject(content);
                 //Log.d(TAG, "[test show trip] the contentofJSON ESMJSONObject  is " + contentJSON );
                 labelStr = contentJSON.getString("ans1");
 
                 labelStr = getLabelFromAns1(labelStr);
-
             } catch (JSONException e) {
                 //e.printStackTrace();
             }

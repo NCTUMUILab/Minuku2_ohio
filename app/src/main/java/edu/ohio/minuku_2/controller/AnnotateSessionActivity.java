@@ -44,7 +44,6 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import edu.ohio.minuku.Data.DBHelper;
@@ -151,7 +150,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         final View layout = inflater.inflate(R.layout.splitedmap_dialog,null);
 
         builder.setView(layout)
-                .setPositiveButton(R.string.ok, null);
+                .setPositiveButton("Confirm", null)
+                .setNegativeButton("Cancel", null);
 
         final AlertDialog mAlertDialog = builder.create();
         mAlertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
@@ -168,8 +168,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                     @Override
                     public void onClick(View view) {
-
-                        //TODO: set the boolean value if the split location is chosen or not
 
                         DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Confirm split");
 
@@ -276,11 +274,12 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                             splittingTime = closestLocationAndTime.first;
                             splittingLatlng = closestLocationAndTime.second;
 
-                            TextView messageTextView = (TextView) view.findViewById(R.id.message);
-                            SimpleDateFormat sdf_hhmm_a = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM, Locale.US);
-                            messageTextView.setText("Do you want to split the trip in " +
-                                    ScheduleAndSampleManager.getTimeString(splittingTime, sdf_hhmm_a) +
-                                    " ?");
+                            //TODO deprecated
+//                            TextView messageTextView = (TextView) view.findViewById(R.id.message);
+//                            SimpleDateFormat sdf_hhmm_a = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM, Locale.US);
+//                            messageTextView.setText("Do you want to split the trip in " +
+//                                    ScheduleAndSampleManager.getTimeString(splittingTime, sdf_hhmm_a) +
+//                                    " ?");
 
                             Marker marker = googleMap.addMarker(new MarkerOptions()
                                     .position(splittingLatlng)
@@ -511,6 +510,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         //TODO: recover it when the combine function is already done.
         combine.setEnabled(true);
 //        combine.setEnabled(false);
+        split.setEnabled(true);
         delete.setEnabled(true);
 
         submit = (Button)findViewById(R.id.submit);
@@ -547,31 +547,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                     RadioButton radioButton = (RadioButton) findViewById(checkedId);
                     ans1 = radioButton.getText().toString();
-
-                    //TODO deprecated, no combination or delete in options
-                    /*RadioButton combineOption = (RadioButton) findViewById(R.id.ans1_9);
-                    final String combine = combineOption.getText().toString();
-
-                    RadioButton deleteOption = (RadioButton) findViewById(R.id.ans1_10);
-                    final String delete = deleteOption.getText().toString();
-
-                    if(ans1.equals(combine) || ans1.equals(delete)){
-
-                        combineOrDelete = true;
-
-                        //set the question below unavailable
-                        setRadioGroupNotclickable(ques2);
-                        setRadioGroupNotclickable(ques3);
-                        setRadioGroupNotclickable(ques4);
-                        submit.setEnabled(true);
-                    }else {
-
-                        combineOrDelete = false;
-
-                        setRadioGroupClickable(ques2);
-                        setRadioGroupClickable(ques3);
-                        setRadioGroupClickable(ques4);
-                    }*/
                 }
             }
         });
@@ -585,7 +560,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                 }else{
 
-//                    ans3=String.valueOf(group.indexOfChild((RadioButton) findViewById(checkedId))) ;
                     RadioButton radioButton = (RadioButton) findViewById(checkedId);
                     ans2 = radioButton.getText().toString();
                 }
@@ -650,6 +624,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
             combine.setEnabled(false);
             delete.setEnabled(false);
+            split.setEnabled(false);
         }
     }
 
@@ -835,6 +810,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     private Button.OnClickListener splitting = new Button.OnClickListener(){
         public void onClick(View v) {
 
+            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Split");
+
             triggerAlertDialog();
         }
     };
@@ -903,12 +880,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         //get data from the database
         ArrayList<String> data = DataHandler.getDataBySession(sessionId, DBHelper.STREAM_TYPE_LOCATION);
         Log.d(TAG, "[test show trip] getLocationPointsToDrawOnMap get data:" + data.size() + "rows");
-
-        //TODO:for checking
-        for (String line : data){
-
-            Log.d(TAG, "[test show trip] line : "+line);
-        }
 
         for (int i=0; i<data.size(); i++){
 

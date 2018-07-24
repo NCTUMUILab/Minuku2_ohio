@@ -200,6 +200,7 @@ public class BackgroundService extends Service {
 
                 isBackgroundRunnableRunning = true;
 
+                //TODO stop update it at the day after the final survey day
                 streamManager.updateStreamGenerators();
 
                 //update every minute
@@ -475,8 +476,6 @@ public class BackgroundService extends Service {
         sharedPrefs.edit().putInt("CurrentState", TransportationModeStreamGenerator.mCurrentState).apply();
         sharedPrefs.edit().putInt("ConfirmedActivityType", TransportationModeStreamGenerator.mConfirmedActivityType).apply();
 
-//        TransportationModeStreamGenerator.mScheduledExecutorService.shutdown();
-
         unregisterReceiver(mWifiReceiver);
         unregisterReceiver(CheckRunnableReceiver);
     }
@@ -501,7 +500,6 @@ public class BackgroundService extends Service {
         sharedPrefs.edit().putInt("CurrentState", TransportationModeStreamGenerator.mCurrentState).apply();
         sharedPrefs.edit().putInt("ConfirmedActivityType", TransportationModeStreamGenerator.mConfirmedActivityType).apply();
 
-//        unregisterReceiver(mWifiReceiver);
     }
 
     @Override

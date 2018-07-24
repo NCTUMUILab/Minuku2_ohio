@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:weightSum="12">
+    android:weightSum="13">
 
     <!--<Button
         android:id="@+id/triggerButton"
@@ -17,26 +17,28 @@
         android:textSize="16sp"
         android:visibility="gone" />-->
 
+    <TextView
+        android:id="@+id/surveyDayView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_weight="1"
+        android:gravity="right"
+        android:text="Day "
+        android:textColor="#bb0000"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:gravity="center"
         android:orientation="vertical"
-        android:weightSum="13">
-
-
-        <TextView
-            android:id="@+id/surveyDayView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_weight="1"
-            android:gravity="right"
-            android:text="Day "
-            android:textSize="20sp" />
+        android:weightSum="12">
 
         <LinearLayout
             android:layout_width="match_parent"

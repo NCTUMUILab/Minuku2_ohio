@@ -243,17 +243,16 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
         Constants.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey);
 
         //TODO uncomment it when real testing
-        if(Constants.daysInSurvey != 0 && Constants.daysInSurvey != -1 && Constants.daysInSurvey != Constants.downloadedDayInSurvey) {
+        if(Constants.daysInSurvey != 0 && Constants.daysInSurvey != -1 && Constants.daysInSurvey != Constants.downloadedDayInSurvey && Constants.daysInSurvey <= Constants.finalday) {
 
-            MinukuStreamManager.getInstance().setTransportationModeDataRecord(transportationModeDataRecord);
+            MinukuStreamManager.getInstance().setTransportationModeDataRecord(transportationModeDataRecord, sharedPrefs);
         }
 
         // also post an event.
         EventBus.getDefault().post(transportationModeDataRecord);
         try {
-            mDAO.add(transportationModeDataRecord);
-//            mDAO.query_counting();
 
+            mDAO.add(transportationModeDataRecord);
         } catch (DAOException e) {
 //            e.printStackTrace();
 //            return false;

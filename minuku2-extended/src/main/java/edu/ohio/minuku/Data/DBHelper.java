@@ -9,8 +9,6 @@ import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 
 import edu.ohio.minuku.Utilities.CSVHelper;
@@ -45,16 +43,17 @@ public class DBHelper extends SQLiteOpenHelper {
 //    public static final String daysInSurvey = "daysInSurvey";
 //    public static final String HOUR = "hour";
 
-    //checkFamiliarOrNot link list
+    //link list
     public static final String link_col = "link";
     public static final String generateTime_col = "generateTime";
     public static final String openTime_col = "openTime";
     public static final String missedTime_col = "missedTime";
     public static final String openFlag_col = "openFlag";
     public static final String surveyType_col = "surveyType";
+    public static final int COL_INDEX_LINK = 1;
+    public static final int COL_INDEX_GENERATE_TIME = 2;
 
     //Location and Trip
-    public static final String sessionid_col = "sessionid";
     public static final String latitude_col = "latitude";
     public static final String longitude_col = "longitude";
     public static final String Accuracy_col = "Accuracy";
@@ -62,9 +61,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String Speed_col = "Speed";
     public static final String Bearing_col = "Bearing";
     public static final String Provider_col = "Provider";
-    public static final String IsTrip_col = "IsTrip";
-    public static final String transportationMode_col = "TransportationMode";
-    public static final String ongoingOrNot_col = "ongoingOrNot";
 
     //ActivityRecognition
     public static final String MostProbableActivity_col = "MostProbableActivity";
@@ -77,26 +73,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     //ActionLog
     public static final String action_col = "Action";
-
-    //Trip Annotate data
-    public static final String Trip_updatedStatus = "UpdatedStatus";
-    public static final String Trip_startTimeSecond = "Trip_startTimeSecond";
-    public static final String Trip_startTime = "Trip_startTime";
-    public static final String Trip_endTime = "Trip_endTime";
-    public static final String Trip_id = "Trip_id";
-    public static final String activityType = "ActivityType";
-    public static final String tripType = "TripType";
-    public static final String preplan = "Preplan";
-    public static final String ans1 = "Ques1";
-    public static final String ans2 = "Ques2";
-    public static final String ans3 = "Ques3";
-    public static final String ans4 = "Ques4";
-    public static final String ans4_1 = "Ques4_1";
-    public static final String ans4_2 = "Ques4_2";
-    public static final String lat = "latitude";
-    public static final String lng = "longitude";
-
-    public static JSONObject location_jsonObject;
 
     //ringer
     public static final String RingerMode_col = "RingerMode";
@@ -165,10 +141,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COL_SESSION_LONG_ENOUGH_FLAG = "session_long_enough";
     public static final String COL_SESSION_ID = "session_id";
     public static final String COL_TIMESTAMP_STRING = "timestamp_string";
-    public static final String COL_TIMESTAMP_LONG = "timestamp_long";
     public static final String COL_SESSION_ANNOTATION_SET = "session_annotation_set";
     public static final String COL_SESSION_SENTORNOT_FLAG = "sentOrNot";
     public static final String COL_SESSION_COMBINEDORNOT_FLAG = "combinedOrNot";
+    public static final String COL_SESSION_PERIODNUMBER_FLAG = "periodnumber";
     public static final int COL_INDEX_SESSION_ID = 0;
     public static final int COL_INDEX_SESSION_TIMESTAMP_STRING = 1;
     public static final int COL_INDEX_SESSION_START_TIME = 2;
@@ -178,6 +154,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final int COL_INDEX_SESSION_LONG_ENOUGH_FLAG= 6;
     public static final int COL_INDEX_SESSION_SENTORNOT_FLAG = 7;
     public static final int COL_INDEX_SESSION_COMBINEDORNOT_FLAG = 8;
+    public static final int COL_INDEX_SESSION_PERIODNUMBER_FLAG = 9;
 
 
     //table name
@@ -458,7 +435,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 COL_SESSION_MODIFIED_FLAG + " INTEGER, " +
                 COL_SESSION_LONG_ENOUGH_FLAG+ " INTEGER, " +
                 COL_SESSION_SENTORNOT_FLAG + " INTEGER, " +
-                COL_SESSION_COMBINEDORNOT_FLAG + " INTEGER " +
+                COL_SESSION_COMBINEDORNOT_FLAG + " INTEGER, " +
+                COL_SESSION_PERIODNUMBER_FLAG + " INTEGER " +
                 ");";
 
         db.execSQL(cmd);
@@ -508,6 +486,7 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(COL_SESSION_LONG_ENOUGH_FLAG, session.isLongEnough());
             values.put(COL_SESSION_SENTORNOT_FLAG, session.getIsSent());
             values.put(COL_SESSION_COMBINEDORNOT_FLAG, session.getIsCombined());
+            values.put(COL_SESSION_PERIODNUMBER_FLAG, session.getPeriodNum());
 
             rowId = db.insert(SESSION_TABLE_NAME, null, values);
 
@@ -532,7 +511,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static ArrayList<String> querySession(int sessionId){
 
-		Log.d(TAG, "[test show trip]query session in DBHelper with session id" + sessionId);
+		Log.d(TAG, "[test show trip] query session in DBHelper with session id " + sessionId);
 
         ArrayList<String> rows = new ArrayList<String>();
 
@@ -738,8 +717,10 @@ public class DBHelper extends SQLiteOpenHelper {
                     " where " + COL_SESSION_LONG_ENOUGH_FLAG + " = 1" + " and " +
                     COL_SESSION_START_TIME + " > " + startTime + " and " +
                     COL_SESSION_START_TIME + " < " + endTime + " and " +
-                    COL_ID + " <> " + sessionid +" and " +
-                    COL_SESSION_COMBINEDORNOT_FLAG + " <> " + Constants.SESSION_IS_COMBINED_FLAG +
+                    COL_SESSION_END_TIME + " IS NOT NULL "  + " and " +
+                    COL_ID + " <> " + sessionid + " and " +
+                    COL_SESSION_COMBINEDORNOT_FLAG + " <> " + Constants.SESSION_IS_COMBINED_FLAG + " and " +
+                    COL_SESSION_SENTORNOT_FLAG + " = " + Constants.SESSION_SHOULDNT_BEEN_SENT_FLAG +
                     " order by " + COL_SESSION_START_TIME + " DESC ";
 
             //Log.d(TAG, "test combine [querySessionsBetweenTimes] the query statement is " +sql);
@@ -837,7 +818,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //get the number of existing session
-    public static long querySessionCount (){
+    public static long querySessionCount(){
 
 
         long count = 0;
@@ -1324,8 +1305,6 @@ public class DBHelper extends SQLiteOpenHelper {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             ContentValues values = new ContentValues();
 
-            //TODO get the col name after complete the annotate part.
-
             values.put(COL_SESSION_END_TIME, endTime);
             values.put(COL_SESSION_LONG_ENOUGH_FLAG, sessionLongEnoughFlag);
 
@@ -1336,6 +1315,9 @@ public class DBHelper extends SQLiteOpenHelper {
 //            Log.d(TAG, "test combine: completing updating end time for sesssion" + id );
 
         }catch(Exception e){
+
+            Log.e(TAG, "exception", e);
+            CSVHelper.storeToCSV(CSVHelper.CSV_SESSION_CONCAT_CHECK, Utilities.getStackTrace(e));
 
         }
 
@@ -1436,7 +1418,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }catch(Exception e){
 
         }
-
     }
 
     public static void updateSessionTable(int sessionId, long endTime, AnnotationSet annotationSet){
@@ -1671,6 +1652,29 @@ public class DBHelper extends SQLiteOpenHelper {
             //missedTime_col
             values.put(openTime_col, ScheduleAndSampleManager.getCurrentTimeInMillis());
             values.put(openFlag_col, 1);
+
+            db.update(surveyLink_table, values, where, null);
+
+        }catch(Exception e){
+
+        }
+
+        DBManager.getInstance().closeDatabase();
+
+    }
+
+    public static void updateOverTimeSurvey(long time){
+
+//        Log.d(TAG, "[test show link] updateSurveyOpenTime check");
+
+        String where = generateTime_col + " < " +  time + " and " + openFlag_col + " = " + (-1);
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            //missedTime_col
+            values.put(openFlag_col, 2);
 
             db.update(surveyLink_table, values, where, null);
 

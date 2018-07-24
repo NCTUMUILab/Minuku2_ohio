@@ -17,6 +17,7 @@ public class Session {
 	private boolean mIsModified = false;
     private int mIsSent;
     private int mIsCombined;
+    private int periodNum;
 
     // this should be defined based on what's being activated.
     ArrayList<String> mContextSourceNames;
@@ -99,6 +100,14 @@ public class Session {
 	public int getId(){
 		return mId;
 	}
+
+    public void setPeriodNum(int periodNum){
+        this.periodNum = periodNum;
+    }
+
+    public int getPeriodNum(){
+        return periodNum;
+    }
 
     public int getOngoingNotificationId() {
         return mOngoingNotificationId;

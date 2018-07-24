@@ -190,6 +190,7 @@ public class Constants {
 
     /* from NCTU */
     public static final String NOT_A_NUMBER = "NA";
+    public static final long initLong = -999;
 
     public static String DEVICE_ID = "NA";
     public static String USER_ID = "N";
@@ -198,7 +199,7 @@ public class Constants {
 
     public static int downloadedDayInSurvey = -1;
     public static int daysInSurvey = -1;
-    public static int finalday = 3; //real: 14, test: 3
+    public static int finalday = 14; //real: 14, test: 3
     public static long midnightstart = -999;
     public static long FirstTime_ToInitializeIntervalSurvey = -999;
 

@@ -71,6 +71,16 @@ public class Sleepingohio extends AppCompatActivity {
         sleepEndtime = (Button)findViewById(R.id.sleepEndtime);
         sleepEndtime.setOnClickListener(endtimeing);
 
+        sleepStartTimeLong = sharedPrefs.getLong("sleepStartTimeLong", sleepStartTimeLong);
+        sleepEndTimeLong = sharedPrefs.getLong("sleepEndTimeLong", sleepEndTimeLong);
+
+        if((sleepStartTimeLong != Constants.initLong) && (sleepEndTimeLong != Constants.initLong)){
+
+            SimpleDateFormat sdf_hhmm_a = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM, Locale.US);
+            sleepStarttime.setText(ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf_hhmm_a));
+            sleepEndtime.setText(ScheduleAndSampleManager.getTimeString(sleepEndTimeLong, sdf_hhmm_a));
+        }
+
         confirm = (Button)findViewById(R.id.confirm);
         confirm.setOnClickListener(confirming);
 
@@ -106,31 +116,37 @@ public class Sleepingohio extends AppCompatActivity {
             Log.d(TAG, "sleepEndtime from button : " + sleepEndtime.getText());
 
             //Get date
-            SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
-            String todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
-            String tomorrDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis() + Constants.MILLISECONDS_PER_DAY, sdf_date);
+//            SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+//            String todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+//            String tomorrDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis() + Constants.MILLISECONDS_PER_DAY, sdf_date);
 
-            String sleepStartTimeAMPM = sleepStarttime.getText().toString().split(" ")[1];
-            String sleepEndTimeAMPM = sleepEndtime.getText().toString().split(" ")[1];
+            String sleepStartTimeAMPM = sleepStarttime.getText().toString().split(" ")[1].toUpperCase();
+            String sleepEndTimeAMPM = sleepEndtime.getText().toString().split(" ")[1].toUpperCase();
 
             Log.d(TAG, "sleepStartTimeAMPM : " + sleepStartTimeAMPM);
             Log.d(TAG, "sleepEndTimeAMPM : " + sleepEndTimeAMPM);
 
-            long sleepStartTimeCheck = -999, sleepEndTimeCheck = -999;
+            long sleepStartTimeCheck = sleepStartTimeLong, sleepEndTimeCheck = sleepEndTimeLong;
+
+            long sleepingRange;
 
             if (!sleepStartTimeAMPM.equals(sleepEndTimeAMPM)) {
 
                 //we add the date to get the accurate range
-                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
-                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate + " " + sleepStartTimeHour + ":" + sleepStartTimeMin + " " + sleepStartTimeAMPM, sdf_);
-                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(tomorrDate + " " + sleepEndTimeHour + ":" + sleepEndTimeMin + " " + sleepEndTimeAMPM, sdf_);
+//                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
+//                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate + " " + sleepStartTimeHour + ":" + sleepStartTimeMin + " " + sleepStartTimeAMPM, sdf_);
+//                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(tomorrDate + " " + sleepEndTimeHour + ":" + sleepEndTimeMin + " " + sleepEndTimeAMPM, sdf_);
+
+                sleepingRange = sleepEndTimeCheck - sleepStartTimeCheck + Constants.MILLISECONDS_PER_DAY;
 
                 sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
             } else {
 
-                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
-                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate + " " + sleepStartTimeHour + ":" + sleepStartTimeMin + " " + sleepStartTimeAMPM, sdf_);
-                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate + " " + sleepEndTimeHour + ":" + sleepEndTimeMin + " " + sleepEndTimeAMPM, sdf_);
+//                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
+//                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate + " " + sleepStartTimeHour + ":" + sleepStartTimeMin + " " + sleepStartTimeAMPM, sdf_);
+//                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate + " " + sleepEndTimeHour + ":" + sleepEndTimeMin + " " + sleepEndTimeAMPM, sdf_);
+
+                sleepingRange = sleepEndTimeCheck - sleepStartTimeCheck;
 
                 sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
             }
@@ -148,18 +164,13 @@ public class Sleepingohio extends AppCompatActivity {
                 DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Confirm sleeping time - Fail - Wake up Time haven't been set.");
 
                 Toast.makeText(Sleepingohio.this, "Please select your wake time", Toast.LENGTH_SHORT).show();
-            } else if((sleepEndTimeCheck - sleepStartTimeCheck) > 12 * Constants.MILLISECONDS_PER_HOUR ||
-                    (sleepEndTimeCheck - sleepStartTimeCheck) < 3 * Constants.MILLISECONDS_PER_HOUR){
+            } else if(sleepingRange > 12 * Constants.MILLISECONDS_PER_HOUR || sleepingRange < 3 * Constants.MILLISECONDS_PER_HOUR){
 
                 DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Confirm sleeping time - Fail - Sleeping Time is not between 3 and 12 hours.");
 
                 Toast.makeText(Sleepingohio.this,"Please check your bed and wake times. Your sleep schedule must be between 3 and 12 hours long.", Toast.LENGTH_SHORT).show();
             }
             else {
-
-//                SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM); //, Locale.US
-//                long sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepStarttime.getText().toString(), sdf);
-//                long sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepEndtime.getText().toString(), sdf);
 
                 Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
                 Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
@@ -180,6 +191,10 @@ public class Sleepingohio extends AppCompatActivity {
 
                 sharedPrefs.edit().putString("SleepingStartTime", sleepStartTimeRaw).apply();
                 sharedPrefs.edit().putString("SleepingEndTime", sleepEndTimeRaw).apply();
+
+                //for easy to maintain
+                sharedPrefs.edit().putLong("sleepStartTimeLong", sleepStartTimeLong).apply();
+                sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
 
                 Utils.settingAllDaysIntervalSampling(getApplicationContext());
 
@@ -316,6 +331,10 @@ public class Sleepingohio extends AppCompatActivity {
             SimpleDateFormat sdf_a = new SimpleDateFormat(Constants.DATE_FORMAT_AMPM);
 
             long currentTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+
+            if(sleepStartTimeLong != Constants.initLong)
+                currentTime = sleepStartTimeLong;
+
             String currentHour = ScheduleAndSampleManager.getTimeString(currentTime, sdf_hh);
             String currentMin = ScheduleAndSampleManager.getTimeString(currentTime, sdf_mm);
             String currentAmpm = ScheduleAndSampleManager.getTimeString(currentTime, sdf_a);
@@ -441,6 +460,10 @@ public class Sleepingohio extends AppCompatActivity {
             SimpleDateFormat sdf_a = new SimpleDateFormat(Constants.DATE_FORMAT_AMPM);
 
             long currentTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+
+            if(sleepEndTimeLong != Constants.initLong)
+                currentTime = sleepEndTimeLong;
+
             String currentHour = ScheduleAndSampleManager.getTimeString(currentTime, sdf_hh);
             String currentMin = ScheduleAndSampleManager.getTimeString(currentTime, sdf_mm);
             String currentAmpm = ScheduleAndSampleManager.getTimeString(currentTime, sdf_a);

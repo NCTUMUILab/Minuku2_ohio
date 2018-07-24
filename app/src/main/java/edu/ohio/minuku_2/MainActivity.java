@@ -477,6 +477,8 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         } catch (JSONException e){
             e.printStackTrace();
+        } catch (NullPointerException e){
+            e.printStackTrace();
         }
 
 //        Log.d(TAG, "userInform : " + userInform);
