@@ -46,7 +46,6 @@ import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku_2.manager.SurveyTriggerManager;
 
 /**
@@ -81,6 +80,15 @@ public class Utils {
         Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
+    }
+
+    public static long getDateTimeInMillis(long time){
+
+        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String date = ScheduleAndSampleManager.getTimeString(time, sdf_date);
+        long dateTime = ScheduleAndSampleManager.getTimeInMillis(date, sdf_date);
+
+        return dateTime;
     }
 
     public static boolean isConfirmNumInvalid(String inputID) {

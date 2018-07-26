@@ -94,7 +94,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v13";
+    private String versionNumber = "v14";
 
     public static final int HTTP_TIMEOUT = 10000;
     public static final int SOCKET_TIMEOUT = 20000;
@@ -622,6 +622,7 @@ public class WifiReceiver extends BroadcastReceiver {
             data.put("email", Constants.Email);
             data.put("version", versionNumber);
             data.put("dataType", "Dump");
+            data.put("android_ver", Build.VERSION.SDK_INT);
 
             long startTimeInSec = startTime/Constants.MILLISECONDS_PER_SECOND;
             long endTimeInSec = endTime/Constants.MILLISECONDS_PER_SECOND;

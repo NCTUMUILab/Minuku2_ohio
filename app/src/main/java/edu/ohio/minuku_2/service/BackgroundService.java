@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import edu.ohio.minuku.Utilities.CSVHelper;
@@ -76,6 +77,7 @@ public class BackgroundService extends Service {
     MinukuStreamManager streamManager;
     NotificationManager mNotificationManager;
     private ScheduledExecutorService mScheduledExecutorService;
+    ScheduledFuture<?> mScheduledFuture;
 
     private SharedPreferences sharedPrefs;
 
@@ -180,7 +182,7 @@ public class BackgroundService extends Service {
 
     private void runMainThread(){
 
-        mScheduledExecutorService.scheduleAtFixedRate(
+        mScheduledFuture = mScheduledExecutorService.scheduleAtFixedRate(
                 updateStreamManagerRunnable,
                 Constants.STREAM_UPDATE_DELAY,
                 Constants.STREAM_UPDATE_FREQUENCY,
@@ -382,7 +384,6 @@ public class BackgroundService extends Service {
 //        Log.d(TAG,"updateOngoingNotification");
 
         //check how much trips hasn't been filled
-//        ArrayList<Session> recentSessions = SessionManager.getRecentSessions();
         ArrayList<Session> recentSessions = SessionManager.getRecentNotBeenCombinedSessions();
         ArrayList<Integer> ongoingSessionList = SessionManager.getOngoingSessionIdList();
 
@@ -418,6 +419,13 @@ public class BackgroundService extends Service {
         if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1){
 
             ongoingNotificationText = "Part B begins tomorrow and lasts 2 weeks.";
+        }else if(Constants.daysInSurvey > Constants.finalday){
+
+            //TODO ask for the text
+            ongoingNotificationText = "";
+
+            checkingRemovedFromForeground();
+
         }
 
         Notification note = getOngoingNotification(ongoingNotificationText);
@@ -500,6 +508,21 @@ public class BackgroundService extends Service {
         sharedPrefs.edit().putInt("CurrentState", TransportationModeStreamGenerator.mCurrentState).apply();
         sharedPrefs.edit().putInt("ConfirmedActivityType", TransportationModeStreamGenerator.mConfirmedActivityType).apply();
 
+        checkingRemovedFromForeground();
+    }
+
+    private void checkingRemovedFromForeground(){
+
+        if(Constants.daysInSurvey > Constants.finalday + 1){
+
+            Log.d(TAG,"stopForeground");
+
+            stopForeground(true);
+
+            unregisterReceiver(CheckRunnableReceiver);
+
+            mScheduledExecutorService.shutdown();
+        }
     }
 
     @Override
@@ -521,12 +544,14 @@ public class BackgroundService extends Service {
 
             if (intent.getAction().equals(CHECK_RUNNABLE_ACTION)) {
 
+                //we don't need ongoing notification after day finalday + 1
+
                 Log.d(TAG, "[check runnable] going to check if the runnable is running");
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to check if the runnable is running");
-                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "is the runnable running ? "+isBackgroundRunnableRunning);
+                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "is the runnable running ? " + isBackgroundRunnableRunning);
 
-                if(!isBackgroundRunnableRunning){
+                if (!isBackgroundRunnableRunning) {
 
                     Log.d(TAG, "[check runnable] the runnable is not running, going to restart it.");
 
@@ -541,12 +566,13 @@ public class BackgroundService extends Service {
 
                 PendingIntent pi = PendingIntent.getBroadcast(BackgroundService.this, 0, new Intent(CHECK_RUNNABLE_ACTION), 0);
 
-                AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+                AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
                 alarm.set(
                         AlarmManager.RTC_WAKEUP,
                         System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
                         pi
                 );
+
             }
         }
     };

@@ -197,13 +197,13 @@ public class Constants {
     public static String GROUP_NUM = "A";
     public static String Email = "";
 
-    public static int downloadedDayInSurvey = -1;
+    public static int downloadedDayInSurvey = 0;
     public static int daysInSurvey = -1;
     public static int finalday = 14; //real: 14, test: 3
     public static long midnightstart = -999;
-    public static long FirstTime_ToInitializeIntervalSurvey = -999;
 
     public static String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";
+    public static final String FINAL_SURVEY_URL = "https://osu.az1.qualtrics.com/jfe/form/SV_2sgjKUSdGmrBEln";
 
     public static String Interval_Sample = "Interval_Sample";
     public static String Setting_Interval_Sample = "Setting_Interval_Sample";

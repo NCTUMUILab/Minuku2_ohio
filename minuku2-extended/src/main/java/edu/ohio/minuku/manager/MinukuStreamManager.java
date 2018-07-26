@@ -67,6 +67,7 @@ public class MinukuStreamManager implements StreamManager {
     public static boolean cancelWalkingSurveyFlag;
 
     private MinukuStreamManager() throws Exception {
+
         mStreamMap = new HashMap<>();
         mStreamTypeStreamMap = new HashMap<>();
         mRegisteredStreamGenerators = new HashMap<>();
@@ -75,6 +76,7 @@ public class MinukuStreamManager implements StreamManager {
     }
 
     public static MinukuStreamManager getInstance() {
+
         if(MinukuStreamManager.instance == null) {
             try {
                 MinukuStreamManager.instance = new MinukuStreamManager();
