@@ -37,8 +37,6 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
 
     private long startTime = -9999;
     private long endTime = -9999;
-    private String startTimeString = "";
-    private String endTimeString = "";
 
     private SharedPreferences sharedPrefs;
 

@@ -42,6 +42,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
@@ -76,6 +77,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
@@ -119,22 +121,18 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isTheUser;
 
-    public static final int REFRESH_FREQUENCY = 3; //10s, 10000ms
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        Log.d(TAG, "Creating Main activity");
-
 
         MultiDex.install(this);
 
         sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
 
         //for testing the over date of the research
-//        Constants.daysInSurvey = 15;
 
-        if(Constants.daysInSurvey > 15){
+        if(Constants.daysInSurvey > Constants.finalday+1){
 
             setContentView(R.layout.homepage_complete);
             Button finalSurvey = (Button) findViewById(R.id.finalSurvey);
@@ -142,13 +140,22 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View view) {
-                    String url = "https://osu.az1.qualtrics.com/jfe/form/SV_2sgjKUSdGmrBEln";
+                    String url = Constants.FINAL_SURVEY_URL;
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(url));
                     startActivity(intent);
                 }
             });
-        }else {
+
+            user_id = (TextView) findViewById(R.id.userid);
+            Constants.USER_ID = sharedPrefs.getString("userid","NA");
+            user_id.setText("Confirmation #:" );
+
+            num_6_digit = (TextView) findViewById(R.id.group_num);
+            Constants.GROUP_NUM =  sharedPrefs.getString("groupNum","NA");
+            num_6_digit.setText(Constants.USER_ID);
+        } else {
+
             settingHomepageView();
         }
 
@@ -176,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void createShortCut(){
+
         Intent shortcutintent = new Intent("com.android.launcher.action.INSTALL_SHORTCUT");
         shortcutintent.putExtra("duplicate", false);
         shortcutintent.putExtra(Intent.EXTRA_SHORTCUT_NAME, getString(R.string.app_name));
@@ -196,7 +204,6 @@ public class MainActivity extends AppCompatActivity {
 
         int Hour = cal.get(Calendar.HOUR_OF_DAY);
         int Min = cal.get(Calendar.MINUTE);
-//        Log.d(TAG, "Year : "+Year+" Month : "+Month+" Day : "+Day+" Hour : "+Hour+" Min : "+Min);
 
         sharedPrefs.edit().putInt("StartYear", Year).apply();
         sharedPrefs.edit().putInt("StartMonth", Month).apply();
@@ -209,99 +216,155 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void settingHomepageView(){
+    private void getDownloadDateInMillisecond(long downloadTime){
+
+        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String downloadDate = ScheduleAndSampleManager.getTimeString(downloadTime, sdf_date);
+        long downloadDateTime = ScheduleAndSampleManager.getTimeInMillis(downloadDate, sdf_date);
+
+        Log.d(TAG, "downloadDateTime : "+ ScheduleAndSampleManager.getTimeString(downloadDateTime));
+
+        sharedPrefs.edit().putLong("downloadDateTime", downloadDateTime).apply();
+
+    }
+
+    private void settingHomepageView() {
 
         requestCode_annotate = new Bundle();
 
         setContentView(R.layout.homepage);
 
         /* alertdialog for checking userid */
+        long downloadtime = -999;
+        try {
 
-        sharedPrefs.edit().putLong("downloadedTime", new Date().getTime()).apply();
+            PackageManager pm = getPackageManager();
+            downloadtime = pm.getPackageInfo(Constants.appNameString, 0).firstInstallTime;
+        } catch (PackageManager.NameNotFoundException e) {
+
+            Log.e(TAG, "Exception", e);
+        }
+
+        Log.d(TAG, "downloadtime : " + ScheduleAndSampleManager.getTimeString(downloadtime));
+
+//        sharedPrefs.edit().putLong("downloadedTime", new Date().getTime()).apply();
+        sharedPrefs.edit().putLong("downloadedTime", downloadtime).apply();
+
+        getDownloadDateInMillisecond(downloadtime);
 
         sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", false).apply();
 
         firstTimeToShowDialogOrNot = sharedPrefs.getBoolean("firstTimeToShowDialogOrNot", true);
 //        Log.d(TAG,"firstTimeToShowDialogOrNot : "+firstTimeToShowDialogOrNot);
 
-        Constants.USER_ID = sharedPrefs.getString("userid","NA");
+        Constants.USER_ID = sharedPrefs.getString("userid", "NA");
 
-        if(firstTimeToShowDialogOrNot) {
+        if (firstTimeToShowDialogOrNot) {
+
             createShortCut(); //on home Screen Desktop
             showdialogforuser();
-        }else if(Constants.USER_ID.equals("NA")){
+        } else if (Constants.USER_ID.equals("NA")) {
+
             showdialogforuser();
         }
 
         user_id = (TextView) findViewById(R.id.userid);
-        Constants.USER_ID = sharedPrefs.getString("userid","NA");
-        user_id.setText("Confirmation #:" );
+        Constants.USER_ID = sharedPrefs.getString("userid", "NA");
+        user_id.setText("Confirmation #:");
 
         num_6_digit = (TextView) findViewById(R.id.group_num);
-        Constants.GROUP_NUM =  sharedPrefs.getString("groupNum","NA");
+        Constants.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
         num_6_digit.setText(Constants.USER_ID);
 
-        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey",0);
+        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", 0);
 
         //button
         tolinkList = (Button) findViewById(R.id.linkList);
-        tolinkList.setOnClickListener(new Button.OnClickListener(){
 
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, SurveyActivity.class));
-            }
-        });
+        if (Constants.daysInSurvey > Constants.finalday) {
 
-        ohio_settingSleepTime = (Button)findViewById(R.id.settingSleepTime);
+            tolinkList.setText("Final Survey");
+            tolinkList.setOnClickListener(new Button.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+
+                    DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to Survey Page");
+
+                    String url = Constants.FINAL_SURVEY_URL;
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(url));
+                    startActivity(intent);
+                }
+            });
+        }else{
+
+            tolinkList.setOnClickListener(new Button.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+
+                    DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to Survey Page");
+
+                    startActivity(new Intent(MainActivity.this, SurveyActivity.class));
+                }
+            });
+        }
+
+        ohio_settingSleepTime = (Button) findViewById(R.id.settingSleepTime);
         ohio_settingSleepTime.setOnClickListener(settingSleepTimeing);
 
-        ohio_annotate = (Button)findViewById(R.id.Annotate);
+        ohio_annotate = (Button) findViewById(R.id.Annotate);
         ohio_annotate.setOnClickListener(ohio_annotateing);
 
         closeService = (Button) findViewById(R.id.closeService);
         closeService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 stopService(intentToStartBackground);
             }
         });
 
-        sleepingtime = (TextView)findViewById(R.id.sleepingTime);
+        sleepingtime = (TextView) findViewById(R.id.sleepingTime);
         String sleepStartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);//"Please select your sleeping time"
         String sleepEndTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);//"Please select your wake up time"
 
-        if(!sleepStartTime.equals(Constants.NOT_A_NUMBER) && !sleepEndTime.equals(Constants.NOT_A_NUMBER)){
+        if (!sleepStartTime.equals(Constants.NOT_A_NUMBER) && !sleepEndTime.equals(Constants.NOT_A_NUMBER)) {
 
             String[] sleepStartDetail = sleepStartTime.split(":");
 
             int sleepStartHour = Integer.valueOf(sleepStartDetail[0]);
             String sleepStartHourStr = "";
-            if(sleepStartHour<12)
-                sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" am";
-            else if(sleepStartHour==12)
-                sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" pm";
+            if (sleepStartHour < 12 && sleepStartHour > 0)
+                sleepStartHourStr = String.valueOf(sleepStartHour) + ":" + sleepStartDetail[1] + " am";
+            else if (sleepStartHour == 12)
+                sleepStartHourStr = String.valueOf(sleepStartHour) + ":" + sleepStartDetail[1] + " pm";
+            else if (sleepStartHour == 0)
+                sleepStartHourStr = "12" + ":" + sleepStartDetail[1] + " am";
             else
-                sleepStartHourStr = String.valueOf(sleepStartHour-12)+":"+sleepStartDetail[1]+" pm";
+                sleepStartHourStr = String.valueOf(sleepStartHour - 12) + ":" + sleepStartDetail[1] + " pm";
 
             String[] sleepEndDetail = sleepEndTime.split(":");
 
             int sleepEndHour = Integer.valueOf(sleepEndDetail[0]);
             String sleepEndHourStr = "";
-            if(sleepEndHour<12)
-                sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" am";
-            else if(sleepEndHour==12)
-                sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" pm";
+            if (sleepEndHour < 12 && sleepEndHour > 0)
+                sleepEndHourStr = String.valueOf(sleepEndHour) + ":" + sleepEndDetail[1] + " am";
+            else if (sleepEndHour == 12)
+                sleepEndHourStr = String.valueOf(sleepEndHour) + ":" + sleepEndDetail[1] + " pm";
+            else if (sleepEndHour == 0)
+                sleepEndHourStr = "12" + ":" + sleepEndDetail[1] + " am";
             else
-                sleepEndHourStr = String.valueOf(sleepEndHour-12)+":"+sleepEndDetail[1]+" pm";
+                sleepEndHourStr = String.valueOf(sleepEndHour - 12) + ":" + sleepEndDetail[1] + " pm";
 
             sleepingtime.setText("Sleep: " + sleepStartHourStr + " to " + sleepEndHourStr);
 
-        }
-        else {
+        } else {
 
             sleepingtime.setText("Set Sleep Time");
         }
+
     }
 
     private void startSettingSleepingTime(){
@@ -382,46 +445,34 @@ public class MainActivity extends AppCompatActivity {
                         }
                         else {
 
-//                            if(!Utils.isEmailValid(inputEmail)){
-//                                Toast.makeText(MainActivity.this,"Error, it is not an Email format",Toast.LENGTH_SHORT).show();
-//                            }else {
+                            sharedPrefs.edit().putString("userid", inputID).apply();
+                            Constants.USER_ID = sharedPrefs.getString("userid", "NA");
+                            user_id.setText("Confirmation #");
 
-//                                Log.d(TAG, "participant ID" + inputID);
-//                                Log.d(TAG, "group number" + inputID.substring(0, 1));
+                            sharedPrefs.edit().putString("groupNum", inputID.substring(0, 1)).apply();
+                            Constants.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
+                            num_6_digit.setText(Constants.USER_ID);
 
-                                sharedPrefs.edit().putString("userid", inputID).apply();
-                                Constants.USER_ID = sharedPrefs.getString("userid", "NA");
-                                user_id.setText("Confirmation #");
+                            sharedPrefs.edit().putString("Email",inputEmail).apply();
+                            Constants.Email = sharedPrefs.getString("Email", "NA");
 
-                                sharedPrefs.edit().putString("groupNum", inputID.substring(0, 1)).apply();
-                                Constants.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
-                                num_6_digit.setText(Constants.USER_ID);
+                            startSettingSleepingTime(); //the appearing order is reversed from the code.
 
-                                sharedPrefs.edit().putString("Email",inputEmail).apply();
-                                Constants.Email = sharedPrefs.getString("Email", "NA");
+                            startpermission();
 
-                                startSettingSleepingTime(); //the appearing order is reversed from the code.
+                            sendingUserInform();
 
-                                startpermission();
+                            getStartDate();
 
-                                //TODO send a json to the server in the user collections.
-                                sendingUserInform();
+                            startService(intentToStartBackground);
 
-                                //TODO judging the time if the server storing the Study Start Time.
-                                getStartDate();
+                            isTheUser = true;
+                            sharedPrefs.edit().putBoolean("isTheUser", isTheUser).apply();
 
-                                startService(intentToStartBackground);
-
-                                isTheUser = true;
-                                sharedPrefs.edit().putBoolean("isTheUser", isTheUser).apply();
-
-                                //Dismiss once everything is OK.
-                                dialog.dismiss();
-                                MainActivity.this.finish();
-//                            }
+                            //Dismiss once everything is OK.
+                            dialog.dismiss();
+                            MainActivity.this.finish();
                         }
-//                        Log.d(TAG,"setPositiveButton");
-
                     }
                 });
 
@@ -458,6 +509,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (JSONException e){
+            e.printStackTrace();
+        } catch (NullPointerException e){
             e.printStackTrace();
         }
 
@@ -510,11 +563,18 @@ public class MainActivity extends AppCompatActivity {
     private void setDownloadedDaysInSurveyIs(JSONObject userInform){
 
         try{
+
             Constants.downloadedDayInSurvey = userInform.getInt("daysinsurvey");
+
+            //set the origin state "-1" to day 0
+            if(Constants.downloadedDayInSurvey == -1){
+
+                Constants.downloadedDayInSurvey = 0;
+            }
 
             sharedPrefs.edit().putInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey).apply();
 
-//            Log.d(TAG, "downloadedDayInSurvey : "+ Constants.downloadedDayInSurvey);
+            Log.d(TAG, "downloadedDayInSurvey : "+ Constants.downloadedDayInSurvey);
         }catch (JSONException e){
             e.printStackTrace();
         }
@@ -572,11 +632,14 @@ public class MainActivity extends AppCompatActivity {
                         String[] sleepStartDetail = sleepStartTime.split(":");
 
                         int sleepStartHour = Integer.valueOf(sleepStartDetail[0]);
+
                         String sleepStartHourStr = "";
-                        if(sleepStartHour<12)
+                        if(sleepStartHour<=12 && sleepStartHour > 0)
                             sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" am";
                         else if(sleepStartHour==12)
                             sleepStartHourStr = String.valueOf(sleepStartHour)+":"+sleepStartDetail[1]+" pm";
+                        else if(sleepStartHour==0)
+                            sleepStartHourStr = "12"+":"+sleepStartDetail[1]+" am";
                         else
                             sleepStartHourStr = String.valueOf(sleepStartHour-12)+":"+sleepStartDetail[1]+" pm";
 
@@ -584,16 +647,21 @@ public class MainActivity extends AppCompatActivity {
 
                         int sleepEndHour = Integer.valueOf(sleepEndDetail[0]);
                         String sleepEndHourStr = "";
-                        if(sleepEndHour<12)
+                        if(sleepEndHour<=12 && sleepEndHour > 0)
                             sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" am";
                         else if(sleepEndHour==12)
                             sleepEndHourStr = String.valueOf(sleepEndHour)+":"+sleepEndDetail[1]+" pm";
+                        else if(sleepEndHour==0)
+                            sleepEndHourStr = "12"+":"+sleepEndDetail[1]+" am";
                         else
                             sleepEndHourStr = String.valueOf(sleepEndHour-12)+":"+sleepEndDetail[1]+" pm";
 
                         sleepingtime.setText("Sleep: " + sleepStartHourStr + " to " + sleepEndHourStr);
 
                         sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", true).apply();
+
+                        Log.d(TAG, "sleepStartHour : "+sleepStartHour);
+                        Log.d(TAG, "sleepEndHour : "+sleepEndHour);
 
                     }
                     else {
@@ -630,6 +698,8 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
 //            Log.e(TAG,"recordinglist_ohio clicked");
 
+            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to Trips Page");
+
             startActivityForResult(new Intent(MainActivity.this, TripListActivity.class), 2);
 
         }
@@ -639,6 +709,8 @@ public class MainActivity extends AppCompatActivity {
     private Button.OnClickListener settingSleepTimeing = new Button.OnClickListener() {
         public void onClick(View v) {
 //            Log.e(TAG,"Sleepingohio clicked");
+
+            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to SleepTime Page");
 
             startActivityForResult(new Intent(MainActivity.this, Sleepingohio.class), requestCode_setting);
 

@@ -1,6 +1,7 @@
 package edu.ohio.minuku.Data;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -150,6 +151,14 @@ public class DataHandler {
         ArrayList<String> resultInArray = DBHelper.querySurveyLinks();
 
         return resultInArray;
+    }
+
+    public static void updateSession(int id, int toBeSent){
+
+        Log.d(TAG, "[storing sitename] Sitename going to store session : "+ id);
+
+        Log.d(TAG, "updateSession");
+        DBHelper.updateSessionTable(id, toBeSent);
     }
 
     public static void updateSurveyMissTime(String id, String colName){

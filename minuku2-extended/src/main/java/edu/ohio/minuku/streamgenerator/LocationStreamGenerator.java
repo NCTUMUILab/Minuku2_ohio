@@ -54,6 +54,8 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import edu.ohio.minuku.Utilities.CSVHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.LocationDataRecordDAO;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
@@ -106,10 +108,12 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
     private static AtomicDouble latestLatitude;
     private static AtomicDouble latestLongitude;
     private static float latestAccuracy;
+    private static float latestAltitude;
+    private static float latestSpeed;
+    private static float latestBearing;
+    private static String latestProvider;
 
     private Context context;
-
-
 
     public static boolean startIndoorOutdoor;
     public static ArrayList<LatLng> locForIndoorOutdoor;
@@ -159,7 +163,8 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     + location.getLatitude() + ", "
                     + location.getLongitude() + ", "
                     + "latestAccuracy: " + location.getAccuracy()
-                    +"Extras : " + location.getExtras());
+                    +"Extras : " + location.getExtras()
+                    +"Speed : " + location.getSpeed());
 
             // If the location is accurate to 30 meters, it's good enough for us.
             // Post an update event and exit.
@@ -181,10 +186,18 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             //TODO uncomment them when we stop testing
             this.latestLatitude.set(location.getLatitude());
             this.latestLongitude.set(location.getLongitude());
-            latestAccuracy = location.getAccuracy();
+            this.latestAccuracy = location.getAccuracy();
+            this.latestAltitude = (float) location.getAltitude();
+            this.latestSpeed = location.getSpeed();
+            this.latestBearing = location.getBearing();
+            this.latestProvider = location.getProvider();
 
             //the lastposition update value timestamp
             lastposupdate = new Date().getTime();
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_LOCATION_GOOGLE, ScheduleAndSampleManager.getCurrentTimeString(), String.valueOf(location.getLatitude())
+                    , String.valueOf(location.getLongitude()), String.valueOf(location.getAccuracy()), String.valueOf(location.getProvider()));
+
 
             Log.d(TAG,"onLocationChanged latestLatitude : "+ latestLatitude +" latestLongitude : "+ latestLongitude);
 
@@ -288,22 +301,31 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
             session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
         }
 
-//        Log.d(TAG, "[test replay] Update stream  ssession is " + session_id);
+//        Log.d(TAG, "[test replay] Update stream  session is " + session_id);
 
         try {
+
             newlocationDataRecord = new LocationDataRecord(
                     (float) latestLatitude.get(),
                     (float) latestLongitude.get(),
                     latestAccuracy,
-                    //TODO improve it to ArrayList, ex. the session id should be "0, 10".
+                    latestAltitude,
+                    latestSpeed,
+                    latestBearing,
+                    latestProvider,
                     String.valueOf(session_id));
         }catch (IndexOutOfBoundsException e){
             e.printStackTrace();
+
             //no session now
             newlocationDataRecord = new LocationDataRecord(
                     (float) latestLatitude.get(),
                     (float) latestLongitude.get(),
                     latestAccuracy,
+                    latestAltitude,
+                    latestSpeed,
+                    latestBearing,
+                    latestProvider,
                     String.valueOf(session_id));
         }
 //        Log.e(TAG,"[test replay] newlocationDataRecord latestLatitude : "+ latestLatitude.get()+" latestLongitude : "+ latestLongitude.get() + "  session_id " +  session_id);
@@ -317,9 +339,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
         EventBus.getDefault().post(newlocationDataRecord);
         try {
             mDAO.add(newlocationDataRecord);
-            //TODO notice it
-//                SessionManager.getInstance().setTrip(newlocationDataRecord);
-
 
         } catch (DAOException e) {
             e.printStackTrace();

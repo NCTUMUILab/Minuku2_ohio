@@ -63,18 +63,26 @@ public class Constants {
     public static final int DATA_FORMAT_TYPE_DAY=1;
     public static final int DATA_FORMAT_TYPE_HOUR=2;
 
+    public static final int SESSION_SHOULDNT_BEEN_SENT_FLAG = -1;
+    public static final int SESSION_SHOULD_BE_SENT_FLAG = 0;
+    public static final int SESSION_IS_ALREADY_SENT_FLAG = 1;
 
+    public static final int SESSION_NEVER_GET_COMBINED_FLAG = 0;
+    public static final int SESSION_IS_COMBINED_FLAG = 1;
+    public static final int SESSION_SUBJECTIVELY_COMBINE_FLAG = 2;
 
     public static final String YES = "YES";
     public static final String NO = "NO";
 
     public static final String DELIMITER = ";;;";
+    public static final String SESSION_DELIMITER = ",";
     public static final String ACTIVITY_DELIMITER = ";;";
     public static final String CONTEXT_SOURCE_DELIMITER = ":";
     public static final String DELIMITER_IN_COLUMN = "::";
 
     //
     public static final String sharedPrefString = "edu.umich.minuku_2";
+    public static final String appNameString = "edu.ohio.minuku_2";
 
     //file path
     public static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
@@ -182,18 +190,20 @@ public class Constants {
 
     /* from NCTU */
     public static final String NOT_A_NUMBER = "NA";
+    public static final long initLong = -999;
 
     public static String DEVICE_ID = "NA";
     public static String USER_ID = "N";
     public static String GROUP_NUM = "A";
     public static String Email = "";
 
-    public static int downloadedDayInSurvey = -1;
+    public static int downloadedDayInSurvey = 0;
     public static int daysInSurvey = -1;
+    public static int finalday = 14; //real: 14, test: 3
     public static long midnightstart = -999;
-    public static long FirstTime_ToInitializeIntervalSurvey = -999;
 
     public static String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";
+    public static final String FINAL_SURVEY_URL = "https://osu.az1.qualtrics.com/jfe/form/SV_2sgjKUSdGmrBEln";
 
     public static String Interval_Sample = "Interval_Sample";
     public static String Setting_Interval_Sample = "Setting_Interval_Sample";

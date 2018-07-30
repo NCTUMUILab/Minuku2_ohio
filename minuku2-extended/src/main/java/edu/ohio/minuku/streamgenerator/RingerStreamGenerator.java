@@ -38,7 +38,7 @@ public class RingerStreamGenerator extends AndroidStreamGenerator<RingerDataReco
     public static final String MODE_CURRENT = "Current";
     public static final String MODE_INVALID = "Invalid";
     public static final String MODE_IN_CALL = "InCall";
-    public static final String MODE_IN_COMMUNICATION = "InCommunicaiton";
+    public static final String MODE_IN_COMMUNICATION = "InCommunication";
     public static final String MODE_NORMAL = "Normal";
     public static final String MODE_RINGTONE = "Ringtone";
 

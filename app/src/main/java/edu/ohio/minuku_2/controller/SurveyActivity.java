@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,11 +40,16 @@ public class SurveyActivity extends Activity {
 
     private final static String TAG = "SurveyActivity";
 
+    private TextView surveyDayText;
+
     private Button testButton,
         survey1_Button, survey2_Button, survey3_Button, survey4_Button, survey5_Button, survey6_Button;
 
     private ArrayList<String> surveyDatas = new ArrayList<>();
     private ArrayList<Integer> linkNums = new ArrayList<>();
+
+    private ArrayList<String> buttonState;
+    private ArrayList<Button> buttons;
 
     private int notifyID = 1;
 
@@ -57,6 +63,7 @@ public class SurveyActivity extends Activity {
     private final String TEXT_Available = " Available ";/*the space is to padding the border*/
     private final String TEXT_COMPLETED = "Completed";
     private final String TEXT_MISSED = "Missed";
+    private final String TEXT_ERROR = "Error";
 
 
     public void onCreate(Bundle savedInstanceState) {
@@ -67,7 +74,7 @@ public class SurveyActivity extends Activity {
         if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
 
             setContentView(R.layout.surveypage_day0);
-        }else if(Constants.daysInSurvey > 14){
+        }else if(Constants.daysInSurvey > Constants.finalday){
 
             setContentView(R.layout.surveypage_complete);
         }else {
@@ -82,14 +89,14 @@ public class SurveyActivity extends Activity {
         if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
 
             setContentView(R.layout.surveypage_day0);
-        }else if(Constants.daysInSurvey > 14){
+        }else if(Constants.daysInSurvey > Constants.finalday){
 
             setContentView(R.layout.surveypage_complete);
         }else {
             setContentView(R.layout.surveypage);
         }
 
-        if(Constants.daysInSurvey <= 14 && Constants.daysInSurvey >= 1)
+        if(Constants.daysInSurvey <= Constants.finalday && Constants.daysInSurvey >= 1)
             initlinkListohio();
     }
 
@@ -117,6 +124,9 @@ public class SurveyActivity extends Activity {
         //format : id;link_col;generateTime_col;openTime_col;missedTime_col;openFlag_col;surveyType_col
         surveyDatas = DBHelper.querySurveyLinkBetweenTimes(startTime, endTime);
 
+        surveyDayText = (TextView) findViewById(R.id.surveyDayView);
+        surveyDayText.setText("Day "+Constants.daysInSurvey+"/"+Constants.finalday);
+
 //        Log.d(TAG, "[test mobile triggering] surveyDatas size : "+surveyDatas.size());
 
         for(String data : surveyDatas){
@@ -134,12 +144,22 @@ public class SurveyActivity extends Activity {
 
         }
 
+        buttonState = new ArrayList<>();
+        buttons = new ArrayList<>();
+
         survey1_Button = (Button) findViewById(R.id.survey1_button);
         survey2_Button = (Button) findViewById(R.id.survey2_button);
         survey3_Button = (Button) findViewById(R.id.survey3_button);
         survey4_Button = (Button) findViewById(R.id.survey4_button);
         survey5_Button = (Button) findViewById(R.id.survey5_button);
         survey6_Button = (Button) findViewById(R.id.survey6_button);
+
+        buttons.add(survey1_Button);
+        buttons.add(survey2_Button);
+        buttons.add(survey3_Button);
+        buttons.add(survey4_Button);
+        buttons.add(survey5_Button);
+        buttons.add(survey6_Button);
 
         setSurveyButtonsWork();
 
@@ -150,6 +170,33 @@ public class SurveyActivity extends Activity {
         setSurveyButtonsAvailable(survey5_Button, 5);
         setSurveyButtonsAvailable(survey6_Button, 6);
 
+        //TODO check the button's state again
+        int latestNotUnava_index = -1;
+
+        //get the newest not unavailable button
+        for(int index = buttonState.size() - 1; index >= 0  ; index--){
+
+            String currentState = buttonState.get(index);
+
+            if(!currentState.equals(TEXT_Unavailable)){
+
+                latestNotUnava_index = index;
+            }
+
+        }
+
+        //before the newest not unavailable button, there should not have a unavailable button
+        for(int index = 0; index < latestNotUnava_index ; index++){
+
+            String currentState = buttonState.get(index);
+
+            if(currentState.equals(TEXT_Unavailable)){
+
+                Button currentButton = buttons.get(index);
+                currentButton.setText(TEXT_ERROR);
+                currentButton.setClickable(false);
+            }
+        }
 
         //for testing, could deprecate it after we complete all the work
 //        testButton = (Button) findViewById(R.id.triggerButton);
@@ -197,6 +244,8 @@ public class SurveyActivity extends Activity {
 
             survey_Button.setText(TEXT_Unavailable);
             survey_Button.setClickable(false);
+
+            buttonState.add(TEXT_Unavailable);
         }else{
 
 //            Log.d(TAG, "[test mobile triggering] correspondingIndex : "+correspondingIndex);
@@ -216,6 +265,8 @@ public class SurveyActivity extends Activity {
 
                 survey_Button.setText(TEXT_COMPLETED);
                 survey_Button.setClickable(false);
+
+                buttonState.add(TEXT_COMPLETED);
             }else if(openFlag.equals("0")){
 
                 survey_Button.setBackgroundColor(Color.LTGRAY);
@@ -224,6 +275,8 @@ public class SurveyActivity extends Activity {
                 survey_Button.setText(TEXT_MISSED);
                 survey_Button.setClickable(false);
 
+                buttonState.add(TEXT_MISSED);
+
                 //check the missed is for the mobile or the random
 
                 //if it's random one, check there is a mobile survey in next period.
@@ -231,11 +284,22 @@ public class SurveyActivity extends Activity {
                 //if there is, set to here.
 //                setSurveyButtonsAvailable(survey_Button, correspondingSize+1);
 
+            }else if(openFlag.equals("2")){
+
+                survey_Button.setBackgroundColor(Color.LTGRAY);
+                survey_Button.setTextColor(Color.DKGRAY);
+
+                survey_Button.setText(TEXT_ERROR);
+                survey_Button.setClickable(false);
+
+                buttonState.add(TEXT_ERROR);
             }else{
 
                 survey_Button.setBackgroundColor(Color.RED);
                 survey_Button.setTextColor(getResources().getColor(R.color.white));
                 survey_Button.setText(TEXT_Available);
+
+                buttonState.add(TEXT_Available);
             }
         }
 
@@ -293,6 +357,8 @@ public class SurveyActivity extends Activity {
     }
 
     private void surveyButtonsWork(int buttonNumber){
+
+        DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Survey " + buttonNumber);
 
         //record if the user have clicked the survey button
         sharedPrefs.edit().putBoolean("Period"+buttonNumber,false).apply();

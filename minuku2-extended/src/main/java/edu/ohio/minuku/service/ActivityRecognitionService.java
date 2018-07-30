@@ -86,7 +86,6 @@ public class ActivityRecognitionService extends IntentService {
 //        Log.d(TAG, "[test replay] entering onHandleIntent");
 
         /**  move to TriggerManager  **/
-        //TODO triggerManager situationManager, triggerManager: replace ModeWork.work. , situationManager: replace ModeWork.condition. 放transportationManager(In Minuku).
         if(ActivityRecognitionResult.hasResult(intent)) {
             try {
                 mActivityRecognitionStreamGenerator = (ActivityRecognitionStreamGenerator) MinukuStreamManager.getInstance().getStreamGeneratorFor(ActivityRecognitionDataRecord.class);
@@ -98,7 +97,7 @@ public class ActivityRecognitionService extends IntentService {
             //TODO uncomment them when we stop testing
             mProbableActivities = activity.getProbableActivities();
             mMostProbableActivity = activity.getMostProbableActivity();
-            detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
+            detectedtime = new Date().getTime();
 
 
             ActivityRecognitionDataRecord record = new ActivityRecognitionDataRecord();
@@ -151,7 +150,7 @@ public class ActivityRecognitionService extends IntentService {
 
                         mProbableActivities = activityRecognitionDataRecord.getProbableActivities();
                         mMostProbableActivity = activityRecognitionDataRecord.getMostProbableActivity();
-                        detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
+                        detectedtime = new Date().getTime();
 
 //                        Log.d("ARService", "[test replay] test trip going to feed " +   activityRecognitionDataRecord.getDetectedtime() +  " :"  +  activityRecognitionDataRecord.getProbableActivities()  +  " : " +activityRecognitionDataRecord.getMostProbableActivity()    + " at index " + activityRecordCurIndex  + " to the AR streamgenerator");
 

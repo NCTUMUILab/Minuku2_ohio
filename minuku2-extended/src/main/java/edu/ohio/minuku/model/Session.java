@@ -15,7 +15,11 @@ public class Session {
 	protected AnnotationSet mAnnotationSet;
 	private boolean mIsLongEnough = true ;
 	private boolean mIsModified = false;
-    //TODO: this should be defined based on what's being activated.
+    private int mIsSent;
+    private int mIsCombined;
+    private int periodNum;
+
+    // this should be defined based on what's being activated.
     ArrayList<String> mContextSourceNames;
 
 	public Session (int sessionId){
@@ -61,6 +65,14 @@ public class Session {
         }
     }
 
+    public void setIsSent(int isSent){
+        mIsSent = isSent;
+    }
+
+    public int getIsSent(){
+        return mIsSent;
+    }
+
     public boolean isLongEnough() {
         return mIsLongEnough;
     }
@@ -88,6 +100,14 @@ public class Session {
 	public int getId(){
 		return mId;
 	}
+
+    public void setPeriodNum(int periodNum){
+        this.periodNum = periodNum;
+    }
+
+    public int getPeriodNum(){
+        return periodNum;
+    }
 
     public int getOngoingNotificationId() {
         return mOngoingNotificationId;
@@ -152,5 +172,12 @@ public class Session {
         mAnnotationSet.addAnnotation(annotation);
 
     }
-	
+
+    public int getIsCombined() {
+        return mIsCombined;
+    }
+
+    public void setIsCombined(int isCombined) {
+        this.mIsCombined = isCombined;
+    }
 }

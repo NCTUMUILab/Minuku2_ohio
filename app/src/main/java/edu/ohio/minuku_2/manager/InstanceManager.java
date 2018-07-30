@@ -143,9 +143,9 @@ public class InstanceManager {
         // Create corresponding stream generators. Only to be created once in Main Activity
         //creating a new stream registers it with the stream manager
         //TODO build new StreamGenerator here.
+
 //        LocationNoGoogleStreamGenerator locationNoGoogleStreamGenerator =
 //                new LocationNoGoogleStreamGenerator(getApplicationContext());
-
 
         LocationStreamGenerator locationStreamGenerator =
                 new LocationStreamGenerator(getApplicationContext());
@@ -170,10 +170,6 @@ public class InstanceManager {
 
         TelephonyStreamGenerator telephonyStreamGenerator =
                 new TelephonyStreamGenerator(getApplicationContext());
-
-        //TODO deprecated by triggering the service after the user enter their email and confirmNum
-//        CheckFamiliarOrNotStreamGenerator checkFamiliarOrNotStreamGenerator =
-//                new CheckFamiliarOrNotStreamGenerator(getApplicationContext());
 
         // All situations must be registered AFTER the stream generators are registers.
         MinukuSituationManager situationManager = MinukuSituationManager.getInstance();

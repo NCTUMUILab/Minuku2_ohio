@@ -3,23 +3,18 @@ package edu.ohio.minuku.manager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.os.Environment;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.opencsv.CSVWriter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
@@ -61,7 +56,8 @@ public class SessionManager {
 
     public static final String SESSION_LONGENOUGH_THRESHOLD_DISTANCE = "distance";
 
-    public static final long SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION = 3 * Constants.MILLISECONDS_PER_MINUTE;
+    //TODO MIN_INTERVAL 3 min originally
+    public static final long SESSION_MIN_INTERVAL_THRESHOLD_TRANSPORTATION = 5 * Constants.MILLISECONDS_PER_MINUTE;
     public static final long SESSION_MIN_DURATION_THRESHOLD_TRANSPORTATION = 2 * Constants.MILLISECONDS_PER_MINUTE;
     public static final long SESSION_MIN_DISTANCE_THRESHOLD_TRANSPORTATION = 200;  // meters
 
@@ -72,8 +68,6 @@ public class SessionManager {
 
     private static Context mContext;
     private static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
-    private CSVWriter csv_writer = null;
-    private static CSVWriter csv_writer2 = null;
 
     private static SessionManager instance;
 
@@ -187,7 +181,7 @@ public class SessionManager {
      * @param sessionStr
      * @return
      */
-    private static Session convertStringToSession(String sessionStr) {
+    public static Session convertStringToSession(String sessionStr) {
 
         Session session = null;
 
@@ -220,13 +214,28 @@ public class SessionManager {
 
         boolean islongEnough= true;
         boolean isModified = false;
-        //longEnough flag
+
         if (!separated[DBHelper.COL_INDEX_SESSION_LONG_ENOUGH_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_LONG_ENOUGH_FLAG].equals("")){
             islongEnough = Boolean.parseBoolean(separated[DBHelper.COL_INDEX_SESSION_LONG_ENOUGH_FLAG]);
         }
 
         if (!separated[DBHelper.COL_INDEX_SESSION_MODIFIED_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_MODIFIED_FLAG].equals("")){
             isModified = Boolean.parseBoolean(separated[DBHelper.COL_INDEX_SESSION_MODIFIED_FLAG]);
+        }
+
+        if (!separated[DBHelper.COL_INDEX_SESSION_SENTORNOT_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_SENTORNOT_FLAG].equals("")) {
+
+            session.setIsSent(Integer.valueOf(separated[DBHelper.COL_INDEX_SESSION_SENTORNOT_FLAG]));
+        }
+
+        if (!separated[DBHelper.COL_INDEX_SESSION_COMBINEDORNOT_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_COMBINEDORNOT_FLAG].equals("")) {
+
+            session.setIsCombined(Integer.valueOf(separated[DBHelper.COL_INDEX_SESSION_COMBINEDORNOT_FLAG]));
+        }
+
+        if (!separated[DBHelper.COL_INDEX_SESSION_PERIODNUMBER_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_PERIODNUMBER_FLAG].equals("")) {
+
+            session.setPeriodNum(Integer.valueOf(separated[DBHelper.COL_INDEX_SESSION_PERIODNUMBER_FLAG]));
         }
 
         session.setLongEnough(islongEnough);
@@ -247,17 +256,13 @@ public class SessionManager {
             //e.printStackTrace();
         }
 
-
         //set annotationset if there is one
         if (annotateionSetJSONArray!=null){
             AnnotationSet annotationSet =  toAnnorationSet(annotateionSetJSONArray);
             session.setAnnotationSet(annotationSet);
         }
 
-
-
         return session;
-
     }
 
     public static Session getSession (String id) {
@@ -281,7 +286,13 @@ public class SessionManager {
     public static Session getLastSession() {
 
         Session session = null;
-        String sessionStr = DBHelper.queryLastSession().get(0);
+
+        ArrayList<String> lastSessions = DBHelper.queryLastSession();
+
+        if(lastSessions.size() == 0)
+            return new Session(0);
+
+        String sessionStr = lastSessions.get(0);
         //Log.d(TAG, "test combine lastsession " + sessionStr );
         session = convertStringToSession(sessionStr);
         //Log.d(TAG, " test show trip  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
@@ -309,14 +320,12 @@ public class SessionManager {
             //Log.d(TAG, "test combine: the time of the last record is " + time );
             return time;
         }
-
-
     }
 
     public static Session getSession (int sessionId) {
 
         Session session = null;
-        String sessionStr =  DBHelper.querySession(sessionId).get(0);
+        String sessionStr = DBHelper.querySession(sessionId).get(0);
         //Log.d(TAG, "[test combine]query session from LocalDB is " + sessionStr);
         session = convertStringToSession(sessionStr);
         //Log.d(TAG, " test combine  testgetdata id " + session.getId() + " startTime " + session.getStartTime() + " end time " + session.getEndTime() + " annotation " + session.getAnnotationsSet().toJSONObject().toString());
@@ -562,6 +571,87 @@ public class SessionManager {
         return sessions;
     }
 
+    // but the subjectively combined one would be showed
+    public static ArrayList<Session> getRecentNotBeenCombinedSessions() {
+
+        ArrayList<Session> sessions = new ArrayList<Session>();
+
+        long queryEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+        //start time = a specific hours ago
+        long queryStartTime = ScheduleAndSampleManager.getCurrentTimeInMillis() - Constants.MILLISECONDS_PER_HOUR * SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR;
+
+        //Log.d(TAG, " [test show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
+
+
+        //query//get sessions between the starTime and endTime
+        ArrayList<String> res =  DBHelper.queryNotBeenCombinedSessionsBetweenTimes(queryStartTime, queryEndTime);
+
+        Log.d(TAG, "[show split trip]  getRecentSessions get res : " +  res.size());
+
+        //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
+        for (int i=0; i<res.size() ; i++) {
+
+            Session session = convertStringToSession(res.get(i));
+            sessions.add(session);
+        }
+
+        return sessions;
+    }
+
+    public static ArrayList<Session> getRecentNotBeenCombinedSessions(int sessionid) {
+
+        ArrayList<Session> sessions = new ArrayList<Session>();
+
+        long queryEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+        //start time = a specific hours ago
+        long queryStartTime = ScheduleAndSampleManager.getCurrentTimeInMillis() - Constants.MILLISECONDS_PER_HOUR * SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR;
+
+        //Log.d(TAG, " [test show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
+
+
+        //query//get sessions between the starTime and endTime
+        ArrayList<String> res =  DBHelper.queryNotBeenCombinedSessionsBetweenTimes(queryStartTime, queryEndTime, sessionid);
+
+
+        //Log.d(TAG, "[test show trip] getRecentSessions get res: " +  res);
+
+        //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
+        for (int i=0; i<res.size() ; i++) {
+
+            Session session = convertStringToSession(res.get(i));
+            sessions.add(session);
+        }
+
+        return sessions;
+    }
+
+    public static ArrayList<Session> getRecentSessions(int sessionid) {
+
+        ArrayList<Session> sessions = new ArrayList<Session>();
+
+        long queryEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+        //start time = a specific hours ago
+        long queryStartTime = ScheduleAndSampleManager.getCurrentTimeInMillis() - Constants.MILLISECONDS_PER_HOUR * SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR;
+
+        //Log.d(TAG, " [test show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
+
+
+        //query//get sessions between the starTime and endTime
+        ArrayList<String> res =  DBHelper.querySessionsBetweenTimes(queryStartTime, queryEndTime, sessionid);
+
+
+        //Log.d(TAG, "[test show trip] getRecentSessions get res: " +  res);
+
+        //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
+        for (int i=0; i<res.size() ; i++) {
+
+            Session session = convertStringToSession(res.get(i));
+            sessions.add(session);
+        }
+
+        return sessions;
+    }
+
     public static ArrayList<String> getRecordsInSession(int sessionId, String tableName) {
 
         ArrayList<String> resultList = new ArrayList<String>();
@@ -570,37 +660,6 @@ public class SessionManager {
         //Log.d(TAG, "[getRecordsInSession] test combine got " + resultList.size() + " of results from queryRecordsInSession");
 
         return resultList;
-    }
-
-
-    public static void StoreToCSV(long timestamp, int id, String sessionid, double latitude, double longitude, float accuracy, int TF){
-
-//        //Log.d(TAG,"TransportationMode_StoreToCSV");
-
-        String sFileName = "CheckIsTrip.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            csv_writer2 = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-//            data.add(new String[]{"timestamp","timeString","Latitude","Longitude","Accuracy"});
-            String timeString = getTimeString(timestamp);
-
-            data.add(new String[]{String.valueOf(timestamp), timeString, sessionid, String.valueOf(latitude), String.valueOf(longitude), String.valueOf(accuracy), String.valueOf(TF)});
-
-            csv_writer2.writeAll(data);
-
-            csv_writer2.close();
-
-        }catch (IOException e){
-            //e.printStackTrace();
-        }
     }
 
 

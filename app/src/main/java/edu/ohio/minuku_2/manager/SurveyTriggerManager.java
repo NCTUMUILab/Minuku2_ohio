@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -30,7 +31,6 @@ import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.RandomNumber;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.MinukuNotificationManager;
 import edu.ohio.minuku.manager.SessionManager;
@@ -424,6 +424,19 @@ public class SurveyTriggerManager {
         }
     }
 
+    private void checkSurveyLinkOvertime(){
+
+        try {
+
+            String latestSurveyLinkData = DBHelper.queryLatestSurveyLink();
+            String latestSurveyLink_Time = latestSurveyLinkData.split(Constants.DELIMITER)[DBHelper.COL_INDEX_GENERATE_TIME];
+
+            DBHelper.updateOverTimeSurvey(Long.valueOf(latestSurveyLink_Time));
+        }catch (Exception e){
+            Log.e(TAG, "exception", e);
+        }
+    }
+
     private void confirmAlarmExist(){
 
         int alarmTotal = sharedPrefs.getInt("alarmCount", 0);
@@ -480,12 +493,18 @@ public class SurveyTriggerManager {
         @Override
         public void run() {
 
-            if(alarmCheckCount == 30) {
+            //30: 10 mins, 60: 20 mins
+            if(alarmCheckCount == 60) {
 
                 Log.d(TAG, "confirmAlarmExist");
 
                 confirmAlarmExist();
                 alarmCheckCount = 0;
+
+                Log.d(TAG, "checking if there is a link unavailable and missed");
+
+                checkSurveyLinkOvertime();
+
             }else {
 
                 alarmCheckCount++;
@@ -556,7 +575,23 @@ public class SurveyTriggerManager {
                         //which means they get the daysInSurvey is x|x>0 instead of -1, just keep it.
                         if(!lastTimeSend_today.equals("NA")){
 
-                            Constants.daysInSurvey++;
+//                            Constants.daysInSurvey++;
+
+                            //TODO check the mechanism
+                            long downloadDateTime = sharedPrefs.getLong("downloadDateTime", Constants.initLong);
+
+                            long currentDateTime = Utils.getDateTimeInMillis(ScheduleAndSampleManager.getCurrentTimeInMillis());
+
+                            long passedDay = (currentDateTime - downloadDateTime) / Constants.MILLISECONDS_PER_DAY;
+
+                            Log.d(TAG, "[check daysInSurvey] downloadDateTime : "+ ScheduleAndSampleManager.getTimeString(downloadDateTime));
+                            Log.d(TAG, "[check daysInSurvey] currentDateTime : "+ ScheduleAndSampleManager.getTimeString(currentDateTime));
+                            Log.d(TAG, "[check daysInSurvey] passedDay : "+ passedDay);
+
+                            Constants.daysInSurvey = Constants.downloadedDayInSurvey + (int) passedDay;
+
+                            Log.d(TAG, "[check daysInSurvey] downloadedDayInSurvey : "+ Constants.downloadedDayInSurvey);
+                            Log.d(TAG, "[check daysInSurvey] daysInSurvey : "+ Constants.daysInSurvey);
                         }
                     }
                     sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
@@ -744,33 +779,6 @@ public class SurveyTriggerManager {
         }
 
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Period Number is "+ periodNum);
-
-        //TODO deprecated
-//        if(periodNum > 1) {
-//
-//            if (noti_type.equals(noti_walk)) {
-//
-//                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "It is a mobile survey.");
-//
-//                //get last period
-//                int lastPeriodNum = periodNum - 1;
-//
-//                boolean isLastPeriodNotClicked = sharedPrefs.getBoolean("Period"+lastPeriodNum,true);
-//
-//                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "LastPeriod has not clicked "+ isLastPeriodNotClicked + "(P.S. the mobile one might set by clicked for the mechanism.)");
-//
-//                if(isLastPeriodNotClicked){
-//
-//                    sharedPrefs.edit().putInt("CurrPeriodNum", lastPeriodNum).apply();
-//
-//                    Log.d(TAG, "[test new trigger] isLastPeriodNotClicked : "+isLastPeriodNotClicked);
-//
-//                    return isLastPeriodNotClicked;
-//                }
-//
-//                //else get the current one
-//            }
-//        }
 
         //if it's a mobile triggered or have been clicked; true
 

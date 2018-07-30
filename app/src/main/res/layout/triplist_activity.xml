@@ -20,9 +20,10 @@
             android:id="@+id/emptyViewText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:text="No trip yet."
+            android:text="No trips recorded in the last 24 hours."
             android:textSize="24sp" />
     </LinearLayout>
 </LinearLayout>

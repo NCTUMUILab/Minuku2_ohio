@@ -1,5 +1,7 @@
 package edu.ohio.minuku.manager;
 
+import android.content.SharedPreferences;
+
 import org.greenrobot.eventbus.Subscribe;
 
 import java.text.SimpleDateFormat;
@@ -11,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import edu.ohio.minuku.Utilities.CSVHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.Utilities.Utilities;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.AnnotationSet;
@@ -19,8 +24,8 @@ import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
 import edu.ohio.minuku.model.MinukuStreamSnapshot;
 import edu.ohio.minuku.model.Session;
-import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
 import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
+import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
 import edu.ohio.minukucore.event.IsDataExpectedEvent;
 import edu.ohio.minukucore.event.NoDataChangeEvent;
 import edu.ohio.minukucore.event.StateChangeEvent;
@@ -62,6 +67,7 @@ public class MinukuStreamManager implements StreamManager {
     public static boolean cancelWalkingSurveyFlag;
 
     private MinukuStreamManager() throws Exception {
+
         mStreamMap = new HashMap<>();
         mStreamTypeStreamMap = new HashMap<>();
         mRegisteredStreamGenerators = new HashMap<>();
@@ -70,6 +76,7 @@ public class MinukuStreamManager implements StreamManager {
     }
 
     public static MinukuStreamManager getInstance() {
+
         if(MinukuStreamManager.instance == null) {
             try {
                 MinukuStreamManager.instance = new MinukuStreamManager();
@@ -205,7 +212,7 @@ public class MinukuStreamManager implements StreamManager {
         return activityRecognitionDataRecord;
     }
 
-    public void setTransportationModeDataRecord(TransportationModeDataRecord transportationModeDataRecord){
+    public void setTransportationModeDataRecord(TransportationModeDataRecord transportationModeDataRecord, SharedPreferences sharedPrefs){
 
         //Log.d(TAG, "setTransportationModeDataRecord");
 
@@ -232,7 +239,10 @@ public class MinukuStreamManager implements StreamManager {
                 //Log.d(TAG, "test combine test trip: the new acitivty is different from the previous!");
 
                 /** we first see if the this is the first session **/
-                int sessionCount = SessionManager.getNumOfSession();
+
+                //change to ongoing session
+                Session lastSession = SessionManager.getLastSession();
+                int sessionCount = lastSession.getId();
 
                 //if this is the first time seeing a session and the new transportation is neither static nor NA, we should just insert a session
                 if (sessionCount==0
@@ -245,8 +255,13 @@ public class MinukuStreamManager implements StreamManager {
                 //there's exizstint sessions in the DB
                 else if (sessionCount>0){
 
-                    //get the latest session (Which should be the ongoing one)
-                    Session lastSession = SessionManager.getLastSession();
+                    //if there is a ongoing session
+                    if(SessionManager.getOngoingSessionIdList().size()!=0){
+
+                        lastSession = SessionManager.getSession(SessionManager.getOngoingSessionIdList().get(0));
+                    }
+
+                    //get the latest session (which should be the ongoing one)
                     int sessionIdOfLastSession = lastSession.getId();
                     AnnotationSet annotationSet = lastSession.getAnnotationsSet();
                     long endTimeOfLastSession = lastSession.getEndTime();
@@ -276,11 +291,10 @@ public class MinukuStreamManager implements StreamManager {
 
                         //if the new moving should not combine, we should end the previous session, and a new session
                         else {
+
                             //1. end the previous session if the previous transportation is moving
                             addSessionFlag = true;
                             //Log.d(TAG, "test combine: we should not combine the new transportation activity with the last session " );
-
-
                         }
 
                     }
@@ -298,6 +312,8 @@ public class MinukuStreamManager implements StreamManager {
                         long endTime = getCurrentTimeInMilli();
                         lastSession.setEndTime(endTime);
                         lastSession.setLongEnough(isSessionLongEnough);
+
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_PERIODNUM, "isSessionLongEnough : "+isSessionLongEnough);
 
                         //end the current session
                         SessionManager.endCurSession(lastSession);
@@ -320,9 +336,14 @@ public class MinukuStreamManager implements StreamManager {
                     annotation.setContent(transportationModeDataRecord.getConfirmedActivityString());
                     annotation.addTag(Constants.ANNOTATION_TAG_DETECTED_TRANSPORTATOIN_ACTIVITY);
                     session.addAnnotation(annotation);
+                    session.setIsSent(Constants.SESSION_SHOULDNT_BEEN_SENT_FLAG);
+                    session.setIsCombined(Constants.SESSION_NEVER_GET_COMBINED_FLAG);
 
-                    //Log.d(TAG, "[test combine] insert the session is with annotation " +session.getAnnotationsSet().toJSONObject().toString());
+                    int periodNum = Utilities.getPeriodNum(ScheduleAndSampleManager.getCurrentTimeInMillis(), sharedPrefs);
 
+                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_PERIODNUM, "PeriodNum : "+periodNum);
+
+                    session.setPeriodNum(periodNum);
 
                     SessionManager.startNewSession(session);
 

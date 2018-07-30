@@ -15,6 +15,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
+import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Session;
@@ -69,7 +71,6 @@ public class TripListActivity extends Activity {
 
     }
 
-
     @Override
     public void onResume() {
         super.onResume();
@@ -83,7 +84,8 @@ public class TripListActivity extends Activity {
 
         listview = (ListView)findViewById(R.id.tripList);
 
-        if(Constants.daysInSurvey > 14){
+        if(Constants.daysInSurvey > Constants.finalday){
+
             TextView emptyView = (TextView) findViewById(R.id.emptyViewText);
             emptyView.setText("All trips completed.");
         }
@@ -111,10 +113,11 @@ public class TripListActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "List - trip to annotate");
+
                 if(!OhioListAdapter.dataPos.contains(position)) {
 //                    Log.d(TAG, "[[test show trip]] click on the session position " + position);
                     startAnnotateActivity(position);
-
                 }
             }
         });
@@ -154,8 +157,6 @@ public class TripListActivity extends Activity {
             );
 
             listview.setAdapter(ohioListAdapter);
-
-
         }
 
         /*
@@ -168,7 +169,8 @@ public class TripListActivity extends Activity {
 
             try {
 
-                sessions = SessionManager.getRecentSessions();
+//                sessions = SessionManager.getRecentSessions();
+                sessions = SessionManager.getRecentNotBeenCombinedSessions();
 
             }catch (Exception e) {
 //                Log.d(TAG,"Exception");

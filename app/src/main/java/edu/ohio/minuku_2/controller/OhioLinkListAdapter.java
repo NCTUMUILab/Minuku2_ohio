@@ -19,7 +19,6 @@ import java.util.Date;
 
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku_2.R;
 
@@ -133,13 +132,6 @@ public class OhioLinkListAdapter extends ArrayAdapter<String> {
         endTime = getSpecialTimeInMillis(endTimeString);
 
         taskTable = null;
-
-        //TODO change the condition when it pilot or start testing
-        //deprecated
-//        if(Day%2==0)
-//            taskTable = DBHelper.checkFamiliarOrNotLinkList_table;
-//        else
-//            taskTable = DBHelper.intervalSampleLinkList_table;
 
         taskTable = DBHelper.surveyLink_table;
 
