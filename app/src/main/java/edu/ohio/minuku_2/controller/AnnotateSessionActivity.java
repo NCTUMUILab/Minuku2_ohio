@@ -137,7 +137,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         mESMOpenTimes.add(ScheduleAndSampleManager.getCurrentTimeInMillis()) ;
 
         mSession = SessionManager.getSession(mSessionId);
-        //Log.d(TAG, "[test show trip] loading session " + mSession.getId() + " the annotaitons are " + mSession.getAnnotationsSet().toJSONObject().toString());
+        //Log.d(TAG, "[test show trip] loading session " + mSession.getId() + " the annotations are " + mSession.getAnnotationsSet().toJSONObject().toString());
 
         initAnnotationView();
 
@@ -605,18 +605,24 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             //show the answer
             if (ESMJSON!=null){
 
+                String showOptionalText = "";
+
                 try {
 
                     answers.add(ESMJSON.getString("ans1"));
                     answers.add(ESMJSON.getString("ans2"));
                     answers.add(ESMJSON.getString("ans3"));
                     answers.add(ESMJSON.getString("ans4"));
+
+                    showOptionalText = ESMJSON.getString("optionalNote");
                 } catch (JSONException e) {
 
                 }
 
                 //show answer
                 showAnswersInRadioGroup(answers);
+
+                optionalNote.setText(showOptionalText);
             }
 
             //disable button
@@ -625,6 +631,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             combine.setEnabled(false);
             delete.setEnabled(false);
             split.setEnabled(false);
+            optionalNote.setEnabled(false);
         }
     }
 
@@ -655,7 +662,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         //make them disabled
         for (int i = 0; i < ques.getChildCount(); i++) {
 
-            RadioButton button =(RadioButton) ques.getChildAt(i);
+            RadioButton button = (RadioButton) ques.getChildAt(i);
 
             if (button.getText().toString().equals(ans)){
 

@@ -92,12 +92,29 @@ public class MinukuStreamManager implements StreamManager {
             //Log.d(TAG, "Stream generator : " + streamGenerator.getClass() + " \n" +
 //                    "Update frequency: " + streamGenerator.getUpdateFrequency() + "\n" +
 //                    "Counter: " + counter);
+            Class<?> enclosingClass = streamGenerator.getClass().getEnclosingClass();
+
+            if (enclosingClass != null) {
+                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " examing streamGenerator: " + enclosingClass.getName());
+
+            } else {
+                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " examing streamGenerator: " + streamGenerator.getClass().getName());
+            }
+
+
             if(streamGenerator.getUpdateFrequency() == -1) {
                 continue;
             }
             if(counter % streamGenerator.getUpdateFrequency() == 0) {
                 //Log.d(TAG, "Calling update stream generator for " + streamGenerator.getClass());
                 streamGenerator.updateStream();
+
+                if (enclosingClass != null) {
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " after update streamGenerator: " + enclosingClass.getName());
+
+                } else {
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " after update streamGenerator: " + streamGenerator.getClass().getName());
+                }
             }
         }
         counter++;
@@ -313,8 +330,6 @@ public class MinukuStreamManager implements StreamManager {
                         lastSession.setEndTime(endTime);
                         lastSession.setLongEnough(isSessionLongEnough);
 
-                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_PERIODNUM, "isSessionLongEnough : "+isSessionLongEnough);
-
                         //end the current session
                         SessionManager.endCurSession(lastSession);
                         //Log.d(TAG, "test combine: after remove, now the sesssion manager session list has  " + SessionManager.getInstance().getOngoingSessionList());
@@ -341,8 +356,6 @@ public class MinukuStreamManager implements StreamManager {
 
                     int periodNum = Utilities.getPeriodNum(ScheduleAndSampleManager.getCurrentTimeInMillis(), sharedPrefs);
 
-                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_PERIODNUM, "PeriodNum : "+periodNum);
-
                     session.setPeriodNum(periodNum);
 
                     SessionManager.startNewSession(session);
@@ -358,7 +371,6 @@ public class MinukuStreamManager implements StreamManager {
                     //Log.d(TAG, "test canceling: the previous activity is on_foot");
 
                     cancelWalkingSurveyFlag = true;
-
                 }
 
                 /**
@@ -369,8 +381,8 @@ public class MinukuStreamManager implements StreamManager {
                     //Log.d(TAG, "the new activity is on_foot");
 
                     LocationStreamGenerator.startIndoorOutdoor = true;
-
                 }else{
+
                     LocationStreamGenerator.startIndoorOutdoor = false;
                 }
 

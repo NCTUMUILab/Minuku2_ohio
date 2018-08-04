@@ -202,15 +202,26 @@ public class BackgroundService extends Service {
 
                 isBackgroundRunnableRunning = true;
 
+                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to updateStream");
+
                 //TODO stop update it at the day after the final survey day
                 streamManager.updateStreamGenerators();
+
+                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after updateStream");
+
 
                 //update every minute
                 if(showOngoingNotificationCount % 12 == 0) {
 
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to updateOngoingNotification");
+
                     updateOngoingNotification();
 
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after updateOngoingNotification");
+
                     checkAndRequestPermission();
+
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after checkAndRequestPermission");
                 }
 
                 showOngoingNotificationCount++;
@@ -237,13 +248,12 @@ public class BackgroundService extends Service {
 
                         mNotificationManager.notify(999, notification);
                     }
-
                 }
-
             }catch (Exception e){
 
                 isBackgroundRunnableRunning = false;
-                CSVHelper.storeToCSV("CheckRunnable.csv", Utils.getStackTrace(e));
+                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Something wrong in the runnable process.");
+                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, Utils.getStackTrace(e));
             }
         }
     };
@@ -519,7 +529,12 @@ public class BackgroundService extends Service {
 
             stopForeground(true);
 
-            unregisterReceiver(CheckRunnableReceiver);
+            try {
+
+                unregisterReceiver(CheckRunnableReceiver);
+            }catch (IllegalArgumentException e){
+
+            }
 
             mScheduledExecutorService.shutdown();
         }
