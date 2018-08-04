@@ -181,8 +181,8 @@ public class SurveyActivity extends Activity {
             if(!currentState.equals(TEXT_Unavailable)){
 
                 latestNotUnava_index = index;
+                break;
             }
-
         }
 
         //before the newest not unavailable button, there should not have a unavailable button

@@ -1171,11 +1171,9 @@ public class SurveyTriggerManager {
 
         Log.d(TAG, "[test mobile triggering] triggerQualtrics");
 
-        //TODO if the last link(today) haven't been opened, setting it into missed.
-
         updateLastSurvey(today);
 
-        String notiText = "You have a new survey available now." + " : "+ noti_type;
+        String notiText = "You have a new survey available now."; // + " : "+ noti_type
 
         Intent resultIntent = new Intent(mContext, SurveyActivity.class);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

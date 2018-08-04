@@ -101,22 +101,6 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
 
         this.register();
     }
-    /*
-        public void setContext(Context Context){
-            mContext = Context;
-        }
-
-        public static ActivityRecognitionStreamGenerator getInstance() {
-            if(ActivityRecognitionStreamGenerator.instance == null) {
-                try {
-                    ActivityRecognitionStreamGenerator.instance = new ActivityRecognitionStreamGenerator();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            return ActivityRecognitionStreamGenerator.instance;
-        }
-    */
 
     public static ActivityRecognitionStreamGenerator getInstance(Context applicationContext) {
         if(ActivityRecognitionStreamGenerator.instance == null) {
@@ -382,9 +366,7 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
 
         this.activityRecognitionDataRecord = activityRecognitionDataRecord;
 
-        //TODO check we need this function or not
-        updateStream();
-
+//        updateStream();
     }
 
     /**

@@ -840,6 +840,45 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+    public static ArrayList<String> querySessions(long time24HrAgo){
+
+        Log.d(TAG, "[test show trip] querySessions");
+
+        ArrayList<String> rows = new ArrayList<String>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + DBHelper.SESSION_TABLE_NAME +
+                    " WHERE " + DBHelper.COL_SESSION_START_TIME + " < " + time24HrAgo +
+                    " AND "+ DBHelper.COL_SESSION_SENTORNOT_FLAG + " <> " + Constants.SESSION_IS_ALREADY_SENT_FLAG +
+                    " order by " + DBHelper.COL_SESSION_START_TIME + " " + "ASC";
+
+            Log.d(TAG, "[queryLastRecord] the query statement is " +sql);
+
+            Cursor cursor = db.rawQuery(sql, null);
+            int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+                }
+                rows.add(curRow);
+            }
+            cursor.close();
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+            Log.e(TAG, "exception", e);
+        }
+
+        Log.d(TAG, "[test show trip] the sessions are" + " " +rows);
+
+        return rows;
+    }
+
     public static ArrayList<String> queryUnSentSessions(){
 
         Log.d(TAG, "[test show trip] queryUnSentSessions");
