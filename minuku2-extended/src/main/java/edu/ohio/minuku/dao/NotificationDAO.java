@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
-import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.config.UserPreferences;
 import edu.ohio.minukucore.dao.DAO;
 import edu.ohio.minukucore.dao.DAOException;
 import edu.ohio.minukucore.event.ShowNotificationEvent;
@@ -43,7 +41,7 @@ public class NotificationDAO implements DAO<ShowNotificationEvent> {
     private String myUserEmail;
 
     public NotificationDAO() {
-        myUserEmail = UserPreferences.getInstance().getPreference(Constants.KEY_ENCODED_EMAIL);
+
     }
 
     @Override

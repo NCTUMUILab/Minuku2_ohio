@@ -168,7 +168,11 @@ public class MainActivity extends AppCompatActivity {
 
         if(isTheUser && !BackgroundService.isBackgroundServiceRunning){
 
-            startService(intentToStartBackground);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intentToStartBackground);
+            } else {
+                startService(intentToStartBackground);
+            }
         }
 
         EventBus.getDefault().register(this);
@@ -194,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getStartDate(){
+
         //get timzone
         Calendar cal = Calendar.getInstance();
         Date date = new Date();
@@ -225,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "downloadDateTime : "+ ScheduleAndSampleManager.getTimeString(downloadDateTime));
 
         sharedPrefs.edit().putLong("downloadDateTime", downloadDateTime).apply();
-
     }
 
     private void settingHomepageView() {
@@ -247,7 +251,6 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "downloadtime : " + ScheduleAndSampleManager.getTimeString(downloadtime));
 
-//        sharedPrefs.edit().putLong("downloadedTime", new Date().getTime()).apply();
         sharedPrefs.edit().putLong("downloadedTime", downloadtime).apply();
 
         getDownloadDateInMillisecond(downloadtime);
@@ -255,7 +258,6 @@ public class MainActivity extends AppCompatActivity {
         sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", false).apply();
 
         firstTimeToShowDialogOrNot = sharedPrefs.getBoolean("firstTimeToShowDialogOrNot", true);
-//        Log.d(TAG,"firstTimeToShowDialogOrNot : "+firstTimeToShowDialogOrNot);
 
         Constants.USER_ID = sharedPrefs.getString("userid", "NA");
 
@@ -464,7 +466,11 @@ public class MainActivity extends AppCompatActivity {
 
                             getStartDate();
 
-                            startService(intentToStartBackground);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                startForegroundService(intentToStartBackground);
+                            } else {
+                                startService(intentToStartBackground);
+                            }
 
                             isTheUser = true;
                             sharedPrefs.edit().putBoolean("isTheUser", isTheUser).apply();
@@ -486,7 +492,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendingUserInform(){
 
-//       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=3333333
+//       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=333333
 //      deviceid=375996574474999&email=none@nobody.com&userid=3333333
         String link = Constants.checkInUrl + "deviceid=" + Constants.DEVICE_ID + "&email=" + Constants.Email+"&userid="+Constants.USER_ID;
         String userInformInString = null;
@@ -781,14 +787,12 @@ public class MainActivity extends AppCompatActivity {
             Constants.DEVICE_ID = mngr.getDeviceId();
 
 //            Log.e(TAG,"DEVICE_ID"+Constants.DEVICE_ID+" : "+mngr.getDeviceId());
-
         }
     }
 
     public void startServiceWork(){
 
         getDeviceid();
-
     }
 
     @Override
@@ -865,10 +869,10 @@ public class MainActivity extends AppCompatActivity {
             BufferedReader reader = null;
 
             try {
+
                 URL url = new URL(params[0]);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
-
 
                 InputStream stream = connection.getInputStream();
 

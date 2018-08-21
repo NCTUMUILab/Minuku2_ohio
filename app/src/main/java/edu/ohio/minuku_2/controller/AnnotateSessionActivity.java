@@ -235,7 +235,21 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                     showRecordingVizualization((int) mSession.getId(), googleMap);
 
-                    ArrayList<LatLng> points = getLocationPointsToDrawOnMap(mSession.getId());
+                    ArrayList<LatLng> points = new ArrayList<>();
+//                    ArrayList<LatLng> points = getLocationPointsToDrawOnMap(mSession.getId());
+
+                    try{
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                            points = new LoadDataAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mSession.getId()).get();
+                        else
+                            points = new LoadDataAsyncTask().execute(mSession.getId()).get();
+
+                    } catch(InterruptedException e) {
+
+                    } catch (ExecutionException e) {
+
+                    }
+
                     Log.d(TAG, "[test show trip] in onPostExecute, the poitns obtained are : " + points.size());
                     if (points.size()>0){
 
@@ -371,10 +385,26 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                 //because there could be many points for already ended trace, so we use asynch to download the annotations
 
                 try{
+
+                    ArrayList<LatLng> points;
+
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                        new LoadDataAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionId).get();
+                        points = new LoadDataAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionId).get();
                     else
-                        new LoadDataAsyncTask().execute(sessionId).get();
+                        points = new LoadDataAsyncTask().execute(sessionId).get();
+
+                    if (points.size()>0){
+
+                        LatLng startLatLng  = points.get(0);
+                        LatLng endLatLng = points.get(points.size()-1);
+                        LatLng middleLagLng = points.get((points.size()/2));
+
+                        Log.d(TAG, "[test show trips] the session is not in the currently recording session");
+                        //we first need to know what visualization we want to use, then we get data for that visualization
+
+                        //show maps with path (draw polylines)
+                        showMapWithPaths(mGoogleMap, points, middleLagLng, startLatLng, endLatLng);
+                    }
 
                 } catch(InterruptedException e) {
 
@@ -925,7 +955,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             super.onPostExecute(points);
 
             Log.d(TAG, "[test show trip] in onPostExecute, the poitns obtained are : " + points.size());
-            if (points.size()>0){
+            /*if (points.size()>0){
 
                 LatLng startLatLng  = points.get(0);
                 LatLng endLatLng = points.get(points.size()-1);
@@ -936,7 +966,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                 //show maps with path (draw polylines)
                 showMapWithPaths(mGoogleMap, points, middleLagLng, startLatLng, endLatLng);
-            }
+            }*/
 
         }
 

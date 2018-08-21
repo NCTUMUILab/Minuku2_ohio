@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.os.Build;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -237,7 +238,13 @@ public class SurveyTriggerManager {
             PendingIntent pi = PendingIntent.getBroadcast(mContext, requestCode, intent, 0);
 
             AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(mContext.ALARM_SERVICE);
-            alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pi);
+            }else{
+
+                alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
+            }
         }
 
         CSVHelper.storeToCSV(CSVHelper.CSV_RESET_INTERVALSAMPLES_CHECK, "-------------Divider------------");
@@ -406,7 +413,14 @@ public class SurveyTriggerManager {
 
                 //for the reset one
                 AlarmManager alarmManager = (AlarmManager)context.getSystemService( context.ALARM_SERVICE );
-                alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
+
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pi);
+                }else{
+
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
+                }
 
                 //update the latest request_code to be the last request_code.
                 sharedPrefs.edit().putInt("last_request_code_"+i, request_code).apply();
@@ -482,7 +496,14 @@ public class SurveyTriggerManager {
                 PendingIntent pi = PendingIntent.getBroadcast(mContext, request_code, intent, 0);
 
                 AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(mContext.ALARM_SERVICE);
-                alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
+
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pi);
+                }else{
+
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
+                }
 
                 break;
             }
@@ -577,7 +598,6 @@ public class SurveyTriggerManager {
 
 //                            Constants.daysInSurvey++;
 
-                            //TODO check the mechanism
                             long downloadDateTime = sharedPrefs.getLong("downloadDateTime", Constants.initLong);
 
                             long currentDateTime = Utils.getDateTimeInMillis(ScheduleAndSampleManager.getCurrentTimeInMillis());
@@ -936,11 +956,6 @@ public class SurveyTriggerManager {
         //send survey
         sendSurveyLink(noti_walk);
 
-        //TODO deprecated
-        //after sending survey, updatge the preference
-//        walkoutdoor_sampled++;
-//        sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
-
         last_Walking_Survey_Time = new Date().getTime();
         sharedPrefs.edit().putLong("last_Walking_Survey_Time", last_Walking_Survey_Time).apply();
 
@@ -1163,8 +1178,6 @@ public class SurveyTriggerManager {
             }
         }
 
-        //TODO check the period have jumped or not
-        //
     }
 
     private void triggerQualtrics(String noti_type){
@@ -1193,8 +1206,11 @@ public class SurveyTriggerManager {
                 .setStyle(bigTextStyle)
                 .setAutoCancel(true);
 
-        Notification note = noti.setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti)).build();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            noti.setChannelId(Constants.SURVEY_CHANNEL_ID);
+        }
 
+        Notification note = noti.setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti)).build();
 
         // using the same tag and Id causes the new notification to replace an existing one
         if(noti_type.equals(noti_walk)){
@@ -1204,7 +1220,6 @@ public class SurveyTriggerManager {
         }
 
         note.flags = Notification.FLAG_AUTO_CANCEL;
-
     }
 
     public void registerActionAlarmReceiver(){

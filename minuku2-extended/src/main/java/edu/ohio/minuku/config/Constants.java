@@ -74,13 +74,22 @@ public class Constants {
     public static final String YES = "YES";
     public static final String NO = "NO";
 
+    public static final int sleepTime_LowerBound = 4;
+    public static final int sleepTime_UpperBound = 10;
+
     public static final String DELIMITER = ";;;";
     public static final String SESSION_DELIMITER = ",";
     public static final String ACTIVITY_DELIMITER = ";;";
     public static final String CONTEXT_SOURCE_DELIMITER = ":";
     public static final String DELIMITER_IN_COLUMN = "::";
 
-    //
+    public static final String ONGOING_CHANNEL_NAME = "OSU";
+    public static final String ONGOING_CHANNEL_ID = "Ongoing_id";
+    public static final String SURVEY_CHANNEL_NAME = "OSU";
+    public static final String SURVEY_CHANNEL_ID = "Survey_id";
+    public static final String PERMIT_CHANNEL_NAME = "OSU";
+    public static final String PERMIT_CHANNEL_ID = "Permit_id";
+
     public static final String sharedPrefString = "edu.umich.minuku_2";
     public static final String appNameString = "edu.ohio.minuku_2";
 
@@ -90,6 +99,7 @@ public class Constants {
 
     public static final String ANNOTATION_TAG_DETECTED_TRANSPORTATOIN_ACTIVITY = "detected-transportation";
 
+    public static final String CHECK_SERVICE_ACTION = "checkService";
 
     // Firebase config
     public static final String FIREBASE_URL = BuildConfig.UNIQUE_FIREBASE_ROOT_URL;
@@ -115,24 +125,7 @@ public class Constants {
 
     public static final long INVALID_TIME_VALUE = -1;
 
-    // Provider stuff
-    public static final String GOOGLE_AUTH_PROVIDER = "google";
-    public static final String PASSWORD_PROVIDER = "password";
-    //public static final String PROVIDER_DATA_DISPLAY_NAME = "displayName";
-
-    // Google provider hashkeys
-    public static final String GGL_PROVIDER_USERNAME_KEY = "username";
-    public static final String GGL_PROVIDER_EMAIL_KEY = "Email";
-
-    // Shared pref ids
-    public static final String ID_SHAREDPREF_EMAIL = "Email";
-    public static final String ID_SHAREDPREF_PROVIDER = "provider";
-    //public static final String ID_SHAREDPREF_DISPLAYNAME = "displayName";
-
-    public static final String KEY_SIGNUP_EMAIL = "SIGNUP_EMAIL";
-    public static final String KEY_ENCODED_EMAIL = "ENCODED_EMAIL";
-
-    public static final String LOG_ERROR = "Error:";
+    public static final String CONNECTIVITY_CHANGE = "CONNECTIVITY_CHANGE";
 
 
     // Prompt service related constants

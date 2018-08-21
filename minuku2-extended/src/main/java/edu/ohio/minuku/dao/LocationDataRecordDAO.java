@@ -45,7 +45,6 @@ import java.util.concurrent.Future;
 
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.config.UserPreferences;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minukucore.dao.DAO;
@@ -78,7 +77,6 @@ public class LocationDataRecordDAO implements DAO<LocationDataRecord> {
         sKeepalive = KEEPALIVE_MINUTE * Constants.MILLISECONDS_PER_MINUTE;
 //        tripManager = new SessionManager();
         LocationToTrip = new ArrayList<LocationDataRecord>();
-        myUserEmail = UserPreferences.getInstance().getPreference(Constants.KEY_ENCODED_EMAIL);
     }
 
     public LocationDataRecordDAO(Context applicationContext){

@@ -27,6 +27,7 @@ public class CSVHelper {
 
     public static final String CSV_CHECK_DATAFORMAT = "DataFormat.csv";
 
+    public static final String CSV_WIFI_RECEIVER_CHECK = "WIFI_Receiver_check.csv";
     public static final String CSV_SESSION_ACTIONLOG_FORMAT = "ActionLog.csv";
     public static final String CSV_SESSION_CONCAT_CHECK = "Session_concat.csv";
     public static final String CSV_ALARM_CHECK = "Alarm_check.csv";

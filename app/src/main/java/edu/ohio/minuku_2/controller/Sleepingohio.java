@@ -164,11 +164,12 @@ public class Sleepingohio extends AppCompatActivity {
                 DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Confirm sleeping time - Fail - Wake up Time haven't been set.");
 
                 Toast.makeText(Sleepingohio.this, "Please select your wake time", Toast.LENGTH_SHORT).show();
-            } else if(sleepingRange > 12 * Constants.MILLISECONDS_PER_HOUR || sleepingRange < 3 * Constants.MILLISECONDS_PER_HOUR){
+            } else if(sleepingRange > Constants.sleepTime_UpperBound * Constants.MILLISECONDS_PER_HOUR || sleepingRange < Constants.sleepTime_LowerBound * Constants.MILLISECONDS_PER_HOUR){
 
                 DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Confirm sleeping time - Fail - Sleeping Time is not between 3 and 12 hours.");
 
-                Toast.makeText(Sleepingohio.this,"Please check your bed and wake times. Your sleep schedule must be between 3 and 12 hours long.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Sleepingohio.this,"Please check your bed and wake times. Your sleep schedule must be between " +
+                        Constants.sleepTime_LowerBound +" and "+Constants.sleepTime_UpperBound+" hours long.", Toast.LENGTH_SHORT).show();
             }
             else {
 

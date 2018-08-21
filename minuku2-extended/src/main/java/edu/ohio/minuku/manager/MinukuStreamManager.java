@@ -87,34 +87,49 @@ public class MinukuStreamManager implements StreamManager {
         return MinukuStreamManager.instance;
     }
 
+
+    private int showUpdateingLogCount = 0;
     public void updateStreamGenerators() {
+
+        showUpdateingLogCount ++;
+
         for(StreamGenerator streamGenerator: mRegisteredStreamGenerators.values()) {
             //Log.d(TAG, "Stream generator : " + streamGenerator.getClass() + " \n" +
 //                    "Update frequency: " + streamGenerator.getUpdateFrequency() + "\n" +
 //                    "Counter: " + counter);
+
+            //TODO Logging
             Class<?> enclosingClass = streamGenerator.getClass().getEnclosingClass();
 
-            if (enclosingClass != null) {
-                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " examing streamGenerator: " + enclosingClass.getName());
+            if(showUpdateingLogCount % 60 == 0) {
 
-            } else {
-                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " examing streamGenerator: " + streamGenerator.getClass().getName());
+                if (enclosingClass != null) {
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " examing streamGenerator: " + enclosingClass.getName());
+
+                } else {
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " examing streamGenerator: " + streamGenerator.getClass().getName());
+                }
             }
-
 
             if(streamGenerator.getUpdateFrequency() == -1) {
                 continue;
             }
+
             if(counter % streamGenerator.getUpdateFrequency() == 0) {
                 //Log.d(TAG, "Calling update stream generator for " + streamGenerator.getClass());
                 streamGenerator.updateStream();
 
-                if (enclosingClass != null) {
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " after update streamGenerator: " + enclosingClass.getName());
+                //TODO Logging
+                if(showUpdateingLogCount % 60 == 0) {
 
-                } else {
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " after update streamGenerator: " + streamGenerator.getClass().getName());
+                    if (enclosingClass != null) {
+                        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " after update streamGenerator: " + enclosingClass.getName());
+
+                    } else {
+                        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " after update streamGenerator: " + streamGenerator.getClass().getName());
+                    }
                 }
+
             }
         }
         counter++;
@@ -332,10 +347,8 @@ public class MinukuStreamManager implements StreamManager {
 
                         //end the current session
                         SessionManager.endCurSession(lastSession);
-                        //Log.d(TAG, "test combine: after remove, now the sesssion manager session list has  " + SessionManager.getInstance().getOngoingSessionList());
-
+                        //Log.d(TAG, "test combine: after remove, now the sesssion manager session list has " + SessionManager.getInstance().getOngoingSessionList());
                     }
-
                 }
 
                 //if we need to add a session
@@ -359,7 +372,6 @@ public class MinukuStreamManager implements StreamManager {
                     session.setPeriodNum(periodNum);
 
                     SessionManager.startNewSession(session);
-
                 }
 
                 /**

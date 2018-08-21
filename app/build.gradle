@@ -11,7 +11,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 
 android {
-    compileSdkVersion 24
+    compileSdkVersion 26
     buildToolsVersion '26.0.2'
 
     packagingOptions {
@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId "edu.ohio.minuku_2"
         minSdkVersion 21
-        targetSdkVersion 24
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -81,6 +81,7 @@ dependencies {
         transitive = true;
     }
     implementation files('libs/javatuples-1.2.jar')
+    implementation 'com.bugsee:bugsee-android:+'
 }
 
 apply plugin: 'com.google.gms.google-services'
