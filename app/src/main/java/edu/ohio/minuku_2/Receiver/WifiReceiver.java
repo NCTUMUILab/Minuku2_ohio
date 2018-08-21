@@ -94,7 +94,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v15";
+    private String versionNumber = "v19";
 
     public static final int HTTP_TIMEOUT = 10000;
     public static final int SOCKET_TIMEOUT = 20000;
@@ -106,26 +106,29 @@ public class WifiReceiver extends BroadcastReceiver {
     private static final String postSurveyLinkUrl = "http://mcog.asc.ohio-state.edu/apps/surveydump/";
 
     public static int mainThreadUpdateFrequencyInSeconds = 10;
+    public static int mainThreadUpdateFrequencyInMin = 3;
+
     public static int sendingUserInformThreadUpdateFrequencyInSeconds = 3;
 
-    public static long mainThreadUpdateFrequencyInMilliseconds = mainThreadUpdateFrequencyInSeconds * Constants.MILLISECONDS_PER_SECOND;
+    public static long mainThreadUpdateFrequencyInMilliseconds = mainThreadUpdateFrequencyInMin * Constants.MILLISECONDS_PER_MINUTE;
     public static long sendingUserInformThreadUpdateFrequencyInMilliseconds
             = sendingUserInformThreadUpdateFrequencyInSeconds * Constants.MILLISECONDS_PER_HOUR;
 
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        //Log.d(TAG, "onReceive");
+        Log.d(TAG, "onReceive");
 
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
-        //get timzone //prevent the issue when the user start the app in wifi available environment.
+        //get timezone //prevent the issue when the user start the app in wifi available environment.
         TimeZone tz = TimeZone.getDefault();
         Calendar cal = Calendar.getInstance(tz);
         int mYear = cal.get(Calendar.YEAR);
         int mMonth = cal.get(Calendar.MONTH)+1;
         int mDay = cal.get(Calendar.DAY_OF_MONTH);
+        int mHour = cal.get(Calendar.HOUR_OF_DAY);
 
         this.context = context;
 
@@ -141,12 +144,27 @@ public class WifiReceiver extends BroadcastReceiver {
         Constants.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
         Constants.Email = sharedPrefs.getString("Email", "NA");
 
-        hour = sharedPrefs.getInt("StartHour", 0);
+        hour = sharedPrefs.getInt("StartHour", mHour);
         min = sharedPrefs.getInt("StartMin",0);
 
         //Log.d(TAG, "year : "+ year+" month : "+ month+" day : "+ day+" hour : "+ hour+" min : "+ min);
 
-        if (activeNetwork != null) {
+        if (Constants.CONNECTIVITY_CHANGE.equals(intent.getAction())) {
+
+            Log.d(TAG, "onReceive, "+intent.getAction().toString());
+
+            if(ConnectivityStreamGenerator.mIsWifiConnected == true){
+
+                String message = intent.getExtras().get("message").toString();
+
+                CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, Constants.CONNECTIVITY_CHANGE + " : " + message);
+
+                uploadData();
+            }
+        }
+
+        //TODO might deprecated
+        /*if (activeNetwork != null) {
             // connected to the internet
             if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
                 // connected to wifi
@@ -181,7 +199,8 @@ public class WifiReceiver extends BroadcastReceiver {
             if(runnable!=null) {
 
             }
-        }
+        }*/
+
     }
 
     public void SendingUserInformThread(){
@@ -208,6 +227,66 @@ public class WifiReceiver extends BroadcastReceiver {
         UserInformThread.post(UserInformRunnable);
     }
 
+    private void uploadData(){
+
+        //dump only can be sent when wifi is connected
+        if(ConnectivityStreamGenerator.mIsWifiConnected){
+
+            long lastSentStarttime = sharedPrefs.getLong("lastSentStarttime", 0);
+
+            if(lastSentStarttime == 0){
+
+                //if it doesn't response the setting with initialize ones
+                //initialize
+                long startstartTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,0));
+                startTime = sharedPrefs.getLong("StartTime", startstartTime); //default
+                Log.d(TAG, "[show data response] current iteration startTime : " + ScheduleAndSampleManager.getTimeString(startTime));
+
+                //initialize
+                long startendTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour+1,0));
+                endTime = sharedPrefs.getLong("EndTime", startendTime);
+                Log.d(TAG, "[show data response] current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
+
+            }else{
+
+                //if it do reponse the setting with initialize ones
+                startTime = Long.valueOf(lastSentStarttime);
+                Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration startTime : " + ScheduleAndSampleManager.getTimeString(startTime));
+
+                long nextinterval = Constants.MILLISECONDS_PER_HOUR; //1 hr
+
+                endTime = Long.valueOf(lastSentStarttime) + nextinterval;
+                Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
+            }
+
+            nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
+            //for testing
+//            nowTime = new Date().getTime();
+            Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
+
+            if(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected == true) {
+
+                sendingDumpData();
+            }
+
+            // Trip, SurveyLink detail
+            if(ConnectivityStreamGenerator.mIsWifiConnected){
+
+                sendingTripData(nowTime);
+
+                sendingSurveyLinkData();
+            }
+
+            //isAlive or checkin
+            if(ConnectivityStreamGenerator.mIsWifiConnected || ConnectivityStreamGenerator.mIsMobileConnected) {
+
+                //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
+                sendingUserInform();
+            }
+
+        }
+    }
+
     public void MakingJsonDataMainThread(){
 
         mMainThread = new Handler();
@@ -224,7 +303,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     if(lastSentStarttime == 0){
 
-                        //if it doesn't reponse the setting with initialize ones
+                        //if it doesn't response the setting with initialize ones
                         //initialize
                         long startstartTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,0));
                         startTime = sharedPrefs.getLong("StartTime", startstartTime); //default
@@ -247,23 +326,23 @@ public class WifiReceiver extends BroadcastReceiver {
                         Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
                     }
 
-                    nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
+//                    nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
                     //for testing
-//                    nowTime = new Date().getTime();
+                    nowTime = new Date().getTime();
                     Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
 
                     if(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected == true) {
 
                         sendingDumpData();
                     }
-                }
 
-                // Trip, isAlive
-                if(ConnectivityStreamGenerator.mIsWifiConnected || ConnectivityStreamGenerator.mIsMobileConnected) {
+                    // Trip, isAlive
+                    if(ConnectivityStreamGenerator.mIsWifiConnected){
 
-                    sendingTripData(nowTime);
+                        sendingTripData(nowTime);
 
-                    sendingSurveyLinkData();
+                        sendingSurveyLinkData();
+                    }
                 }
 
                 mMainThread.postDelayed(this, mainThreadUpdateFrequencyInMilliseconds);
@@ -725,6 +804,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
 //            CSVHelper.dataUploadingCSV("Dump", data.toString());
             CSVHelper.dataUploadingCSV("Dump", "Going to send the data with EndTime : " + data.getString("EndTimeString"));
+            CSVHelper.dataUploadingCSV("Dump", "Going to send the data with deviceId : " + data.getString("device_id"));
         }catch (JSONException e){
 
         }
@@ -1135,9 +1215,9 @@ public class WifiReceiver extends BroadcastReceiver {
                 data.put("ActivityRecognition",arAndtimestampsJson);
             }
         }catch (JSONException e){
-            //e.printStackTrace();
-        }catch(NullPointerException e){
-            //e.printStackTrace();
+
+        }catch (NullPointerException e){
+
         }
 
         //Log.d(TAG,"data : "+ data.toString());
@@ -1418,6 +1498,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
 
     private long getSpecialTimeInMillis(String givenDateFormat){
+
         SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE_Slash);
         long timeInMilliseconds = 0;
         try {
@@ -1588,7 +1669,6 @@ public class WifiReceiver extends BroadcastReceiver {
                 connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
 
-
                 InputStream stream = connection.getInputStream();
 
                 reader = new BufferedReader(new InputStreamReader(stream));
@@ -1627,6 +1707,7 @@ public class WifiReceiver extends BroadcastReceiver {
         @Override
         protected void onPostExecute(String result) {
             //Log.d(TAG, "get http post result " + result);
+
 
             Utils.checkinresponseStoreToCSV(ScheduleAndSampleManager.getCurrentTimeInMillis(), context, result);
         }

@@ -114,7 +114,6 @@ public class ActivityRecognitionService extends IntentService {
 
                     //write transportation mode with the received activity data
                     StoreToCSV(new Date().getTime(), record, record);
-
                 }
 
             }catch(Exception e){
@@ -127,7 +126,6 @@ public class ActivityRecognitionService extends IntentService {
     }
 
     public void RePlayActivityRecordTimerTask() {
-
 
 //        Log.d("ARService", "[test AR service start]RePlayActivityRecordTimerTask starts again! !");
 
@@ -165,16 +163,12 @@ public class ActivityRecognitionService extends IntentService {
                     }catch (StreamNotFoundException e){
 //                        e.printStackTrace();
                     }
-
-
                 }
-
             }
         };
 
 
     }
-
 
     /** create NA activity label when it's over 10 minutes not receiving an AR label
      * the timeer is reset when the onHandleEvent receives a label**/
@@ -241,11 +235,7 @@ public class ActivityRecognitionService extends IntentService {
 
         //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
         ReplayTimer.schedule(ReplayTimerTask,0,1000);
-
     }
-
-
-
 
     public static boolean isServiceRunning() {
         return serviceInstance != null;

@@ -306,7 +306,6 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
         if(probableActivities!=null&&mostProbableActivity!=null)
             saveRecordToLocalRecordPool(mostProbableActivity,detectedtime);
 
-
     }
 
     public void saveRecordToLocalRecordPool(DetectedActivity MostProbableActivity,long Detectedtime) {
@@ -340,7 +339,6 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
         Log.d(TAG, "testing saving records at " + record.getTimeString() + " data: " + record.getData());
 
         addRecord(record);
-
     }
 
     protected void addRecord(ActivityRecognitionDataRecord activityRecognitionDataRecord) {

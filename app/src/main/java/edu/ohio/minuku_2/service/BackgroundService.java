@@ -25,6 +25,7 @@ package edu.ohio.minuku_2.service;
 import android.app.AlarmManager;
 import android.app.AppOpsManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -36,6 +37,11 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.LinkProperties;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -58,6 +64,7 @@ import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.AnnotationSet;
 import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
+import edu.ohio.minuku_2.Receiver.RestarterBroadcastReceiver;
 import edu.ohio.minuku_2.Receiver.WifiReceiver;
 import edu.ohio.minuku_2.Utils;
 import edu.ohio.minuku_2.controller.Sleepingohio;
@@ -71,6 +78,7 @@ public class BackgroundService extends Service {
 
     final static String CHECK_RUNNABLE_ACTION = "checkRunnable";
     final static String CONNECTIVITY_ACTION = "android.net.conn.CONNECTIVITY_CHANGE";
+
     WifiReceiver mWifiReceiver;
     IntentFilter intentFilter;
 
@@ -109,6 +117,7 @@ public class BackgroundService extends Service {
 
         intentFilter = new IntentFilter();
         intentFilter.addAction(CONNECTIVITY_ACTION);
+        intentFilter.addAction(Constants.CONNECTIVITY_CHANGE);
         mWifiReceiver = new WifiReceiver();
     }
 
@@ -118,10 +127,9 @@ public class BackgroundService extends Service {
         CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundServiceRunning ? "+isBackgroundServiceRunning);
         CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundRunnableRunning ? "+isBackgroundRunnableRunning);
 
-
         //make the WifiReceiver start sending data to the server.
         registerReceiver(mWifiReceiver, intentFilter);
-
+        registerConnectivityNetworkMonitorForAPI21AndUp();
 
         IntentFilter checkRunnableFilter = new IntentFilter(CHECK_RUNNABLE_ACTION);
 
@@ -146,6 +154,10 @@ public class BackgroundService extends Service {
             ongoingNotificationText = "Part B begins tomorrow and lasts 2 weeks.";
         }
 
+        createSurveyNotificationChannel();
+        createNotificationChannel();
+        createPermissionNotiChannel();
+
         // building the ongoing notification to the foreground
         startForeground(ongoingNotificationID, getOngoingNotification(ongoingNotificationText));
 
@@ -159,16 +171,18 @@ public class BackgroundService extends Service {
             // do something
             CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to judge the condition is ? "+(!InstanceManager.isInitialized()));
 
+            Log.d(TAG, "Going to judge the condition is ? "+(!InstanceManager.isInitialized()));
+
             if(!InstanceManager.isInitialized()) {
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to start the runnable.");
-
-                runMainThread();
 
                 InstanceManager.getInstance(this);
                 SessionManager.getInstance(this);
                 Log.d(TAG, "Managers have been initialized. ");
             }
+
+            runMainThread();
 
             SurveyTriggerManager.getInstance(getApplicationContext());
 
@@ -204,7 +218,7 @@ public class BackgroundService extends Service {
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to updateStream");
 
-                //TODO stop update it at the day after the final survey day
+                //stop update it at the day after the final survey day
                 streamManager.updateStreamGenerators();
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after updateStream");
@@ -213,15 +227,20 @@ public class BackgroundService extends Service {
                 //update every minute
                 if(showOngoingNotificationCount % 12 == 0) {
 
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "before checkAndRequestPermission");
+
+                    checkAndRequestPermission();
+
+                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after checkAndRequestPermission");
+                }
+
+                if(showOngoingNotificationCount % 150 == 0){
+
                     CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to updateOngoingNotification");
 
                     updateOngoingNotification();
 
                     CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after updateOngoingNotification");
-
-                    checkAndRequestPermission();
-
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after checkAndRequestPermission");
                 }
 
                 showOngoingNotificationCount++;
@@ -344,7 +363,6 @@ public class BackgroundService extends Service {
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
-
     }
 
     private Notification getPermissionNotification(String text, Intent resultIntent){
@@ -356,15 +374,23 @@ public class BackgroundService extends Service {
 //        Intent resultIntent = new Intent(this, TripListActivity.class);
         PendingIntent pending = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Notification.Builder noti = new Notification.Builder(this);
-
-        return noti.setContentTitle(Constants.APP_FULL_NAME)
+        Notification.Builder noti = new Notification.Builder(this)
+                .setContentTitle(Constants.APP_FULL_NAME)
                 .setContentText(text)
                 .setStyle(bigTextStyle)
-                .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
                 .setContentIntent(pending)
-                .setAutoCancel(true)
-                .build();
+                .setAutoCancel(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return noti
+                    .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                    .setChannelId(Constants.PERMIT_CHANNEL_ID)
+                    .build();
+        } else {
+            return noti
+                    .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                    .build();
+        }
     }
 
     private Notification getOngoingNotification(String text){
@@ -376,17 +402,67 @@ public class BackgroundService extends Service {
         Intent resultIntent = new Intent(this, TripListActivity.class);
         PendingIntent pending = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Notification.Builder noti = new Notification.Builder(this);
-
-        return noti.setContentTitle(Constants.APP_FULL_NAME)
+        Notification.Builder noti = new Notification.Builder(this)
+                .setContentTitle(Constants.APP_FULL_NAME)
                 .setContentText(text)
                 .setStyle(bigTextStyle)
-//                .setSmallIcon(R.drawable.dms_icon)
-                .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
                 .setContentIntent(pending)
                 .setAutoCancel(true)
-                .setOngoing(true)
-                .build();
+                .setOngoing(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return noti
+                    .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                    .setChannelId(Constants.ONGOING_CHANNEL_ID)
+                    .build();
+        } else {
+            return noti
+                    .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                    .build();
+        }
+
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = Constants.ONGOING_CHANNEL_NAME;
+            int importance = NotificationManager.IMPORTANCE_LOW;
+            NotificationChannel channel = new NotificationChannel(Constants.ONGOING_CHANNEL_ID, name, importance);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private void createSurveyNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = Constants.SURVEY_CHANNEL_NAME;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(Constants.SURVEY_CHANNEL_ID, name, importance);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private void createPermissionNotiChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = Constants.PERMIT_CHANNEL_NAME;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(Constants.PERMIT_CHANNEL_ID, name, importance);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
     private void updateOngoingNotification(){
@@ -435,15 +511,12 @@ public class BackgroundService extends Service {
             ongoingNotificationText = "";
 
             checkingRemovedFromForeground();
-
         }
 
         Notification note = getOngoingNotification(ongoingNotificationText);
 
         // using the same tag and Id causes the new notification to replace an existing one
         mNotificationManager.notify(ongoingNotificationID, note);
-//        note.flags |= Notification.FLAG_NO_CLEAR;
-
     }
 
     private void stopTheSessionByServiceClose(){
@@ -452,8 +525,6 @@ public class BackgroundService extends Service {
         if (SessionManager.getOngoingSessionIdList().size()>0){
 
             Session session = SessionManager.getSession(SessionManager.getOngoingSessionIdList().get(0)) ;
-
-//            Log.d(TAG, "test ondestory trip get session in onDestroy " + session.getId() + " time: " + session.getStartTime() + " - " + session.getEndTime());
 
             //if we end the current session, we should update its time and set a long enough flag
             if (session.getEndTime()==0){
@@ -467,18 +538,18 @@ public class BackgroundService extends Service {
 
             //end the current session
             SessionManager.endCurSession(session);
-//            Log.d(TAG, "test ondestory trip: after remove, now the sesssion manager session list has  " + SessionManager.getInstance().getOngoingSessionList());
-
         }
-
-//        Log.d(TAG, "test ondestory trip end of ending a trip");
     }
 
     @Override
     public void onDestroy() {
-//        Log.d(TAG, "test ondestory trip Destroying service. Your state might be lost!");
+//        super.onDestroy();
+
+        Log.d(TAG, "onDestroy");
 
         stopTheSessionByServiceClose();
+
+        sendBroadcastToStartService();
 
         isBackgroundServiceRunning = false;
         isBackgroundRunnableRunning = false;
@@ -494,6 +565,9 @@ public class BackgroundService extends Service {
         sharedPrefs.edit().putInt("CurrentState", TransportationModeStreamGenerator.mCurrentState).apply();
         sharedPrefs.edit().putInt("ConfirmedActivityType", TransportationModeStreamGenerator.mConfirmedActivityType).apply();
 
+        checkingRemovedFromForeground();
+        removeRunnable();
+
         unregisterReceiver(mWifiReceiver);
         unregisterReceiver(CheckRunnableReceiver);
     }
@@ -503,6 +577,8 @@ public class BackgroundService extends Service {
         super.onTaskRemoved(intent);
 
 //        stopTheSessionByServiceClose();
+
+        sendBroadcastToStartService();
 
         mNotificationManager.cancel(ongoingNotificationID);
 
@@ -519,6 +595,19 @@ public class BackgroundService extends Service {
         sharedPrefs.edit().putInt("ConfirmedActivityType", TransportationModeStreamGenerator.mConfirmedActivityType).apply();
 
         checkingRemovedFromForeground();
+        removeRunnable();
+    }
+
+    private void sendBroadcastToStartService(){
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            sendBroadcast(new Intent(this, RestarterBroadcastReceiver.class).setAction(Constants.CHECK_SERVICE_ACTION));
+        } else {
+
+            Intent checkServiceIntent = new Intent(Constants.CHECK_SERVICE_ACTION);
+            sendBroadcast(checkServiceIntent);
+        }
     }
 
     private void checkingRemovedFromForeground(){
@@ -540,12 +629,80 @@ public class BackgroundService extends Service {
         }
     }
 
+    private void removeRunnable(){
+
+        mScheduledFuture.cancel(true);
+    }
+
     @Override
     public void onLowMemory(){
         super.onLowMemory();
 
         sharedPrefs.edit().putString("ongoingNotificationText", ongoingNotificationText).apply();
+    }
 
+    private void registerConnectivityNetworkMonitorForAPI21AndUp() {
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return;
+        }
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkRequest.Builder builder = new NetworkRequest.Builder();
+
+        connectivityManager.registerNetworkCallback(
+                builder.build(),
+                new ConnectivityManager.NetworkCallback() {
+
+                    @Override
+                    public void onAvailable(Network network) {
+                        /*sendBroadcast(
+                                getConnectivityIntent("onAvailable")
+                        );*/
+                    }
+
+                    @Override
+                    public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities){
+                        sendBroadcast(
+                                getConnectivityIntent("onCapabilitiesChanged : "+networkCapabilities.toString())
+                        );
+                    }
+
+                    @Override
+                    public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
+                        /*sendBroadcast(
+                                getConnectivityIntent("onLinkPropertiesChanged : "+linkProperties.toString())
+                        );*/
+                    }
+
+                    @Override
+                    public void onLosing(Network network, int maxMsToLive) {
+                        /*sendBroadcast(
+                                getConnectivityIntent("onLosing")
+                        );*/
+                    }
+
+                    @Override
+                    public void onLost(Network network) {
+                        /*sendBroadcast(
+                                getConnectivityIntent("onLost")
+                        );*/
+                    }
+                }
+        );
+
+    }
+
+    private Intent getConnectivityIntent(String message) {
+
+        Intent intent = new Intent();
+
+        intent.setAction(Constants.CONNECTIVITY_CHANGE);
+
+        intent.putExtra("message", message);
+
+        return intent;
     }
 
     @Override
@@ -582,11 +739,22 @@ public class BackgroundService extends Service {
                 PendingIntent pi = PendingIntent.getBroadcast(BackgroundService.this, 0, new Intent(CHECK_RUNNABLE_ACTION), 0);
 
                 AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
-                alarm.set(
-                        AlarmManager.RTC_WAKEUP,
-                        System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
-                        pi
-                );
+
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                    alarm.setAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+                            pi);
+                }else{
+
+                    alarm.set(
+                            AlarmManager.RTC_WAKEUP,
+                            System.currentTimeMillis() + Constants.PROMPT_SERVICE_REPEAT_MILLISECONDS,
+                            pi
+                    );
+                }
+
 
             }
         }

@@ -59,7 +59,6 @@ import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
 import edu.ohio.minuku.model.UserSubmissionStats;
 import edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator;
 import edu.ohio.minuku.streamgenerator.AppUsageStreamGenerator;
-import edu.ohio.minuku.streamgenerator.BatteryStreamGenerator;
 import edu.ohio.minuku.streamgenerator.ConnectivityStreamGenerator;
 import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
 import edu.ohio.minuku.streamgenerator.RingerStreamGenerator;
@@ -136,16 +135,9 @@ public class InstanceManager {
         TelephonyDataRecordDAO telephonyDataRecordDAO = new TelephonyDataRecordDAO(getApplicationContext());
         daoManager.registerDaoFor(TelephonyDataRecord.class, telephonyDataRecordDAO);
 
-//        LocationNoGoogleDataRecordDAO locationNoGoogleDataRecordDAO = new LocationNoGoogleDataRecordDAO(getApplicationContext());
-//        daoManager.registerDaoFor(LocationNoGoogleDataRecord.class, locationNoGoogleDataRecordDAO);
-
 
         // Create corresponding stream generators. Only to be created once in Main Activity
         //creating a new stream registers it with the stream manager
-        //TODO build new StreamGenerator here.
-
-//        LocationNoGoogleStreamGenerator locationNoGoogleStreamGenerator =
-//                new LocationNoGoogleStreamGenerator(getApplicationContext());
 
         LocationStreamGenerator locationStreamGenerator =
                 new LocationStreamGenerator(getApplicationContext());
@@ -159,8 +151,8 @@ public class InstanceManager {
         ConnectivityStreamGenerator connectivityStreamGenerator =
                 new ConnectivityStreamGenerator(getApplicationContext());
 
-        BatteryStreamGenerator batteryStreamGenerator =
-                new BatteryStreamGenerator(getApplicationContext());
+//        BatteryStreamGenerator batteryStreamGenerator =
+//                new BatteryStreamGenerator(getApplicationContext());
 
         RingerStreamGenerator ringerStreamGenerator =
                 new RingerStreamGenerator(getApplicationContext());
@@ -175,15 +167,7 @@ public class InstanceManager {
         MinukuSituationManager situationManager = MinukuSituationManager.getInstance();
 
 
-        //TODO additional function
-        //for testing to trigger qualtrics
-        //QuestionnaireManager questionnaireManager = new QuestionnaireManager(getApplicationContext());
 
-        //create questionnaires
-//        QuestionConfig.getInstance().setUpQuestions(getApplicationContext());
-
-        // Fetch tags
-//        Model tagsModel = Model.getInstance();
 
         AsyncTask.execute(new Runnable() {
             @Override
@@ -231,28 +215,10 @@ public class InstanceManager {
 
     }
 
-    public UserSubmissionStats getUserSubmissionStats() {
-            if((mUserSubmissionStats == null) || !areDatesEqual((new Date().getTime()), mUserSubmissionStats.getCreationTime())) {
-                if(mUserSubmissionStats == null)
-                    //Log.d(LOG_TAG, "getUserSubmissionStats: userSubmissionStats is null");
+    private void destroy() {
 
-                //Log.d(LOG_TAG, "getUserSubmissionStats: userSubmissionStats is either null or we have a new date." +
-//                                "Creating new userSubmissionStats object");
-            mUserSubmissionStats = new UserSubmissionStats();
-        }
-        return mUserSubmissionStats;
-    }
 
-    public synchronized void setUserSubmissionStats(UserSubmissionStats aUserSubmissionStats) {
-        try {
-            MinukuDAOManager.getInstance().getDaoFor(UserSubmissionStats.class).update(null,
-                    aUserSubmissionStats);
-        } catch (Exception e) {
-            //Log.e(LOG_TAG, "Could not upload user stats via DAO.");
-        }
-
-        mUserSubmissionStats = aUserSubmissionStats;
-        EventBus.getDefault().post(mUserSubmissionStats);
+//        MinukuStreamManager.getInstance().unregister();
     }
 
     protected boolean areDatesEqual(long currentTime, long previousTime) {

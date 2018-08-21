@@ -113,6 +113,20 @@ public class BatteryStreamGenerator extends AndroidStreamGenerator<BatteryDataRe
 
     }
 
+    private void stopCheckingBatterys() {
+
+        try {
+
+            MinukuStreamManager.getInstance().unregister(mStream, this);
+
+            mApplicationContext.unregisterReceiver(mBroadcastReceiver);
+
+            Log.e(TAG, "Unregistering battery stream generator from stream manager");
+        } catch (StreamNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
-import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.config.UserPreferences;
 import edu.ohio.minuku.model.UserSubmissionStats;
 import edu.ohio.minukucore.dao.DAO;
 import edu.ohio.minukucore.dao.DAOException;
@@ -45,7 +43,7 @@ public class UserSubmissionStatsDAO implements DAO<UserSubmissionStats> {
     private static String TAG = "UserSubmissionDAO";
 
     public UserSubmissionStatsDAO() {
-        this.myUserEmail = UserPreferences.getInstance().getPreference(Constants.KEY_ENCODED_EMAIL);
+
     }
 
     @Override

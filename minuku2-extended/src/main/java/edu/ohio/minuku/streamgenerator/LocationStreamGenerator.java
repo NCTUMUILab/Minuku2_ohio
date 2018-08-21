@@ -120,10 +120,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
     private static ArrayList<LocationDataRecord> mLocationDataRecords;
 
-//    private SessionManager tripManager;
-
-    private Location location;
-
     LocationDataRecordDAO mDAO;
 
     private SharedPreferences sharedPrefs;
@@ -210,10 +206,9 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
             StoreToCSV(new Date().getTime(), locForIndoorOutdoor);
 
-            //store it to the sharePrefrence
+            //store it to the sharedPrefrence
             sharedPrefs.edit().putFloat("latestLatitude", (float) location.getLatitude()).apply();
             sharedPrefs.edit().putFloat("latestLongitude", (float) location.getLongitude()).apply();
-
         }
     }
 
@@ -480,12 +475,10 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
                     android.util.Log.d(TAG, "[test replay] going to feed location " +   locationDataRecord.getLatitude()+  " :"  + locationDataRecord.getLongitude()  +" at index " + locationRecordCurIndex  + " in the location streamgenerator");
 
-
                     //set Location
 
                     //move on to the next activity Record
                     locationRecordCurIndex++;
-
                 }
 
             }
