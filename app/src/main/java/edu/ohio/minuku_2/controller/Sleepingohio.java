@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -60,7 +61,21 @@ public class Sleepingohio extends AppCompatActivity {
 //        mContext = getApplicationContext();
         mContext = Sleepingohio.this;
 
+        if(hasNavBar(this.getResources())){
+
+            hideNavigationBar();
+        }
+
         initsettingohio();
+    }
+
+    public void onResume(){
+        super.onResume();
+
+        if(hasNavBar(this.getResources())){
+
+            hideNavigationBar();
+        }
     }
 
     public void initsettingohio(){
@@ -84,7 +99,7 @@ public class Sleepingohio extends AppCompatActivity {
         confirm = (Button)findViewById(R.id.confirm);
         confirm.setOnClickListener(confirming);
 
-//        getSupportActionBar().setTitle("DMS");
+
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         getSupportActionBar().setCustomView(R.layout.actionbar_new);
 
@@ -107,6 +122,32 @@ public class Sleepingohio extends AppCompatActivity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if(hasFocus) {
+
+            hideNavigationBar();
+        }
+    }
+
+    public boolean hasNavBar(Resources resources) {
+
+        int id = resources.getIdentifier("config_showNavigationBar", "bool", "android");
+        return id > 0 && resources.getBoolean(id);
+    }
+
+    private void hideNavigationBar() {
+        // Enables regular immersive mode.
+        // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
+        // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        );
     }
 
     private Button.OnClickListener confirming = new Button.OnClickListener() {

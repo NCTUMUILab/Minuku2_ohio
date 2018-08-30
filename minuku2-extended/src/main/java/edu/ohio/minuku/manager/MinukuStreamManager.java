@@ -366,6 +366,7 @@ public class MinukuStreamManager implements StreamManager {
                     session.addAnnotation(annotation);
                     session.setIsSent(Constants.SESSION_SHOULDNT_BEEN_SENT_FLAG);
                     session.setIsCombined(Constants.SESSION_NEVER_GET_COMBINED_FLAG);
+                    session.setSurveyDay(Constants.daysInSurvey);
 
                     int periodNum = Utilities.getPeriodNum(ScheduleAndSampleManager.getCurrentTimeInMillis(), sharedPrefs);
 
@@ -402,18 +403,11 @@ public class MinukuStreamManager implements StreamManager {
 
                 //Log.d(TAG, "test canceling: now cancelWalkingSurveyFlag is :"+ cancelWalkingSurveyFlag);
 
-
-
             }
         }
 
         this.transportationModeDataRecord = transportationModeDataRecord;
-        //        //Log.d(TAG, "test trip after update::: " + transportationModeDataRecord.getConfirmedActivityString() + "  the original beocomes " + this.transportationModeDataRecord.getConfirmedActivityString());
-
-
     }
-
-
 
     public TransportationModeDataRecord getTransportationModeDataRecord(){
         return transportationModeDataRecord;

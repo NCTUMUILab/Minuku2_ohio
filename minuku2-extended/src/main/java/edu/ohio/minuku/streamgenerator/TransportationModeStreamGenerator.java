@@ -210,9 +210,6 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
                 examineTransportation(record);
 
                 //Log.d(TAG, "[test replay] test trip: after examine transportation the current activity is  is " + getConfirmedActvitiyString() + " the status is " + getCurrentState());
-
-                //showTransportation(getConfirmedActivityString());
-
             }
 
             sharedPrefs.edit().putInt("CurrentState", mCurrentState).apply();

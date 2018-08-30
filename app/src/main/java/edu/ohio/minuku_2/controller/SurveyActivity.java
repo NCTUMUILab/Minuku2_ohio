@@ -198,26 +198,6 @@ public class SurveyActivity extends Activity {
             }
         }
 
-        //for testing, could deprecate it after we complete all the work
-//        testButton = (Button) findViewById(R.id.triggerButton);
-//        testButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//
-//                try{
-//
-//                    mNotificationManager.cancel(notifyID);
-//                }catch (Exception e){
-//
-//                }
-//
-//                triggerSurveyByButton();
-//                addSurveyLinkToDB();
-//
-//            }
-//        });
-
-
     }
 
     private void setSurveyButtonsAvailable(Button survey_Button, int correspondingSize){

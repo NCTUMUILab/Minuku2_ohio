@@ -94,7 +94,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v19";
+    private String versionNumber = "v20";
 
     public static final int HTTP_TIMEOUT = 10000;
     public static final int SOCKET_TIMEOUT = 20000;
@@ -153,14 +153,15 @@ public class WifiReceiver extends BroadcastReceiver {
 
             Log.d(TAG, "onReceive, "+intent.getAction().toString());
 
-            if(ConnectivityStreamGenerator.mIsWifiConnected == true){
+            String message = intent.getExtras().get("message").toString();
 
-                String message = intent.getExtras().get("message").toString();
+            CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, Constants.CONNECTIVITY_CHANGE + " : " + message);
 
-                CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, Constants.CONNECTIVITY_CHANGE + " : " + message);
+            CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, "IsWifiConnected : " + ConnectivityStreamGenerator.mIsWifiConnected);
 
-                uploadData();
-            }
+            CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, "IsMobileConnected : " + ConnectivityStreamGenerator.mIsMobileConnected);
+
+            uploadData();
         }
 
         //TODO might deprecated
@@ -259,9 +260,9 @@ public class WifiReceiver extends BroadcastReceiver {
                 Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
             }
 
-            nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
+//            nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
             //for testing
-//            nowTime = new Date().getTime();
+            nowTime = new Date().getTime();
             Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
 
             if(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected == true) {
@@ -277,11 +278,18 @@ public class WifiReceiver extends BroadcastReceiver {
                 sendingSurveyLinkData();
             }
 
+            long lastCheckInTime = sharedPrefs.getLong("lastCheckInTime", Constants.initLong);
+
             //isAlive or checkin
             if(ConnectivityStreamGenerator.mIsWifiConnected || ConnectivityStreamGenerator.mIsMobileConnected) {
 
-                //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
-                sendingUserInform();
+                if(ScheduleAndSampleManager.getCurrentTimeInMillis() - lastCheckInTime >= Constants.MILLISECONDS_PER_HOUR * 3){
+
+                    //TODO if the sleeping time haven't been set, don't checkin(server should not update)
+
+                    //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
+                    sendingUserInform();
+                }
             }
 
         }
@@ -382,6 +390,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
             userInform = new JSONObject(userInformInString);
 
+            //Log.d(TAG, "userInform : " + userInform);
+
+            sharedPrefs.edit().putLong("lastCheckInTime", ScheduleAndSampleManager.getCurrentTimeInMillis()).apply();
+
         } catch (InterruptedException e) {
 
         } catch (ExecutionException e) {
@@ -391,8 +403,6 @@ public class WifiReceiver extends BroadcastReceiver {
         } catch (NullPointerException e){
 
         }
-
-//        //Log.d(TAG, "userInform : " + userInform);
 
         //In order to set the survey link
 //        setDaysInSurvey(userInform);
@@ -578,12 +588,16 @@ public class WifiReceiver extends BroadcastReceiver {
                     annotatedtripdata.put("Annotations", ESMJSON);
 
                     annotatedtripdata.put("PeriodNumber", sessionToSend.getPeriodNum());
+                    annotatedtripdata.put("SurveyDay", sessionToSend.getSurveyDay());
 
                 } catch (JSONException e) {
 
+                } catch (Exception e) {
+
+                    CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "Trips");
+                    CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
                 }
 
-                //TODO log the data format
                 CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "Trip :"+annotatedtripdata.toString());
 
                 sessionJsons.add(annotatedtripdata);
@@ -597,7 +611,6 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public void sendingSurveyLinkData(){
 
-        //TODO improve it to get the real latest session id
         int latestSurveyLinkIdFromServer = sharedPrefs.getInt("latestSurveyLinkIdFromServer", 1);
 
         Log.d(TAG, "[check query] latestSurveyLinkIdFromServer : "+ latestSurveyLinkIdFromServer);
@@ -678,6 +691,10 @@ public class WifiReceiver extends BroadcastReceiver {
                 }
             }catch (JSONException e){
 
+            }catch (Exception e) {
+
+                CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "SurveyLink");
+                CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
             }
 
             String curr = getDateCurrentTimeZone(new Date().getTime());
@@ -1073,7 +1090,11 @@ public class WifiReceiver extends BroadcastReceiver {
 
             }
         }catch (JSONException e){
-        }catch(NullPointerException e){
+        }catch (NullPointerException e){
+        }catch (Exception e){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "TransportationMode");
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
         }
 
         //Log.d(TAG,"data : "+ data.toString());
@@ -1129,6 +1150,10 @@ public class WifiReceiver extends BroadcastReceiver {
             //e.printStackTrace();
         }catch(NullPointerException e){
             //e.printStackTrace();
+        }catch (Exception e){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "Location");
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
         }
 
         Log.d(TAG,"With Location data : "+ data.toString());
@@ -1218,6 +1243,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
         }catch (NullPointerException e){
 
+        }catch (Exception e){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "Activity Recognition");
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
         }
 
         //Log.d(TAG,"data : "+ data.toString());
@@ -1276,6 +1305,10 @@ public class WifiReceiver extends BroadcastReceiver {
             //e.printStackTrace();
         }catch(NullPointerException e){
             //e.printStackTrace();
+        }catch (Exception e){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "Ringer");
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
         }
 
         //Log.d(TAG,"data : "+ data.toString());
@@ -1335,6 +1368,10 @@ public class WifiReceiver extends BroadcastReceiver {
             //e.printStackTrace();
         }catch(NullPointerException e){
             //e.printStackTrace();
+        }catch (Exception e){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "Connectivity");
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
         }
 
         //Log.d(TAG,"data : "+ data.toString());
@@ -1386,6 +1423,10 @@ public class WifiReceiver extends BroadcastReceiver {
             //e.printStackTrace();
         }catch(NullPointerException e){
             //e.printStackTrace();
+        }catch (Exception e){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "Battery");
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
         }
 
         //Log.d(TAG,"data : "+ data.toString());
@@ -1434,6 +1475,10 @@ public class WifiReceiver extends BroadcastReceiver {
             //e.printStackTrace();
         }catch(NullPointerException e){
             //e.printStackTrace();
+        }catch (Exception e){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "AppUsage");
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
         }
 
         //Log.d(TAG,"data : "+ data.toString());
@@ -1478,6 +1523,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
         }catch(NullPointerException e){
 
+        }catch (Exception e){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "ActionLog");
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
         }
 
         Log.d(TAG,"ActionLog data : "+ data.toString());

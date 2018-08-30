@@ -43,6 +43,7 @@ import edu.ohio.minuku.dao.LocationDataRecordDAO;
 import edu.ohio.minuku.dao.RingerDataRecordDAO;
 import edu.ohio.minuku.dao.TelephonyDataRecordDAO;
 import edu.ohio.minuku.dao.TransportationModeDAO;
+import edu.ohio.minuku.dao.UserInteractionDataRecordDAO;
 import edu.ohio.minuku.dao.UserSubmissionStatsDAO;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
@@ -56,6 +57,7 @@ import edu.ohio.minuku.model.DataRecord.LocationDataRecord;
 import edu.ohio.minuku.model.DataRecord.RingerDataRecord;
 import edu.ohio.minuku.model.DataRecord.TelephonyDataRecord;
 import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
+import edu.ohio.minuku.model.DataRecord.UserInteractionDataRecord;
 import edu.ohio.minuku.model.UserSubmissionStats;
 import edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator;
 import edu.ohio.minuku.streamgenerator.AppUsageStreamGenerator;
@@ -64,6 +66,7 @@ import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
 import edu.ohio.minuku.streamgenerator.RingerStreamGenerator;
 import edu.ohio.minuku.streamgenerator.TelephonyStreamGenerator;
 import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
+import edu.ohio.minuku.streamgenerator.UserInteractionStreamGenerator;
 
 /**
  * Created by neerajkumar on 8/28/16.
@@ -135,6 +138,9 @@ public class InstanceManager {
         TelephonyDataRecordDAO telephonyDataRecordDAO = new TelephonyDataRecordDAO(getApplicationContext());
         daoManager.registerDaoFor(TelephonyDataRecord.class, telephonyDataRecordDAO);
 
+        UserInteractionDataRecordDAO userInteractionDataRecordDAO = new UserInteractionDataRecordDAO(getApplicationContext());
+        daoManager.registerDaoFor(UserInteractionDataRecord.class, userInteractionDataRecordDAO);
+
 
         // Create corresponding stream generators. Only to be created once in Main Activity
         //creating a new stream registers it with the stream manager
@@ -163,11 +169,12 @@ public class InstanceManager {
         TelephonyStreamGenerator telephonyStreamGenerator =
                 new TelephonyStreamGenerator(getApplicationContext());
 
+        UserInteractionStreamGenerator userInteractionStreamGenerator =
+                new UserInteractionStreamGenerator(getApplicationContext());
+
+
         // All situations must be registered AFTER the stream generators are registers.
         MinukuSituationManager situationManager = MinukuSituationManager.getInstance();
-
-
-
 
         AsyncTask.execute(new Runnable() {
             @Override
@@ -217,7 +224,7 @@ public class InstanceManager {
 
     private void destroy() {
 
-
+        //TODO battery's receiver should be unregistered after the InstanceManager disappear with the service
 //        MinukuStreamManager.getInstance().unregister();
     }
 

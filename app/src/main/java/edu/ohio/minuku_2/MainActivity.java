@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
             user_id.setText("Confirmation #:" );
 
             num_6_digit = (TextView) findViewById(R.id.group_num);
-            Constants.GROUP_NUM =  sharedPrefs.getString("groupNum","NA");
+            Constants.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
             num_6_digit.setText(Constants.USER_ID);
         } else {
 
@@ -510,6 +510,13 @@ public class MainActivity extends AppCompatActivity {
 
             userInform = new JSONObject(userInformInString);
 
+            //In order to set the survey link
+            setDaysInSurveyAndTheDayTodayIs(userInform);
+
+            setDownloadedDaysInSurveyIs(userInform);
+
+            setMidnightStart(userInform);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -520,15 +527,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-//        Log.d(TAG, "userInform : " + userInform);
-
-        //In order to set the survey link
-        setDaysInSurveyAndTheDayTodayIs(userInform);
-
-        setDownloadedDaysInSurveyIs(userInform);
-
-        setMidnightStart(userInform);
-
+        Log.d(TAG, "userInform : " + userInform);
     }
 
     private boolean haveNetworkConnection() {
@@ -551,6 +550,7 @@ public class MainActivity extends AppCompatActivity {
     private void setDaysInSurveyAndTheDayTodayIs(JSONObject userInform){
 
         try{
+
             Constants.daysInSurvey = userInform.getInt("daysinsurvey");
 
             sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
