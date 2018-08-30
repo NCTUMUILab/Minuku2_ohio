@@ -754,8 +754,6 @@ public class BackgroundService extends Service {
                             pi
                     );
                 }
-
-
             }
         }
     };

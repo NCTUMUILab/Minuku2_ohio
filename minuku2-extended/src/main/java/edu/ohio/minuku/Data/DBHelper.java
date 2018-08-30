@@ -112,18 +112,11 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String Latest_Used_App_col = "Latest_Used_App";
     public static final String Latest_Foreground_Activity_col = "Latest_Foreground_Activity";
 
-    //sensor
-    public static final String ACCELEROMETER_col = "ACCELEROMETER";
-    public static final String GYROSCOPE_col = "GYROSCOPE";
-    public static final String GRAVITY_col = "GRAVITY";
-    public static final String LINEAR_ACCELERATION_col = "LINEAR_ACCELERATION";
-    public static final String ROTATION_VECTOR_col = "ROTATION_VECTOR";
-    public static final String PROXIMITY_col = "PROXIMITY";
-    public static final String MAGNETIC_FIELD_col = "MAGNETIC_FIELD";
-    public static final String LIGHT_col = "LIGHT";
-    public static final String PRESSURE_col = "PRESSURE";
-    public static final String RELATIVE_HUMIDITY_col = "RELATIVE_HUMIDITY";
-    public static final String AMBIENT_TEMPERATURE_col = "AMBIENT_TEMPERATURE";
+    //UserInteraction
+    public static final String Present_col = "Present";
+    public static final String Unlock_col = "Unlock";
+    public static final String Background_col = "Background";
+    public static final String Foreground_col = "Foreground";
 
     //records
     public static final String COL_DATA = "data";
@@ -145,6 +138,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COL_SESSION_SENTORNOT_FLAG = "sentOrNot";
     public static final String COL_SESSION_COMBINEDORNOT_FLAG = "combinedOrNot";
     public static final String COL_SESSION_PERIODNUMBER_FLAG = "periodnumber";
+    public static final String COL_SESSION_SURVEYDAY_FLAG = "surveyDay";
     public static final int COL_INDEX_SESSION_ID = 0;
     public static final int COL_INDEX_SESSION_TIMESTAMP_STRING = 1;
     public static final int COL_INDEX_SESSION_START_TIME = 2;
@@ -155,7 +149,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final int COL_INDEX_SESSION_SENTORNOT_FLAG = 7;
     public static final int COL_INDEX_SESSION_COMBINEDORNOT_FLAG = 8;
     public static final int COL_INDEX_SESSION_PERIODNUMBER_FLAG = 9;
-
+    public static final int COL_INDEX_SESSION_SURVEYDAY_FLAG = 10;
 
     //table name
     public static final String surveyLink_table = "SurveyLinkList";
@@ -164,15 +158,13 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String activityRecognition_table = "ActivityRecognition";
     public static final String transportationMode_table = "TransportationMode";
     public static final String actionLog_table = "ActionLog";
+    public static final String userInteraction_table = "UserInteraction";
     public static final String trip_table = "Trip";
     public static final String telephony_table = "Telephony";
     public static final String ringer_table = "Ringer";
     public static final String battery_table = "Battery";
     public static final String connectivity_table = "Connectivity";
     public static final String appUsage_table = "AppUsage";
-    public static final String sensor_table = "Sensor";
-    public static final String accessibility_table = "Accessibility";
-    public static final String session_table = "Session";
     public static final String SESSION_TABLE_NAME = "Session_Table";
 
 
@@ -214,6 +206,7 @@ public class DBHelper extends SQLiteOpenHelper {
         createActionLogTable(db);
         createSessionTable(db);
         createARTable(db);
+        createUserInteractionTable(db);
         createLocationTable(db);
         createLocationNoGoogleTable(db);
         createTelephonyTable(db);
@@ -282,6 +275,22 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.execSQL(cmd);
 
+    }
+
+    public void createUserInteractionTable(SQLiteDatabase db){
+        Log.d(TAG,"create UserInteraction table");
+
+        String cmd = "CREATE TABLE " +
+                userInteraction_table + "(" +
+                id+" INTEGER PRIMARY KEY NOT NULL, " +
+                TIME + " TEXT NOT NULL, " +
+                Present_col+" TEXT, " +
+                Unlock_col+" TEXT, " +
+                Background_col+" TEXT, " +
+                Foreground_col+" TEXT " +
+                ");";
+
+        db.execSQL(cmd);
     }
 
     public void createActionLogTable(SQLiteDatabase db){
@@ -436,7 +445,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 COL_SESSION_LONG_ENOUGH_FLAG+ " INTEGER, " +
                 COL_SESSION_SENTORNOT_FLAG + " INTEGER, " +
                 COL_SESSION_COMBINEDORNOT_FLAG + " INTEGER, " +
-                COL_SESSION_PERIODNUMBER_FLAG + " INTEGER " +
+                COL_SESSION_PERIODNUMBER_FLAG + " INTEGER, " +
+                COL_SESSION_SURVEYDAY_FLAG + " INTEGER "+
                 ");";
 
         db.execSQL(cmd);
@@ -487,6 +497,7 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(COL_SESSION_SENTORNOT_FLAG, session.getIsSent());
             values.put(COL_SESSION_COMBINEDORNOT_FLAG, session.getIsCombined());
             values.put(COL_SESSION_PERIODNUMBER_FLAG, session.getPeriodNum());
+            values.put(COL_SESSION_SURVEYDAY_FLAG, session.getSurveyDay());
 
             rowId = db.insert(SESSION_TABLE_NAME, null, values);
 

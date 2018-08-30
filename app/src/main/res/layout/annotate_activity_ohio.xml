@@ -96,8 +96,16 @@
                     android:text="Riding a bicycle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/ans1_3"
+                    android:layout_weight="3" />
+
+                <RadioButton
+                    android:text="Riding a scooter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:id="@+id/ans1_4"
                     android:layout_weight="4" />
+
                 <RadioButton
                     android:text="Driving (I'm the driver)"
                     android:layout_width="wrap_content"

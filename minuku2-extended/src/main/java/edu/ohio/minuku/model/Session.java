@@ -18,6 +18,7 @@ public class Session {
     private int mIsSent;
     private int mIsCombined;
     private int periodNum;
+    private int surveyDay;
 
     // this should be defined based on what's being activated.
     ArrayList<String> mContextSourceNames;
@@ -63,6 +64,14 @@ public class Session {
         for (int i=0; i<contextsources.length; i++){
             addContextSourceType(contextsources[i]);
         }
+    }
+
+    public int getSurveyDay() {
+        return surveyDay;
+    }
+
+    public void setSurveyDay(int surveyDay) {
+        this.surveyDay = surveyDay;
     }
 
     public void setIsSent(int isSent){

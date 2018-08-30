@@ -238,6 +238,11 @@ public class SessionManager {
             session.setPeriodNum(Integer.valueOf(separated[DBHelper.COL_INDEX_SESSION_PERIODNUMBER_FLAG]));
         }
 
+        if (!separated[DBHelper.COL_INDEX_SESSION_SURVEYDAY_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_SURVEYDAY_FLAG].equals("")) {
+
+            session.setSurveyDay(Integer.valueOf(separated[DBHelper.COL_INDEX_SESSION_SURVEYDAY_FLAG]));
+        }
+
         session.setLongEnough(islongEnough);
         session.setModified(isModified);
 

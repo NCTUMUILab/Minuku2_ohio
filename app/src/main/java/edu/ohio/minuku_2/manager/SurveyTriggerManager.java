@@ -596,8 +596,9 @@ public class SurveyTriggerManager {
                         //which means they get the daysInSurvey is x|x>0 instead of -1, just keep it.
                         if(!lastTimeSend_today.equals("NA")){
 
-//                            Constants.daysInSurvey++;
+                            Constants.daysInSurvey++;
 
+                            /*
                             long downloadDateTime = sharedPrefs.getLong("downloadDateTime", Constants.initLong);
 
                             long currentDateTime = Utils.getDateTimeInMillis(ScheduleAndSampleManager.getCurrentTimeInMillis());
@@ -611,9 +612,12 @@ public class SurveyTriggerManager {
                             Constants.daysInSurvey = Constants.downloadedDayInSurvey + (int) passedDay;
 
                             Log.d(TAG, "[check daysInSurvey] downloadedDayInSurvey : "+ Constants.downloadedDayInSurvey);
+                            */
+
                             Log.d(TAG, "[check daysInSurvey] daysInSurvey : "+ Constants.daysInSurvey);
                         }
                     }
+
                     sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
 
                     Log.d(TAG, "after a day daysInSurvey today : "+ today);

@@ -31,7 +31,6 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
     private static final String TAG = "OhioListAdapter";
     private Context mContext;
     private ArrayList<Session> data;
-//    private ArrayList<ArrayList<String>> data;
 
     public static ArrayList<Integer> dataPos;
 
@@ -90,6 +89,7 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
             //{"Entire_session":true,"Tag":["ESM"],"Content":"{\"ans1\":\"Walking outdoors.\",\"ans2\":\"Food\",\"ans3\":\"No\",\"ans4\":\"Right before\"}"}
             if (annotations.size()>0){
                 try {
+
                     String content = annotations.get(0).getContent();
                     JSONObject contentJSON = new JSONObject(content);
                     //Log.d(TAG, "[test show trip] the contentofJSON ESMJSONObject  is " + contentJSON );
@@ -150,12 +150,14 @@ public class OhioListAdapter extends ArrayAdapter<Session> {
     private String getLabelFromAns1(String labelStr){
 
         switch (labelStr){
-            case "Walking outdoors": //ans1
+            case "Walking outdoors":
                 return "Walk";
-            case "Walking indoors": //ans1
+            case "Walking indoors":
                 return "Walk";
             case "Riding a bicycle":
                 return "Bike";
+            case "Riding a scooter":
+                return "Scooter";
             case "Driving (I'm the driver)":
                 return "Drive";
             case "Driving (I'm the passenger)":

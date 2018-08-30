@@ -24,11 +24,8 @@ package edu.ohio.minuku_2;
 
 import android.content.Context;
 
-import com.bugfender.sdk.Bugfender;
 import com.crashlytics.android.Crashlytics;
 import com.firebase.client.Config;
-import com.instabug.library.IBGInvocationEvent;
-import com.instabug.library.Instabug;
 
 import edu.ohio.minuku.config.UserPreferences;
 import io.fabric.sdk.android.Fabric;
@@ -52,7 +49,10 @@ public class MinukuApp extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
         Fabric.with(this, new Crashlytics());
+//        Bugsee.launch(this, "d8e89025-5821-4f6b-88f9-2e6333d7635c");
+
         Config mConfig = new Config();
         mConfig.setPersistenceEnabled(true);
         long cacheSizeOfHundredMB = 100 * 1024 * 1024;
@@ -65,11 +65,11 @@ public class MinukuApp extends android.app.Application {
         */
         UserPreferences.getInstance().Initialize(getApplicationContext());
 
-        Bugfender.init(this, "N7pdXEGbmKhK9k8YtpFPyXORtsAwgZa5", false);
-        Bugfender.setForceEnabled(true);
-
-        new Instabug.Builder(this, "2be6d236d601237a17e9c6314455930a")
-                .setInvocationEvent(IBGInvocationEvent.IBGInvocationEventShake)
-                .build();
+//        Bugfender.init(this, "N7pdXEGbmKhK9k8YtpFPyXORtsAwgZa5", false);
+//        Bugfender.setForceEnabled(true);
+//
+//        new Instabug.Builder(this, "2be6d236d601237a17e9c6314455930a")
+//                .setInvocationEvent(IBGInvocationEvent.IBGInvocationEventShake)
+//                .build();
     }
 }
