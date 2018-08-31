@@ -441,6 +441,9 @@ public class MainActivity extends AppCompatActivity {
 
                         if(Utils.isConfirmNumInvalid(inputID)){
                             Toast.makeText(MainActivity.this,"Error, please try re-entering the number provided",Toast.LENGTH_SHORT).show();
+                        }else if(Utils.isEmailEasyValid(inputID)){
+                            //TODO email them
+                            Toast.makeText(MainActivity.this,"Error, please try re-entering your email",Toast.LENGTH_SHORT).show();
                         }
                         else if(!haveNetworkConnection()){
                             Toast.makeText(MainActivity.this,"Error, please connect to the network",Toast.LENGTH_SHORT).show();

@@ -82,6 +82,10 @@ public class Utils {
         return matcher.matches();
     }
 
+    public static boolean isEmailEasyValid(String email) {
+        return email.contains("@");
+    }
+
     public static long getDateTimeInMillis(long time){
 
         SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
@@ -220,7 +224,7 @@ public class Utils {
 
         } catch(IOException e) {
 
-        } catch (IndexOutOfBoundsException e2){
+        } catch (IndexOutOfBoundsException e){
 
         }
 
@@ -561,36 +565,5 @@ public class Utils {
         }
     }
 
-    public static void ServiceDestroying_StoreToCSV_onLowMemory(long timestamp, String sFileName){
-        //Log.d(TAG,"ServiceDestroying_StoreToCSV_onLowMemory");
-
-//        String sFileName = "..._.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            //Log.d(TAG, "root : " + root);
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-            String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
-
-            data.add(new String[]{String.valueOf(timestamp), timeString, "Service killed.(onLowMemory)"});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            //e.printStackTrace();
-        }catch (Exception e){
-            //e.printStackTrace();
-        }
-    }
 
 }
