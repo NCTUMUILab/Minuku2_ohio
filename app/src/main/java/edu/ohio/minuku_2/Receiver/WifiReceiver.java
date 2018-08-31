@@ -520,7 +520,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     //getting the answers in the annotation.
                     if(annotations.size() > 0) {
 
-                        annotatedtripdata.put("completeOrNot", 1);
+                        annotatedtripdata.put("completeOrNot", "complete");
 
                         String content = annotations.get(0).getContent();
                         ESMJSON = new JSONObject(content);
@@ -561,7 +561,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     }else{
 
-                        annotatedtripdata.put("completeOrNot", 0);
+                        annotatedtripdata.put("completeOrNot", "incomplete");
 
                         ESMJSON = new JSONObject();
                         try {
@@ -585,7 +585,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     annotatedtripdata.put("Annotations", ESMJSON);
 
                     annotatedtripdata.put("PeriodNumber", sessionToSend.getPeriodNum());
-                    annotatedtripdata.put("SurveyDay", sessionToSend.getSurveyDay());
+                    annotatedtripdata.put("d", sessionToSend.getSurveyDay());
 
                 } catch (JSONException e) {
 
@@ -675,8 +675,21 @@ public class WifiReceiver extends BroadcastReceiver {
                         surveyJson.put("clickedtime", clickedtime);
                     }*/
 
+                    String completeType = surveyCursor.getString(5);
+
+                    if(completeType.equals(Constants.SURVEY_INCOMPLETE_FLAG)){
+
+                        completeType = Constants.TEXT_SURVEY_INCOMPLETE;
+                    }else if(completeType.equals(Constants.SURVEY_COMPLETE_FLAG)){
+
+                        completeType = Constants.TEXT_SURVEY_COMPLETE;
+                    }else if(completeType.equals(Constants.SURVEY_ERROR_FLAG)){
+
+                        completeType = Constants.TEXT_SURVEY_ERROR;
+                    }
+
                     //clickornot
-                    surveyJson.put("completeType", surveyCursor.getString(5));
+                    surveyJson.put("completeType", completeType);
 
                     surveyJson.put("d", d);
                     surveyJson.put("n", n);

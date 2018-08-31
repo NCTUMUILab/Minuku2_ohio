@@ -185,6 +185,14 @@ public class Constants {
     public static final String NOT_A_NUMBER = "NA";
     public static final long initLong = -999;
 
+    public static final String SURVEY_INCOMPLETE_FLAG = "0";
+    public static final String SURVEY_COMPLETE_FLAG = "1";
+    public static final String SURVEY_ERROR_FLAG = "2";
+
+    public static final String TEXT_SURVEY_INCOMPLETE = "incomplete";
+    public static final String TEXT_SURVEY_COMPLETE = "complete";
+    public static final String TEXT_SURVEY_ERROR = "error";
+
     public static String DEVICE_ID = "NA";
     public static String USER_ID = "N";
     public static String GROUP_NUM = "A";
