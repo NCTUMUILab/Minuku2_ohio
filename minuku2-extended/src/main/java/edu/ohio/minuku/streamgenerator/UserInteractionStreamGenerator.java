@@ -148,7 +148,19 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
             Log.d(TAG, "background : "+ background);
             Log.d(TAG, "foreground : "+ foreground);
 
-            CSVHelper.storeToCSV(CSVHelper.CSV_UserInteract, present, unlock, background, foreground);
+            boolean userPresent = intent.getAction().equals( Intent.ACTION_USER_PRESENT );
+            boolean userUnlock = intent.getAction().equals( Intent.ACTION_USER_UNLOCKED );
+            boolean userSentBackground = intent.getAction().equals( Intent.ACTION_USER_BACKGROUND );
+            boolean userSentForeground = intent.getAction().equals( Intent.ACTION_USER_FOREGROUND );
+
+            Log.d(TAG, "userPresent : "+ userPresent);
+            Log.d(TAG, "userUnlock : "+ userUnlock);
+            Log.d(TAG, "userSentBackground : "+ userSentBackground);
+            Log.d(TAG, "userSentForeground : "+ userSentForeground);
+
+//            CSVHelper.storeToCSV(CSVHelper.CSV_UserInteract, present, unlock, background, foreground);
+            CSVHelper.storeToCSV(CSVHelper.CSV_UserInteract, String.valueOf(userPresent), String.valueOf(userUnlock),
+                        String.valueOf(userSentBackground), String.valueOf(userSentForeground));
         }
     };
 

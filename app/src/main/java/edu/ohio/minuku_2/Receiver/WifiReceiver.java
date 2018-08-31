@@ -10,7 +10,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 
@@ -25,8 +24,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -204,7 +201,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
     }
 
-    public void SendingUserInformThread(){
+    /*public void SendingUserInformThread(){
 
         UserInformThread = new Handler();
 
@@ -226,7 +223,7 @@ public class WifiReceiver extends BroadcastReceiver {
         };
 
         UserInformThread.post(UserInformRunnable);
-    }
+    }*/
 
     private void uploadData(){
 
@@ -295,7 +292,7 @@ public class WifiReceiver extends BroadcastReceiver {
         }
     }
 
-    public void MakingJsonDataMainThread(){
+    /*public void MakingJsonDataMainThread(){
 
         mMainThread = new Handler();
 
@@ -358,7 +355,7 @@ public class WifiReceiver extends BroadcastReceiver {
         };
 
         mMainThread.post(runnable);
-    }
+    }*/
 
     //the replacement function of IsAlive
     private void sendingUserInform(){
@@ -1535,17 +1532,6 @@ public class WifiReceiver extends BroadcastReceiver {
 
     }
 
-    public String makingDataFormat(int year,int month,int date){
-        String dataformat= "";
-
-//        dataformat = addZero(year)+"-"+addZero(month)+"-"+addZero(date)+" "+addZero(hour)+":"+addZero(min)+":00";
-        dataformat = addZero(year)+"/"+addZero(month)+"/"+addZero(date)+" "+"00:00:00";
-        //Log.d(TAG,"dataformat : " + dataformat);
-
-        return dataformat;
-    }
-
-
     private long getSpecialTimeInMillis(String givenDateFormat){
 
         SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE_Slash);
@@ -1558,71 +1544,6 @@ public class WifiReceiver extends BroadcastReceiver {
             //e.printStackTrace();
         }
         return timeInMilliseconds;
-    }
-
-    private long getSpecialTimeInMillis(int year,int month,int date,int hour,int min){
-//        TimeZone tz = TimeZone.getDefault(); tz
-        Calendar cal = Calendar.getInstance();
-//        cal.set(year,month,date,hour,min,0);
-        cal.set(Calendar.YEAR, year);
-        cal.set(Calendar.MONTH, month);
-        cal.set(Calendar.DAY_OF_MONTH, date);
-        cal.set(Calendar.HOUR_OF_DAY, hour);
-        cal.set(Calendar.MINUTE, min);
-        cal.set(Calendar.SECOND, 0);
-
-        long t = cal.getTimeInMillis();
-
-        return t;
-    }
-
-    private void storeTripToLocalFolder(JSONObject completedJson){
-        //Log.d(TAG, "storeTripToLocalFolder");
-
-        String sFileName = "Trip_"+getTimeString(startTime)+"_"+getTimeString(endTime)+".json";
-
-        //Log.d(TAG, "sFileName : "+ sFileName);
-
-        try {
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            //Log.d(TAG, "root : " + root);
-
-            FileWriter fileWriter = new FileWriter(root+sFileName, true);
-            fileWriter.write(completedJson.toString());
-            fileWriter.close();
-        } catch(IOException e) {
-            //e.printStackTrace();
-        }
-
-    }
-
-    private void storeToLocalFolder(JSONObject completedJson){
-        //Log.d(TAG, "storeToLocalFolder");
-
-        String sFileName = "Dump_"+getTimeString(startTime)+"_"+getTimeString(endTime)+".json";
-
-        //Log.d(TAG, "sFileName : "+ sFileName);
-
-        try {
-            File root = new File(Environment.getExternalStorageDirectory() + PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            //Log.d(TAG, "root : " + root);
-
-            FileWriter fileWriter = new FileWriter(root+sFileName, true);
-            fileWriter.write(completedJson.toString());
-            fileWriter.close();
-
-        } catch(IOException e) {
-            //e.printStackTrace();
-        }
-
     }
 
     public static String getTimeString(long time){
@@ -1657,43 +1578,11 @@ public class WifiReceiver extends BroadcastReceiver {
         return "";
     }
 
-    private String getmillisecondToDateWithTime(long timeStamp){
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(timeStamp);
-
-        int mYear = calendar.get(Calendar.YEAR);
-        int mMonth = calendar.get(Calendar.MONTH)+1;
-        int mDay = calendar.get(Calendar.DAY_OF_MONTH);
-        int mhour = calendar.get(Calendar.HOUR_OF_DAY);
-        int mMin = calendar.get(Calendar.MINUTE);
-        int mSec = calendar.get(Calendar.SECOND);
-
-        return addZero(mYear)+"/"+addZero(mMonth)+"/"+addZero(mDay)+" "+addZero(mhour)+":"+addZero(mMin)+":"+addZero(mSec);
-
-    }
-
     private String addZero(int date){
         if(date<10)
             return String.valueOf("0"+date);
         else
             return String.valueOf(date);
-    }
-
-    /**get the current time in milliseconds**/
-    private long getCurrentTimeInMillis(){
-        //get timzone
-        TimeZone tz = TimeZone.getDefault();
-        Calendar cal = Calendar.getInstance(tz);
-        //get the date of now: the first month is Jan:0
-        int year = cal.get(Calendar.YEAR);
-        int month = cal.get(Calendar.MONTH) + 1;
-        int day = cal.get(Calendar.DAY_OF_MONTH);
-        int Hour = cal.get(Calendar.HOUR);
-        int Min = cal.get(Calendar.MINUTE);
-
-        long t = getSpecialTimeInMillis(year,month,day,Hour,Min);
-        return t;
     }
 
     private class HttpAsyncGetUserInformFromServer extends AsyncTask<String, Void, String> {
@@ -1756,7 +1645,6 @@ public class WifiReceiver extends BroadcastReceiver {
         @Override
         protected void onPostExecute(String result) {
             //Log.d(TAG, "get http post result " + result);
-
 
             Utils.checkinresponseStoreToCSV(ScheduleAndSampleManager.getCurrentTimeInMillis(), context, result);
         }
