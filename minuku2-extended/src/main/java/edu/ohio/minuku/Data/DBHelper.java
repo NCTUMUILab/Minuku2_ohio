@@ -118,6 +118,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String Background_col = "Background";
     public static final String Foreground_col = "Foreground";
 
+    //SurveydayWithDate
+    public static final String surveyDay_col = "SurveyDay";
+    public static final String surveyDate_col = "SurveyDate";
+
     //records
     public static final String COL_DATA = "data";
     public static final int COL_INDEX_RECORD_ID = 0;
@@ -152,6 +156,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final int COL_INDEX_SESSION_SURVEYDAY_FLAG = 10;
 
     //table name
+    public static final String surveydayWithDate_table = "SurveydayWithDate";
     public static final String surveyLink_table = "SurveyLinkList";
     public static final String locationNoGoogle_table = "LocationNoGoogle";
     public static final String STREAM_TYPE_LOCATION = "Location";
@@ -201,6 +206,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
        //Log.d("db","oncreate");
 
+        createSurveyDayWithDateTable(db);
         createSurveyLinkTable(db);
         createTransportationModeTable(db);
         createActionLogTable(db);
@@ -226,8 +232,21 @@ public class DBHelper extends SQLiteOpenHelper {
         DBManager.initializeInstance(this);
     }
 
+    public void createSurveyDayWithDateTable(SQLiteDatabase db){
+        //Log.d(TAG,"create SurveyDayWithDate table");
+
+        String cmd = "CREATE TABLE " +
+                surveydayWithDate_table + "(" +
+                id+" INTEGER PRIMARY KEY NOT NULL, " +
+                surveyDay_col+" INTEGER, " +
+                surveyDate_col+" TEXT " +
+                ");";
+
+        db.execSQL(cmd);
+    }
+
     public void createSurveyLinkTable(SQLiteDatabase db){
-       //Log.d(TAG,"create SurveyLinkList table");
+       //Log.d(TAG,"create SurveyLink table");
 
         String cmd = "CREATE TABLE " +
                 surveyLink_table + "(" +
@@ -450,6 +469,64 @@ public class DBHelper extends SQLiteOpenHelper {
                 ");";
 
         db.execSQL(cmd);
+    }
+
+    public static long insertSurveyDayWithDateTable(int surveyDay, String surveyDate){
+
+        long rowId = 0;
+
+        try {
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            values.put(DBHelper.surveyDay_col, surveyDay);
+            values.put(DBHelper.surveyDate_col, surveyDate);
+
+            rowId = db.insert(DBHelper.surveydayWithDate_table, null, values);
+        }
+        catch(NullPointerException e){
+            //e.printStackTrace();
+            rowId = -1;
+        }
+
+        return rowId;
+    }
+
+    public static ArrayList<String> querySurveyDayWithDate(String date){
+
+        Log.d(TAG, "[test show trip] query SurveyDayWithDate in DBHelper with date : " + date);
+
+        ArrayList<String> rows = new ArrayList<String>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+
+            String sql = "SELECT *"  +" FROM " + surveydayWithDate_table +
+                    " where " + surveyDate_col + " LIKE " + " '" + date + "' ";
+
+            //Log.d(TAG, "[test show trip querySession] the query statement is " +sql);
+
+            Cursor cursor = db.rawQuery(sql, null);
+            int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+                }
+                rows.add(curRow);
+            }
+            cursor.close();
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+        //Log.d(TAG, "[test show trip] the session is " +rows);
+
+        return rows;
     }
 
     public static long insertActionLogTable(long createdTime, String action){

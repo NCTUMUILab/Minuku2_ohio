@@ -223,6 +223,13 @@ public class BackgroundService extends Service {
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after updateStream");
 
+                //make sure that the device id will not disappear
+                if(Constants.DEVICE_ID.equals("NA")){
+
+                    Utils.getDeviceid(BackgroundService.this);
+
+//                    Log.d(TAG, "DEVICE_ID : "+Constants.DEVICE_ID);
+                }
 
                 //update every minute
                 if(showOngoingNotificationCount % 12 == 0) {

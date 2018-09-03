@@ -158,10 +158,14 @@ public class WifiReceiver extends BroadcastReceiver {
 
             CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, "IsMobileConnected : " + ConnectivityStreamGenerator.mIsMobileConnected);
 
+//            int d = getSurveyDayByTime(ScheduleAndSampleManager.getCurrentTimeInMillis());
+//
+//            Log.d(TAG, "[show data response] onReceive, Dump survey day : " + d);
+
             uploadData();
         }
 
-        //TODO might deprecated
+        //TODO might deprecated, keep it for testing
         /*if (activeNetwork != null) {
             // connected to the internet
             if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
@@ -175,7 +179,7 @@ public class WifiReceiver extends BroadcastReceiver {
 //                    //Log.d(TAG, "there is no runnable running yet.");
 
                     MakingJsonDataMainThread();
-                    SendingUserInformThread();
+//                    SendingUserInformThread();
                 }
             } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
                 // connected to the mobile provider's data plan
@@ -188,7 +192,7 @@ public class WifiReceiver extends BroadcastReceiver {
 //                    //Log.d(TAG, "there is no runnable running yet.");
 
                     MakingJsonDataMainThread();
-                    SendingUserInformThread();
+//                    SendingUserInformThread();
                 }
             }
         } else {
@@ -292,7 +296,7 @@ public class WifiReceiver extends BroadcastReceiver {
         }
     }
 
-    /*public void MakingJsonDataMainThread(){
+    public void MakingJsonDataMainThread(){
 
         mMainThread = new Handler();
 
@@ -355,7 +359,7 @@ public class WifiReceiver extends BroadcastReceiver {
         };
 
         mMainThread.post(runnable);
-    }*/
+    }
 
     //the replacement function of IsAlive
     private void sendingUserInform(){
@@ -780,6 +784,29 @@ public class WifiReceiver extends BroadcastReceiver {
         return buildData;
     }
 
+    private int getSurveyDayByTime(long startTime){
+
+        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String startTimeDate = ScheduleAndSampleManager.getTimeString(startTime, sdf_date);
+
+        Log.d(TAG, "[show data response] startTimeDate : "+startTimeDate);
+
+        ArrayList<String> surveyDaysInString = DBHelper.querySurveyDayWithDate(startTimeDate);
+
+        Log.d(TAG, "[show data response] surveyDaysInString : "+surveyDaysInString);
+
+        int surveyDay = -1;
+
+        if(surveyDaysInString.size() > 0){
+
+            String surveyDayWithDate = surveyDaysInString.get(surveyDaysInString.size() - 1);
+
+            surveyDay = Integer.valueOf(surveyDayWithDate.split(Constants.DELIMITER)[1]);
+        }
+
+        return surveyDay;
+    }
+
     public void sendingDumpData(){
 
         //Log.d(TAG, "sendingDumpData") ;
@@ -803,10 +830,19 @@ public class WifiReceiver extends BroadcastReceiver {
 
             data.put("StartTime", startTimeInSec);
             data.put("EndTime", endTimeInSec);
-            data.put("StartTimeString", getTimeString(startTime));
-            data.put("EndTimeString", getTimeString(endTime));
+
+            SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_Dash);
+
+            data.put("StartTimeString", ScheduleAndSampleManager.getTimeString(startTime, sdf_now));
+            data.put("EndTimeString", ScheduleAndSampleManager.getTimeString(endTime, sdf_now));
 
             data.put("build", getBuildInform());
+
+            int d = getSurveyDayByTime(startTime);
+
+            data.put("d", d);
+
+            Log.d(TAG, "[show data response] Dump survey day : " + d);
 
             SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
             data.put("date", ScheduleAndSampleManager.getTimeString(startTime, sdf_date));
@@ -832,6 +868,7 @@ public class WifiReceiver extends BroadcastReceiver {
 //            CSVHelper.dataUploadingCSV("Dump", data.toString());
             CSVHelper.dataUploadingCSV("Dump", "Going to send the data with EndTime : " + data.getString("EndTimeString"));
             CSVHelper.dataUploadingCSV("Dump", "Going to send the data with deviceId : " + data.getString("device_id"));
+            CSVHelper.dataUploadingCSV("Dump", "Going to send the data with surveyDay : " + data.getString("d"));
         }catch (JSONException e){
 
         }
@@ -841,6 +878,11 @@ public class WifiReceiver extends BroadcastReceiver {
         String lastTimeInServer;
 
         try {
+
+            if(data.getString("d").equals("-1")){
+
+                throw new JSONException("no correct survey day");
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                 lastTimeInServer = new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
@@ -1557,14 +1599,6 @@ public class WifiReceiver extends BroadcastReceiver {
             //e.printStackTrace();
         }
         return timeInMilliseconds;
-    }
-
-    public static String getTimeString(long time){
-
-        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_Dash);
-        String currentTimeString = sdf_now.format(time);
-
-        return currentTimeString;
     }
 
     public String makingDataFormat(int year,int month,int date,int hour,int min){

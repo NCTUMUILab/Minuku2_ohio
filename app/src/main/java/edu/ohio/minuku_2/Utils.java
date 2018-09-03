@@ -24,7 +24,10 @@ package edu.ohio.minuku_2;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Environment;
+import android.support.v4.content.ContextCompat;
+import android.telephony.TelephonyManager;
 
 import com.opencsv.CSVWriter;
 
@@ -84,6 +87,17 @@ public class Utils {
 
     public static boolean isEmailEasyValid(String email) {
         return email.contains("@");
+    }
+
+    public static void getDeviceid(Context context){
+
+        TelephonyManager mngr = (TelephonyManager) context.getSystemService(context.TELEPHONY_SERVICE);
+        int permissionStatus= ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE);
+        if(permissionStatus== PackageManager.PERMISSION_GRANTED){
+            Constants.DEVICE_ID = mngr.getDeviceId();
+
+//            Log.e(TAG,"DEVICE_ID"+Constants.DEVICE_ID+" : "+mngr.getDeviceId());
+        }
     }
 
     public static long getDateTimeInMillis(long time){

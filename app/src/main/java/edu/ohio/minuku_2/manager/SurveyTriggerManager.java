@@ -599,6 +599,11 @@ public class SurveyTriggerManager {
                             Constants.daysInSurvey++;
 
                             Log.d(TAG, "[check daysInSurvey] daysInSurvey : "+ Constants.daysInSurvey);
+
+                            SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+                            String surveyDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+
+                            DBHelper.insertSurveyDayWithDateTable(Constants.daysInSurvey, surveyDate);
                         }
                     }
 
