@@ -19,7 +19,9 @@ public class RestarterBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        if (intent.getAction().equals(Constants.CHECK_SERVICE_ACTION)) {
+        boolean isOverFinalDay = (Constants.daysInSurvey > Constants.finalday);
+
+        if (intent.getAction().equals(Constants.CHECK_SERVICE_ACTION) && !isOverFinalDay) {
 
             Log.d(TAG, "the RestarterBroadcastReceiver is going to start the BackgroundService");
 

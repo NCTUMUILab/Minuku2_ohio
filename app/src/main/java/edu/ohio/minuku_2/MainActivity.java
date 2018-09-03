@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View view) {
-                    String url = Constants.FINAL_SURVEY_URL;
+                    String url = Constants.FINAL_SURVEY_URL+"?d="+Constants.daysInSurvey+"&p="+Constants.USER_ID;
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(url));
                     startActivity(intent);
@@ -441,8 +441,8 @@ public class MainActivity extends AppCompatActivity {
 
                         if(Utils.isConfirmNumInvalid(inputID)){
                             Toast.makeText(MainActivity.this,"Error, please try re-entering the number provided",Toast.LENGTH_SHORT).show();
-                        }else if(Utils.isEmailEasyValid(inputID)){
-                            //TODO email them
+                        }else if(!Utils.isEmailEasyValid(inputEmail)){
+                            //TODO email them the error message
                             Toast.makeText(MainActivity.this,"Error, please try re-entering your email",Toast.LENGTH_SHORT).show();
                         }
                         else if(!haveNetworkConnection()){

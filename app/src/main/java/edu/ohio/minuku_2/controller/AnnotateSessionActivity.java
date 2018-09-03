@@ -815,7 +815,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
             new AlertDialog.Builder(AnnotateSessionActivity.this)
                     .setTitle("Delete")
-                    .setMessage("Are you sure to delete the current trip?")
+                    .setMessage("Are you sure you want to delete this trip?")
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {

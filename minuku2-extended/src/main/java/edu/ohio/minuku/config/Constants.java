@@ -204,7 +204,7 @@ public class Constants {
     public static long midnightstart = -999;
 
     public static String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";
-    public static final String FINAL_SURVEY_URL = "https://osu.az1.qualtrics.com/jfe/form/SV_2sgjKUSdGmrBEln";
+    public static final String FINAL_SURVEY_URL = "https://osu.az1.qualtrics.com/jfe/form/SV_2bPukwuNSojU4Sx";
 
     public static String Interval_Sample = "Interval_Sample";
     public static String Setting_Interval_Sample = "Setting_Interval_Sample";

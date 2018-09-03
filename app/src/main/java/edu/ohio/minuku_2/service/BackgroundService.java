@@ -578,8 +578,6 @@ public class BackgroundService extends Service {
 
 //        stopTheSessionByServiceClose();
 
-        sendBroadcastToStartService();
-
         mNotificationManager.cancel(ongoingNotificationID);
 
         isBackgroundServiceRunning = false;
@@ -596,6 +594,9 @@ public class BackgroundService extends Service {
 
         checkingRemovedFromForeground();
         removeRunnable();
+
+        sendBroadcastToStartService();
+
     }
 
     private void sendBroadcastToStartService(){
