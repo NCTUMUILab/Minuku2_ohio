@@ -65,6 +65,7 @@ public class DBHelper extends SQLiteOpenHelper {
     //ActivityRecognition
     public static final String MostProbableActivity_col = "MostProbableActivity";
     public static final String ProbableActivities_col = "ProbableActivities";
+    public static final String DetectedTime_col = "DetectedTime";
 
     public static final String trip_col = "Trip";
 
@@ -404,8 +405,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 activityRecognition_table + "(" +
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
                 TIME + " TEXT NOT NULL," +
-                MostProbableActivity_col+" TEXT," +
-                ProbableActivities_col +" TEXT " +
+                MostProbableActivity_col+" TEXT, " +
+                ProbableActivities_col +" TEXT, " +
+                DetectedTime_col + " TEXT "+
                 ");";
 
         db.execSQL(cmd);

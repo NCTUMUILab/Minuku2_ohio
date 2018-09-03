@@ -18,7 +18,6 @@ import org.javatuples.Octet;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.javatuples.Quintet;
-import org.javatuples.Triplet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -860,6 +859,7 @@ public class WifiReceiver extends BroadcastReceiver {
         storeBattery(data);
         storeAppUsage(data);
         storeActionLog(data);
+        storeUserInteract(data);
 
         Log.d(TAG,"[show data response] checking data Dump : "+ data.toString());
 
@@ -1232,6 +1232,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     String timestamp = transCursor.getString(1);
                     String mostProbableActivity = transCursor.getString(2);
                     String probableActivities = transCursor.getString(3);
+                    String detectedTime = transCursor.getString(4);
 
                     //split the mostProbableActivity into "type:conf"
                     String[] subMostActivity = mostProbableActivity.split(",");
@@ -1278,9 +1279,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     //convert into Second
                     String timestampInSec = timestamp.substring(0, timestamp.length()-3);
+                    String detectedTimeInSec = detectedTime.substring(0, timestamp.length()-3);
 
                     //<timestamps, MostProbableActivity, ProbableActivities>
-                    Triplet<String, String, String> arTuple = new Triplet<>(timestampInSec, mostProbableActivity, probableActivities);
+                    Quartet<String, String, String, String> arTuple = new Quartet<>(timestampInSec, mostProbableActivity, probableActivities, detectedTimeInSec);
 
                     String dataInPythonTuple = TupleHelper.toPythonTuple(arTuple);
 
@@ -1289,7 +1291,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     transCursor.moveToNext();
                 }
 
-                data.put("ActivityRecognition",arAndtimestampsJson);
+                data.put("ActivityRecognition", arAndtimestampsJson);
             }
         }catch (JSONException e){
 
@@ -1559,9 +1561,9 @@ public class WifiReceiver extends BroadcastReceiver {
                     String timestampInSec = timestamp.substring(0, timestamp.length()-3);
 
                     //<timestamps, action>
-                    Pair<String, String> transportationTuple = new Pair<>(timestampInSec, action);
+                    Pair<String, String> actionLogTuple = new Pair<>(timestampInSec, action);
 
-                    String dataInPythonTuple = TupleHelper.toPythonTuple(transportationTuple);
+                    String dataInPythonTuple = TupleHelper.toPythonTuple(actionLogTuple);
 
                     actionLogAndtimestampsJson.put(dataInPythonTuple);
 
@@ -1584,6 +1586,57 @@ public class WifiReceiver extends BroadcastReceiver {
         Log.d(TAG,"ActionLog data : "+ data.toString());
 
         CSVHelper.storeToCSV(CSVHelper.CSV_SESSION_ACTIONLOG_FORMAT, data.toString());
+
+    }
+
+    private void storeUserInteract(JSONObject data){
+
+        //Log.d(TAG, "storeUserInteract");
+
+        try {
+
+            JSONArray userInteractAndtimestampsJson = new JSONArray();
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            Cursor cursor = db.rawQuery("SELECT * FROM "+DBHelper.userInteraction_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null);
+
+            int rows = cursor.getCount();
+            if(rows!=0){
+                cursor.moveToFirst();
+                for(int i=0;i<rows;i++) {
+                    String timestamp = cursor.getString(1);
+                    String present = cursor.getString(2);
+                    String unlock = cursor.getString(3);
+                    String background = cursor.getString(4);
+                    String foreground = cursor.getString(5);
+
+                    //convert into second
+                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
+
+                    //<timestamps, action>
+                    Quintet<String, String, String, String, String> userInteractTuple = new Quintet<>(timestampInSec, present, unlock, background, foreground);
+
+                    String dataInPythonTuple = TupleHelper.toPythonTuple(userInteractTuple);
+
+                    userInteractAndtimestampsJson.put(dataInPythonTuple);
+
+                    cursor.moveToNext();
+                }
+
+                data.put("UserInteract", userInteractAndtimestampsJson);
+
+            }
+        }catch (JSONException e){
+
+        }catch(NullPointerException e){
+
+        }catch (Exception e){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "UserInteract");
+            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
+        }
+
+        Log.d(TAG,"UserInteract data : "+ data.toString());
 
     }
 
