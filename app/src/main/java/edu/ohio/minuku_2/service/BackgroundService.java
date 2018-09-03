@@ -171,7 +171,7 @@ public class BackgroundService extends Service {
             // do something
             CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to judge the condition is ? "+(!InstanceManager.isInitialized()));
 
-            Log.d(TAG, "Going to judge the condition is ? "+(!InstanceManager.isInitialized()));
+            Log.d(TAG, "Is InstanceManager not initialized ? "+(!InstanceManager.isInitialized()));
 
             if(!InstanceManager.isInitialized()) {
 

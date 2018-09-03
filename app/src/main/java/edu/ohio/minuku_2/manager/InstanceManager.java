@@ -61,6 +61,7 @@ import edu.ohio.minuku.model.DataRecord.UserInteractionDataRecord;
 import edu.ohio.minuku.model.UserSubmissionStats;
 import edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator;
 import edu.ohio.minuku.streamgenerator.AppUsageStreamGenerator;
+import edu.ohio.minuku.streamgenerator.BatteryStreamGenerator;
 import edu.ohio.minuku.streamgenerator.ConnectivityStreamGenerator;
 import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
 import edu.ohio.minuku.streamgenerator.RingerStreamGenerator;
@@ -157,8 +158,8 @@ public class InstanceManager {
         ConnectivityStreamGenerator connectivityStreamGenerator =
                 new ConnectivityStreamGenerator(getApplicationContext());
 
-//        BatteryStreamGenerator batteryStreamGenerator =
-//                new BatteryStreamGenerator(getApplicationContext());
+        BatteryStreamGenerator batteryStreamGenerator =
+                new BatteryStreamGenerator(getApplicationContext());
 
         RingerStreamGenerator ringerStreamGenerator =
                 new RingerStreamGenerator(getApplicationContext());
