@@ -63,6 +63,10 @@ public class Constants {
     public static final int DATA_FORMAT_TYPE_DAY=1;
     public static final int DATA_FORMAT_TYPE_HOUR=2;
 
+    public static final int SURVEYLINK_SHOULDNT_BEEN_SENT_FLAG = -1;
+    public static final int SURVEYLINK_SHOULD_BE_SENT_FLAG = 0;
+    public static final int SURVEYLINK_IS_ALREADY_SENT_FLAG = 1;
+
     public static final int SESSION_SHOULDNT_BEEN_SENT_FLAG = -1;
     public static final int SESSION_SHOULD_BE_SENT_FLAG = 0;
     public static final int SESSION_IS_ALREADY_SENT_FLAG = 1;

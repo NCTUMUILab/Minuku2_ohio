@@ -507,6 +507,8 @@ public class MainActivity extends AppCompatActivity {
 
             setMidnightStart(userInform);
 
+
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {

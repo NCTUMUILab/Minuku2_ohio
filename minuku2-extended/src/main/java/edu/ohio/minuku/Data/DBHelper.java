@@ -50,6 +50,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String missedTime_col = "missedTime";
     public static final String openFlag_col = "openFlag";
     public static final String surveyType_col = "surveyType";
+    public static final String sentOrNot_col = "sentOrNot";
+    public static final int COL_INDEX_ID = 0;
     public static final int COL_INDEX_LINK = 1;
     public static final int COL_INDEX_GENERATE_TIME = 2;
 
@@ -257,7 +259,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 openTime_col+" INTEGER," +
                 missedTime_col+" INTEGER," +
                 openFlag_col +" INTEGER," +
-                surveyType_col +" TEXT" +
+                surveyType_col +" TEXT, " +
+                sentOrNot_col + " INTEGER " +
                 ");";
 
         db.execSQL(cmd);
@@ -1212,7 +1215,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return rows;
 
-
     }
 
     public static ArrayList<String> queryRecordsInSession(String table_name, int sessionId) {
@@ -1756,6 +1758,7 @@ public class DBHelper extends SQLiteOpenHelper {
             //missedTime_col
             values.put(colName, ScheduleAndSampleManager.getCurrentTimeInMillis());
             values.put(openFlag_col, 0);
+            values.put(sentOrNot_col, Constants.SURVEYLINK_SHOULD_BE_SENT_FLAG);
 
             db.update(surveyLink_table, values, where, null);
 
@@ -1780,6 +1783,7 @@ public class DBHelper extends SQLiteOpenHelper {
             //missedTime_col
             values.put(openTime_col, ScheduleAndSampleManager.getCurrentTimeInMillis());
             values.put(openFlag_col, 1);
+            values.put(sentOrNot_col, Constants.SURVEYLINK_SHOULD_BE_SENT_FLAG);
 
             db.update(surveyLink_table, values, where, null);
 
@@ -1803,6 +1807,30 @@ public class DBHelper extends SQLiteOpenHelper {
 
             //missedTime_col
             values.put(openFlag_col, 2);
+            values.put(sentOrNot_col, Constants.SURVEYLINK_SHOULD_BE_SENT_FLAG);
+
+            db.update(surveyLink_table, values, where, null);
+
+        }catch(Exception e){
+
+        }
+
+        DBManager.getInstance().closeDatabase();
+
+    }
+
+    public static void updateSurveyToAlreadyBeenSent(int _id){
+
+//        Log.d(TAG, "[test show link] updateSurveyOpenTime check");
+
+        String where = id + " = " +  _id;
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            //missedTime_col
+            values.put(sentOrNot_col, Constants.SURVEYLINK_IS_ALREADY_SENT_FLAG);
 
             db.update(surveyLink_table, values, where, null);
 

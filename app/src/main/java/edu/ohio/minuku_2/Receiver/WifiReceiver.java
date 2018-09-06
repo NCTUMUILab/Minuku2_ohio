@@ -628,8 +628,9 @@ public class WifiReceiver extends BroadcastReceiver {
 //                " WHERE " + DBHelper.id + " = " + latestSurveyLinkIdFromServer + " and " +
 //                DBHelper.openFlag_col + " <> -1", null);
 
+        //TODO get rid of the sent one
         Cursor surveyCursor = db.rawQuery("SELECT * FROM "+DBHelper.surveyLink_table +
-                " WHERE " + DBHelper.openFlag_col + " <> -1", null);
+                " WHERE " + DBHelper.sentOrNot_col + " <> "+Constants.SURVEYLINK_IS_ALREADY_SENT_FLAG, null);
 
         //where openflag != -1, implies it hasn't been opened or missed, set as clickedtime
 
@@ -708,9 +709,76 @@ public class WifiReceiver extends BroadcastReceiver {
                     surveyJson.put("n", n);
                     surveyJson.put("m", m);
 
-                    surveyCursor.moveToNext();
-
                     timeOfData = Long.valueOf(timestampInSec);
+
+                    String curr = getDateCurrentTimeZone(new Date().getTime());
+
+                    Log.d(TAG, "[show data response] SurveyLink data :"+surveyJson.toString());
+
+                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "SurveyLink :"+surveyJson.toString());
+
+                    try {
+
+                        CSVHelper.dataUploadingCSV("Survey Link", surveyJson.getString("triggerTimeString"));
+                    }catch (JSONException e){
+
+                    }
+
+                    String timeInServer;
+
+                    try {
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                            timeInServer = new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                                    postSurveyLinkUrl,
+                                    surveyJson.toString(),
+                                    "SurveyLink",
+                                    curr).get();
+                        else
+                            timeInServer = new HttpAsyncPostJsonTask().execute(
+                                    postSurveyLinkUrl,
+                                    surveyJson.toString(),
+                                    "SurveyLink",
+                                    curr).get();
+
+                        Log.d(TAG, "[show data response] SurveyLink timeInServer : "+timeInServer);
+
+                        JSONObject lasttimeInServerJson = new JSONObject(timeInServer);
+
+                        Log.d(TAG, "[show data response] before to next iteration check : "+Long.valueOf(lasttimeInServerJson.getString("lastinsert")));
+
+                        long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
+
+//                CSVHelper.dataUploadingCSV("Survey Link", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
+
+                        Log.d(TAG, "[check query] going to change the latest id");
+
+                        Log.d(TAG, "[check query] timeOfData : " +timeOfData);
+                        Log.d(TAG, "[check query] fromServer : " +fromServer);
+                        Log.d(TAG, "[check query] timeOfData == fromServer ? "+ (timeOfData == fromServer));
+
+                        if(timeOfData == fromServer){
+
+                            Log.d(TAG, "[check query] survey sent successfully ");
+
+                            String id = surveyCursor.getString(DBHelper.COL_INDEX_ID);
+
+                            DBHelper.updateSurveyToAlreadyBeenSent(Integer.valueOf(id));
+
+//                    latestSurveyLinkIdFromServer++;
+//
+//                    Log.d(TAG, "[check query] updated latestSurveyLinkIdFromServer "+ latestSurveyLinkIdFromServer);
+//
+//                    sharedPrefs.edit().putInt("latestSurveyLinkIdFromServer", latestSurveyLinkIdFromServer).apply();
+                        }
+
+                        surveyCursor.moveToNext();
+
+                    } catch (InterruptedException e) {
+                    } catch (ExecutionException e) {
+                    } catch (JSONException e){
+                    }
+
                 }
             }catch (JSONException e){
 
@@ -720,65 +788,6 @@ public class WifiReceiver extends BroadcastReceiver {
                 CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
             }
 
-            String curr = getDateCurrentTimeZone(new Date().getTime());
-
-            Log.d(TAG, "[show data response] SurveyLink data :"+surveyJson.toString());
-
-            //TODO log the data format
-            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "SurveyLink :"+surveyJson.toString());
-
-            try {
-
-                CSVHelper.dataUploadingCSV("Survey Link", surveyJson.getString("triggerTimeString"));
-            }catch (JSONException e){
-
-            }
-
-            String timeInServer;
-
-            try {
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                    timeInServer = new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                            postSurveyLinkUrl,
-                            surveyJson.toString(),
-                            "SurveyLink",
-                            curr).get();
-                else
-                    timeInServer = new HttpAsyncPostJsonTask().execute(
-                            postSurveyLinkUrl,
-                            surveyJson.toString(),
-                            "SurveyLink",
-                            curr).get();
-
-                Log.d(TAG, "[show data response] SurveyLink timeInServer : "+timeInServer);
-
-                JSONObject lasttimeInServerJson = new JSONObject(timeInServer);
-
-                Log.d(TAG, "[show data response] before to next iteration check : "+Long.valueOf(lasttimeInServerJson.getString("lastinsert")));
-
-                long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
-
-//                CSVHelper.dataUploadingCSV("Survey Link", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
-
-                Log.d(TAG, "[check query] going to change the latest id");
-
-                Log.d(TAG, "[check query] timeOfData : " +timeOfData);
-                Log.d(TAG, "[check query] fromServer : " +fromServer);
-                Log.d(TAG, "[check query] timeOfData == fromServer ? "+ (timeOfData == fromServer));
-
-                if(timeOfData == fromServer){
-
-                    latestSurveyLinkIdFromServer++;
-
-                    Log.d(TAG, "[check query] updated latestSurveyLinkIdFromServer "+ latestSurveyLinkIdFromServer);
-
-                    sharedPrefs.edit().putInt("latestSurveyLinkIdFromServer", latestSurveyLinkIdFromServer).apply();
-                }
-            } catch (InterruptedException e) {
-            } catch (ExecutionException e) {
-            } catch (JSONException e){
-            }
         }
     }
 
@@ -956,6 +965,8 @@ public class WifiReceiver extends BroadcastReceiver {
             String data = params[1];
             String dataType = params[2];
             String lastSyncTime = params[3];
+
+            Log.d(TAG, "[show data response] going to send " + dataType);
 
             result = postJSON(url, data, dataType, lastSyncTime);
 
