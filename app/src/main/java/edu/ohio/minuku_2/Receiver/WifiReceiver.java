@@ -617,9 +617,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public void sendingSurveyLinkData(){
 
-        int latestSurveyLinkIdFromServer = sharedPrefs.getInt("latestSurveyLinkIdFromServer", 1);
+//        int latestSurveyLinkIdFromServer = sharedPrefs.getInt("latestSurveyLinkIdFromServer", 1);
 
-        Log.d(TAG, "[check query] latestSurveyLinkIdFromServer : "+ latestSurveyLinkIdFromServer);
+//        Log.d(TAG, "[check query] latestSurveyLinkIdFromServer : "+ latestSurveyLinkIdFromServer);
 
         long timeOfData = -999;
 
