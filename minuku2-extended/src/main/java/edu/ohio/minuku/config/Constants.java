@@ -160,28 +160,11 @@ public class Constants {
 
     //specific queue sizes
     public static final int LOCATION_QUEUE_SIZE = 50;
-    public static final int IMAGE_QUEUE_SIZE = 20;
-    public static final int MOOD_QUEUE_SIZE = 20;
 
-    public static final int MOOD_STREAM_GENERATOR_UPDATE_FREQUENCY_MINUTES = 15;
-    public static final int IMAGE_STREAM_GENERATOR_UPDATE_FREQUENCY_MINUTES = 30;
-    public static final int FOOD_IMAGE_STREAM_GENERATOR_UPDATE_FREQUENCY_MINUTES = 180;
-
-    public static final int MOOD_NOTIFICATION_EXPIRATION_TIME = 30 * 60 /* 30 minutes*/;
-    //changing missed report notification expiry to 2 hours as users are missing
-    public static final int MISSED_REPORT_NOTIFICATION_EXPIRATION_TIME =  2 * 60 * 60 /* 120 minutes*/;
-    //changing diary notification expiry to 2 hours as users are missing it
-    public static final int DIARY_NOTIFICATION_EXPIRATION_TIME = 2 * 60 * 60 /* 120 minutes*/;
-
-    public static final String TAPPED_NOTIFICATION_ID_KEY = "TAPPED_NOTIFICATION_ID" ;
-    public static final String SELECTED_LOCATIONS = "USERPREF_SELECTED_LOCATIONS";
-    public static final String BUNDLE_KEY_FOR_QUESTIONNAIRE_ID = "QUESTIONNAIRE_ID";
-    public static final String BUNDLE_KEY_FOR_NOTIFICATION_SOURCE = "NOTIFICATION_SOURCE";
     public static final String APP_NAME = "DMS";
     public static final String APP_FULL_NAME = "Daily Mobility Study";
     public static final String RUNNING_APP_DECLARATION = APP_NAME + " is running in the background";
     public static final long INTERNAL_LOCATION_UPDATE_FREQUENCY = 1 * 10 * 1000; // 1 * 300 * 1000
-    public static final float LOCATION_MINUMUM_DISPLACEMENT_UPDATE_THRESHOLD = 50 ;
 
     /* from NCTU */
     public static final String NOT_A_NUMBER = "NA";
@@ -202,7 +185,7 @@ public class Constants {
 
     public static int downloadedDayInSurvey = 0;
     public static int daysInSurvey = -1;
-    public static int finalday = 3; //real: 14, test: 3
+    public static int finalday = 14; //real: 14, test: 3
     public static long midnightstart = -999;
 
     public static String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";

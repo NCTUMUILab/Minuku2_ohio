@@ -61,7 +61,7 @@ public class SurveyActivity extends Activity {
 
     private final String TEXT_Unavailable = "Unavailable";
     private final String TEXT_Available = " Available ";/*the space is to padding the border*/
-    private final String TEXT_COMPLETED = "Completed";
+    private final String TEXT_COMPLETED = "Activated";
     private final String TEXT_MISSED = "Missed";
     private final String TEXT_ERROR = "Error";
 

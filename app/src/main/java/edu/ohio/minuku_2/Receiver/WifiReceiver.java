@@ -151,15 +151,22 @@ public class WifiReceiver extends BroadcastReceiver {
 
             String message = intent.getExtras().get("message").toString();
 
+
+            Log.d(TAG, "onReceive, "+Constants.CONNECTIVITY_CHANGE + " : " + message);
+
             CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, Constants.CONNECTIVITY_CHANGE + " : " + message);
+
+            Log.d(TAG, "onReceive, "+"IsWifiConnected : " + ConnectivityStreamGenerator.mIsWifiConnected);
 
             CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, "IsWifiConnected : " + ConnectivityStreamGenerator.mIsWifiConnected);
 
+            Log.d(TAG, "onReceive, "+"IsMobileConnected : " + ConnectivityStreamGenerator.mIsMobileConnected);
+
             CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, "IsMobileConnected : " + ConnectivityStreamGenerator.mIsMobileConnected);
 
-//            int d = getSurveyDayByTime(ScheduleAndSampleManager.getCurrentTimeInMillis());
-//
-//            Log.d(TAG, "[show data response] onReceive, Dump survey day : " + d);
+            int d = getSurveyDayByTime(ScheduleAndSampleManager.getCurrentTimeInMillis());
+
+            Log.d(TAG, "[show data response] onReceive, Dump survey day : " + d);
 
             uploadData();
         }
@@ -265,7 +272,8 @@ public class WifiReceiver extends BroadcastReceiver {
             nowTime = new Date().getTime();
             Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
 
-            if(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected == true) {
+//            if(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected)
+            while(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected) {
 
                 sendingDumpData();
             }
@@ -285,8 +293,6 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 if(ScheduleAndSampleManager.getCurrentTimeInMillis() - lastCheckInTime >= Constants.MILLISECONDS_PER_HOUR * 3){
 
-                    //TODO if the sleeping time haven't been set, don't checkin(server should not update)
-
                     //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
                     sendingUserInform();
                 }
@@ -295,7 +301,7 @@ public class WifiReceiver extends BroadcastReceiver {
         }
     }
 
-    public void MakingJsonDataMainThread(){
+    /*public void MakingJsonDataMainThread(){
 
         mMainThread = new Handler();
 
@@ -358,7 +364,7 @@ public class WifiReceiver extends BroadcastReceiver {
         };
 
         mMainThread.post(runnable);
-    }
+    }*/
 
     //the replacement function of IsAlive
     private void sendingUserInform(){
@@ -618,8 +624,12 @@ public class WifiReceiver extends BroadcastReceiver {
         long timeOfData = -999;
 
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
+//        Cursor surveyCursor = db.rawQuery("SELECT * FROM "+DBHelper.surveyLink_table +
+//                " WHERE " + DBHelper.id + " = " + latestSurveyLinkIdFromServer + " and " +
+//                DBHelper.openFlag_col + " <> -1", null);
+
         Cursor surveyCursor = db.rawQuery("SELECT * FROM "+DBHelper.surveyLink_table +
-                " WHERE " + DBHelper.id + " = " + latestSurveyLinkIdFromServer + " and " + DBHelper.openFlag_col + " <> -1", null); //cause pos start from 0.
+                " WHERE " + DBHelper.openFlag_col + " <> -1", null);
 
         //where openflag != -1, implies it hasn't been opened or missed, set as clickedtime
 

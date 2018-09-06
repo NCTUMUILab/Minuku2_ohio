@@ -43,6 +43,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
@@ -97,6 +98,8 @@ public class BackgroundService extends Service {
 
     public static boolean isBackgroundServiceRunning = false;
     public static boolean isBackgroundRunnableRunning = false;
+
+    private Handler handler = new Handler();
 
     public BackgroundService() {
         super();
@@ -695,10 +698,22 @@ public class BackgroundService extends Service {
                     }
 
                     @Override
-                    public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities){
-                        sendBroadcast(
-                                getConnectivityIntent("onCapabilitiesChanged : "+networkCapabilities.toString())
-                        );
+                    public void onCapabilitiesChanged(Network network, final NetworkCapabilities networkCapabilities){
+
+                        handler.postDelayed(new Runnable() {
+
+                            @Override
+                            public void run() {
+
+                                sendBroadcast(
+                                        getConnectivityIntent("onCapabilitiesChanged : "+networkCapabilities.toString())
+                                );
+                            }
+                        }, Constants.MILLISECONDS_PER_MINUTE);
+
+//                        sendBroadcast(
+//                                getConnectivityIntent("onCapabilitiesChanged : "+networkCapabilities.toString())
+//                        );
                     }
 
                     @Override
