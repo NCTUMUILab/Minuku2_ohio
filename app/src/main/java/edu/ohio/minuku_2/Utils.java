@@ -24,7 +24,10 @@ package edu.ohio.minuku_2;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Environment;
+import android.support.v4.content.ContextCompat;
+import android.telephony.TelephonyManager;
 
 import com.opencsv.CSVWriter;
 
@@ -80,6 +83,21 @@ public class Utils {
         Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
+    }
+
+    public static boolean isEmailEasyValid(String email) {
+        return email.contains("@");
+    }
+
+    public static void getDeviceid(Context context){
+
+        TelephonyManager mngr = (TelephonyManager) context.getSystemService(context.TELEPHONY_SERVICE);
+        int permissionStatus= ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE);
+        if(permissionStatus== PackageManager.PERMISSION_GRANTED){
+            Constants.DEVICE_ID = mngr.getDeviceId();
+
+//            Log.e(TAG,"DEVICE_ID"+Constants.DEVICE_ID+" : "+mngr.getDeviceId());
+        }
     }
 
     public static long getDateTimeInMillis(long time){
@@ -220,7 +238,7 @@ public class Utils {
 
         } catch(IOException e) {
 
-        } catch (IndexOutOfBoundsException e2){
+        } catch (IndexOutOfBoundsException e){
 
         }
 
@@ -561,36 +579,5 @@ public class Utils {
         }
     }
 
-    public static void ServiceDestroying_StoreToCSV_onLowMemory(long timestamp, String sFileName){
-        //Log.d(TAG,"ServiceDestroying_StoreToCSV_onLowMemory");
-
-//        String sFileName = "..._.csv";
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            //Log.d(TAG, "root : " + root);
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-            String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
-
-            data.add(new String[]{String.valueOf(timestamp), timeString, "Service killed.(onLowMemory)"});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            //e.printStackTrace();
-        }catch (Exception e){
-            //e.printStackTrace();
-        }
-    }
 
 }

@@ -61,6 +61,8 @@ public class Sleepingohio extends AppCompatActivity {
 //        mContext = getApplicationContext();
         mContext = Sleepingohio.this;
 
+        Log.d(TAG, "hasNavBar(this.getResources()) : "+hasNavBar(this.getResources()));
+
         if(hasNavBar(this.getResources())){
 
             hideNavigationBar();

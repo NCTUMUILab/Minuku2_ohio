@@ -288,7 +288,7 @@ public class MinukuStreamManager implements StreamManager {
                 else if (sessionCount>0){
 
                     //if there is a ongoing session
-                    if(SessionManager.getOngoingSessionIdList().size()!=0){
+                    if(SessionManager.getOngoingSessionIdList().size() > 0){
 
                         lastSession = SessionManager.getSession(SessionManager.getOngoingSessionIdList().get(0));
                     }

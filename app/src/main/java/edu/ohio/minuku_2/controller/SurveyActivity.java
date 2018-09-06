@@ -61,7 +61,7 @@ public class SurveyActivity extends Activity {
 
     private final String TEXT_Unavailable = "Unavailable";
     private final String TEXT_Available = " Available ";/*the space is to padding the border*/
-    private final String TEXT_COMPLETED = "Completed";
+    private final String TEXT_COMPLETED = "Activated";
     private final String TEXT_MISSED = "Missed";
     private final String TEXT_ERROR = "Error";
 
@@ -238,7 +238,7 @@ public class SurveyActivity extends Activity {
 //            Log.d(TAG, "[test mobile triggering] surveyData : "+surveyData);
 //            Log.d(TAG, "[test mobile triggering] openFlag : "+openFlag);
 
-            if(openFlag.equals("1")){
+            if(openFlag.equals(Constants.SURVEY_COMPLETE_FLAG)){
 
                 survey_Button.setBackgroundColor(Color.LTGRAY);
                 survey_Button.setTextColor(Color.DKGRAY);
@@ -247,7 +247,7 @@ public class SurveyActivity extends Activity {
                 survey_Button.setClickable(false);
 
                 buttonState.add(TEXT_COMPLETED);
-            }else if(openFlag.equals("0")){
+            }else if(openFlag.equals(Constants.SURVEY_INCOMPLETE_FLAG)){
 
                 survey_Button.setBackgroundColor(Color.LTGRAY);
                 survey_Button.setTextColor(Color.DKGRAY);
@@ -264,7 +264,7 @@ public class SurveyActivity extends Activity {
                 //if there is, set to here.
 //                setSurveyButtonsAvailable(survey_Button, correspondingSize+1);
 
-            }else if(openFlag.equals("2")){
+            }else if(openFlag.equals(Constants.SURVEY_ERROR_FLAG)){
 
                 survey_Button.setBackgroundColor(Color.LTGRAY);
                 survey_Button.setTextColor(Color.DKGRAY);

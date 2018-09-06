@@ -43,6 +43,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
@@ -97,6 +98,8 @@ public class BackgroundService extends Service {
 
     public static boolean isBackgroundServiceRunning = false;
     public static boolean isBackgroundRunnableRunning = false;
+
+    private Handler handler = new Handler();
 
     public BackgroundService() {
         super();
@@ -157,6 +160,7 @@ public class BackgroundService extends Service {
         createSurveyNotificationChannel();
         createNotificationChannel();
         createPermissionNotiChannel();
+        createSleepTimeNotiChannel();
 
         // building the ongoing notification to the foreground
         startForeground(ongoingNotificationID, getOngoingNotification(ongoingNotificationText));
@@ -171,7 +175,7 @@ public class BackgroundService extends Service {
             // do something
             CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to judge the condition is ? "+(!InstanceManager.isInitialized()));
 
-            Log.d(TAG, "Going to judge the condition is ? "+(!InstanceManager.isInitialized()));
+            Log.d(TAG, "Is InstanceManager not initialized ? "+(!InstanceManager.isInitialized()));
 
             if(!InstanceManager.isInitialized()) {
 
@@ -223,6 +227,13 @@ public class BackgroundService extends Service {
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after updateStream");
 
+                //make sure that the device id will not disappear
+                if(Constants.DEVICE_ID.equals("NA")){
+
+                    Utils.getDeviceid(BackgroundService.this);
+
+//                    Log.d(TAG, "DEVICE_ID : "+Constants.DEVICE_ID);
+                }
 
                 //update every minute
                 if(showOngoingNotificationCount % 12 == 0) {
@@ -270,7 +281,7 @@ public class BackgroundService extends Service {
                 }
             }catch (Exception e){
 
-                isBackgroundRunnableRunning = false;
+//                isBackgroundRunnableRunning = false;
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Something wrong in the runnable process.");
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, Utils.getStackTrace(e));
             }
@@ -286,15 +297,24 @@ public class BackgroundService extends Service {
         Intent resultIntent = new Intent(this, Sleepingohio.class);
         PendingIntent pending = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Notification.Builder noti = new Notification.Builder(this);
-
-        return noti.setContentTitle(Constants.APP_FULL_NAME)
+        Notification.Builder noti = new Notification.Builder(this)
+                .setContentTitle(Constants.APP_FULL_NAME)
                 .setContentText(text)
                 .setStyle(bigTextStyle)
-                .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
                 .setContentIntent(pending)
-                .setAutoCancel(true)
-                .build();
+                .setAutoCancel(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return noti
+                    .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                    .setChannelId(Constants.SLEEPTIME_CHANNEL_ID)
+                    .build();
+        } else {
+            return noti
+                    .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                    .build();
+        }
+
     }
 
     private void checkAndRequestPermission(){
@@ -465,6 +485,20 @@ public class BackgroundService extends Service {
         }
     }
 
+    private void createSleepTimeNotiChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = Constants.SLEEPTIME_CHANNEL_NAME;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(Constants.SLEEPTIME_CHANNEL_ID, name, importance);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
     private void updateOngoingNotification(){
 
 //        Log.d(TAG,"updateOngoingNotification");
@@ -578,8 +612,6 @@ public class BackgroundService extends Service {
 
 //        stopTheSessionByServiceClose();
 
-        sendBroadcastToStartService();
-
         mNotificationManager.cancel(ongoingNotificationID);
 
         isBackgroundServiceRunning = false;
@@ -596,6 +628,9 @@ public class BackgroundService extends Service {
 
         checkingRemovedFromForeground();
         removeRunnable();
+
+        sendBroadcastToStartService();
+
     }
 
     private void sendBroadcastToStartService(){
@@ -663,10 +698,22 @@ public class BackgroundService extends Service {
                     }
 
                     @Override
-                    public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities){
-                        sendBroadcast(
-                                getConnectivityIntent("onCapabilitiesChanged : "+networkCapabilities.toString())
-                        );
+                    public void onCapabilitiesChanged(Network network, final NetworkCapabilities networkCapabilities){
+
+                        handler.postDelayed(new Runnable() {
+
+                            @Override
+                            public void run() {
+
+                                sendBroadcast(
+                                        getConnectivityIntent("onCapabilitiesChanged : "+networkCapabilities.toString())
+                                );
+                            }
+                        }, Constants.MILLISECONDS_PER_MINUTE);
+
+//                        sendBroadcast(
+//                                getConnectivityIntent("onCapabilitiesChanged : "+networkCapabilities.toString())
+//                        );
                     }
 
                     @Override

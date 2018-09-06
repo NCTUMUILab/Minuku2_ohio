@@ -28,6 +28,7 @@ import android.os.AsyncTask;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
@@ -35,6 +36,8 @@ import java.util.concurrent.Future;
 
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.FileHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.ActivityRecognitionDataRecordDAO;
 import edu.ohio.minuku.dao.AppUsageDataRecordDAO;
 import edu.ohio.minuku.dao.BatteryDataRecordDAO;
@@ -61,6 +64,7 @@ import edu.ohio.minuku.model.DataRecord.UserInteractionDataRecord;
 import edu.ohio.minuku.model.UserSubmissionStats;
 import edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator;
 import edu.ohio.minuku.streamgenerator.AppUsageStreamGenerator;
+import edu.ohio.minuku.streamgenerator.BatteryStreamGenerator;
 import edu.ohio.minuku.streamgenerator.ConnectivityStreamGenerator;
 import edu.ohio.minuku.streamgenerator.LocationStreamGenerator;
 import edu.ohio.minuku.streamgenerator.RingerStreamGenerator;
@@ -108,6 +112,13 @@ public class InstanceManager {
         // DAO initialization stuff
 
         DBHelper dBHelper = new DBHelper(getApplicationContext());
+
+        //hardcoding: make sure the survey day is corresponding to the correct survey date
+        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String surveyDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+
+        DBHelper.insertSurveyDayWithDateTable(Constants.daysInSurvey, surveyDate);
+
 
         FileHelper fileHelper = new FileHelper(getApplicationContext());
 
@@ -157,8 +168,8 @@ public class InstanceManager {
         ConnectivityStreamGenerator connectivityStreamGenerator =
                 new ConnectivityStreamGenerator(getApplicationContext());
 
-//        BatteryStreamGenerator batteryStreamGenerator =
-//                new BatteryStreamGenerator(getApplicationContext());
+        BatteryStreamGenerator batteryStreamGenerator =
+                new BatteryStreamGenerator(getApplicationContext());
 
         RingerStreamGenerator ringerStreamGenerator =
                 new RingerStreamGenerator(getApplicationContext());

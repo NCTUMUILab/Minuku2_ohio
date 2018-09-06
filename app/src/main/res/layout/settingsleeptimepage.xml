@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingLeft="16dp"
-        android:paddingTop="16dp"
+        android:paddingTop="42dp"
         android:text="Please set your sleep hours below. Note that the app will not send notifications during your selected sleep period."
         android:textSize="22sp" />
 
@@ -33,7 +33,7 @@
         android:layout_gravity="center_horizontal|center"
         android:gravity="center"
         android:text="BED TIME"
-        android:textSize="22sp" />
+        android:textSize="26sp" />
 
     <Space
         android:layout_width="match_parent"
@@ -53,7 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|center"
         android:text="WAKE TIME"
-        android:textSize="22sp" />
+        android:textSize="26sp" />
 
     <Space
         android:layout_width="match_parent"
@@ -65,6 +65,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="confirm"
-        android:textSize="22sp" />
+        android:textSize="26sp" />
 
 </LinearLayout>

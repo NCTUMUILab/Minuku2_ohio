@@ -48,7 +48,6 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -90,29 +89,19 @@ import edu.ohio.minuku_2.service.BackgroundService;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    //private TextView compensationMessage;
 
     private AtomicInteger loadingProcessCount = new AtomicInteger(0);
 
-    private int mYear, mMonth, mDay;
-
-    public static String task="PART"; //default is PART
-    ArrayList viewList;
     public final int REQUEST_ID_MULTIPLE_PERMISSIONS=1;
 
-    private TextView device_id;
     private TextView num_6_digit;
     private TextView user_id;
     private TextView sleepingtime;
-
-    private ImageView tripStatus;
-    private ImageView surveyStatus;
 
     private Button ohio_settingSleepTime, ohio_annotate, closeService, tolinkList;
     private String projName = "Ohio";
 
     private int requestCode_setting = 1;
-    private Bundle requestCode_annotate;
 
     private boolean firstTimeToShowDialogOrNot;
     private SharedPreferences sharedPrefs;
@@ -140,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View view) {
-                    String url = Constants.FINAL_SURVEY_URL;
+                    String url = Constants.FINAL_SURVEY_URL+"?d="+Constants.daysInSurvey+"&p="+Constants.USER_ID;
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(url));
                     startActivity(intent);
@@ -233,8 +222,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void settingHomepageView() {
-
-        requestCode_annotate = new Bundle();
 
         setContentView(R.layout.homepage);
 
@@ -441,6 +428,9 @@ public class MainActivity extends AppCompatActivity {
 
                         if(Utils.isConfirmNumInvalid(inputID)){
                             Toast.makeText(MainActivity.this,"Error, please try re-entering the number provided",Toast.LENGTH_SHORT).show();
+                        }else if(!Utils.isEmailEasyValid(inputEmail)){
+                            //TODO email them the error message
+                            Toast.makeText(MainActivity.this,"Error, please try re-entering your email",Toast.LENGTH_SHORT).show();
                         }
                         else if(!haveNetworkConnection()){
                             Toast.makeText(MainActivity.this,"Error, please connect to the network",Toast.LENGTH_SHORT).show();
@@ -462,8 +452,6 @@ public class MainActivity extends AppCompatActivity {
 
                             startpermission();
 
-                            sendingUserInform();
-
                             getStartDate();
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -471,6 +459,8 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                 startService(intentToStartBackground);
                             }
+
+                            sendingUserInform();
 
                             isTheUser = true;
                             sharedPrefs.edit().putBoolean("isTheUser", isTheUser).apply();
@@ -786,7 +776,7 @@ public class MainActivity extends AppCompatActivity {
         if(permissionStatus==PackageManager.PERMISSION_GRANTED){
             Constants.DEVICE_ID = mngr.getDeviceId();
 
-//            Log.e(TAG,"DEVICE_ID"+Constants.DEVICE_ID+" : "+mngr.getDeviceId());
+            Log.e(TAG,"DEVICE_ID"+Constants.DEVICE_ID+" : "+mngr.getDeviceId());
         }
     }
 
