@@ -1067,6 +1067,7 @@ public class SurveyTriggerManager {
             values.put(DBHelper.link_col, linktoShow);
             values.put(DBHelper.surveyType_col, noti_type);
             values.put(DBHelper.openFlag_col, -1); //they can't enter the link by the notification.
+            values.put(DBHelper.sentOrNot_col, Constants.SURVEYLINK_SHOULDNT_BEEN_SENT_FLAG);
 
             db.insert(DBHelper.surveyLink_table, null, values);
         }

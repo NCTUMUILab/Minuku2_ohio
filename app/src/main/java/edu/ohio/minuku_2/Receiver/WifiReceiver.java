@@ -628,8 +628,9 @@ public class WifiReceiver extends BroadcastReceiver {
 //                " WHERE " + DBHelper.id + " = " + latestSurveyLinkIdFromServer + " and " +
 //                DBHelper.openFlag_col + " <> -1", null);
 
+        //TODO get rid of the sent one
         Cursor surveyCursor = db.rawQuery("SELECT * FROM "+DBHelper.surveyLink_table +
-                " WHERE " + DBHelper.openFlag_col + " <> -1", null);
+                " WHERE " + DBHelper.sentOrNot_col + " <> "+Constants.SURVEYLINK_IS_ALREADY_SENT_FLAG, null);
 
         //where openflag != -1, implies it hasn't been opened or missed, set as clickedtime
 
@@ -708,15 +709,12 @@ public class WifiReceiver extends BroadcastReceiver {
                     surveyJson.put("n", n);
                     surveyJson.put("m", m);
 
-                    surveyCursor.moveToNext();
-
                     timeOfData = Long.valueOf(timestampInSec);
 
                     String curr = getDateCurrentTimeZone(new Date().getTime());
 
                     Log.d(TAG, "[show data response] SurveyLink data :"+surveyJson.toString());
 
-                    //TODO log the data format
                     CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "SurveyLink :"+surveyJson.toString());
 
                     try {
@@ -725,7 +723,6 @@ public class WifiReceiver extends BroadcastReceiver {
                     }catch (JSONException e){
 
                     }
-
 
                     String timeInServer;
 
@@ -764,12 +761,19 @@ public class WifiReceiver extends BroadcastReceiver {
 
                             Log.d(TAG, "[check query] survey sent successfully ");
 
+                            String id = surveyCursor.getString(DBHelper.COL_INDEX_ID);
+
+                            DBHelper.updateSurveyToAlreadyBeenSent(Integer.valueOf(id));
+
 //                    latestSurveyLinkIdFromServer++;
 //
 //                    Log.d(TAG, "[check query] updated latestSurveyLinkIdFromServer "+ latestSurveyLinkIdFromServer);
 //
 //                    sharedPrefs.edit().putInt("latestSurveyLinkIdFromServer", latestSurveyLinkIdFromServer).apply();
                         }
+
+                        surveyCursor.moveToNext();
+
                     } catch (InterruptedException e) {
                     } catch (ExecutionException e) {
                     } catch (JSONException e){
@@ -961,6 +965,8 @@ public class WifiReceiver extends BroadcastReceiver {
             String data = params[1];
             String dataType = params[2];
             String lastSyncTime = params[3];
+
+            Log.d(TAG, "[show data response] going to send " + dataType);
 
             result = postJSON(url, data, dataType, lastSyncTime);
 
