@@ -89,6 +89,8 @@ public class Constants {
     public static final String SURVEY_CHANNEL_ID = "Survey_id";
     public static final String PERMIT_CHANNEL_NAME = "OSU";
     public static final String PERMIT_CHANNEL_ID = "Permit_id";
+    public static final String SLEEPTIME_CHANNEL_NAME = "OSU";
+    public static final String SLEEPTIME_CHANNEL_ID = "Sleeptime_id";
 
     public static final String sharedPrefString = "edu.umich.minuku_2";
     public static final String appNameString = "edu.ohio.minuku_2";
@@ -200,7 +202,7 @@ public class Constants {
 
     public static int downloadedDayInSurvey = 0;
     public static int daysInSurvey = -1;
-    public static int finalday = 14; //real: 14, test: 3
+    public static int finalday = 3; //real: 14, test: 3
     public static long midnightstart = -999;
 
     public static String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";

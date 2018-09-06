@@ -157,6 +157,7 @@ public class BackgroundService extends Service {
         createSurveyNotificationChannel();
         createNotificationChannel();
         createPermissionNotiChannel();
+        createSleepTimeNotiChannel();
 
         // building the ongoing notification to the foreground
         startForeground(ongoingNotificationID, getOngoingNotification(ongoingNotificationText));
@@ -277,7 +278,7 @@ public class BackgroundService extends Service {
                 }
             }catch (Exception e){
 
-                isBackgroundRunnableRunning = false;
+//                isBackgroundRunnableRunning = false;
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Something wrong in the runnable process.");
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, Utils.getStackTrace(e));
             }
@@ -293,15 +294,24 @@ public class BackgroundService extends Service {
         Intent resultIntent = new Intent(this, Sleepingohio.class);
         PendingIntent pending = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Notification.Builder noti = new Notification.Builder(this);
-
-        return noti.setContentTitle(Constants.APP_FULL_NAME)
+        Notification.Builder noti = new Notification.Builder(this)
+                .setContentTitle(Constants.APP_FULL_NAME)
                 .setContentText(text)
                 .setStyle(bigTextStyle)
-                .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
                 .setContentIntent(pending)
-                .setAutoCancel(true)
-                .build();
+                .setAutoCancel(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return noti
+                    .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                    .setChannelId(Constants.SLEEPTIME_CHANNEL_ID)
+                    .build();
+        } else {
+            return noti
+                    .setSmallIcon(MinukuNotificationManager.getNotificationIcon(noti))
+                    .build();
+        }
+
     }
 
     private void checkAndRequestPermission(){
@@ -465,6 +475,20 @@ public class BackgroundService extends Service {
             CharSequence name = Constants.PERMIT_CHANNEL_NAME;
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(Constants.PERMIT_CHANNEL_ID, name, importance);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private void createSleepTimeNotiChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = Constants.SLEEPTIME_CHANNEL_NAME;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(Constants.SLEEPTIME_CHANNEL_ID, name, importance);
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             NotificationManager notificationManager = getSystemService(NotificationManager.class);

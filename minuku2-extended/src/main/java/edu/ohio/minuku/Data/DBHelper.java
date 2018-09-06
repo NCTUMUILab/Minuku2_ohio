@@ -629,7 +629,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
             DBManager.getInstance().closeDatabase();
 
-
         }catch (Exception e){
 
         }

@@ -90,7 +90,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v20";
+    private String versionNumber = "v21";
 
     public static final int HTTP_TIMEOUT = 10000;
     public static final int SOCKET_TIMEOUT = 20000;
@@ -261,7 +261,7 @@ public class WifiReceiver extends BroadcastReceiver {
             }
 
 //            nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
-            //for testing
+            //TODO for testing
             nowTime = new Date().getTime();
             Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
 

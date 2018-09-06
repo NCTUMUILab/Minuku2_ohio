@@ -381,7 +381,7 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
         else if (getCurrentState()==STATE_SUSPECTING_START) {
 
             //
-            if (probableActivities.get(0).getType() == getSuspectedStopActivityType() &&
+            if (probableActivities.get(0).getType() == getSuspectedStartActivityType() &&
                     probableActivities.get(0).getConfidence() >= CANCEL_SUSPECT_Threshold) {
 
                 //back to static, cancel the suspection

@@ -154,6 +154,8 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
             boolean userSentForeground = intent.getAction().equals( Intent.ACTION_USER_FOREGROUND );
 
             Log.d(TAG, "userPresent : "+ userPresent);
+
+            //TODO no need userUnlock
             Log.d(TAG, "userUnlock : "+ userUnlock);
             Log.d(TAG, "userSentBackground : "+ userSentBackground);
             Log.d(TAG, "userSentForeground : "+ userSentForeground);
