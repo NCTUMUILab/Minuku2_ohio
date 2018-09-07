@@ -233,12 +233,6 @@ public class InstanceManager {
 
     }
 
-    private void destroy() {
-
-        //TODO battery's receiver should be unregistered after the InstanceManager disappear with the service
-//        MinukuStreamManager.getInstance().unregister();
-    }
-
     protected boolean areDatesEqual(long currentTime, long previousTime) {
         //Log.d(LOG_TAG, "Checking if the both dates are the same");
 

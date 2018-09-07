@@ -129,36 +129,8 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
 
     @Override
     public void onStreamRegistration() {
+
         buildGoogleApiClient();
-/*
-        EventBus.getDefault().post(new IncrementLoadingProcessCountEvent());
-
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                try
-                {
-                    Log.d(TAG, "Stream " + TAG + "initialized from previous state");
-                    Future<List<ActivityRecognitionDataRecord>> listFuture =
-                            mDAO.getLast(Constants.LOCATION_QUEUE_SIZE); //TODO Constants.LOCATION_QUEUE_SIZE must be replaced.
-                    while(!listFuture.isDone()) {
-                        Thread.sleep(1000);
-                    }
-                    Log.d(TAG, "Received data from Future for " + TAG);
-                    mStream.addAll(new LinkedList<>(listFuture.get()));
-                } catch (DAOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } finally {
-                    EventBus.getDefault().post(new DecrementLoadingProcessCountEvent());
-                }
-            }
-        });
-
-        */
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -382,7 +354,6 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
         }
     }
 
-    //TODO might be useless
     public static ArrayList<ActivityRecognitionDataRecord> getLocalRecordPool(){
         return mLocalRecordPool;
     }

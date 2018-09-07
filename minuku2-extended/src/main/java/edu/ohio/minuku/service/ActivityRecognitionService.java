@@ -94,7 +94,6 @@ public class ActivityRecognitionService extends IntentService {
             }
             ActivityRecognitionResult activity = ActivityRecognitionResult.extractResult(intent);
 
-            //TODO uncomment them when we stop testing
             mProbableActivities = activity.getProbableActivities();
             mMostProbableActivity = activity.getMostProbableActivity();
             detectedtime = new Date().getTime();

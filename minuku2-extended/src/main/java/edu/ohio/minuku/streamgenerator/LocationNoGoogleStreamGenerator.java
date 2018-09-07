@@ -376,62 +376,6 @@ public class LocationNoGoogleStreamGenerator extends AndroidStreamGenerator<Loca
         return mStream;
     }
 
-    /*@Override
-    public void onLocationChanged(Location location) {
-        if (location != null) {
-            Log.d(TAG, "GPS: "
-                    + location.getLatitude() + ", "
-                    + location.getLongitude() + ", "
-                    + "accuracy: " + location.getAccuracy()
-                    +"Extras : " + location.getExtras());
-
-            // If the location is accurate to 30 meters, it's good enough for us.
-            // Post an update event and exit. //TODO maybe be
-            float dist = 0;
-            float[] results = new float[1];
-
-            Log.d(TAG, "last time GPS : "
-                    + latitude.get() + ", "
-                    + longitude.get() + ", "
-                    + "accuracy: " + location.getAccuracy());
-
-//            Location.distanceBetween(location.getLatitude(),location.getLongitude(),latitude.get(),longitude.get(),results);
-//
-//            if(!(latitude.get() == -999.0 && longitude.get() == -999.0))
-//                dist = results[0];
-//            else
-//                dist = 1000;
-
-            Log.d(TAG, "dist : " + dist);
-            //if the newest
-            //TODO cancel the dist restriction
-//            if(dist < 100 || (latitude.get() == -999.0 && longitude.get() == -999.0)){
-            // Log.d(TAG, "Location is accurate upto 50 meters");
-            this.latitude.set(location.getLatitude());
-            this.longitude.set(location.getLongitude());
-            accuracy = location.getAccuracy();
-
-            //the lastposition update value timestamp
-            long lastposupdate = new Date().getTime();
-
-            TransportationMode_StoreToCSV(lastposupdate,location.getLatitude(),location.getLongitude(),location.getAccuracy());
-
-            LocationNoGoogleDataRecord locationNoGoogleDataRecord = new LocationNoGoogleDataRecord(
-                    (float) latitude.get(),
-                    (float) longitude.get(),
-                    accuracy);
-//            SessionManager.getInstance().setTrip(locationNoGoogleDataRecord);
-
-
-            Log.d(TAG,"onLocationChanged latitude : "+latitude+" longitude : "+ longitude);
-//                    this.location = location;
-
-//            }
-
-        }
-
-    }*/
-
     public void StoreToCSV(long timestamp, double latitude, double longitude, float accuracy){
 
         Log.d(TAG,"TransportationMode_StoreToCSV");

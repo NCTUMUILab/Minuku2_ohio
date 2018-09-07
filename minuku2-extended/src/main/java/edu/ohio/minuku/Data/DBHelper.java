@@ -230,7 +230,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    //TODO recall it after the phone restarted.
+    //recall it after the phone restarted.
     public void initiateDBManager() {
         DBManager.initializeInstance(this);
     }
@@ -329,7 +329,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    //TODO mabe need to expand
     public void createAppUsageTable(SQLiteDatabase db){
        //Log.d(TAG,"create AppUsage table");
 
@@ -1558,7 +1557,6 @@ public class DBHelper extends SQLiteOpenHelper {
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             ContentValues values = new ContentValues();
 
-            //TODO get the col name after complete the annotate part.
             values.put(COL_SESSION_END_TIME, endTime);
             //beacuse only one data(annotation) exist.
             values.put(COL_SESSION_ANNOTATION_SET, annotationSet.toString());

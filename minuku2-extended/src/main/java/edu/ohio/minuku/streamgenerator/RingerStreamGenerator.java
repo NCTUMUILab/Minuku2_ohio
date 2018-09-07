@@ -99,7 +99,7 @@ public class RingerStreamGenerator extends AndroidStreamGenerator<RingerDataReco
     public boolean updateStream() {
 
         Log.d(TAG, "updateStream called");
-        //TODO get service data
+
         RingerDataRecord ringerDataRecord = new RingerDataRecord(mRingerMode,mAudioMode,mStreamVolumeMusic
                 ,mStreamVolumeNotification,mStreamVolumeRing,mStreamVolumeVoicecall,mStreamVolumeSystem);
         mStream.add(ringerDataRecord);

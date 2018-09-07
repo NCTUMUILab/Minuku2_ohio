@@ -155,8 +155,9 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
 
             Log.d(TAG, "userPresent : "+ userPresent);
 
-            //TODO no need userUnlock
+            //TODO no need userUnlock set the value in bootCompleteReceiver
             Log.d(TAG, "userUnlock : "+ userUnlock);
+
             Log.d(TAG, "userSentBackground : "+ userSentBackground);
             Log.d(TAG, "userSentForeground : "+ userSentForeground);
 

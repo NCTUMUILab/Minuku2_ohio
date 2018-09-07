@@ -179,7 +179,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
             Log.d(TAG, "dist : " + dist);
 
-            //TODO uncomment them when we stop testing
             this.latestLatitude.set(location.getLatitude());
             this.latestLongitude.set(location.getLongitude());
             this.latestAccuracy = location.getAccuracy();
@@ -513,7 +512,6 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                             this);
 
         }catch (SecurityException e){
-//            TODO ask for this method good or not.
 //            Log.d(TAG, "SecurityException");
             onConnected(bundle);
         }

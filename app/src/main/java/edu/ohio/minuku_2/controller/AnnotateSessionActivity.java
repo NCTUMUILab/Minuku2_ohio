@@ -288,13 +288,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                             splittingTime = closestLocationAndTime.first;
                             splittingLatlng = closestLocationAndTime.second;
 
-                            //TODO deprecated
-//                            TextView messageTextView = (TextView) view.findViewById(R.id.message);
-//                            SimpleDateFormat sdf_hhmm_a = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM, Locale.US);
-//                            messageTextView.setText("Do you want to split the trip in " +
-//                                    ScheduleAndSampleManager.getTimeString(splittingTime, sdf_hhmm_a) +
-//                                    " ?");
-
                             Marker marker = googleMap.addMarker(new MarkerOptions()
                                     .position(splittingLatlng)
                                     .draggable(true).visible(true));;
@@ -537,9 +530,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         split = (Button)findViewById(R.id.split);
         split.setOnClickListener(splitting);
 
-        //TODO: recover it when the combine function is already done.
         combine.setEnabled(true);
-//        combine.setEnabled(false);
         split.setEnabled(true);
         delete.setEnabled(true);
 

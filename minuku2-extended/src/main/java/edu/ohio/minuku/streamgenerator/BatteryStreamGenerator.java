@@ -67,7 +67,7 @@ public class BatteryStreamGenerator extends AndroidStreamGenerator<BatteryDataRe
     @Override
     public boolean updateStream() {
         Log.d(TAG, "updateStream called");
-        //TODO get service data
+
         BatteryDataRecord batteryDataRecord
                 = new BatteryDataRecord(mBatteryLevel, mBatteryPercentage, mBatteryChargingState, isCharging);
         mStream.add(batteryDataRecord);
