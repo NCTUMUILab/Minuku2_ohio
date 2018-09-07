@@ -1,7 +1,6 @@
 package edu.ohio.minuku_2.controller;
 
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -38,8 +37,8 @@ public class SurveyActivity extends Activity {
 
     private TextView surveyDayText;
 
-    private Button testButton,
-        survey1_Button, survey2_Button, survey3_Button, survey4_Button, survey5_Button, survey6_Button;
+    private Button survey1_Button, survey2_Button, survey3_Button,
+            survey4_Button, survey5_Button, survey6_Button;
 
     private ArrayList<String> surveyDatas = new ArrayList<>();
     private ArrayList<Integer> linkNums = new ArrayList<>();
@@ -47,13 +46,7 @@ public class SurveyActivity extends Activity {
     private ArrayList<String> buttonState;
     private ArrayList<Button> buttons;
 
-    private int notifyID = 1;
-
-    private int test_notitypeNum = 0;
-
     private SharedPreferences sharedPrefs;
-
-    private NotificationManager mNotificationManager;
 
     private final String TEXT_Unavailable = "Unavailable";
     private final String TEXT_Available = " Available ";/*the space is to padding the border*/
