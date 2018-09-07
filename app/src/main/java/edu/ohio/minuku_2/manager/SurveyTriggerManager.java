@@ -272,7 +272,7 @@ public class SurveyTriggerManager {
 //        Random random = new Random(now);
 //        RandomNumber randomNumber = new RandomNumber();
         int sample_period;
-        //TODO set the start and end time.
+
         String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER); //"22:00"
         String sleepingendTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER); //"08:00"
 
@@ -927,12 +927,6 @@ public class SurveyTriggerManager {
 
         //send survey
         sendSurveyLink(noti_random);
-
-        //TODO deprecated
-        //after sending survey, update the preference
-//        interval_sampled++;
-//        sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
-
     }
 
     private void triggerWalkingSurvey() {

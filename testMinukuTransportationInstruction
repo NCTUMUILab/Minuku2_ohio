@@ -54,7 +54,7 @@ ActivityRecognitionService() constructor裡 uncomment
 
 //            mProbableActivities = result.getProbableActivities();
 //            mMostProbableActivity = result.getMostProbableActivity();
-//            detectedtime = new Date().getTime(); //TODO might be wrong, be aware for it!!
+//            detectedtime = new Date().getTime();
 
 //            Log.d(TAG, "[test ActivityRecognition]" +   mMostProbableActivity.toString());
 //            try {

@@ -38,12 +38,10 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
@@ -99,8 +97,6 @@ public class BackgroundService extends Service {
     public static boolean isBackgroundServiceRunning = false;
     public static boolean isBackgroundRunnableRunning = false;
 
-    private Handler handler = new Handler();
-
     public BackgroundService() {
         super();
 
@@ -119,7 +115,7 @@ public class BackgroundService extends Service {
         mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_THREAD_SIZE);
 
         intentFilter = new IntentFilter();
-        intentFilter.addAction(CONNECTIVITY_ACTION);
+//        intentFilter.addAction(CONNECTIVITY_ACTION);
         intentFilter.addAction(Constants.CONNECTIVITY_CHANGE);
         mWifiReceiver = new WifiReceiver();
     }
@@ -528,7 +524,7 @@ public class BackgroundService extends Service {
             }
         }
 
-        ongoingNotificationText = unfilledTrips+" New Trips";
+        ongoingNotificationText = unfilledTrips + " New Trips";
 
         if(unfilledTrips==1){
             ongoingNotificationText = unfilledTrips + " New Trip";
@@ -544,7 +540,7 @@ public class BackgroundService extends Service {
             //TODO ask for the text
             ongoingNotificationText = "";
 
-            checkingRemovedFromForeground();
+//            checkingRemovedFromForeground();
         }
 
         Notification note = getOngoingNotification(ongoingNotificationText);
@@ -599,11 +595,10 @@ public class BackgroundService extends Service {
         sharedPrefs.edit().putInt("CurrentState", TransportationModeStreamGenerator.mCurrentState).apply();
         sharedPrefs.edit().putInt("ConfirmedActivityType", TransportationModeStreamGenerator.mConfirmedActivityType).apply();
 
-        checkingRemovedFromForeground();
+//        checkingRemovedFromForeground();
         removeRunnable();
 
         unregisterReceiver(mWifiReceiver);
-        unregisterReceiver(CheckRunnableReceiver);
     }
 
     @Override
@@ -626,7 +621,7 @@ public class BackgroundService extends Service {
         sharedPrefs.edit().putInt("CurrentState", TransportationModeStreamGenerator.mCurrentState).apply();
         sharedPrefs.edit().putInt("ConfirmedActivityType", TransportationModeStreamGenerator.mConfirmedActivityType).apply();
 
-        checkingRemovedFromForeground();
+//        checkingRemovedFromForeground();
         removeRunnable();
 
         sendBroadcastToStartService();
@@ -691,50 +686,11 @@ public class BackgroundService extends Service {
                 new ConnectivityManager.NetworkCallback() {
 
                     @Override
-                    public void onAvailable(Network network) {
-                        /*sendBroadcast(
-                                getConnectivityIntent("onAvailable")
-                        );*/
-                    }
-
-                    @Override
                     public void onCapabilitiesChanged(Network network, final NetworkCapabilities networkCapabilities){
 
-                        handler.postDelayed(new Runnable() {
-
-                            @Override
-                            public void run() {
-
-                                sendBroadcast(
-                                        getConnectivityIntent("onCapabilitiesChanged : "+networkCapabilities.toString())
-                                );
-                            }
-                        }, Constants.MILLISECONDS_PER_MINUTE);
-
-//                        sendBroadcast(
-//                                getConnectivityIntent("onCapabilitiesChanged : "+networkCapabilities.toString())
-//                        );
-                    }
-
-                    @Override
-                    public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
-                        /*sendBroadcast(
-                                getConnectivityIntent("onLinkPropertiesChanged : "+linkProperties.toString())
-                        );*/
-                    }
-
-                    @Override
-                    public void onLosing(Network network, int maxMsToLive) {
-                        /*sendBroadcast(
-                                getConnectivityIntent("onLosing")
-                        );*/
-                    }
-
-                    @Override
-                    public void onLost(Network network) {
-                        /*sendBroadcast(
-                                getConnectivityIntent("onLost")
-                        );*/
+                        sendBroadcast(
+                                getConnectivityIntent("onCapabilitiesChanged : "+networkCapabilities.toString())
+                        );
                     }
                 }
         );

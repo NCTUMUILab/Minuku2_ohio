@@ -133,6 +133,8 @@ public class Constants {
 
     public static final String CONNECTIVITY_CHANGE = "CONNECTIVITY_CHANGE";
 
+    public static final String connectedToWifi = "connectedToWifi";
+
 
     // Prompt service related constants
     public static final long PROMPT_SERVICE_REPEAT_MILLISECONDS = MILLISECONDS_PER_MINUTE * 30;
@@ -189,7 +191,7 @@ public class Constants {
 
     public static int downloadedDayInSurvey = 0;
     public static int daysInSurvey = -1;
-    public static int finalday = 14; //real: 14, test: 3
+    public static int finalday = 7; //real: 14, test: 3
     public static long midnightstart = -999;
 
     public static String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";

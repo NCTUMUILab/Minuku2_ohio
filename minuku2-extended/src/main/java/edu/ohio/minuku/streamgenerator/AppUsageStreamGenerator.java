@@ -197,30 +197,9 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
 
             //we first check the user has granted the permission of usage access. We need it for Android 5.0 and above
-            boolean usageAccessPermissionGranted = checkApplicationUsageAccess();
+//            boolean usageAccessPermissionGranted = checkApplicationUsageAccess();
 
             runAppUsageMainThread();
-
-            if (!usageAccessPermissionGranted) {
-//                Log.d(TAG, "[testing app] user has not granted permission, need to bring them to the setting");
-                //ask user to grant permission to app.
-                //TODO: we only do this when the app information Is requested
-
-//                Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                mContext.startActivity(intent);
-
-//                try{
-//                    // delay 5 second, wait for user confirmed.
-//                    Thread.sleep(5000);
-//
-//                } catch(InterruptedException e){
-//                    e.printStackTrace();
-//                }
-//
-//                onStreamRegistration();
-
-            }
         }
     }
 

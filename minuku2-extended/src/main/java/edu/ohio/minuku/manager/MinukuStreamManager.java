@@ -290,7 +290,15 @@ public class MinukuStreamManager implements StreamManager {
                     //if there is a ongoing session
                     if(SessionManager.getOngoingSessionIdList().size() > 0){
 
-                        lastSession = SessionManager.getSession(SessionManager.getOngoingSessionIdList().get(0));
+                        try {
+                            lastSession = SessionManager.getSession(SessionManager.getOngoingSessionIdList().get(0));
+                        }catch (IndexOutOfBoundsException e){
+
+                            int sessionidByExcept = sharedPrefs.getInt("ongoingSessionid", -1);
+                            if(sessionidByExcept != -1){
+                                lastSession = SessionManager.getSession(sessionidByExcept);
+                            }
+                        }
                     }
 
                     //get the latest session (which should be the ongoing one)
@@ -348,6 +356,8 @@ public class MinukuStreamManager implements StreamManager {
                         //end the current session
                         SessionManager.endCurSession(lastSession);
                         //Log.d(TAG, "test combine: after remove, now the sesssion manager session list has " + SessionManager.getInstance().getOngoingSessionList());
+
+                        sharedPrefs.edit().putInt("ongoingSessionid", -1).apply();
                     }
                 }
 
@@ -373,6 +383,8 @@ public class MinukuStreamManager implements StreamManager {
                     session.setPeriodNum(periodNum);
 
                     SessionManager.startNewSession(session);
+
+                    sharedPrefs.edit().putInt("ongoingSessionid", session.getId()).apply();
                 }
 
                 /**
