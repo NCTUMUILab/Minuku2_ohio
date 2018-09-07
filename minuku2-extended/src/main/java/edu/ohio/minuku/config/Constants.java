@@ -191,7 +191,7 @@ public class Constants {
 
     public static int downloadedDayInSurvey = 0;
     public static int daysInSurvey = -1;
-    public static int finalday = 7; //real: 14, test: 3
+    public static int finalday = 3; //real: 14, test: 3
     public static long midnightstart = -999;
 
     public static String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";

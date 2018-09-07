@@ -527,6 +527,7 @@ public class BackgroundService extends Service {
         ongoingNotificationText = unfilledTrips + " New Trips";
 
         if(unfilledTrips==1){
+
             ongoingNotificationText = unfilledTrips + " New Trip";
         }
 
@@ -547,6 +548,7 @@ public class BackgroundService extends Service {
 
         // using the same tag and Id causes the new notification to replace an existing one
         mNotificationManager.notify(ongoingNotificationID, note);
+
     }
 
     private void stopTheSessionByServiceClose(){
@@ -558,6 +560,7 @@ public class BackgroundService extends Service {
 
             //if we end the current session, we should update its time and set a long enough flag
             if (session.getEndTime()==0){
+
                 long endTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
                 session.setEndTime(endTime);
             }
@@ -573,7 +576,6 @@ public class BackgroundService extends Service {
 
     @Override
     public void onDestroy() {
-//        super.onDestroy();
 
         Log.d(TAG, "onDestroy");
 
