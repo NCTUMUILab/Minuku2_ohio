@@ -11,7 +11,6 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.javatuples.Ennead;
 import org.javatuples.Octet;
@@ -134,8 +133,6 @@ public class WifiReceiver extends BroadcastReceiver {
                 Log.d(TAG, "connected to wifi");
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, Constants.connectedToWifi);
-
-                Toast.makeText(context, Constants.connectedToWifi, Toast.LENGTH_LONG).show();
 
                 uploadData();
             }
