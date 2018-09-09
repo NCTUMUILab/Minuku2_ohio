@@ -507,7 +507,7 @@ public class MainActivity extends AppCompatActivity {
 
             setMidnightStart(userInform);
 
-
+            //TODO insert DaysInSurvey into the surveydayWithDate_table
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -548,6 +548,13 @@ public class MainActivity extends AppCompatActivity {
             sharedPrefs.edit().putInt("daysInSurvey", Config.daysInSurvey).apply();
 
 //            Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
+
+            //TODO make sure the survey day is corresponding to the correct survey date
+            SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+            String surveyDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+
+            DBHelper.insertSurveyDayWithDateTable(Config.daysInSurvey, surveyDate);
+
         }catch (JSONException e){
             e.printStackTrace();
         }

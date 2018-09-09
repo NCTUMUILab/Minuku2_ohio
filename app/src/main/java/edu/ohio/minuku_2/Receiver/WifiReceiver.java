@@ -142,59 +142,69 @@ public class WifiReceiver extends BroadcastReceiver {
     private void uploadData(){
 
         //dump only can be sent when wifi is connected
-            long lastSentStarttime = sharedPrefs.getLong("lastSentStarttime", 0);
+        long lastSentStarttime = sharedPrefs.getLong("lastSentStarttime", 0);
 
-            if(lastSentStarttime == 0){
+        if(lastSentStarttime == 0){
 
-                //if it doesn't response the setting with initialize ones
-                //initialize
-                long startstartTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,0));
-                startTime = sharedPrefs.getLong("StartTime", startstartTime); //default
-                Log.d(TAG, "[show data response] current iteration startTime : " + ScheduleAndSampleManager.getTimeString(startTime));
+            //if it doesn't response the setting with initialize ones
+            //initialize
+            long startstartTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,0));
+            startTime = sharedPrefs.getLong("StartTime", startstartTime); //default
+            Log.d(TAG, "[show data response] current iteration startTime : " + ScheduleAndSampleManager.getTimeString(startTime));
 
-                //initialize
-                long startendTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour+1,0));
-                endTime = sharedPrefs.getLong("EndTime", startendTime);
-                Log.d(TAG, "[show data response] current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
+            //initialize
+            long startendTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour+1,0));
+            endTime = sharedPrefs.getLong("EndTime", startendTime);
+            Log.d(TAG, "[show data response] current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
 
-            }else{
+        }else{
 
-                //if it do reponse the setting with initialize ones
-                startTime = Long.valueOf(lastSentStarttime);
-                Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration startTime : " + ScheduleAndSampleManager.getTimeString(startTime));
+            //if it do reponse the setting with initialize ones
+            startTime = Long.valueOf(lastSentStarttime);
+            Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration startTime : " + ScheduleAndSampleManager.getTimeString(startTime));
 
-                long nextinterval = Constants.MILLISECONDS_PER_HOUR; //1 hr
+            long nextinterval = Constants.MILLISECONDS_PER_HOUR;
 
-                endTime = Long.valueOf(lastSentStarttime) + nextinterval;
-                Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
-            }
+            endTime = Long.valueOf(lastSentStarttime) + nextinterval;
+            Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
+        }
 
-            nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
+//            nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
 
 //            nowTime = new Date().getTime(); //TODO for testing
-            Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
 
-            while(nowTime > endTime) {
+        setNowTime();
 
-                sendingDumpData();
-            }
+        Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
 
-            // Trip, SurveyLink detail
+        while(nowTime > endTime) {
 
-            sendingTripData(nowTime);
+            Log.d(TAG,"before send dump data NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
 
-            sendingSurveyLinkData();
+            Log.d(TAG,"before send dump data EndTimeString : " + ScheduleAndSampleManager.getTimeString(endTime));
+
+            sendingDumpData();
+
+            //TODO update nowTime
+            setNowTime();
+        }
+
+        // Trip, SurveyLink detail
+
+        sendingTripData(nowTime);
+
+        sendingSurveyLinkData();
 
 
-            long lastCheckInTime = sharedPrefs.getLong("lastCheckInTime", Constants.INVALID_IN_LONG);
+        long lastCheckInTime = sharedPrefs.getLong("lastCheckInTime", Constants.INVALID_IN_LONG);
 
-            //isAlive or checkin
+        //isAlive or checkin
 
-            if(ScheduleAndSampleManager.getCurrentTimeInMillis() - lastCheckInTime >= Constants.MILLISECONDS_PER_HOUR * 3){
+        if(ScheduleAndSampleManager.getCurrentTimeInMillis() - lastCheckInTime >= Constants.MILLISECONDS_PER_HOUR * 3){
 
-                //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
-                sendingUserInform();
-            }
+            //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
+            sendingUserInform();
+        }
 
     }
 
@@ -718,7 +728,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
             if(data.getString("d").equals("-1")){
 
-                throw new JSONException("no correct survey day");
+                Log.d(TAG, "[show data response] not a correct survey day");
+
+                throw new JSONException("not a correct survey day");
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -751,6 +763,9 @@ public class WifiReceiver extends BroadcastReceiver {
                 //we get the time unit is second; thus, we have to convert into millis
                 latestUpdatedTime = fromServer * Constants.MILLISECONDS_PER_SECOND;
 
+                Log.d(TAG, "[show data response] next iteration latestUpdatedTime : " + latestUpdatedTime);
+                Log.d(TAG, "[show data response] next iteration latestUpdatedTimeString : " + ScheduleAndSampleManager.getTimeString(latestUpdatedTime));
+
                 //setting nextime interval
                 //improve it to get the value from the server
                 startTime = latestUpdatedTime;
@@ -761,7 +776,10 @@ public class WifiReceiver extends BroadcastReceiver {
                 //Log.d(TAG,"latestUpdatedTime + 1 hour : " + latestUpdatedTime + nextinterval);
 
                 Log.d(TAG, "[show data response] next iteration startTime : " + startTime);
+                Log.d(TAG, "[show data response] next iteration startTimeString : " + ScheduleAndSampleManager.getTimeString(startTime));
+
                 Log.d(TAG, "[show data response] next iteration endTime : " + endTime);
+                Log.d(TAG, "[show data response] next iteration endTimeString : " + ScheduleAndSampleManager.getTimeString(endTime));
 
                 //update the last data's startTime.
                 sharedPrefs.edit().putLong("lastSentStarttime", startTime).apply();
@@ -770,6 +788,13 @@ public class WifiReceiver extends BroadcastReceiver {
         } catch (ExecutionException e) {
         } catch (JSONException e){
         }
+    }
+
+    private void setNowTime(){
+
+//        nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
+
+        nowTime = new Date().getTime(); //TODO for testing
     }
 
     //use HTTPAsyncTask to poHttpAsyncPostJsonTaskst data
@@ -1046,8 +1071,6 @@ public class WifiReceiver extends BroadcastReceiver {
             CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "Location");
             CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
         }
-
-        Log.d(TAG,"With Location data : "+ data.toString());
 
     }
 
