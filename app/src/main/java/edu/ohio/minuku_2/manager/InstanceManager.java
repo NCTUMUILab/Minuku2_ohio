@@ -110,7 +110,6 @@ public class InstanceManager {
 
         DBHelper dBHelper = new DBHelper(getApplicationContext());
 
-
         FileHelper fileHelper = new FileHelper(getApplicationContext());
 
         MinukuDAOManager daoManager = MinukuDAOManager.getInstance();

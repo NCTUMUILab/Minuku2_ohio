@@ -792,9 +792,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private void setNowTime(){
 
-//        nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
+        nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
 
-        nowTime = new Date().getTime(); //TODO for testing
+//        nowTime = new Date().getTime(); //TODO for testing
     }
 
     //use HTTPAsyncTask to poHttpAsyncPostJsonTaskst data

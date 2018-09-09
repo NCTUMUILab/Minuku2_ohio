@@ -549,19 +549,9 @@ public class MainActivity extends AppCompatActivity {
 
 //            Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
 
-            //TODO make sure the survey day is corresponding to the correct survey date
-            SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
-            String surveyDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
-
-            DBHelper.insertSurveyDayWithDateTable(Config.daysInSurvey, surveyDate);
-
         }catch (JSONException e){
             e.printStackTrace();
         }
-
-        //for testing the over date of the research
-//        Constants.daysInSurvey = 15;
-//        sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
 
     }
 
