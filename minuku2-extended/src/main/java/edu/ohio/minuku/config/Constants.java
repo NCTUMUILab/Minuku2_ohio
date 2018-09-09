@@ -22,8 +22,6 @@
 
 package edu.ohio.minuku.config;
 
-import edu.ohio.minuku.BuildConfig;
-
 /**
  * Created by shriti on 7/17/16.
  */
@@ -107,59 +105,13 @@ public class Constants {
 
     public static final String CHECK_SERVICE_ACTION = "checkService";
 
-    // Firebase config
-    public static final String FIREBASE_URL = BuildConfig.UNIQUE_FIREBASE_ROOT_URL;
-    public static final String FIREBASE_URL_USERS = FIREBASE_URL + "/users";
-    public static final String FIREBASE_URL_MOODS = FIREBASE_URL + "/moods";
-    public static final String FIREBASE_URL_NOTES = FIREBASE_URL + "/notes";
-    public static final String FIREBASE_URL_NOTIFICATIONS = FIREBASE_URL + "/notifications";
-    public static final String FIREBASE_URL_IMAGES = FIREBASE_URL + "/photos";
-    public static final String FIREBASE_URL_LOCATION = FIREBASE_URL + "/location";
-    public static final String FIREBASE_URL_SEMANTIC_LOCATION = FIREBASE_URL + "/semantic_location";
-    public static final String FIREBASE_URL_QUESTIONS = FIREBASE_URL + "/questions";
-    public static final String FIREBASE_URL_MCQ = FIREBASE_URL_QUESTIONS + "/mcq";
-    public static final String FIREBASE_URL_FREE_RESPONSE = FIREBASE_URL_QUESTIONS + "/freeresponse";
-    public static final String FIREBASE_URL_USER_SUBMISSION_STATS = FIREBASE_URL + "/submissionstats";
-    public static final String FIREBASE_URL_DIABETESLOG = FIREBASE_URL + "/diabetes_log";
-    public static final String FIREBASE_URL_EOD_QUESTION_ANSWER = FIREBASE_URL + "/EOD_question_answer";
-    public static final String FIREBASE_URL_TAG = FIREBASE_URL + "/tags";
-    public static final String FIREBASE_URL_TAG_RECENT = FIREBASE_URL + "/recent_tags";
-    public static final String FIREBASE_URL_TIMELINE_PATCH = FIREBASE_URL + "/eod_timeline_notes";
-    public static final String FIREBASE_URL_MISSED_REPORT_PROMPT_QNA = FIREBASE_URL + "/missed_report_prompt_QnA";
-    public static final String FIREBASE_URL_DIARYSCREENSHOT = FIREBASE_URL + "/diary_screenshot";
-
-
-    public static final long INVALID_TIME_VALUE = -1;
-
     public static final String CONNECTIVITY_CHANGE = "CONNECTIVITY_CHANGE";
-
-    public static final String connectedToWifi = "connectedToWifi";
-
 
     // Prompt service related constants
     public static final long PROMPT_SERVICE_REPEAT_MILLISECONDS = MILLISECONDS_PER_MINUTE * 30;
     public static final int STREAM_UPDATE_DELAY = 10;
     public static final int STREAM_UPDATE_FREQUENCY = 10;
     public static final int STREAM_UPDATE_THREAD_SIZE = 1;
-    //changing from 50 mins to 15 mins, users were getting it close to bedtime
-    public static final int DIARY_NOTIFICATION_SERVICE_REPEAT_MILLISECONDS = 15 * 60 * 1000; //15 minutes
-
-
-    // Notification related constants
-    public static final String CAN_SHOW_NOTIFICATION = "ENABLE_NOTIFICATIONS";
-
-    public static final String MOOD_REMINDER_TITLE = "How are you feeling right now?";
-    public static final String MOOD_REMINDER_MESSAGE = "Tap here to report your mood.";
-
-    public static final String MOOD_ANNOTATION_TITLE = "Tell us more about your mood";
-    public static final String MOOD_ANNOTATION_MESSAGE = "Tap here answer a quick question.";
-
-    public static final String MISSED_ACTIVITY_DATA_PROMPT_TITLE = "We want to hear from you!";
-    public static final String MISSED_ACTIVITY_DATA_PROMPT_MESSAGE = "Tap here to answer some questions.";
-
-    public static final String EOD_DIARY_PROMPT_TITLE = "Diary entry";
-    public static final String EOD_DIARY_PROMPT_MESSAGE = "Tap here to complete today's diary.";
-
 
     //default queue size
     public static final int DEFAULT_QUEUE_SIZE = 20;
@@ -167,38 +119,39 @@ public class Constants {
     //specific queue sizes
     public static final int LOCATION_QUEUE_SIZE = 50;
 
+
     public static final String APP_NAME = "DMS";
     public static final String APP_FULL_NAME = "Daily Mobility Study";
-    public static final String RUNNING_APP_DECLARATION = APP_NAME + " is running in the background";
+
+    public static final String NOTIFICATION_TEXT_DAY_0 = "Part B begins tomorrow and lasts 2 weeks.";
+    public static final String NOTIFICATION_TEXT_SLEEPTIME = "Please select your sleep period.";
+    public static final String NOTIFICATION_TEXT_LOCATION = "Please check your location permission.";
+    public static final String NOTIFICATION_TEXT_APPUSAGE = "Please check your usage access permission.";
+    public static final String NOTIFICATION_TEXT_NEW_TRIP = " New Trip";
+    public static final String NOTIFICATION_TEXT_NEW_TRIPS = " New Trips";
+    public static final String NOTIFICATION_TEXT_AFTER_FINAL_DAY = "Connect your phone to WiFi to complete Part B.";
+
+
     public static final long INTERNAL_LOCATION_UPDATE_FREQUENCY = 1 * 10 * 1000; // 1 * 300 * 1000
 
-    /* from NCTU */
     public static final String NOT_A_NUMBER = "NA";
-    public static final long initLong = -999;
+
+    public static final long INVALID_IN_LONG = -999;
 
     public static final String SURVEY_INCOMPLETE_FLAG = "0";
     public static final String SURVEY_COMPLETE_FLAG = "1";
     public static final String SURVEY_ERROR_FLAG = "2";
 
-    public static final String TEXT_SURVEY_INCOMPLETE = "incomplete";
-    public static final String TEXT_SURVEY_COMPLETE = "complete";
-    public static final String TEXT_SURVEY_ERROR = "error";
+    public static final String TEXT_TO_SERVER_SURVEY_INCOMPLETE = "incomplete";
+    public static final String TEXT_TO_SERVER_SURVEY_COMPLETE = "complete";
+    public static final String TEXT_TO_SERVER_SURVEY_ERROR = "error";
 
-    public static String DEVICE_ID = "NA";
-    public static String USER_ID = "N";
-    public static String GROUP_NUM = "A";
-    public static String Email = "";
+    public static final int FINALDAY = 3; //real: 14, test: 3
 
-    public static int downloadedDayInSurvey = 0;
-    public static int daysInSurvey = -1;
-    public static int finalday = 7; //real: 14, test: 3
-    public static long midnightstart = -999;
-
-    public static String checkInUrl = "http://mcog.asc.ohio-state.edu/apps/servicerec?";
+    public static final String CHECK_IN_URL = "http://mcog.asc.ohio-state.edu/apps/servicerec?";
     public static final String FINAL_SURVEY_URL = "https://osu.az1.qualtrics.com/jfe/form/SV_2bPukwuNSojU4Sx";
 
-    public static String Interval_Sample = "Interval_Sample";
-    public static String Setting_Interval_Sample = "Setting_Interval_Sample";
+    public static final String INTERVAL_SAMPLE = "INTERVAL_SAMPLE";
 
     public static final String ACTIVITY_CONFIDENCE_CONNECTOR = ":";
 

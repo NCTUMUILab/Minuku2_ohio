@@ -16,6 +16,7 @@ import java.util.TimeZone;
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.Utilities.Utilities;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.AnnotationSet;
@@ -376,7 +377,7 @@ public class MinukuStreamManager implements StreamManager {
                     session.addAnnotation(annotation);
                     session.setIsSent(Constants.SESSION_SHOULDNT_BEEN_SENT_FLAG);
                     session.setIsCombined(Constants.SESSION_NEVER_GET_COMBINED_FLAG);
-                    session.setSurveyDay(Constants.daysInSurvey);
+                    session.setSurveyDay(Config.daysInSurvey);
 
                     int periodNum = Utilities.getPeriodNum(ScheduleAndSampleManager.getCurrentTimeInMillis(), sharedPrefs);
 

@@ -10,9 +10,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.javatuples.Ennead;
 import org.javatuples.Octet;
@@ -56,6 +54,7 @@ import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.Utilities.TupleHelper;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.SessionManager;
@@ -71,13 +70,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private final String TAG = "WifiReceiver";
 
-    private Handler mMainThread;
-    private Handler UserInformThread;
-
     private SharedPreferences sharedPrefs;
-
-    private Runnable runnable = null;
-    private Runnable UserInformRunnable = null;
 
     private int year,month,day,hour,min;
     private int lastDay;
@@ -90,25 +83,14 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v22";
+    private String versionNumber = "v23";
 
     public static final int HTTP_TIMEOUT = 10000;
     public static final int SOCKET_TIMEOUT = 20000;
 
-    private static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
-
     private static final String postTripUrl = "http://mcog.asc.ohio-state.edu/apps/tripdump/";
     private static final String postDumpUrl = "http://mcog.asc.ohio-state.edu/apps/devicedump/";
     private static final String postSurveyLinkUrl = "http://mcog.asc.ohio-state.edu/apps/surveydump/";
-
-    public static int mainThreadUpdateFrequencyInSeconds = 10;
-    public static int mainThreadUpdateFrequencyInMin = 3;
-
-    public static int sendingUserInformThreadUpdateFrequencyInSeconds = 3;
-
-    public static long mainThreadUpdateFrequencyInMilliseconds = mainThreadUpdateFrequencyInMin * Constants.MILLISECONDS_PER_MINUTE;
-    public static long sendingUserInformThreadUpdateFrequencyInMilliseconds
-            = sendingUserInformThreadUpdateFrequencyInSeconds * Constants.MILLISECONDS_PER_HOUR;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -136,9 +118,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
         lastDay = sharedPrefs.getInt("lastDay", day);
 
-        Constants.USER_ID = sharedPrefs.getString("userid","NA");
-        Constants.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
-        Constants.Email = sharedPrefs.getString("Email", "NA");
+        Config.USER_ID = sharedPrefs.getString("userid","NA");
+        Config.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
+        Config.Email = sharedPrefs.getString("Email", "NA");
 
         hour = sharedPrefs.getInt("StartHour", mHour);
         min = sharedPrefs.getInt("StartMin",0);
@@ -147,104 +129,15 @@ public class WifiReceiver extends BroadcastReceiver {
 
         if (Constants.CONNECTIVITY_CHANGE.equals(intent.getAction())) {
 
-//            Log.d(TAG, "onReceive, "+intent.getAction().toString());
-//
-//            String message = intent.getExtras().get("message").toString();
-
-
-//            Log.d(TAG, "onReceive, "+Constants.CONNECTIVITY_CHANGE + " : " + message);
-//
-//            CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, Constants.CONNECTIVITY_CHANGE + " : " + message);
-
-//            Log.d(TAG, "onReceive, "+"IsWifiConnected : " + ConnectivityStreamGenerator.mIsWifiConnected);
-//
-//            CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, "IsWifiConnected : " + ConnectivityStreamGenerator.mIsWifiConnected);
-//
-//            Log.d(TAG, "onReceive, "+"IsMobileConnected : " + ConnectivityStreamGenerator.mIsMobileConnected);
-//
-//            CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, "IsMobileConnected : " + ConnectivityStreamGenerator.mIsMobileConnected);
-
-//            int d = getSurveyDayByTime(ScheduleAndSampleManager.getCurrentTimeInMillis());
-//
-//            Log.d(TAG, "[show data response] onReceive, Dump survey day : " + d);
-
-
-
-            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-
-                Log.d(TAG, "connected to wifi");
-
-                CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, Constants.connectedToWifi);
-
-                Toast.makeText(context, Constants.connectedToWifi, Toast.LENGTH_LONG).show();
+            //activeNetwork may return null if there's no default Internet
+            if (activeNetwork != null &&
+                    activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
 
                 uploadData();
             }
         }
 
-        //TODO might deprecated, keep it for testing
-        /*if (activeNetwork != null) {
-            // connected to the internet
-            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-                // connected to wifi
-//                //Log.d(TAG,"Wifi activeNetwork");
-
-//                //Log.d(TAG, "checking is there a runnable running");
-
-                if(runnable==null) {
-
-//                    //Log.d(TAG, "there is no runnable running yet.");
-
-                    MakingJsonDataMainThread();
-//                    SendingUserInformThread();
-                }
-            } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
-                // connected to the mobile provider's data plan
-//                //Log.d(TAG, "MOBILE activeNetwork");
-
-//                //Log.d(TAG, "checking is there a runnable running");
-
-                if(runnable==null){
-
-//                    //Log.d(TAG, "there is no runnable running yet.");
-
-                    MakingJsonDataMainThread();
-//                    SendingUserInformThread();
-                }
-            }
-        } else {
-            // not connected to the internet
-//            //Log.d(TAG, "no Network" ) ;
-            if(runnable!=null) {
-
-            }
-        }*/
-
     }
-
-    /*public void SendingUserInformThread(){
-
-        UserInformThread = new Handler();
-
-        UserInformRunnable = new Runnable() {
-
-            @Override
-            public void run() {
-
-                //isAlive
-                if(ConnectivityStreamGenerator.mIsWifiConnected || ConnectivityStreamGenerator.mIsMobileConnected) {
-
-                    //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
-                    sendingUserInform();
-                }
-
-                UserInformThread.postDelayed(this, sendingUserInformThreadUpdateFrequencyInMilliseconds);
-
-            }
-        };
-
-        UserInformThread.post(UserInformRunnable);
-    }*/
 
     private void uploadData(){
 
@@ -281,104 +174,34 @@ public class WifiReceiver extends BroadcastReceiver {
 //            nowTime = new Date().getTime(); //TODO for testing
             Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
 
-//            if(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected)
-            while(nowTime > endTime
-//                    && ConnectivityStreamGenerator.mIsWifiConnected
-                    ) {
+            while(nowTime > endTime) {
 
                 sendingDumpData();
             }
 
             // Trip, SurveyLink detail
-//            if(ConnectivityStreamGenerator.mIsWifiConnected){
 
-                sendingTripData(nowTime);
+            sendingTripData(nowTime);
 
-                sendingSurveyLinkData();
-//            }
+            sendingSurveyLinkData();
 
-            long lastCheckInTime = sharedPrefs.getLong("lastCheckInTime", Constants.initLong);
+
+            long lastCheckInTime = sharedPrefs.getLong("lastCheckInTime", Constants.INVALID_IN_LONG);
 
             //isAlive or checkin
-//            if(ConnectivityStreamGenerator.mIsWifiConnected || ConnectivityStreamGenerator.mIsMobileConnected) {
 
-                if(ScheduleAndSampleManager.getCurrentTimeInMillis() - lastCheckInTime >= Constants.MILLISECONDS_PER_HOUR * 3){
+            if(ScheduleAndSampleManager.getCurrentTimeInMillis() - lastCheckInTime >= Constants.MILLISECONDS_PER_HOUR * 3){
 
-                    //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
-                    sendingUserInform();
-                }
-//            }
-    }
-
-    /*public void MakingJsonDataMainThread(){
-
-        mMainThread = new Handler();
-
-        runnable = new Runnable() {
-
-            @Override
-            public void run() {
-
-                //dump only can be sent when wifi is connected
-                if(ConnectivityStreamGenerator.mIsWifiConnected){
-
-                    long lastSentStarttime = sharedPrefs.getLong("lastSentStarttime", 0);
-
-                    if(lastSentStarttime == 0){
-
-                        //if it doesn't response the setting with initialize ones
-                        //initialize
-                        long startstartTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour,0));
-                        startTime = sharedPrefs.getLong("StartTime", startstartTime); //default
-                        Log.d(TAG, "[show data response] current iteration startTime : " + ScheduleAndSampleManager.getTimeString(startTime));
-
-                        //initialize
-                        long startendTime = getSpecialTimeInMillis(makingDataFormat(year,month,day,hour+1,0));
-                        endTime = sharedPrefs.getLong("EndTime", startendTime);
-                        Log.d(TAG, "[show data response] current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
-
-                    }else{
-
-                        //if it do reponse the setting with initialize ones
-                        startTime = Long.valueOf(lastSentStarttime);
-                        Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration startTime : " + ScheduleAndSampleManager.getTimeString(startTime));
-
-                        long nextinterval = Constants.MILLISECONDS_PER_HOUR; //1 hr
-
-                        endTime = Long.valueOf(lastSentStarttime) + nextinterval;
-                        Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
-                    }
-
-//                    nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
-                    //for testing
-                    nowTime = new Date().getTime();
-                    Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
-
-                    if(nowTime > endTime && ConnectivityStreamGenerator.mIsWifiConnected == true) {
-
-                        sendingDumpData();
-                    }
-
-                    // Trip, isAlive
-                    if(ConnectivityStreamGenerator.mIsWifiConnected){
-
-                        sendingTripData(nowTime);
-
-                        sendingSurveyLinkData();
-                    }
-                }
-
-                mMainThread.postDelayed(this, mainThreadUpdateFrequencyInMilliseconds);
+                //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
+                sendingUserInform();
             }
-        };
 
-        mMainThread.post(runnable);
-    }*/
+    }
 
     //the replacement function of IsAlive
     private void sendingUserInform(){
 
-        if(Constants.DEVICE_ID.equals("NA")){
+        if(Config.DEVICE_ID.equals("NA")){
             return;
         }
 
@@ -387,8 +210,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
         int androidVersion = Build.VERSION.SDK_INT;
 
-        String link = Constants.checkInUrl + "deviceid=" + Constants.DEVICE_ID + "&email=" + Constants.Email
-                +"&userid="+Constants.USER_ID+"&android_ver="+androidVersion
+        String link = Constants.CHECK_IN_URL + "deviceid=" + Config.DEVICE_ID + "&email=" + Config.Email
+                +"&userid="+ Config.USER_ID+"&android_ver="+androidVersion
                 +"&Manufacturer="+Build.MANUFACTURER+"&Model="+Build.MODEL+"&Product="+Build.PRODUCT;
         String userInformInString;
         JSONObject userInform = null;
@@ -508,9 +331,9 @@ public class WifiReceiver extends BroadcastReceiver {
                 try {
 
                     //adding the id and group number
-                    annotatedtripdata.put("userid", Constants.USER_ID);
-                    annotatedtripdata.put("group_number", Constants.GROUP_NUM);
-                    annotatedtripdata.put("device_id", Constants.DEVICE_ID);
+                    annotatedtripdata.put("userid", Config.USER_ID);
+                    annotatedtripdata.put("group_number", Config.GROUP_NUM);
+                    annotatedtripdata.put("device_id", Config.DEVICE_ID);
                     annotatedtripdata.put("version", versionNumber);
                     annotatedtripdata.put("android_ver", Build.VERSION.SDK_INT);
                     annotatedtripdata.put("build", getBuildInform());
@@ -626,16 +449,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public void sendingSurveyLinkData(){
 
-//        int latestSurveyLinkIdFromServer = sharedPrefs.getInt("latestSurveyLinkIdFromServer", 1);
-
-//        Log.d(TAG, "[check query] latestSurveyLinkIdFromServer : "+ latestSurveyLinkIdFromServer);
-
         long timeOfData = -999;
 
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
-//        Cursor surveyCursor = db.rawQuery("SELECT * FROM "+DBHelper.surveyLink_table +
-//                " WHERE " + DBHelper.id + " = " + latestSurveyLinkIdFromServer + " and " +
-//                DBHelper.openFlag_col + " <> -1", null);
 
         Cursor surveyCursor = db.rawQuery("SELECT * FROM "+DBHelper.surveyLink_table +
                 " WHERE " + DBHelper.sentOrNot_col + " <> "+Constants.SURVEYLINK_IS_ALREADY_SENT_FLAG, null);
@@ -676,9 +492,9 @@ public class WifiReceiver extends BroadcastReceiver {
                     //convert into second
                     String timestampInSec = timestamp.substring(0, timestamp.length() - 3);
 
-                    surveyJson.put("userid", Constants.USER_ID);
-                    surveyJson.put("group_number", Constants.GROUP_NUM);
-                    surveyJson.put("device_id", Constants.DEVICE_ID);
+                    surveyJson.put("userid", Config.USER_ID);
+                    surveyJson.put("group_number", Config.GROUP_NUM);
+                    surveyJson.put("device_id", Config.DEVICE_ID);
                     surveyJson.put("version", versionNumber);
                     surveyJson.put("dataType", "SurveyLink");
                     surveyJson.put("android_ver", Build.VERSION.SDK_INT);
@@ -701,13 +517,13 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     if(completeType.equals(Constants.SURVEY_INCOMPLETE_FLAG)){
 
-                        completeType = Constants.TEXT_SURVEY_INCOMPLETE;
+                        completeType = Constants.TEXT_TO_SERVER_SURVEY_INCOMPLETE;
                     }else if(completeType.equals(Constants.SURVEY_COMPLETE_FLAG)){
 
-                        completeType = Constants.TEXT_SURVEY_COMPLETE;
+                        completeType = Constants.TEXT_TO_SERVER_SURVEY_COMPLETE;
                     }else if(completeType.equals(Constants.SURVEY_ERROR_FLAG)){
 
-                        completeType = Constants.TEXT_SURVEY_ERROR;
+                        completeType = Constants.TEXT_TO_SERVER_SURVEY_ERROR;
                     }
 
                     //clickornot
@@ -757,7 +573,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                         long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
 
-//                CSVHelper.dataUploadingCSV("Survey Link", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
+//                        CSVHelper.dataUploadingCSV("Survey Link", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
 
                         Log.d(TAG, "[check query] going to change the latest id");
 
@@ -772,12 +588,6 @@ public class WifiReceiver extends BroadcastReceiver {
                             String id = surveyCursor.getString(DBHelper.COL_INDEX_ID);
 
                             DBHelper.updateSurveyToAlreadyBeenSent(Integer.valueOf(id));
-
-//                    latestSurveyLinkIdFromServer++;
-//
-//                    Log.d(TAG, "[check query] updated latestSurveyLinkIdFromServer "+ latestSurveyLinkIdFromServer);
-//
-//                    sharedPrefs.edit().putInt("latestSurveyLinkIdFromServer", latestSurveyLinkIdFromServer).apply();
                         }
 
                         surveyCursor.moveToNext();
@@ -843,10 +653,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
         try {
 
-            data.put("userid", Constants.USER_ID);
-            data.put("group_number", Constants.GROUP_NUM);
-            data.put("device_id", Constants.DEVICE_ID);
-            data.put("email", Constants.Email);
+            data.put("userid", Config.USER_ID);
+            data.put("group_number", Config.GROUP_NUM);
+            data.put("device_id", Config.DEVICE_ID);
+            data.put("email", Config.Email);
             data.put("version", versionNumber);
             data.put("dataType", "Dump");
             data.put("android_ver", Build.VERSION.SDK_INT);

@@ -78,6 +78,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
 import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
@@ -121,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
         //for testing the over date of the research
 
-        if(Constants.daysInSurvey > Constants.finalday+1){
+        if(Config.daysInSurvey > Constants.FINALDAY +1){
 
             setContentView(R.layout.homepage_complete);
             Button finalSurvey = (Button) findViewById(R.id.finalSurvey);
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View view) {
-                    String url = Constants.FINAL_SURVEY_URL+"?d="+Constants.daysInSurvey+"&p="+Constants.USER_ID;
+                    String url = Constants.FINAL_SURVEY_URL+"?d="+ Config.daysInSurvey+"&p="+ Config.USER_ID;
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(url));
                     startActivity(intent);
@@ -137,12 +138,12 @@ public class MainActivity extends AppCompatActivity {
             });
 
             user_id = (TextView) findViewById(R.id.userid);
-            Constants.USER_ID = sharedPrefs.getString("userid","NA");
+            Config.USER_ID = sharedPrefs.getString("userid","NA");
             user_id.setText("Confirmation #:" );
 
             num_6_digit = (TextView) findViewById(R.id.group_num);
-            Constants.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
-            num_6_digit.setText(Constants.USER_ID);
+            Config.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
+            num_6_digit.setText(Config.USER_ID);
         } else {
 
             settingHomepageView();
@@ -246,31 +247,31 @@ public class MainActivity extends AppCompatActivity {
 
         firstTimeToShowDialogOrNot = sharedPrefs.getBoolean("firstTimeToShowDialogOrNot", true);
 
-        Constants.USER_ID = sharedPrefs.getString("userid", "NA");
+        Config.USER_ID = sharedPrefs.getString("userid", "NA");
 
         if (firstTimeToShowDialogOrNot) {
 
             createShortCut(); //on home Screen Desktop
             showdialogforuser();
-        } else if (Constants.USER_ID.equals("NA")) {
+        } else if (Config.USER_ID.equals("NA")) {
 
             showdialogforuser();
         }
 
         user_id = (TextView) findViewById(R.id.userid);
-        Constants.USER_ID = sharedPrefs.getString("userid", "NA");
+        Config.USER_ID = sharedPrefs.getString("userid", "NA");
         user_id.setText("Confirmation #:");
 
         num_6_digit = (TextView) findViewById(R.id.group_num);
-        Constants.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
-        num_6_digit.setText(Constants.USER_ID);
+        Config.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
+        num_6_digit.setText(Config.USER_ID);
 
-        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", 0);
+        Config.daysInSurvey = sharedPrefs.getInt("daysInSurvey", 0);
 
         //button
         tolinkList = (Button) findViewById(R.id.linkList);
 
-        if (Constants.daysInSurvey > Constants.finalday) {
+        if (Config.daysInSurvey > Constants.FINALDAY) {
 
             tolinkList.setText("Final Survey");
             tolinkList.setOnClickListener(new Button.OnClickListener() {
@@ -280,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
 
                     DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to Survey Page");
 
-                    String url = Constants.FINAL_SURVEY_URL+"?d="+Constants.daysInSurvey+"&p="+Constants.USER_ID;
+                    String url = Constants.FINAL_SURVEY_URL+"?d="+ Config.daysInSurvey+"&p="+ Config.USER_ID;
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(url));
                     startActivity(intent);
@@ -437,15 +438,15 @@ public class MainActivity extends AppCompatActivity {
                         else {
 
                             sharedPrefs.edit().putString("userid", inputID).apply();
-                            Constants.USER_ID = sharedPrefs.getString("userid", "NA");
+                            Config.USER_ID = sharedPrefs.getString("userid", "NA");
                             user_id.setText("Confirmation #");
 
                             sharedPrefs.edit().putString("groupNum", inputID.substring(0, 1)).apply();
-                            Constants.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
-                            num_6_digit.setText(Constants.USER_ID);
+                            Config.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
+                            num_6_digit.setText(Config.USER_ID);
 
                             sharedPrefs.edit().putString("Email",inputEmail).apply();
-                            Constants.Email = sharedPrefs.getString("Email", "NA");
+                            Config.Email = sharedPrefs.getString("Email", "NA");
 
                             startSettingSleepingTime(); //the appearing order is reversed from the code.
 
@@ -483,7 +484,7 @@ public class MainActivity extends AppCompatActivity {
 
 //       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=333333
 //      deviceid=375996574474999&email=none@nobody.com&userid=3333333
-        String link = Constants.checkInUrl + "deviceid=" + Constants.DEVICE_ID + "&email=" + Constants.Email+"&userid="+Constants.USER_ID;
+        String link = Constants.CHECK_IN_URL + "deviceid=" + Config.DEVICE_ID + "&email=" + Config.Email+"&userid="+ Config.USER_ID;
         String userInformInString = null;
         JSONObject userInform = null;
 
@@ -542,9 +543,9 @@ public class MainActivity extends AppCompatActivity {
 
         try{
 
-            Constants.daysInSurvey = userInform.getInt("daysinsurvey");
+            Config.daysInSurvey = userInform.getInt("daysinsurvey");
 
-            sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
+            sharedPrefs.edit().putInt("daysInSurvey", Config.daysInSurvey).apply();
 
 //            Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
         }catch (JSONException e){
@@ -561,17 +562,17 @@ public class MainActivity extends AppCompatActivity {
 
         try{
 
-            Constants.downloadedDayInSurvey = userInform.getInt("daysinsurvey");
+            Config.downloadedDayInSurvey = userInform.getInt("daysinsurvey");
 
             //set the origin state "-1" to day 0
-            if(Constants.downloadedDayInSurvey == -1){
+            if(Config.downloadedDayInSurvey == -1){
 
-                Constants.downloadedDayInSurvey = 0;
+                Config.downloadedDayInSurvey = 0;
             }
 
-            sharedPrefs.edit().putInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey).apply();
+            sharedPrefs.edit().putInt("downloadedDayInSurvey", Config.downloadedDayInSurvey).apply();
 
-            Log.d(TAG, "downloadedDayInSurvey : "+ Constants.downloadedDayInSurvey);
+            Log.d(TAG, "downloadedDayInSurvey : "+ Config.downloadedDayInSurvey);
         }catch (JSONException e){
             e.printStackTrace();
         }
@@ -603,9 +604,9 @@ public class MainActivity extends AppCompatActivity {
 
             long firstresearchday = ScheduleAndSampleManager.getTimeInMillis(firstresearchdate,sdf_now);
 
-            Constants.midnightstart = firstresearchday;
+            Config.midnightstart = firstresearchday;
 
-            sharedPrefs.edit().putLong("midnightstart", Constants.midnightstart).apply();
+            sharedPrefs.edit().putLong("midnightstart", Config.midnightstart).apply();
 
 //            Log.d(TAG, "midnightstart : "+ Constants.midnightstart);
 
@@ -775,9 +776,9 @@ public class MainActivity extends AppCompatActivity {
         TelephonyManager mngr = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
         int permissionStatus= ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE);
         if(permissionStatus==PackageManager.PERMISSION_GRANTED){
-            Constants.DEVICE_ID = mngr.getDeviceId();
+            Config.DEVICE_ID = mngr.getDeviceId();
 
-            Log.e(TAG,"DEVICE_ID"+Constants.DEVICE_ID+" : "+mngr.getDeviceId());
+            Log.e(TAG,"DEVICE_ID"+ Config.DEVICE_ID+" : "+mngr.getDeviceId());
         }
     }
 

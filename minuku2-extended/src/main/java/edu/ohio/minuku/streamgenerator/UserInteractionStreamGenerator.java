@@ -25,7 +25,9 @@ import edu.ohio.minukucore.stream.Stream;
  */
 
 public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserInteractionDataRecord> {
+
     private String TAG = "UserInteractionStreamGenerator";
+
     private UserInteractionStream mStream;
     private UserInteractionDataRecordDAO mDAO;
 
@@ -34,8 +36,6 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
 
     private String present = STRING_FALSE;
     private String unlock = STRING_FALSE;
-    private String background = STRING_FALSE;
-    private String foreground = STRING_FALSE;
 
     public UserInteractionStreamGenerator (Context applicationContext) {
 
@@ -69,11 +69,12 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
 
         Log.e(TAG, "Update stream called.");
 
-        UserInteractionDataRecord userInteractionDataRecord
-                = new UserInteractionDataRecord(present, unlock, background, foreground);
+        UserInteractionDataRecord userInteractionDataRecord = new UserInteractionDataRecord(present, unlock);
+
         mStream.add(userInteractionDataRecord);
+
         Log.d(TAG, "UserInteractionDataRecord to be sent to event bus" + userInteractionDataRecord);
-        // also post an event.
+
         EventBus.getDefault().post(userInteractionDataRecord);
         try {
             mDAO.add(userInteractionDataRecord);
@@ -103,11 +104,9 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_USER_PRESENT);
         intentFilter.addAction(Intent.ACTION_USER_UNLOCKED);
-        intentFilter.addAction(Intent.ACTION_USER_BACKGROUND);
-        intentFilter.addAction(Intent.ACTION_USER_FOREGROUND);
         mApplicationContext.registerReceiver(mBroadcastReceiver, intentFilter);
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_UserInteract, "present", "unlock", "background", "foreground");
+        CSVHelper.storeToCSV(CSVHelper.CSV_UserInteract, "present", "unlock");
 
         Log.d(TAG, "Stream " + TAG + " registered successfully");
 
@@ -120,8 +119,6 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
 
             present = STRING_FALSE;
             unlock = STRING_FALSE;
-            background = STRING_FALSE;
-            foreground = STRING_FALSE;
 
             if (action.equals(Intent.ACTION_USER_PRESENT)) {
 
@@ -133,37 +130,19 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
                 unlock = STRING_TRUE;
             }
 
-            if (action.equals(Intent.ACTION_USER_BACKGROUND)) {
-
-                background = STRING_TRUE;
-            }
-
-            if (action.equals(Intent.ACTION_USER_FOREGROUND)) {
-
-                foreground = STRING_TRUE;
-            }
-
             Log.d(TAG, "present : "+ present);
             Log.d(TAG, "unlock : "+ unlock);
-            Log.d(TAG, "background : "+ background);
-            Log.d(TAG, "foreground : "+ foreground);
 
             boolean userPresent = intent.getAction().equals( Intent.ACTION_USER_PRESENT );
             boolean userUnlock = intent.getAction().equals( Intent.ACTION_USER_UNLOCKED );
-            boolean userSentBackground = intent.getAction().equals( Intent.ACTION_USER_BACKGROUND );
-            boolean userSentForeground = intent.getAction().equals( Intent.ACTION_USER_FOREGROUND );
 
             Log.d(TAG, "userPresent : "+ userPresent);
 
             //TODO no need userUnlock set the value in bootCompleteReceiver
             Log.d(TAG, "userUnlock : "+ userUnlock);
 
-            Log.d(TAG, "userSentBackground : "+ userSentBackground);
-            Log.d(TAG, "userSentForeground : "+ userSentForeground);
-
-//            CSVHelper.storeToCSV(CSVHelper.CSV_UserInteract, present, unlock, background, foreground);
-            CSVHelper.storeToCSV(CSVHelper.CSV_UserInteract, String.valueOf(userPresent), String.valueOf(userUnlock),
-                        String.valueOf(userSentBackground), String.valueOf(userSentForeground));
+            CSVHelper.storeToCSV(CSVHelper.CSV_UserInteract, present, unlock);
+            CSVHelper.storeToCSV(CSVHelper.CSV_UserInteract, String.valueOf(userPresent), String.valueOf(userUnlock));
         }
     };
 

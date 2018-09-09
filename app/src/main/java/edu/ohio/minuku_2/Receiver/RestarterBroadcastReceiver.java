@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 
 import edu.ohio.minuku.config.Constants;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku_2.service.BackgroundService;
 
@@ -19,7 +20,7 @@ public class RestarterBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        boolean isOverFinalDay = (Constants.daysInSurvey > Constants.finalday);
+        boolean isOverFinalDay = (Config.daysInSurvey > Constants.FINALDAY);
 
         if (intent.getAction().equals(Constants.CHECK_SERVICE_ACTION) && !isOverFinalDay) {
 

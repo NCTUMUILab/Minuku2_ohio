@@ -1,7 +1,6 @@
 package edu.ohio.minuku_2.controller;
 
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -24,6 +23,7 @@ import java.util.Date;
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku_2.R;
@@ -38,8 +38,8 @@ public class SurveyActivity extends Activity {
 
     private TextView surveyDayText;
 
-    private Button testButton,
-        survey1_Button, survey2_Button, survey3_Button, survey4_Button, survey5_Button, survey6_Button;
+    private Button survey1_Button, survey2_Button, survey3_Button,
+            survey4_Button, survey5_Button, survey6_Button;
 
     private ArrayList<String> surveyDatas = new ArrayList<>();
     private ArrayList<Integer> linkNums = new ArrayList<>();
@@ -47,13 +47,7 @@ public class SurveyActivity extends Activity {
     private ArrayList<String> buttonState;
     private ArrayList<Button> buttons;
 
-    private int notifyID = 1;
-
-    private int test_notitypeNum = 0;
-
     private SharedPreferences sharedPrefs;
-
-    private NotificationManager mNotificationManager;
 
     private final String TEXT_Unavailable = "Unavailable";
     private final String TEXT_Available = " Available ";/*the space is to padding the border*/
@@ -67,10 +61,10 @@ public class SurveyActivity extends Activity {
 
 //        Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
 
-        if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
+        if(Config.daysInSurvey == 0 || Config.daysInSurvey == -1) {
 
             setContentView(R.layout.surveypage_day0);
-        }else if(Constants.daysInSurvey > Constants.finalday){
+        }else if(Config.daysInSurvey > Constants.FINALDAY){
 
             setContentView(R.layout.surveypage_complete);
         }else {
@@ -82,17 +76,17 @@ public class SurveyActivity extends Activity {
     public void onResume() {
         super.onResume();
 
-        if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
+        if(Config.daysInSurvey == 0 || Config.daysInSurvey == -1) {
 
             setContentView(R.layout.surveypage_day0);
-        }else if(Constants.daysInSurvey > Constants.finalday){
+        }else if(Config.daysInSurvey > Constants.FINALDAY){
 
             setContentView(R.layout.surveypage_complete);
         }else {
             setContentView(R.layout.surveypage);
         }
 
-        if(Constants.daysInSurvey <= Constants.finalday && Constants.daysInSurvey >= 1)
+        if(Config.daysInSurvey <= Constants.FINALDAY && Config.daysInSurvey >= 1)
             initlinkListohio();
     }
 
@@ -121,7 +115,7 @@ public class SurveyActivity extends Activity {
         surveyDatas = DBHelper.querySurveyLinkBetweenTimes(startTime, endTime);
 
         surveyDayText = (TextView) findViewById(R.id.surveyDayView);
-        surveyDayText.setText("Day "+Constants.daysInSurvey+"/"+Constants.finalday);
+        surveyDayText.setText("Day "+ Config.daysInSurvey+"/"+Constants.FINALDAY);
 
 //        Log.d(TAG, "[test mobile triggering] surveyDatas size : "+surveyDatas.size());
 

@@ -17,6 +17,13 @@ public class UserInteractionDataRecord implements DataRecord {
     private String background;
     private String foreground;
 
+    public UserInteractionDataRecord(String present, String unlock){
+        this.creationTime = new Date().getTime();
+
+        this.present = present;
+        this.unlock = unlock;
+    }
+
     public UserInteractionDataRecord(String present, String unlock, String background, String foreground){
         this.creationTime = new Date().getTime();
 

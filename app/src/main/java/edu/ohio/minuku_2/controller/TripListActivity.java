@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Session;
@@ -46,7 +47,7 @@ public class TripListActivity extends Activity {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
-        if(Constants.daysInSurvey == 0|| Constants.daysInSurvey == -1){
+        if(Config.daysInSurvey == 0|| Config.daysInSurvey == -1){
 
             setContentView(R.layout.triplist_day0);
         }else{
@@ -75,7 +76,7 @@ public class TripListActivity extends Activity {
     public void onResume() {
         super.onResume();
 
-        if(Constants.daysInSurvey != 0 && Constants.daysInSurvey != -1) {
+        if(Config.daysInSurvey != 0 && Config.daysInSurvey != -1) {
             initSessionList();
         }
     }
@@ -84,7 +85,7 @@ public class TripListActivity extends Activity {
 
         listview = (ListView)findViewById(R.id.tripList);
 
-        if(Constants.daysInSurvey > Constants.finalday){
+        if(Config.daysInSurvey > Constants.FINALDAY){
 
             TextView emptyView = (TextView) findViewById(R.id.emptyViewText);
             emptyView.setText("All trips completed.");

@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.TransportationModeDAO;
 import edu.ohio.minuku.manager.MinukuDAOManager;
@@ -236,11 +237,11 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
         Log.d(TAG, "TransportationMode to be sent to event bus" + transportationModeDataRecord);
 
 
-        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
-        Constants.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey);
+        Config.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
+        Config.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Config.downloadedDayInSurvey);
 
         //TODO uncomment it when real testing
-        if(Constants.daysInSurvey != 0 && Constants.daysInSurvey != -1 && Constants.daysInSurvey != Constants.downloadedDayInSurvey && Constants.daysInSurvey <= Constants.finalday) {
+        if(Config.daysInSurvey != 0 && Config.daysInSurvey != -1 && Config.daysInSurvey != Config.downloadedDayInSurvey && Config.daysInSurvey <= Constants.FINALDAY) {
 
             MinukuStreamManager.getInstance().setTransportationModeDataRecord(transportationModeDataRecord, sharedPrefs);
         }

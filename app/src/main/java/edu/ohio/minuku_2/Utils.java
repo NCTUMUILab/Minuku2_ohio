@@ -49,6 +49,7 @@ import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku_2.manager.SurveyTriggerManager;
 
 /**
@@ -94,7 +95,7 @@ public class Utils {
         TelephonyManager mngr = (TelephonyManager) context.getSystemService(context.TELEPHONY_SERVICE);
         int permissionStatus= ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE);
         if(permissionStatus== PackageManager.PERMISSION_GRANTED){
-            Constants.DEVICE_ID = mngr.getDeviceId();
+            Config.DEVICE_ID = mngr.getDeviceId();
 
 //            Log.e(TAG,"DEVICE_ID"+Constants.DEVICE_ID+" : "+mngr.getDeviceId());
         }
@@ -139,7 +140,7 @@ public class Utils {
     public static void settingAllDaysIntervalSampling(Context context){
 
         //14 is the total of the research days
-        int countOfDaysInSurvey = 14 - Constants.daysInSurvey;
+        int countOfDaysInSurvey = 14 - Config.daysInSurvey;
         for(int DaysInSurvey = 1; DaysInSurvey <= countOfDaysInSurvey; DaysInSurvey++ ){
 
 //            Log.d(TAG, "[test alarm] DaysInSurvey : "+DaysInSurvey);

@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.MinukuNotificationManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
@@ -146,11 +147,11 @@ public class BackgroundService extends Service {
 
         ongoingNotificationText = sharedPrefs.getString("ongoingNotificationText", "0 New Trips");
 
-        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+        Config.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
 
-        if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1){
+        if(Config.daysInSurvey == 0 || Config.daysInSurvey == -1){
 
-            ongoingNotificationText = "Part B begins tomorrow and lasts 2 weeks.";
+            ongoingNotificationText = Constants.NOTIFICATION_TEXT_DAY_0;
         }
 
         createSurveyNotificationChannel();
@@ -224,7 +225,7 @@ public class BackgroundService extends Service {
                 CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after updateStream");
 
                 //make sure that the device id will not disappear
-                if(Constants.DEVICE_ID.equals("NA")){
+                if(Config.DEVICE_ID.equals("NA")){
 
                     Utils.getDeviceid(BackgroundService.this);
 
@@ -268,7 +269,7 @@ public class BackgroundService extends Service {
                         NotificationManager mNotificationManager =
                                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-                        String notificationText = "Please select your sleep period.";
+                        String notificationText = Constants.NOTIFICATION_TEXT_SLEEPTIME;
 
                         Notification notification = getSleepNotification(notificationText);
 
@@ -287,7 +288,7 @@ public class BackgroundService extends Service {
     private Notification getSleepNotification(String text){
 
         Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
-        bigTextStyle.setBigContentTitle("DMS");
+        bigTextStyle.setBigContentTitle(Constants.APP_NAME);
         bigTextStyle.bigText(text);
 
         Intent resultIntent = new Intent(this, Sleepingohio.class);
@@ -319,17 +320,15 @@ public class BackgroundService extends Service {
 
         if(!checkLocationPermissions()){
 
-            String text = "Please check your location permission.";
             Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            Notification notification = getPermissionNotification(text, intent);
+            Notification notification = getPermissionNotification(Constants.NOTIFICATION_TEXT_LOCATION, intent);
             mNotificationManager.notify(MinukuNotificationManager.locationNotificationID, notification);
         }
 
         if(!checkAppUsagePermissions()){
 
-            String text = "Please check your usage access permission.";
             Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-            Notification notification = getPermissionNotification(text, intent);
+            Notification notification = getPermissionNotification(Constants.NOTIFICATION_TEXT_APPUSAGE, intent);
             mNotificationManager.notify(MinukuNotificationManager.appusageNotificationID, notification);
         }
     }
@@ -384,7 +383,7 @@ public class BackgroundService extends Service {
     private Notification getPermissionNotification(String text, Intent resultIntent){
 
         Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
-        bigTextStyle.setBigContentTitle("DMS");
+        bigTextStyle.setBigContentTitle(Constants.APP_NAME);
         bigTextStyle.bigText(text);
 
 //        Intent resultIntent = new Intent(this, TripListActivity.class);
@@ -412,7 +411,7 @@ public class BackgroundService extends Service {
     private Notification getOngoingNotification(String text){
 
         Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
-        bigTextStyle.setBigContentTitle("DMS");
+        bigTextStyle.setBigContentTitle(Constants.APP_NAME);
         bigTextStyle.bigText(text);
 
         Intent resultIntent = new Intent(this, TripListActivity.class);
@@ -524,21 +523,22 @@ public class BackgroundService extends Service {
             }
         }
 
-        ongoingNotificationText = unfilledTrips + " New Trips";
+        ongoingNotificationText = unfilledTrips + Constants.NOTIFICATION_TEXT_NEW_TRIPS;
 
         if(unfilledTrips==1){
-            ongoingNotificationText = unfilledTrips + " New Trip";
+
+            ongoingNotificationText = unfilledTrips + Constants.NOTIFICATION_TEXT_NEW_TRIP;
         }
 
-        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+        Config.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
 
-        if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1){
+        if(Config.daysInSurvey == 0 || Config.daysInSurvey == -1){
 
-            ongoingNotificationText = "Part B begins tomorrow and lasts 2 weeks.";
-        }else if(Constants.daysInSurvey > Constants.finalday){
+            ongoingNotificationText = Constants.NOTIFICATION_TEXT_DAY_0;
+        }else if(Config.daysInSurvey > Constants.FINALDAY){
 
             //TODO ask for the text
-            ongoingNotificationText = "";
+            ongoingNotificationText = Constants.NOTIFICATION_TEXT_AFTER_FINAL_DAY;
 
 //            checkingRemovedFromForeground();
         }
@@ -547,6 +547,7 @@ public class BackgroundService extends Service {
 
         // using the same tag and Id causes the new notification to replace an existing one
         mNotificationManager.notify(ongoingNotificationID, note);
+
     }
 
     private void stopTheSessionByServiceClose(){
@@ -558,6 +559,7 @@ public class BackgroundService extends Service {
 
             //if we end the current session, we should update its time and set a long enough flag
             if (session.getEndTime()==0){
+
                 long endTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
                 session.setEndTime(endTime);
             }
@@ -573,7 +575,6 @@ public class BackgroundService extends Service {
 
     @Override
     public void onDestroy() {
-//        super.onDestroy();
 
         Log.d(TAG, "onDestroy");
 
@@ -642,7 +643,7 @@ public class BackgroundService extends Service {
 
     private void checkingRemovedFromForeground(){
 
-        if(Constants.daysInSurvey > Constants.finalday + 1){
+        if(Config.daysInSurvey > Constants.FINALDAY + 1){
 
             Log.d(TAG,"stopForeground");
 
@@ -719,7 +720,7 @@ public class BackgroundService extends Service {
 
             if (intent.getAction().equals(CHECK_RUNNABLE_ACTION)) {
 
-                //we don't need ongoing notification after day finalday + 1
+                //we don't need ongoing notification after day FINALDAY + 1
 
                 Log.d(TAG, "[check runnable] going to check if the runnable is running");
 
