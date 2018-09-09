@@ -194,9 +194,7 @@ public class ActivityRecognitionService extends IntentService {
                             = new ActivityRecognitionDataRecord();
                     //update the empty AR to MinukuStreamManager
                     MinukuStreamManager.getInstance().setActivityRecognitionDataRecord(activityRecognitionDataRecord);
-
                 }
-
             }
         };
     }

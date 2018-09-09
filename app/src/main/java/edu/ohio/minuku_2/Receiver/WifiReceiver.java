@@ -54,6 +54,7 @@ import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.Utilities.TupleHelper;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.SessionManager;
@@ -117,9 +118,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
         lastDay = sharedPrefs.getInt("lastDay", day);
 
-        Constants.USER_ID = sharedPrefs.getString("userid","NA");
-        Constants.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
-        Constants.Email = sharedPrefs.getString("Email", "NA");
+        Config.USER_ID = sharedPrefs.getString("userid","NA");
+        Config.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
+        Config.Email = sharedPrefs.getString("Email", "NA");
 
         hour = sharedPrefs.getInt("StartHour", mHour);
         min = sharedPrefs.getInt("StartMin",0);
@@ -128,11 +129,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
         if (Constants.CONNECTIVITY_CHANGE.equals(intent.getAction())) {
 
-            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-
-                Log.d(TAG, "connected to wifi");
-
-                CSVHelper.storeToCSV(CSVHelper.CSV_WIFI_RECEIVER_CHECK, Constants.connectedToWifi);
+            //activeNetwork may return null if there's no default Internet
+            if (activeNetwork != null &&
+                    activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
 
                 uploadData();
             }
@@ -187,7 +186,7 @@ public class WifiReceiver extends BroadcastReceiver {
             sendingSurveyLinkData();
 
 
-            long lastCheckInTime = sharedPrefs.getLong("lastCheckInTime", Constants.initLong);
+            long lastCheckInTime = sharedPrefs.getLong("lastCheckInTime", Constants.INVALID_IN_LONG);
 
             //isAlive or checkin
 
@@ -202,7 +201,7 @@ public class WifiReceiver extends BroadcastReceiver {
     //the replacement function of IsAlive
     private void sendingUserInform(){
 
-        if(Constants.DEVICE_ID.equals("NA")){
+        if(Config.DEVICE_ID.equals("NA")){
             return;
         }
 
@@ -211,8 +210,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
         int androidVersion = Build.VERSION.SDK_INT;
 
-        String link = Constants.checkInUrl + "deviceid=" + Constants.DEVICE_ID + "&email=" + Constants.Email
-                +"&userid="+Constants.USER_ID+"&android_ver="+androidVersion
+        String link = Constants.CHECK_IN_URL + "deviceid=" + Config.DEVICE_ID + "&email=" + Config.Email
+                +"&userid="+ Config.USER_ID+"&android_ver="+androidVersion
                 +"&Manufacturer="+Build.MANUFACTURER+"&Model="+Build.MODEL+"&Product="+Build.PRODUCT;
         String userInformInString;
         JSONObject userInform = null;
@@ -332,9 +331,9 @@ public class WifiReceiver extends BroadcastReceiver {
                 try {
 
                     //adding the id and group number
-                    annotatedtripdata.put("userid", Constants.USER_ID);
-                    annotatedtripdata.put("group_number", Constants.GROUP_NUM);
-                    annotatedtripdata.put("device_id", Constants.DEVICE_ID);
+                    annotatedtripdata.put("userid", Config.USER_ID);
+                    annotatedtripdata.put("group_number", Config.GROUP_NUM);
+                    annotatedtripdata.put("device_id", Config.DEVICE_ID);
                     annotatedtripdata.put("version", versionNumber);
                     annotatedtripdata.put("android_ver", Build.VERSION.SDK_INT);
                     annotatedtripdata.put("build", getBuildInform());
@@ -493,9 +492,9 @@ public class WifiReceiver extends BroadcastReceiver {
                     //convert into second
                     String timestampInSec = timestamp.substring(0, timestamp.length() - 3);
 
-                    surveyJson.put("userid", Constants.USER_ID);
-                    surveyJson.put("group_number", Constants.GROUP_NUM);
-                    surveyJson.put("device_id", Constants.DEVICE_ID);
+                    surveyJson.put("userid", Config.USER_ID);
+                    surveyJson.put("group_number", Config.GROUP_NUM);
+                    surveyJson.put("device_id", Config.DEVICE_ID);
                     surveyJson.put("version", versionNumber);
                     surveyJson.put("dataType", "SurveyLink");
                     surveyJson.put("android_ver", Build.VERSION.SDK_INT);
@@ -518,13 +517,13 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     if(completeType.equals(Constants.SURVEY_INCOMPLETE_FLAG)){
 
-                        completeType = Constants.TEXT_SURVEY_INCOMPLETE;
+                        completeType = Constants.TEXT_TO_SERVER_SURVEY_INCOMPLETE;
                     }else if(completeType.equals(Constants.SURVEY_COMPLETE_FLAG)){
 
-                        completeType = Constants.TEXT_SURVEY_COMPLETE;
+                        completeType = Constants.TEXT_TO_SERVER_SURVEY_COMPLETE;
                     }else if(completeType.equals(Constants.SURVEY_ERROR_FLAG)){
 
-                        completeType = Constants.TEXT_SURVEY_ERROR;
+                        completeType = Constants.TEXT_TO_SERVER_SURVEY_ERROR;
                     }
 
                     //clickornot
@@ -654,10 +653,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
         try {
 
-            data.put("userid", Constants.USER_ID);
-            data.put("group_number", Constants.GROUP_NUM);
-            data.put("device_id", Constants.DEVICE_ID);
-            data.put("email", Constants.Email);
+            data.put("userid", Config.USER_ID);
+            data.put("group_number", Config.GROUP_NUM);
+            data.put("device_id", Config.DEVICE_ID);
+            data.put("email", Config.Email);
             data.put("version", versionNumber);
             data.put("dataType", "Dump");
             data.put("android_ver", Build.VERSION.SDK_INT);

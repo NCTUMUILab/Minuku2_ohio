@@ -23,6 +23,7 @@ import java.util.Date;
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku_2.R;
@@ -60,10 +61,10 @@ public class SurveyActivity extends Activity {
 
 //        Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
 
-        if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
+        if(Config.daysInSurvey == 0 || Config.daysInSurvey == -1) {
 
             setContentView(R.layout.surveypage_day0);
-        }else if(Constants.daysInSurvey > Constants.finalday){
+        }else if(Config.daysInSurvey > Constants.FINALDAY){
 
             setContentView(R.layout.surveypage_complete);
         }else {
@@ -75,17 +76,17 @@ public class SurveyActivity extends Activity {
     public void onResume() {
         super.onResume();
 
-        if(Constants.daysInSurvey == 0 || Constants.daysInSurvey == -1) {
+        if(Config.daysInSurvey == 0 || Config.daysInSurvey == -1) {
 
             setContentView(R.layout.surveypage_day0);
-        }else if(Constants.daysInSurvey > Constants.finalday){
+        }else if(Config.daysInSurvey > Constants.FINALDAY){
 
             setContentView(R.layout.surveypage_complete);
         }else {
             setContentView(R.layout.surveypage);
         }
 
-        if(Constants.daysInSurvey <= Constants.finalday && Constants.daysInSurvey >= 1)
+        if(Config.daysInSurvey <= Constants.FINALDAY && Config.daysInSurvey >= 1)
             initlinkListohio();
     }
 
@@ -114,7 +115,7 @@ public class SurveyActivity extends Activity {
         surveyDatas = DBHelper.querySurveyLinkBetweenTimes(startTime, endTime);
 
         surveyDayText = (TextView) findViewById(R.id.surveyDayView);
-        surveyDayText.setText("Day "+Constants.daysInSurvey+"/"+Constants.finalday);
+        surveyDayText.setText("Day "+ Config.daysInSurvey+"/"+Constants.FINALDAY);
 
 //        Log.d(TAG, "[test mobile triggering] surveyDatas size : "+surveyDatas.size());
 

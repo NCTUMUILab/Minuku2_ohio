@@ -91,7 +91,7 @@ public class Sleepingohio extends AppCompatActivity {
         sleepStartTimeLong = sharedPrefs.getLong("sleepStartTimeLong", sleepStartTimeLong);
         sleepEndTimeLong = sharedPrefs.getLong("sleepEndTimeLong", sleepEndTimeLong);
 
-        if((sleepStartTimeLong != Constants.initLong) && (sleepEndTimeLong != Constants.initLong)){
+        if((sleepStartTimeLong != Constants.INVALID_IN_LONG) && (sleepEndTimeLong != Constants.INVALID_IN_LONG)){
 
             SimpleDateFormat sdf_hhmm_a = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_AMPM, Locale.US);
             sleepStarttime.setText(ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf_hhmm_a));
@@ -311,7 +311,7 @@ public class Sleepingohio extends AppCompatActivity {
 
         try {
 
-            Intent intent = new Intent(Constants.Interval_Sample);
+            Intent intent = new Intent(Constants.INTERVAL_SAMPLE);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, requestCode, intent, PendingIntent.FLAG_NO_CREATE);
             AlarmManager alarmManager = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
             alarmManager.cancel(pendingIntent);
@@ -376,7 +376,7 @@ public class Sleepingohio extends AppCompatActivity {
 
             long currentTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
 
-            if(sleepStartTimeLong != Constants.initLong)
+            if(sleepStartTimeLong != Constants.INVALID_IN_LONG)
                 currentTime = sleepStartTimeLong;
 
             String currentHour = ScheduleAndSampleManager.getTimeString(currentTime, sdf_hh);
@@ -505,7 +505,7 @@ public class Sleepingohio extends AppCompatActivity {
 
             long currentTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
 
-            if(sleepEndTimeLong != Constants.initLong)
+            if(sleepEndTimeLong != Constants.INVALID_IN_LONG)
                 currentTime = sleepEndTimeLong;
 
             String currentHour = ScheduleAndSampleManager.getTimeString(currentTime, sdf_hh);

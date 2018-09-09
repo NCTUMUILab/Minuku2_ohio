@@ -31,6 +31,7 @@ import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.RandomNumber;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.MinukuNotificationManager;
@@ -61,22 +62,16 @@ public class SurveyTriggerManager {
 
     private String userid;
 
-    private static final String PACKAGE_DIRECTORY_PATH="/Android/data/edu.ohio.minuku_2/";
-    private static final String PACKAGE_DIRECTORY_PATH_IntervalSamples="/Android/data/edu.ohio.minuku_2/IntervalSamples/";
-
     private static String today;
     private String lastTimeSend_today;
 
-    private int notifyID = 1;
     private int walk_notifyID = 2;
-    private int interval_notifyID = 3; //used to 3
-    //qua is equal to interval now
+    private int interval_notifyID = 3;
 
     public static ArrayList<Long> interval_sampled_times;
     public static List<String> interval_sampled_times_bound;
 
     private static int interval_sample_number = 6;
-    private static int interval_sample_threshold = 4;
 
     private static int interval_sampled;
     private int walkoutdoor_sampled;
@@ -89,7 +84,6 @@ public class SurveyTriggerManager {
     private long last_Survey_Time;
     private long last_Walking_Survey_Time;
 
-    private long vibrate[] = {0,200,800,500};
     public static long time_base = 0;
 
     private String transportation;
@@ -99,13 +93,10 @@ public class SurveyTriggerManager {
     private String participantID, groupNum;
     private int weekNum, dailySurveyNum, dailyResponseNum;
 
-    private final String link = "https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";//"https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";
-
-    private String apikeyfortesting = "TiKLVvkv4m1XTWhmIjCx4A464jBTP0ZE";
-    private String testUrl = "https://api.mlab.com/api/1/databases/mobility_study/collections/real_time?apiKey="+apikeyfortesting;
+    private final String LINK = "https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";//"https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";
+    private final String SURVEY_TEXT = "You have a new survey available now.";
 
     private final int dist_Lowerbound_Outdoorwalking = 50;
-
     private final int dist_Upperbound_Outdoorwalking = 150;
 
     private NotificationManager mNotificationManager;
@@ -115,9 +106,6 @@ public class SurveyTriggerManager {
 
     private static SharedPreferences sharedPrefs;
 
-    private int surveyNum;
-
-    public SurveyTriggerManager(){}
 
     public SurveyTriggerManager(Context context){
 
@@ -180,8 +168,8 @@ public class SurveyTriggerManager {
         interval_sampled = sharedPrefs.getInt("interval_sampled", 0);
         alarmregistered = sharedPrefs.getBoolean("alarmregistered",false);
 
-        Constants.USER_ID = sharedPrefs.getString("userid","NA");
-        Constants.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey);
+        Config.USER_ID = sharedPrefs.getString("userid","NA");
+        Config.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Config.downloadedDayInSurvey);
 
         runMainThread();
 
@@ -234,7 +222,7 @@ public class SurveyTriggerManager {
 //            int request_code = generatePendingIntentRequestCode(time);
 
             //create an alarm for a time
-            Intent intent = new Intent(Constants.Interval_Sample);
+            Intent intent = new Intent(Constants.INTERVAL_SAMPLE);
             PendingIntent pi = PendingIntent.getBroadcast(mContext, requestCode, intent, 0);
 
             AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(mContext.ALARM_SERVICE);
@@ -407,7 +395,7 @@ public class SurveyTriggerManager {
                 long time = times.get(i);
                 int request_code = generatePendingIntentRequestCode(time);
                 //create an alarm for a time
-                Intent intent = new Intent(Constants.Interval_Sample);
+                Intent intent = new Intent(Constants.INTERVAL_SAMPLE);
 
                 PendingIntent pi = PendingIntent.getBroadcast(context, request_code, intent, 0);
 
@@ -481,7 +469,7 @@ public class SurveyTriggerManager {
 //            Log.d(TAG, "[test alarm] deleting time : "+ScheduleAndSampleManager.getTimeString(time));
 
             boolean alarmUp = (PendingIntent.getBroadcast(mContext, request_code,
-                    new Intent(Constants.Interval_Sample),
+                    new Intent(Constants.INTERVAL_SAMPLE),
                     PendingIntent.FLAG_NO_CREATE) != null);
 
             if (alarmUp) {
@@ -492,7 +480,7 @@ public class SurveyTriggerManager {
 //                Log.d(TAG, "[recalling alarms] Alarm is canceled! Recall it back");
 
                 //recall the one which is gone, recall it back.
-                Intent intent = new Intent(Constants.Interval_Sample);
+                Intent intent = new Intent(Constants.INTERVAL_SAMPLE);
                 PendingIntent pi = PendingIntent.getBroadcast(mContext, request_code, intent, 0);
 
                 AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(mContext.ALARM_SERVICE);
@@ -522,7 +510,7 @@ public class SurveyTriggerManager {
                 confirmAlarmExist();
                 alarmCheckCount = 0;
 
-                Log.d(TAG, "checking if there is a link unavailable and missed");
+                Log.d(TAG, "checking if there is a LINK unavailable and missed");
 
                 checkSurveyLinkOvertime();
 
@@ -531,14 +519,14 @@ public class SurveyTriggerManager {
                 alarmCheckCount++;
             }
 
-            userid = Constants.DEVICE_ID;
+            userid = Config.DEVICE_ID;
 
-            //variable for link
+            //variable for LINK
             participantID = sharedPrefs.getString("userid", "NA");
             groupNum = sharedPrefs.getString("groupNum", "NA");
             weekNum = sharedPrefs.getInt("weekNum", 0);
 //            dailySurveyNum = sharedPrefs.getInt("dailySurveyNum", 0);
-            dailySurveyNum = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+            dailySurveyNum = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
             dailyResponseNum = sharedPrefs.getInt("dailyResponseNum", 0);
 
             Date curDate = new Date(System.currentTimeMillis());
@@ -587,31 +575,31 @@ public class SurveyTriggerManager {
                 //after a day
                 if (!lastTimeSend_today.equals(today)) {
 
-                    if(Constants.daysInSurvey == -1) {
+                    if(Config.daysInSurvey == -1) {
 
-                        Constants.daysInSurvey = 0;
+                        Config.daysInSurvey = 0;
                     }else {
 
                         //Prevent the situation that they download at the day which is not the first day of the research.
                         //which means they get the daysInSurvey is x|x>0 instead of -1, just keep it.
                         if(!lastTimeSend_today.equals("NA")){
 
-                            Constants.daysInSurvey++;
+                            Config.daysInSurvey++;
 
-                            Log.d(TAG, "[check daysInSurvey] daysInSurvey : "+ Constants.daysInSurvey);
+                            Log.d(TAG, "[check daysInSurvey] daysInSurvey : "+ Config.daysInSurvey);
 
                             SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
                             String surveyDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
 
-                            DBHelper.insertSurveyDayWithDateTable(Constants.daysInSurvey, surveyDate);
+                            DBHelper.insertSurveyDayWithDateTable(Config.daysInSurvey, surveyDate);
                         }
                     }
 
-                    sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
+                    sharedPrefs.edit().putInt("daysInSurvey", Config.daysInSurvey).apply();
 
                     Log.d(TAG, "after a day daysInSurvey today : "+ today);
                     Log.d(TAG, "after a day daysInSurvey lastTimeSend_today : "+ lastTimeSend_today);
-                    Log.d(TAG, "after a day daysInSurvey : "+ Constants.daysInSurvey);
+                    Log.d(TAG, "after a day daysInSurvey : "+ Config.daysInSurvey);
 
                     sharedPrefs.edit().putString("mobileMissedCount", "").apply();
                     sharedPrefs.edit().putString("randomMissedCount", "").apply();
@@ -652,7 +640,7 @@ public class SurveyTriggerManager {
                     sharedPrefs.edit().putLong("last_Walking_Survey_Time", last_Walking_Survey_Time).apply();
 
                     if (lastTimeSend_today.equals("NA")) {
-                        //setting up the parameter for the survey link
+                        //setting up the parameter for the survey LINK
                         setUpSurveyLink();
                     }
 
@@ -743,13 +731,13 @@ public class SurveyTriggerManager {
         long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
         boolean isTimeToSendSurvey = false;
 
-        Constants.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
-        Constants.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Constants.downloadedDayInSurvey);
+        Config.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
+        Config.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Config.downloadedDayInSurvey);
 
-        Log.d(TAG, "[test mobile triggering] daysInSurvey : " + Constants.daysInSurvey);
-        Log.d(TAG, "[test mobile triggering] downloadedDayInSurvey : " + Constants.downloadedDayInSurvey);
-        Log.d(TAG, "[test mobile triggering] condition 2 : " + (Constants.daysInSurvey != Constants.downloadedDayInSurvey));
-        Log.d(TAG, "[test mobile triggering] condition 3 : " + (Constants.daysInSurvey != -1));
+        Log.d(TAG, "[test mobile triggering] daysInSurvey : " + Config.daysInSurvey);
+        Log.d(TAG, "[test mobile triggering] downloadedDayInSurvey : " + Config.downloadedDayInSurvey);
+        Log.d(TAG, "[test mobile triggering] condition 2 : " + (Config.daysInSurvey != Config.downloadedDayInSurvey));
+        Log.d(TAG, "[test mobile triggering] condition 3 : " + (Config.daysInSurvey != -1));
 
         boolean isPeriodToSurvey = checkPeriod(now, noti_type);
 
@@ -757,15 +745,15 @@ public class SurveyTriggerManager {
 
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Going to check ? "+ noti_type);
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Is the period to trigger survey ? "+ isPeriodToSurvey);
-        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Is the daysInSurvey equal to downloadedDayInSurvey ? "+ (Constants.daysInSurvey != Constants.downloadedDayInSurvey));
-        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Is the daysInSurvey equal to -1 ? "+ (Constants.daysInSurvey != -1));
-        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Is the daysInSurvey equal to 0 ? "+ (Constants.daysInSurvey != 0));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Is the daysInSurvey equal to downloadedDayInSurvey ? "+ (Config.daysInSurvey != Config.downloadedDayInSurvey));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Is the daysInSurvey equal to -1 ? "+ (Config.daysInSurvey != -1));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Is the daysInSurvey equal to 0 ? "+ (Config.daysInSurvey != 0));
 
         //check the period haven't triggered the noti or not.
         if (    isPeriodToSurvey
-                && Constants.daysInSurvey != Constants.downloadedDayInSurvey
-                && Constants.daysInSurvey != -1
-                && Constants.daysInSurvey != 0
+                && Config.daysInSurvey != Config.downloadedDayInSurvey
+                && Config.daysInSurvey != -1
+                && Config.daysInSurvey != 0
                 ) {
 
             isTimeToSendSurvey = true;
@@ -872,7 +860,7 @@ public class SurveyTriggerManager {
         //Log.d(TAG, "setUpSurveyLink");
 
         //Counting the day of the experiments
-        int TaskDayCount = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+        int TaskDayCount = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
         TaskDayCount++;
 
         if ((TaskDayCount - 1) % 7 == 0) { //1, 8, 15
@@ -1045,11 +1033,11 @@ public class SurveyTriggerManager {
         }
 
         //before the place it was dailySurveyNum
-        int daysInSurvey = sharedPrefs.getInt("daysInSurvey", Constants.daysInSurvey);
+        int daysInSurvey = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
 
         int periodNum = getPeriodNum(ScheduleAndSampleManager.getCurrentTimeInMillis());
 
-        String linktoShow = link + "?p="+participantID + "&g=" + groupNum + "&d=" + daysInSurvey + "&n=" + periodNum + "&m=" + mob;
+        String linktoShow = LINK + "?p="+participantID + "&g=" + groupNum + "&d=" + daysInSurvey + "&n=" + periodNum + "&m=" + mob;
 
         ContentValues values = new ContentValues();
 
@@ -1060,7 +1048,7 @@ public class SurveyTriggerManager {
             values.put(DBHelper.generateTime_col, new Date().getTime());
             values.put(DBHelper.link_col, linktoShow);
             values.put(DBHelper.surveyType_col, noti_type);
-            values.put(DBHelper.openFlag_col, -1); //they can't enter the link by the notification.
+            values.put(DBHelper.openFlag_col, -1); //they can't enter the LINK by the notification.
             values.put(DBHelper.sentOrNot_col, Constants.SURVEYLINK_SHOULDNT_BEEN_SENT_FLAG);
 
             db.insert(DBHelper.surveyLink_table, null, values);
@@ -1174,7 +1162,7 @@ public class SurveyTriggerManager {
 
         updateLastSurvey(today);
 
-        String notiText = "You have a new survey available now."; // + " : "+ noti_type
+        String notiText = SURVEY_TEXT;
 
         Intent resultIntent = new Intent(mContext, SurveyActivity.class);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -1219,7 +1207,7 @@ public class SurveyTriggerManager {
         sharedPrefs.edit().commit();
 
         //register action alarm
-        IntentFilter alarm_filter = new IntentFilter(Constants.Interval_Sample);
+        IntentFilter alarm_filter = new IntentFilter(Constants.INTERVAL_SAMPLE);
         mContext.registerReceiver(IntervalSampleReceiver, alarm_filter);
 
     }
@@ -1237,7 +1225,7 @@ public class SurveyTriggerManager {
 
         try {
 
-            Intent intent = new Intent(Constants.Interval_Sample);
+            Intent intent = new Intent(Constants.INTERVAL_SAMPLE);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0, intent,0);
             AlarmManager alarmManager = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
             alarmManager.cancel(pendingIntent);
@@ -1250,7 +1238,7 @@ public class SurveyTriggerManager {
 
         public void onReceive(Context context, Intent intent) {
 
-            if (intent.getAction().equals(Constants.Interval_Sample)){
+            if (intent.getAction().equals(Constants.INTERVAL_SAMPLE)){
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Catch the alarm, going to consider the condition to trigger the notification.");
 
