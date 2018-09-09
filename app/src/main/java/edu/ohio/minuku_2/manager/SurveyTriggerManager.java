@@ -575,6 +575,7 @@ public class SurveyTriggerManager {
                 //after a day
                 if (!lastTimeSend_today.equals(today)) {
 
+                    //-1 is for the survey day got from the server should be set to 0
                     if(Config.daysInSurvey == -1) {
 
                         Config.daysInSurvey = 0;
@@ -587,15 +588,16 @@ public class SurveyTriggerManager {
                             Config.daysInSurvey++;
 
                             Log.d(TAG, "[check daysInSurvey] daysInSurvey : "+ Config.daysInSurvey);
-
-                            SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
-                            String surveyDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
-
-                            DBHelper.insertSurveyDayWithDateTable(Config.daysInSurvey, surveyDate);
                         }
                     }
 
                     sharedPrefs.edit().putInt("daysInSurvey", Config.daysInSurvey).apply();
+
+                    //make sure that the survey day is corresponding to the date
+                    SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+                    String surveyDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+
+                    DBHelper.insertSurveyDayWithDateTable(Config.daysInSurvey, surveyDate);
 
                     Log.d(TAG, "after a day daysInSurvey today : "+ today);
                     Log.d(TAG, "after a day daysInSurvey lastTimeSend_today : "+ lastTimeSend_today);

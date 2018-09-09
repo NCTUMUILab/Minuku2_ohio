@@ -507,7 +507,7 @@ public class MainActivity extends AppCompatActivity {
 
             setMidnightStart(userInform);
 
-
+            //TODO insert DaysInSurvey into the surveydayWithDate_table
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -548,13 +548,10 @@ public class MainActivity extends AppCompatActivity {
             sharedPrefs.edit().putInt("daysInSurvey", Config.daysInSurvey).apply();
 
 //            Log.d(TAG, "daysInSurvey : "+ Constants.daysInSurvey);
+
         }catch (JSONException e){
             e.printStackTrace();
         }
-
-        //for testing the over date of the research
-//        Constants.daysInSurvey = 15;
-//        sharedPrefs.edit().putInt("daysInSurvey", Constants.daysInSurvey).apply();
 
     }
 
