@@ -207,7 +207,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-       //Log.d("db","oncreate");
 
         createSurveyDayWithDateTable(db);
         createSurveyLinkTable(db);
@@ -318,11 +317,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public void createActionLogTable(SQLiteDatabase db){
 
+        //TODO add a col for inserting the user interaction into the ActionLog table
+        //TODO might need to make action log insert a "" blank into the table to consistent the table size with sessionid
+
         String cmd = "CREATE TABLE " +
                 actionLog_table + "(" +
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
                 TIME + " TEXT NOT NULL," +
-                action_col+" TEXT" +
+                action_col+" TEXT " +
                 ");";
 
         db.execSQL(cmd);

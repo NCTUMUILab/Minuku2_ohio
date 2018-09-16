@@ -88,9 +88,9 @@
                 android:background="@drawable/button_style"
                 android:paddingBottom="8dp"
                 android:paddingTop="8dp"
-                android:text="final survey"
+                android:text=""
                 android:textColor="#666666"
-                android:textSize="30sp" />
+                />
         </LinearLayout>
 
         <TextView

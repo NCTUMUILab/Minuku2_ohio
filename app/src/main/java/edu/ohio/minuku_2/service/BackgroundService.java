@@ -64,6 +64,7 @@ import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.AnnotationSet;
 import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku.streamgenerator.TransportationModeStreamGenerator;
+import edu.ohio.minuku_2.MainActivity;
 import edu.ohio.minuku_2.Receiver.RestarterBroadcastReceiver;
 import edu.ohio.minuku_2.Receiver.WifiReceiver;
 import edu.ohio.minuku_2.Utils;
@@ -242,6 +243,8 @@ public class BackgroundService extends Service {
                     CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after checkAndRequestPermission");
                 }
 
+
+
                 if(showOngoingNotificationCount % 150 == 0){
 
                     CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to updateOngoingNotification");
@@ -253,29 +256,6 @@ public class BackgroundService extends Service {
 
                 showOngoingNotificationCount++;
 
-                //send sleeptime check if it didn't being set after the time they downloaded the app
-                long downloadedTime = sharedPrefs.getLong("downloadedTime", -1);
-
-                long currentTime = new Date().getTime();
-
-                if(currentTime - downloadedTime > Constants.MILLISECONDS_PER_MINUTE * 30){
-
-                    String sleepStartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
-                    String sleepEndTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
-
-                    if(sleepStartTime.equals(Constants.NOT_A_NUMBER) || sleepEndTime.equals(Constants.NOT_A_NUMBER)){
-
-                        //send the notification to remind the user to set their sleeping time
-                        NotificationManager mNotificationManager =
-                                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                        String notificationText = Constants.NOTIFICATION_TEXT_SLEEPTIME;
-
-                        Notification notification = getSleepNotification(notificationText);
-
-                        mNotificationManager.notify(999, notification);
-                    }
-                }
             }catch (Exception e){
 
 //                isBackgroundRunnableRunning = false;
@@ -415,6 +395,13 @@ public class BackgroundService extends Service {
         bigTextStyle.bigText(text);
 
         Intent resultIntent = new Intent(this, TripListActivity.class);
+
+        //TODO test
+        if(Config.daysInSurvey == 0 || Config.daysInSurvey == -1 || Config.daysInSurvey > Constants.FINALDAY){
+
+            resultIntent = new Intent(this, MainActivity.class);
+        }
+
         PendingIntent pending = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Notification.Builder noti = new Notification.Builder(this)
@@ -496,7 +483,7 @@ public class BackgroundService extends Service {
 
     private void updateOngoingNotification(){
 
-//        Log.d(TAG,"updateOngoingNotification");
+        Log.d(TAG,"updateOngoingNotification");
 
         //check how much trips hasn't been filled
         ArrayList<Session> recentSessions = SessionManager.getRecentNotBeenCombinedSessions();
@@ -537,8 +524,26 @@ public class BackgroundService extends Service {
             ongoingNotificationText = Constants.NOTIFICATION_TEXT_DAY_0;
         }else if(Config.daysInSurvey > Constants.FINALDAY){
 
-            //TODO ask for the text
-            ongoingNotificationText = Constants.NOTIFICATION_TEXT_AFTER_FINAL_DAY;
+            if(Config.daysInSurvey == Constants.FINALDAY + 1) {
+
+                if(unfilledTrips == 0){
+
+                    ongoingNotificationText = Constants.NOTIFICATION_TEXT_FINAL_DAY_PLUS_1_WITHOUT_TRIPS;
+                }else{
+
+                    ongoingNotificationText = Constants.NOTIFICATION_TEXT_FINAL_DAY_PLUS_1_WITH_TRIPS;
+                }
+            } else {
+
+                boolean isFinalButtonClicked = sharedPrefs.getBoolean("finalButtonClicked", false);
+                if(isFinalButtonClicked){
+
+                    ongoingNotificationText = Constants.NOTIFICATION_TEXT_AFTER_FINAL_DAY_PLUS_1_WAIT_DATA_TRANSFER;
+                } else {
+
+                    ongoingNotificationText = Constants.NOTIFICATION_TEXT_AFTER_FINAL_DAY_PLUS_1;
+                }
+            }
 
 //            checkingRemovedFromForeground();
         }

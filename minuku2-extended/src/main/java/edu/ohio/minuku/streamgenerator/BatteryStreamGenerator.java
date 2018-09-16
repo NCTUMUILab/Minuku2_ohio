@@ -100,12 +100,12 @@ public class BatteryStreamGenerator extends AndroidStreamGenerator<BatteryDataRe
 
     @Override
     public void onStreamRegistration() {
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         mApplicationContext.registerReceiver(mBroadcastReceiver, filter);
 
         Log.d(TAG, "Stream " + TAG + " registered successfully");
-
     }
 
     @Override

@@ -123,13 +123,16 @@ public class Constants {
     public static final String APP_NAME = "DMS";
     public static final String APP_FULL_NAME = "Daily Mobility Study";
 
-    public static final String NOTIFICATION_TEXT_DAY_0 = "Part B begins tomorrow and lasts 2 weeks.";
-    public static final String NOTIFICATION_TEXT_SLEEPTIME = "Please select your sleep period.";
+    public static final String NOTIFICATION_TEXT_DAY_0 = "Part B begins at 12am and continues for 2 weeks.";
     public static final String NOTIFICATION_TEXT_LOCATION = "Please check your location permission.";
     public static final String NOTIFICATION_TEXT_APPUSAGE = "Please check your usage access permission.";
     public static final String NOTIFICATION_TEXT_NEW_TRIP = " New Trip";
     public static final String NOTIFICATION_TEXT_NEW_TRIPS = " New Trips";
-    public static final String NOTIFICATION_TEXT_AFTER_FINAL_DAY = "Connect your phone to WiFi to complete Part B.";
+    public static final String NOTIFICATION_TEXT_FINAL_DAY_PLUS_1_WITH_TRIPS = "Your final trips are available now.";
+    public static final String NOTIFICATION_TEXT_FINAL_DAY_PLUS_1_WITHOUT_TRIPS = "Part C will become available tomorrow.";
+    public static final String NOTIFICATION_TEXT_AFTER_FINAL_DAY_PLUS_1 = "Part C is available today and lasts 20 mins.";
+    public static final String NOTIFICATION_TEXT_AFTER_FINAL_DAY_PLUS_1_WAIT_DATA_TRANSFER
+            = "Connect your phone to WiFi to finish the study.";
 
 
     public static final long INTERNAL_LOCATION_UPDATE_FREQUENCY = 1 * 10 * 1000; // 1 * 300 * 1000
@@ -154,5 +157,7 @@ public class Constants {
     public static final String INTERVAL_SAMPLE = "INTERVAL_SAMPLE";
 
     public static final String ACTIVITY_CONFIDENCE_CONNECTOR = ":";
+
+    public static final long invalidLong = -999;
 
 }
