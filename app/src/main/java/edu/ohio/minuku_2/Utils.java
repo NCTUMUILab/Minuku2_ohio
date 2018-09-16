@@ -140,7 +140,7 @@ public class Utils {
     public static void settingAllDaysIntervalSampling(Context context){
 
         //14 is the total of the research days
-        int countOfDaysInSurvey = 14 - Config.daysInSurvey;
+        int countOfDaysInSurvey = Constants.FINALDAY - Config.daysInSurvey;
         for(int DaysInSurvey = 1; DaysInSurvey <= countOfDaysInSurvey; DaysInSurvey++ ){
 
 //            Log.d(TAG, "[test alarm] DaysInSurvey : "+DaysInSurvey);

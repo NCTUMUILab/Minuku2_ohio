@@ -133,6 +133,7 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
             Log.d(TAG, "present : "+ present);
             Log.d(TAG, "unlock : "+ unlock);
 
+
             boolean userPresent = intent.getAction().equals( Intent.ACTION_USER_PRESENT );
             boolean userUnlock = intent.getAction().equals( Intent.ACTION_USER_UNLOCKED );
 

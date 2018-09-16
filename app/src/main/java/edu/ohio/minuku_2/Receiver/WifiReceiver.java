@@ -83,7 +83,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v23";
+    private String versionNumber = "v24";
 
     public static final int HTTP_TIMEOUT = 10000;
     public static final int SOCKET_TIMEOUT = 20000;
@@ -706,7 +706,6 @@ public class WifiReceiver extends BroadcastReceiver {
         storeBattery(data);
         storeAppUsage(data);
         storeActionLog(data);
-//        storeUserInteract(data);
 
         Log.d(TAG,"[show data response] checking data Dump : "+ data.toString());
 

@@ -278,7 +278,7 @@ public class SurveyTriggerManager {
 
         Log.d(TAG, "[test alarm] surveyStartTime : " + yMdformat+" "+sleepingendTime+":00");
 
-        Log.d(TAG, "wakeSleepDateIsSame : "+wakeSleepDateIsSame);
+        Log.d(TAG, "[test alarm] wakeSleepDateIsSame : "+wakeSleepDateIsSame);
 
         if(wakeSleepDateIsSame) {
 

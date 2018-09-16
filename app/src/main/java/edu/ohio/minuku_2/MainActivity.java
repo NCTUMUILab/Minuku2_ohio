@@ -27,6 +27,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -42,6 +44,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.text.InputFilter;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -126,16 +132,40 @@ public class MainActivity extends AppCompatActivity {
 
             setContentView(R.layout.homepage_complete);
             Button finalSurvey = (Button) findViewById(R.id.finalSurvey);
-            finalSurvey.setOnClickListener(new View.OnClickListener() {
 
-                @Override
-                public void onClick(View view) {
-                    String url = Constants.FINAL_SURVEY_URL+"?d="+ Config.daysInSurvey+"&p="+ Config.USER_ID;
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    startActivity(intent);
-                }
-            });
+            boolean isFinalButtonClicked = sharedPrefs.getBoolean("finalButtonClicked", false);
+            //TODO check the word looks like
+            String finalButtonText = "PART C\n20 minutes";
+            Spannable spannable = new SpannableString(finalButtonText);
+            spannable.setSpan(new StyleSpan(Typeface.NORMAL), 0, 6,Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+            spannable.setSpan(new RelativeSizeSpan(0.5f), 7, finalButtonText.length(),Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+            finalSurvey.setTextSize(30);
+            finalSurvey.setText(spannable);
+            finalSurvey.setTransformationMethod(null);
+
+            if(isFinalButtonClicked){
+
+                finalSurvey.setBackgroundColor(Color.LTGRAY);
+                finalSurvey.setTextColor(Color.DKGRAY);
+
+                finalSurvey.setClickable(false);
+            }else {
+
+                finalSurvey.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+
+                        String url = Constants.FINAL_SURVEY_URL+"?d="+ Config.daysInSurvey+"&p="+ Config.USER_ID;
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setData(Uri.parse(url));
+                        startActivity(intent);
+
+                        //TODO set the value in sharedpreference to the boolean value representing the button was clicked
+                        sharedPrefs.edit().putBoolean("finalButtonClicked", true).apply();
+                    }
+                });
+            }
 
             user_id = (TextView) findViewById(R.id.userid);
             Config.USER_ID = sharedPrefs.getString("userid","NA");
@@ -172,6 +202,59 @@ public class MainActivity extends AppCompatActivity {
             checkAndRequestPermissions();
         }else{
             startServiceWork();
+        }
+
+    }
+
+    protected void onResume(){
+        super.onResume();
+
+        if(Config.daysInSurvey > Constants.FINALDAY +1){
+
+            setContentView(R.layout.homepage_complete);
+            Button finalSurvey = (Button) findViewById(R.id.finalSurvey);
+
+            boolean isFinalButtonClicked = sharedPrefs.getBoolean("finalButtonClicked", false);
+            //TODO check the word looks like
+            String finalButtonText = "PART C\n20 minutes";
+            Spannable spannable = new SpannableString(finalButtonText);
+            spannable.setSpan(new StyleSpan(Typeface.NORMAL), 0, 6,Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+            spannable.setSpan(new RelativeSizeSpan(0.5f), 7, finalButtonText.length(),Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+            finalSurvey.setTextSize(30);
+            finalSurvey.setText(spannable);
+            finalSurvey.setTransformationMethod(null);
+
+            if(isFinalButtonClicked){
+
+                finalSurvey.setBackgroundColor(Color.LTGRAY);
+                finalSurvey.setTextColor(Color.DKGRAY);
+
+                finalSurvey.setClickable(false);
+            }else {
+
+                finalSurvey.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+
+                        String url = Constants.FINAL_SURVEY_URL+"?d="+ Config.daysInSurvey+"&p="+ Config.USER_ID;
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setData(Uri.parse(url));
+                        startActivity(intent);
+
+                        //TODO set the value in sharedpreference to the boolean value representing the button was clicked
+                        sharedPrefs.edit().putBoolean("finalButtonClicked", true).apply();
+                    }
+                });
+            }
+
+            user_id = (TextView) findViewById(R.id.userid);
+            Config.USER_ID = sharedPrefs.getString("userid","NA");
+            user_id.setText("Confirmation #:" );
+
+            num_6_digit = (TextView) findViewById(R.id.group_num);
+            Config.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
+            num_6_digit.setText(Config.USER_ID);
         }
 
     }
@@ -270,8 +353,18 @@ public class MainActivity extends AppCompatActivity {
 
         //button
         tolinkList = (Button) findViewById(R.id.linkList);
+        tolinkList.setOnClickListener(new Button.OnClickListener() {
 
-        if (Config.daysInSurvey > Constants.FINALDAY) {
+            @Override
+            public void onClick(View view) {
+
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to Survey Page");
+
+                startActivity(new Intent(MainActivity.this, SurveyActivity.class));
+            }
+        });
+
+        /*if (Config.daysInSurvey > Constants.FINALDAY) {
 
             tolinkList.setText("Final Survey");
             tolinkList.setOnClickListener(new Button.OnClickListener() {
@@ -299,7 +392,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(new Intent(MainActivity.this, SurveyActivity.class));
                 }
             });
-        }
+        }*/
 
         ohio_settingSleepTime = (Button) findViewById(R.id.settingSleepTime);
         ohio_settingSleepTime.setOnClickListener(settingSleepTimeing);
@@ -437,37 +530,48 @@ public class MainActivity extends AppCompatActivity {
                         }
                         else {
 
-                            sharedPrefs.edit().putString("userid", inputID).apply();
-                            Config.USER_ID = sharedPrefs.getString("userid", "NA");
-                            user_id.setText("Confirmation #");
+                            boolean isEmailValid = sendingUserInform();
 
-                            sharedPrefs.edit().putString("groupNum", inputID.substring(0, 1)).apply();
-                            Config.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
-                            num_6_digit.setText(Config.USER_ID);
+                            if(isEmailValid){
 
-                            sharedPrefs.edit().putString("Email",inputEmail).apply();
-                            Config.Email = sharedPrefs.getString("Email", "NA");
+                                sharedPrefs.edit().putString("userid", inputID).apply();
+                                Config.USER_ID = sharedPrefs.getString("userid", "NA");
+                                user_id.setText("Confirmation #");
 
-                            startSettingSleepingTime(); //the appearing order is reversed from the code.
+                                sharedPrefs.edit().putString("groupNum", inputID.substring(0, 1)).apply();
+                                Config.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
+                                num_6_digit.setText(Config.USER_ID);
 
-                            startpermission();
+                                inputEmail = inputEmail.trim();
+                                sharedPrefs.edit().putString("Email",inputEmail).apply();
+                                Config.Email = sharedPrefs.getString("Email", "NA");
 
-                            getStartDate();
+                                startSettingSleepingTime(); //the appearing order is reversed from the code.
 
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                startForegroundService(intentToStartBackground);
-                            } else {
-                                startService(intentToStartBackground);
+                                startpermission();
+
+                                getStartDate();
+
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    startForegroundService(intentToStartBackground);
+                                } else {
+                                    startService(intentToStartBackground);
+                                }
+
+                                isTheUser = true;
+                                sharedPrefs.edit().putBoolean("isTheUser", isTheUser).apply();
+
+                                //Dismiss once everything is OK.
+                                dialog.dismiss();
+                                MainActivity.this.finish();
+                            }else {
+
+                                editText_confirmNum.setText("");
+                                editText_Email.setText("");
+
+                                Toast.makeText(MainActivity.this,"Error, please try re-entering your email",Toast.LENGTH_SHORT).show();
                             }
 
-                            sendingUserInform();
-
-                            isTheUser = true;
-                            sharedPrefs.edit().putBoolean("isTheUser", isTheUser).apply();
-
-                            //Dismiss once everything is OK.
-                            dialog.dismiss();
-                            MainActivity.this.finish();
                         }
                     }
                 });
@@ -480,7 +584,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void sendingUserInform(){
+    private boolean sendingUserInform(){
+
+        boolean emailCheck = true;
 
 //       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=333333
 //      deviceid=375996574474999&email=none@nobody.com&userid=3333333
@@ -500,6 +606,8 @@ public class MainActivity extends AppCompatActivity {
 
             userInform = new JSONObject(userInformInString);
 
+            Log.d(TAG, "user inform : "+ userInform);
+
             //In order to set the survey link
             setDaysInSurveyAndTheDayTodayIs(userInform);
 
@@ -507,8 +615,17 @@ public class MainActivity extends AppCompatActivity {
 
             setMidnightStart(userInform);
 
-            //TODO insert DaysInSurvey into the surveydayWithDate_table
+            //TODO if the current day is not day 0, check the email
+            String saved_email = userInform.getString("saved_email");
+            String email = userInform.getString("email");
 
+            if(Config.daysInSurvey != 0 && Config.daysInSurvey != -1) {
+
+                if (!email.equals(saved_email)) {
+
+                    emailCheck = false;
+                }
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -519,7 +636,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        Log.d(TAG, "userInform : " + userInform);
+        return emailCheck;
     }
 
     private boolean haveNetworkConnection() {
