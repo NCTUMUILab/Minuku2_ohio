@@ -143,6 +143,8 @@ public class BackgroundService extends Service {
                 PendingIntent.getBroadcast(this, 0, new Intent(CHECK_RUNNABLE_ACTION), 0)
         );
 
+        Utils.setDefaultSleepTime(getApplicationContext());
+
 
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 

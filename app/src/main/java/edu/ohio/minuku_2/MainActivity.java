@@ -82,6 +82,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Config;
@@ -530,21 +532,33 @@ public class MainActivity extends AppCompatActivity {
                         }
                         else {
 
-                            boolean isEmailValid = sendingUserInform();
+                            sharedPrefs.edit().putString("userid", inputID).apply();
+                            Config.USER_ID = sharedPrefs.getString("userid", "NA");
+                            user_id.setText("Confirmation #");
+
+                            sharedPrefs.edit().putString("groupNum", inputID.substring(0, 1)).apply();
+                            Config.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
+                            num_6_digit.setText(Config.USER_ID);
+
+                            inputEmail = inputEmail.trim();
+                            sharedPrefs.edit().putString("Email",inputEmail).apply();
+                            Config.Email = sharedPrefs.getString("Email", "NA");
+
+                            boolean isEmailValid;
+
+                            isEmailValid = sendingUserInform();
+                            //TODO for testing
+//                            isEmailValid = true;
+//                            Config.daysInSurvey = 0;
+//                            sharedPrefs.edit().putInt("daysInSurvey", Config.daysInSurvey).apply();
+//
+//                            Config.downloadedDayInSurvey = 0;
+//                            sharedPrefs.edit().putInt("downloadedDayInSurvey", Config.downloadedDayInSurvey).apply();
+//
+//                            setMidnightStart(ScheduleAndSampleManager.getCurrentTimeInMillis());
+                            //TODO...
 
                             if(isEmailValid){
-
-                                sharedPrefs.edit().putString("userid", inputID).apply();
-                                Config.USER_ID = sharedPrefs.getString("userid", "NA");
-                                user_id.setText("Confirmation #");
-
-                                sharedPrefs.edit().putString("groupNum", inputID.substring(0, 1)).apply();
-                                Config.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
-                                num_6_digit.setText(Config.USER_ID);
-
-                                inputEmail = inputEmail.trim();
-                                sharedPrefs.edit().putString("Email",inputEmail).apply();
-                                Config.Email = sharedPrefs.getString("Email", "NA");
 
                                 startSettingSleepingTime(); //the appearing order is reversed from the code.
 
@@ -586,6 +600,8 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean sendingUserInform(){
 
+        Log.d(TAG, "sendingUserInform");
+
         boolean emailCheck = true;
 
 //       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=333333
@@ -594,7 +610,7 @@ public class MainActivity extends AppCompatActivity {
         String userInformInString = null;
         JSONObject userInform = null;
 
-//        Log.d(TAG, "user inform link : "+ link);
+        Log.d(TAG, "user inform link : "+ link);
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -624,6 +640,16 @@ public class MainActivity extends AppCompatActivity {
                 if (!email.equals(saved_email)) {
 
                     emailCheck = false;
+
+                    //reinitialize the value
+                    sharedPrefs.edit().putString("userid", "NA").apply();
+                    Config.USER_ID = sharedPrefs.getString("userid", "NA");
+
+                    sharedPrefs.edit().putString("groupNum", "NA").apply();
+                    Config.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
+
+                    sharedPrefs.edit().putString("Email","NA").apply();
+                    Config.Email = sharedPrefs.getString("Email", "NA");
                 }
             }
         } catch (InterruptedException e) {
@@ -699,12 +725,7 @@ public class MainActivity extends AppCompatActivity {
 
             long firstcheckin = userInform.getLong("firstcheckin") * Constants.MILLISECONDS_PER_SECOND;
 
-            SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE);
-
-//            Log.d(TAG, "firstcheckin : "+ firstcheckin);
-//            Log.d(TAG, "firstcheckin String : "+ ScheduleAndSampleManager.getTimeString(firstcheckin, sdf_now));
-
-            sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+            SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
 
             long firstcheckinAfteraDay = firstcheckin + Constants.MILLISECONDS_PER_DAY;
 
@@ -729,6 +750,31 @@ public class MainActivity extends AppCompatActivity {
         }catch (JSONException e){
             e.printStackTrace();
         }
+    }
+
+    private void setMidnightStart(long firstcheckin){
+
+        SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+
+        long firstcheckinAfteraDay = firstcheckin + Constants.MILLISECONDS_PER_DAY;
+
+//        Log.d(TAG, "firstcheckinAfteraDay : "+ firstcheckinAfteraDay);
+
+        String firstresearchdate = ScheduleAndSampleManager.getTimeString(firstcheckinAfteraDay, sdf_now);
+
+        firstresearchdate = firstresearchdate + " 00:00:00";
+
+//        Log.d(TAG, "firstcheckinAfteraDay String : "+ firstresearchdate);
+
+        long firstresearchday = ScheduleAndSampleManager.getTimeInMillis(firstresearchdate,sdf_now);
+
+        Config.midnightstart = firstresearchday;
+
+        sharedPrefs.edit().putLong("midnightstart", Config.midnightstart).apply();
+
+//        Log.d(TAG, "midnightstart : "+ Config.midnightstart);
+
+        sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", true).apply();
     }
 
     @Override
@@ -978,25 +1024,39 @@ public class MainActivity extends AppCompatActivity {
 
                 URL url = new URL(params[0]);
                 connection = (HttpURLConnection) url.openConnection();
+                connection.setReadTimeout((int)Constants.DATA_TRANSFER_TIMEOUT);
+                connection.setConnectTimeout((int)Constants.DATA_TRANSFER_TIMEOUT);
                 connection.connect();
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode != HttpsURLConnection.HTTP_BAD_REQUEST) {
+                    throw new IOException("HTTP error code: " + responseCode);
+                }
 
                 InputStream stream = connection.getInputStream();
 
-                reader = new BufferedReader(new InputStreamReader(stream));
+                if (stream != null) {
 
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
+                    reader = new BufferedReader(new InputStreamReader(stream));
 
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line+"\n");
-//                    Log.d(TAG, "Response : " + line);
+                    StringBuffer buffer = new StringBuffer();
+                    String line = "";
+
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line+"\n");
+    //                    Log.d(TAG, "Response : " + line);
+                    }
+
+                    return buffer.toString();
+                }else{
+
+                    return "";
                 }
-
-                return buffer.toString();
-
             } catch (MalformedURLException e) {
+                Log.e(TAG, "MalformedURLException");
                 e.printStackTrace();
             } catch (IOException e) {
+                Log.e(TAG, "IOException");
                 e.printStackTrace();
             } finally {
                 if (connection != null) {
@@ -1018,10 +1078,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
 //            Log.d(TAG, "get http post result " + result);
-
         }
-
     }
-
 
 }

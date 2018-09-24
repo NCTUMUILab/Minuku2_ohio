@@ -22,12 +22,16 @@
 
 package edu.ohio.minuku_2;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.opencsv.CSVWriter;
 
@@ -196,6 +200,107 @@ public class Utils {
 
         sharedPrefs.edit().putLong("PeriodLong", period).apply();
 
+    }
+
+    public static void setDefaultSleepTime(Context context){
+
+        //set the time as default time which is from 12:00am to 08:00am
+        SimpleDateFormat sdf_today_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_today_date);
+
+        String sleepTimeByDefault = todayDate + " 00:00:00";
+        String wakeupTimeByDefault = todayDate + " 08:00:00";
+
+        SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
+
+        sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
+
+        long sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepTimeByDefault, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
+        long sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(wakeupTimeByDefault, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
+        Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
+        Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
+
+        SimpleDateFormat sdf2 = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
+        String sleepStartTimeRaw = ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf2);
+        String sleepEndTimeRaw = ScheduleAndSampleManager.getTimeString(sleepEndTimeLong, sdf2);
+
+        Log.d(TAG, "SleepingStartTime Raw : "+sleepStartTimeRaw);
+        Log.d(TAG, "SleepingEndTime Raw : "+sleepEndTimeRaw);
+
+        boolean firstTimeEnterSleepTimePage = sharedPrefs.getBoolean("FirstTimeEnterSleepTimePage", false);
+        if(firstTimeEnterSleepTimePage)
+            cancelAlarmsByResetSleepTime(context, sharedPrefs);
+        sharedPrefs.edit().putBoolean("FirstTimeEnterSleepTimePage", true).apply();
+
+        sharedPrefs.edit().putString("SleepingStartTime", sleepStartTimeRaw).apply();
+        sharedPrefs.edit().putString("SleepingEndTime", sleepEndTimeRaw).apply();
+
+        //for easy to maintain
+        sharedPrefs.edit().putLong("sleepStartTimeLong", sleepStartTimeLong).apply();
+        sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
+
+        Utils.settingAllDaysIntervalSampling(context);
+    }
+
+    public static void cancelAlarmsByResetSleepTime(Context context, SharedPreferences sharedPrefs){
+
+        //cancel the alarm first
+        int alarmTotal = sharedPrefs.getInt("alarmCount", 1);
+
+        long currentTimeInMillis = ScheduleAndSampleManager.getCurrentTimeInMillis();
+
+        SimpleDateFormat sdf_Now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String todayDate = ScheduleAndSampleManager.getTimeString(currentTimeInMillis, sdf_Now);
+
+//        SimpleDateFormat sdf_noZone = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE);
+//        String startTimeString = todayDate + " 00:00:00";
+        long startTime = ScheduleAndSampleManager.getTimeInMillis(todayDate, sdf_Now);
+        long tomorrowStartTime = startTime + Constants.MILLISECONDS_PER_DAY;
+
+        int alarmStartFromTomor = -1;
+
+        //find the day start to cancel the alarm
+        for(int alarmCount = 1; alarmCount <= alarmTotal; alarmCount ++) {
+
+            long time = sharedPrefs.getLong("alarm_time_" + alarmCount, -1);
+
+            Log.d(TAG, "[test alarm] check alarm time "+alarmCount+" : "+ScheduleAndSampleManager.getTimeString(time));
+            Log.d(TAG, "[test alarm] check tomorrowStartTime : "+ScheduleAndSampleManager.getTimeString(tomorrowStartTime));
+
+            if(time > tomorrowStartTime){
+
+                alarmStartFromTomor = alarmCount;
+                break;
+            }
+        }
+
+        //updated alarm Count
+        sharedPrefs.edit().putInt("alarmCount", alarmStartFromTomor-1).apply();
+
+        for(int alarmCount = alarmStartFromTomor; alarmCount <= alarmTotal; alarmCount ++) {
+
+            int request_code = sharedPrefs.getInt("alarm_time_request_code" + alarmCount, -1);
+
+
+            long time = sharedPrefs.getLong("alarm_time_" + alarmCount, -1);
+
+            Log.d(TAG, "[test alarm] deleting time : "+ScheduleAndSampleManager.getTimeString(time));
+
+            cancelAlarmIfExists(context, request_code);
+        }
+    }
+
+    public static void cancelAlarmIfExists(Context mContext,int requestCode){
+
+        try {
+
+            Intent intent = new Intent(Constants.INTERVAL_SAMPLE);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, requestCode, intent, PendingIntent.FLAG_NO_CREATE);
+            AlarmManager alarmManager = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
+            alarmManager.cancel(pendingIntent);
+        } catch (Exception e) {
+
+        }
     }
 
     public static void storeToCSV_IntervalSamplesTimes(){

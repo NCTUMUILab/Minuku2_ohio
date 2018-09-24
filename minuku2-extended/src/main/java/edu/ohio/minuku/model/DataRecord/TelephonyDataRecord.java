@@ -32,6 +32,7 @@ public class TelephonyDataRecord implements DataRecord {
     private int GsmSignalStrength = -9999;
     private int LTESignalStrength = -9999;
     private int CdmaSignalStrengthLevel = -9999;
+    private String sessionid;
 
     public TelephonyDataRecord(String base64Data) {
         this.base64Data = base64Data;
@@ -51,6 +52,22 @@ public class TelephonyDataRecord implements DataRecord {
 //        Log.d(TAG,"mNetworkOperatorName : "+ NetworkOperatorName +" mCallState : "+ CallState+" mPhoneSignalType : "+ PhoneSignalType
 //                +" mGsmSignalStrength : "+ GsmSignalStrength+" mLTESignalStrength : "+ LTESignalStrength
 //                +" mCdmaSignalStrenthLevel : "+ CdmaSignalStrengthLevel);
+    }
+
+    public TelephonyDataRecord(String NetworkOperatorName, int CallState, int PhoneSignalType
+            , int GsmSignalStrength, int LTESignalStrength, int CdmaSignalStrengthLevel, String sessionid) {
+        this.creationTime = new Date().getTime();
+        this.NetworkOperatorName = NetworkOperatorName;
+        this.CallState = CallState;
+        this.PhoneSignalType = PhoneSignalType;
+        this.GsmSignalStrength = GsmSignalStrength;
+        this.LTESignalStrength = LTESignalStrength;
+        this.CdmaSignalStrengthLevel = CdmaSignalStrengthLevel;
+        this.sessionid = sessionid;
+    }
+
+    public String getSessionid() {
+        return sessionid;
     }
 
     private long getmillisecondToHour(long timeStamp){

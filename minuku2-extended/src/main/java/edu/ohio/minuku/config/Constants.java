@@ -134,8 +134,9 @@ public class Constants {
     public static final String NOTIFICATION_TEXT_AFTER_FINAL_DAY_PLUS_1_WAIT_DATA_TRANSFER
             = "Connect your phone to WiFi to finish the study.";
 
+    public static final long DATA_TRANSFER_TIMEOUT = 10 * MILLISECONDS_PER_SECOND; // 1 * 10 * 1000
 
-    public static final long INTERNAL_LOCATION_UPDATE_FREQUENCY = 1 * 10 * 1000; // 1 * 300 * 1000
+    public static final long INTERNAL_LOCATION_UPDATE_FREQUENCY = 1 * 10 * MILLISECONDS_PER_SECOND; // 1 * 10 * 1000
 
     public static final String NOT_A_NUMBER = "NA";
 

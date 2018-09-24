@@ -25,6 +25,7 @@ import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.ActivityRecognitionDataRecordDAO;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
 import edu.ohio.minuku.service.ActivityRecognitionService;
 import edu.ohio.minuku.stream.ActivityRecognitionStream;
@@ -157,7 +158,16 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
     public boolean updateStream() {
         Log.e(TAG, "Update stream called.");
 
-        activityRecognitionDataRecord = new ActivityRecognitionDataRecord(sMostProbableActivity, sProbableActivities, sLatestDetectionTime);
+        int session_id = 0;
+
+        int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
+
+        //if there exists an ongoing session
+        if (countOfOngoingSession>0){
+            session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
+        }
+
+        activityRecognitionDataRecord = new ActivityRecognitionDataRecord(sMostProbableActivity, sProbableActivities, sLatestDetectionTime, String.valueOf(session_id));
 
 //        Log.d(TAG, "[test replay] inside update stream " +  activityRecognitionDataRecord.getDetectedtime() + " : " +  activityRecognitionDataRecord.getProbableActivities().toString());
 

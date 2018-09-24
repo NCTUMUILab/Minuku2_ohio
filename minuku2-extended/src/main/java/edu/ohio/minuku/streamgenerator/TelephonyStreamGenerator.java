@@ -13,6 +13,7 @@ import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.TelephonyDataRecordDAO;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuDAOManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.DataRecord.TelephonyDataRecord;
 import edu.ohio.minuku.stream.TelephonyStream;
 import edu.ohio.minukucore.dao.DAOException;
@@ -90,8 +91,17 @@ public class TelephonyStreamGenerator extends AndroidStreamGenerator<TelephonyDa
     public boolean updateStream() {
         Log.d(TAG, "updateStream called");
 
+        int session_id = 0;
+
+        int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
+
+        //if there exists an ongoing session
+        if (countOfOngoingSession>0){
+            session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
+        }
+
         TelephonyDataRecord telephonyDataRecord = new TelephonyDataRecord(mNetworkOperatorName, mCallState
-                , mPhoneSignalType, mGsmSignalStrength, mLTESignalStrength_dbm, mCdmaSignalStrengthLevel);
+                , mPhoneSignalType, mGsmSignalStrength, mLTESignalStrength_dbm, mCdmaSignalStrengthLevel, String.valueOf(session_id));
         mStream.add(telephonyDataRecord);
         Log.d(TAG, "Telephony to be sent to event bus" + telephonyDataRecord);
 
@@ -100,8 +110,8 @@ public class TelephonyStreamGenerator extends AndroidStreamGenerator<TelephonyDa
         //post an event
         EventBus.getDefault().post(telephonyDataRecord);
         try {
+
             mDAO.add(telephonyDataRecord);
-//            mDAO.query_check();
         } catch (DAOException e) {
             e.printStackTrace();
             return false;

@@ -20,6 +20,7 @@ public class BatteryDataRecord implements DataRecord{
     public float BatteryPercentage;
     private String BatteryChargingState = "NA";
     public boolean isCharging;
+    private String sessionid;
 
     public BatteryDataRecord(){}
 
@@ -33,6 +34,22 @@ public class BatteryDataRecord implements DataRecord{
         this.BatteryPercentage = BatteryPercentage;
         this.BatteryChargingState = BatteryChargingState;
         this.isCharging = isCharging;
+
+//        Log.d(TAG,"BatteryLevel : "+ this.BatteryLevel+" BatteryPercentage : "+ this.BatteryPercentage
+//            +" BatteryChargingState : "+ this.BatteryChargingState +" isCharging : "+ this.isCharging);
+    }
+
+    public BatteryDataRecord(int BatteryLevel, float BatteryPercentage, String BatteryChargingState, boolean isCharging, String sessionid){
+        this.creationTime = new Date().getTime();
+//        Log.d(TAG, "creationTime : "+creationTime);
+//        Log.d(TAG, "creationTime String : "+getmillisecondToDateWithTime(creationTime));
+//        this.taskDayCount = Constants.daysInSurvey;
+//        this.hour = getmillisecondToHour(creationTime);
+        this.BatteryLevel = BatteryLevel;
+        this.BatteryPercentage = BatteryPercentage;
+        this.BatteryChargingState = BatteryChargingState;
+        this.isCharging = isCharging;
+        this.sessionid = sessionid;
 
 //        Log.d(TAG,"BatteryLevel : "+ this.BatteryLevel+" BatteryPercentage : "+ this.BatteryPercentage
 //            +" BatteryChargingState : "+ this.BatteryChargingState +" isCharging : "+ this.isCharging);
@@ -70,6 +87,10 @@ public class BatteryDataRecord implements DataRecord{
             return String.valueOf("0"+date);
         else
             return String.valueOf(date);
+    }
+
+    public String getSessionid() {
+        return sessionid;
     }
 
     public long getHour(){

@@ -27,6 +27,7 @@ import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.TransportationModeDAO;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
 import edu.ohio.minuku.model.DataRecord.TransportationModeDataRecord;
 import edu.ohio.minuku.stream.TransportationModeStream;
@@ -227,15 +228,23 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
             }
         }
 
+        int session_id = 0;
+
+        int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
+
+        //if there exists an ongoing session
+        if (countOfOngoingSession>0){
+            session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
+        }
+
         //store the Transportation to the SQLlite
         TransportationModeDataRecord transportationModeDataRecord =
-                new TransportationModeDataRecord(getConfirmedActvitiyString());
+                new TransportationModeDataRecord(getConfirmedActvitiyString(), String.valueOf(session_id));
 
         Log.d(TAG,"updateStream transportationModeDataRecord : " + ConfirmedActvitiyString);
 
         mStream.add(transportationModeDataRecord);
         Log.d(TAG, "TransportationMode to be sent to event bus" + transportationModeDataRecord);
-
 
         Config.daysInSurvey = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
         Config.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Config.downloadedDayInSurvey);

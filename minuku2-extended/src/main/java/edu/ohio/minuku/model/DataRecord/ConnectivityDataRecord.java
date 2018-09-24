@@ -25,6 +25,7 @@ public class ConnectivityDataRecord implements DataRecord{
     private static boolean IsMobileAvailable = false;
     private static boolean IsWifiConnected = false;
     private static boolean IsMobileConnected = false;
+    private String sessionid;
 
     public ConnectivityDataRecord(){}
 
@@ -43,6 +44,22 @@ public class ConnectivityDataRecord implements DataRecord{
 
     }
 
+    public ConnectivityDataRecord(String NetworkType,boolean IsNetworkAvailable, boolean IsConnected, boolean IsWifiAvailable,
+                                  boolean IsMobileAvailable, boolean IsWifiConnected, boolean IsMobileConnected, String sessionid){
+        this.creationTime = new Date().getTime();
+//        this.taskDayCount = Constants.daysInSurvey;
+//        this.hour = getmillisecondToHour(creationTime);
+        this.NetworkType = NetworkType;
+        this.IsNetworkAvailable = IsNetworkAvailable;
+        this.IsConnected = IsConnected;
+        this.IsWifiAvailable = IsWifiAvailable;
+        this.IsMobileAvailable = IsMobileAvailable;
+        this.IsWifiConnected = IsWifiConnected;
+        this.IsMobileConnected = IsMobileConnected;
+        this.sessionid = sessionid;
+
+    }
+
     private long getmillisecondToHour(long timeStamp){
 
         Calendar calendar = Calendar.getInstance();
@@ -52,6 +69,14 @@ public class ConnectivityDataRecord implements DataRecord{
 
         return mhour;
 
+    }
+
+    public String getSessionid() {
+        return sessionid;
+    }
+
+    public void setSessionid(String sessionid) {
+        this.sessionid = sessionid;
     }
 
     public long getHour(){

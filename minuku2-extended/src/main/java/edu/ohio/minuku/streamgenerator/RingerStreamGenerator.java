@@ -13,6 +13,7 @@ import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.RingerDataRecordDAO;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.DataRecord.RingerDataRecord;
 import edu.ohio.minuku.stream.RingerStream;
 import edu.ohio.minukucore.dao.DAOException;
@@ -100,15 +101,24 @@ public class RingerStreamGenerator extends AndroidStreamGenerator<RingerDataReco
 
         Log.d(TAG, "updateStream called");
 
+        int session_id = 0;
+
+        int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
+
+        //if there exists an ongoing session
+        if (countOfOngoingSession>0){
+            session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
+        }
+
         RingerDataRecord ringerDataRecord = new RingerDataRecord(mRingerMode,mAudioMode,mStreamVolumeMusic
-                ,mStreamVolumeNotification,mStreamVolumeRing,mStreamVolumeVoicecall,mStreamVolumeSystem);
+                ,mStreamVolumeNotification,mStreamVolumeRing,mStreamVolumeVoicecall,mStreamVolumeSystem, String.valueOf(session_id));
         mStream.add(ringerDataRecord);
         Log.d(TAG, "Ringer to be sent to event bus" + ringerDataRecord);
         // also post an event.
         EventBus.getDefault().post(ringerDataRecord);
         try {
+
             mDAO.add(ringerDataRecord);
-//            mDAO.query_counting();
         } catch (DAOException e) {
             e.printStackTrace();
             return false;

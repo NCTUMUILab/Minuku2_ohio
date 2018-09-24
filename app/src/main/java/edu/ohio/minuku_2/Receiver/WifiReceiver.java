@@ -13,10 +13,10 @@ import android.os.Build;
 import android.util.Log;
 
 import org.javatuples.Ennead;
-import org.javatuples.Octet;
-import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.javatuples.Quintet;
+import org.javatuples.Sextet;
+import org.javatuples.Triplet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -83,10 +83,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v24";
+    private String versionNumber = "v25";
 
-    public static final int HTTP_TIMEOUT = 10000;
-    public static final int SOCKET_TIMEOUT = 20000;
+    public static final int HTTP_TIMEOUT = 10 * (int) Constants.MILLISECONDS_PER_SECOND;
+    public static final int SOCKET_TIMEOUT = 20 * (int) Constants.MILLISECONDS_PER_SECOND;
 
     private static final String postTripUrl = "http://mcog.asc.ohio-state.edu/apps/tripdump/";
     private static final String postDumpUrl = "http://mcog.asc.ohio-state.edu/apps/devicedump/";
@@ -169,10 +169,6 @@ public class WifiReceiver extends BroadcastReceiver {
             Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
         }
 
-//            nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
-
-//            nowTime = new Date().getTime(); //TODO for testing
-
         setNowTime();
 
         Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
@@ -200,6 +196,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
         //isAlive or checkin
 
+        //TODO for checking the server matter
         if(ScheduleAndSampleManager.getCurrentTimeInMillis() - lastCheckInTime >= Constants.MILLISECONDS_PER_HOUR * 3){
 
             //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
@@ -446,7 +443,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
                 }
 
-                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "Trip :"+annotatedtripdata.toString());
+                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "Trip ", annotatedtripdata.toString());
 
                 sessionJsons.add(annotatedtripdata);
             }catch (IndexOutOfBoundsException e){
@@ -549,7 +546,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     Log.d(TAG, "[show data response] SurveyLink data :"+surveyJson.toString());
 
-                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "SurveyLink :"+surveyJson.toString());
+                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "SurveyLink", surveyJson.toString());
 
                     try {
 
@@ -709,9 +706,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
         Log.d(TAG,"[show data response] checking data Dump : "+ data.toString());
 
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT,"Dump", data.toString());
+
         try {
 
-//            CSVHelper.dataUploadingCSV("Dump", data.toString());
             CSVHelper.dataUploadingCSV("Dump", "Going to send the data with EndTime : " + data.getString("EndTimeString"));
             CSVHelper.dataUploadingCSV("Dump", "Going to send the data with deviceId : " + data.getString("device_id"));
             CSVHelper.dataUploadingCSV("Dump", "Going to send the data with surveyDay : " + data.getString("d"));
@@ -744,6 +742,8 @@ public class WifiReceiver extends BroadcastReceiver {
                         data.toString(),
                         "Dump",
                         curr).get();
+
+            //TODO didn't return anything
 
             Log.d(TAG, "[show data response] Dump lastTimeInServer : "+lastTimeInServer);
 
@@ -791,9 +791,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private void setNowTime(){
 
-        nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
+//        nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
 
-//        nowTime = new Date().getTime(); //TODO for testing
+        nowTime = new Date().getTime(); //TODO for testing
     }
 
     //use HTTPAsyncTask to poHttpAsyncPostJsonTaskst data
@@ -884,7 +884,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
             int responseCode = conn.getResponseCode();
 
-            if(responseCode >= 400)
+            if(responseCode >= HttpsURLConnection.HTTP_BAD_REQUEST)
                 inputStream = conn.getErrorStream();
             else
                 inputStream = conn.getInputStream();
@@ -985,6 +985,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 for(int i=0;i<rows;i++) {
                     String timestamp = transCursor.getString(1);
                     String transportation = transCursor.getString(2);
+                    String sessionid = transCursor.getString(3);
 
                     //Log.d(TAG,"transportation : "+transportation+" timestamp : "+timestamp);
 
@@ -992,7 +993,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     String timestampInSec = timestamp.substring(0, timestamp.length()-3);
 
                     //<timestamps, Transportation>
-                    Pair<String, String> transportationTuple = new Pair<>(timestampInSec, transportation);
+                    Triplet<String, String, String> transportationTuple = new Triplet<>(timestampInSec, transportation, sessionid);
 
                     String dataInPythonTuple = TupleHelper.toPythonTuple(transportationTuple);
 
@@ -1094,6 +1095,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     String mostProbableActivity = transCursor.getString(2);
                     String probableActivities = transCursor.getString(3);
                     String detectedTime = transCursor.getString(4);
+                    String sessionid = transCursor.getString(5);
 
                     //split the mostProbableActivity into "type:conf"
                     String[] subMostActivity = mostProbableActivity.split(",");
@@ -1143,7 +1145,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     String detectedTimeInSec = detectedTime.substring(0, timestamp.length()-3);
 
                     //<timestamps, MostProbableActivity, ProbableActivities>
-                    Quartet<String, String, String, String> arTuple = new Quartet<>(timestampInSec, mostProbableActivity, probableActivities, detectedTimeInSec);
+                    Quintet<String, String, String, String, String> arTuple = new Quintet<>(timestampInSec, mostProbableActivity, probableActivities, detectedTimeInSec, sessionid);
 
                     String dataInPythonTuple = TupleHelper.toPythonTuple(arTuple);
 
@@ -1193,6 +1195,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     String streamVolumeRing = transCursor.getString(6);
                     String streamVolumeVoicecall = transCursor.getString(7);
                     String streamVolumeSystem = transCursor.getString(8);
+                    String sessionid = transCursor.getString(9);
 
                     //Log.d(TAG,"timestamp : "+timestamp+" RingerMode : "+RingerMode+" AudioMode : "+AudioMode+
 //                            " StreamVolumeMusic : "+StreamVolumeMusic+" StreamVolumeNotification : "+StreamVolumeNotification
@@ -1203,9 +1206,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     //<timestampInSec, streamVolumeSystem, streamVolumeVoicecall, streamVolumeRing,
                     // streamVolumeNotification, streamVolumeMusic, audioMode, ringerMode>
-                    Octet<String, String, String, String, String, String, String, String> ringerTuple
-                            = new Octet<>(timestampInSec, streamVolumeSystem, streamVolumeVoicecall, streamVolumeRing,
-                            streamVolumeNotification, streamVolumeMusic, audioMode, ringerMode);
+                    Ennead<String, String, String, String, String, String, String, String, String> ringerTuple
+                            = new Ennead<>(timestampInSec, streamVolumeSystem, streamVolumeVoicecall, streamVolumeRing,
+                            streamVolumeNotification, streamVolumeMusic, audioMode, ringerMode, sessionid);
 
                     String dataInPythonTuple = TupleHelper.toPythonTuple(ringerTuple);
 
@@ -1255,6 +1258,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     String IsMobileAvailable = transCursor.getString(6);
                     String IsWifiConnected = transCursor.getString(7);
                     String IsMobileConnected = transCursor.getString(8);
+                    String sessionid = transCursor.getString(9);
 
                     //Log.d(TAG,"timestamp : "+timestamp+" NetworkType : "+NetworkType+" IsNetworkAvailable : "+IsNetworkAvailable
 //                            +" IsConnected : "+IsConnected+" IsWifiAvailable : "+IsWifiAvailable
@@ -1264,10 +1268,10 @@ public class WifiReceiver extends BroadcastReceiver {
                     String timestampInSec = timestamp.substring(0, timestamp.length()-3);
 
                     //<timestampInSec, IsMobileConnected, IsWifiConnected, IsMobileAvailable,
-                    // IsWifiAvailable, IsConnected, IsNetworkAvailable, NetworkType>
-                    Octet<String, String, String, String, String, String, String, String> connectivityTuple
-                            = new Octet<>(timestampInSec, IsMobileConnected, IsWifiConnected, IsMobileAvailable,
-                            IsWifiAvailable, IsConnected, IsNetworkAvailable, NetworkType);
+                    // IsWifiAvailable, IsConnected, IsNetworkAvailable, NetworkType, sessionid>
+                    Ennead<String, String, String, String, String, String, String, String, String> connectivityTuple
+                            = new Ennead<>(timestampInSec, IsMobileConnected, IsWifiConnected, IsMobileAvailable,
+                            IsWifiAvailable, IsConnected, IsNetworkAvailable, NetworkType, sessionid);
 
                     String dataInPythonTuple = TupleHelper.toPythonTuple(connectivityTuple);
 
@@ -1315,15 +1319,16 @@ public class WifiReceiver extends BroadcastReceiver {
                     String BatteryPercentage = transCursor.getString(3);
                     String BatteryChargingState = transCursor.getString(4);
                     String isCharging = transCursor.getString(5);
+                    String sessionid = transCursor.getString(6);
 
                     //Log.d(TAG,"timestamp : "+timestamp+" BatteryLevel : "+BatteryLevel+" BatteryPercentage : "+
 //                            BatteryPercentage+" BatteryChargingState : "+BatteryChargingState+" isCharging : "+isCharging);
 
                     String timestampInSec = timestamp.substring(0, timestamp.length()-3);
 
-                    //<timestamps, isCharging, BatteryChargingState, BatteryPercentage, BatteryLevel>
-                    Quintet<String, String, String, String, String> batteryTuple
-                            = new Quintet<>(timestampInSec, isCharging, BatteryChargingState, BatteryPercentage, BatteryLevel);
+                    //<timestamps, isCharging, BatteryChargingState, BatteryPercentage, BatteryLevel, sessionid>
+                    Sextet<String, String, String, String, String, String> batteryTuple
+                            = new Sextet<>(timestampInSec, isCharging, BatteryChargingState, BatteryPercentage, BatteryLevel, sessionid);
 
                     String dataInPythonTuple = TupleHelper.toPythonTuple(batteryTuple);
 
@@ -1368,14 +1373,15 @@ public class WifiReceiver extends BroadcastReceiver {
                     String ScreenStatus = transCursor.getString(2);
                     String Latest_Used_App = transCursor.getString(3);
                     String Latest_Foreground_Activity = transCursor.getString(4);
+                    String sessionid = transCursor.getString(5);
 
                     //Log.d(TAG,"timestamp : "+timestamp+" ScreenStatus : "+ScreenStatus+" Latest_Used_App : "+Latest_Used_App+" Latest_Foreground_Activity : "+Latest_Foreground_Activity);
 
                     String timestampInSec = timestamp.substring(0, timestamp.length()-3);
 
                     //<timestamp, ScreenStatus, Latest_Used_App, Latest_Foreground_Activity>
-                    Quartet<String, String, String, String> appUsageTuple
-                            = new Quartet<>(timestampInSec, ScreenStatus, Latest_Used_App, Latest_Foreground_Activity);
+                    Quintet<String, String, String, String, String> appUsageTuple
+                            = new Quintet<>(timestampInSec, ScreenStatus, Latest_Used_App, Latest_Foreground_Activity, sessionid);
 
                     String dataInPythonTuple = TupleHelper.toPythonTuple(appUsageTuple);
 
@@ -1417,12 +1423,14 @@ public class WifiReceiver extends BroadcastReceiver {
                 for(int i=0;i<rows;i++) {
                     String timestamp = cursor.getString(1);
                     String action = cursor.getString(2);
+                    String userpresent = cursor.getString(3);
+                    String sessionid = cursor.getString(4);
 
                     //convert into second
                     String timestampInSec = timestamp.substring(0, timestamp.length()-3);
 
                     //<timestamps, action>
-                    Pair<String, String> actionLogTuple = new Pair<>(timestampInSec, action);
+                    Quartet<String, String, String, String> actionLogTuple = new Quartet<>(timestampInSec, action, userpresent, sessionid);
 
                     String dataInPythonTuple = TupleHelper.toPythonTuple(actionLogTuple);
 
@@ -1558,7 +1566,6 @@ public class WifiReceiver extends BroadcastReceiver {
         protected String doInBackground(String... params) {
 
             String result=null;
-//            String url = params[0];
 
             HttpURLConnection connection = null;
             BufferedReader reader = null;
@@ -1566,26 +1573,40 @@ public class WifiReceiver extends BroadcastReceiver {
             try {
                 URL url = new URL(params[0]);
                 connection = (HttpURLConnection) url.openConnection();
+                connection.setReadTimeout(HTTP_TIMEOUT);
+                connection.setConnectTimeout(SOCKET_TIMEOUT);
                 connection.connect();
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode != HttpsURLConnection.HTTP_OK) {
+                    throw new IOException("HTTP error code: " + responseCode);
+                }
 
                 InputStream stream = connection.getInputStream();
 
-                reader = new BufferedReader(new InputStreamReader(stream));
+                if (stream != null) {
 
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
+                    reader = new BufferedReader(new InputStreamReader(stream));
 
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line+"\n");
-                    //Log.d(TAG, "Response : " + line);
+                    StringBuffer buffer = new StringBuffer();
+                    String line = "";
+
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line+"\n");
+                    }
+
+                    return buffer.toString();
+                }else{
+
+                    return "";
                 }
 
-                return buffer.toString();
-
             } catch (MalformedURLException e) {
-                //e.printStackTrace();
+                Log.e(TAG, "MalformedURLException");
+                e.printStackTrace();
             } catch (IOException e) {
-                //e.printStackTrace();
+                Log.e(TAG, "IOException");
+                e.printStackTrace();
             } finally {
                 if (connection != null) {
                     connection.disconnect();

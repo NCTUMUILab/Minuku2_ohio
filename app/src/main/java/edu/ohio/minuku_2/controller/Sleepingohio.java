@@ -58,7 +58,6 @@ public class Sleepingohio extends AppCompatActivity {
         setContentView(R.layout.settingsleeptimepage);
 
         sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
-//        mContext = getApplicationContext();
         mContext = Sleepingohio.this;
 
         Log.d(TAG, "hasNavBar(this.getResources()) : "+hasNavBar(this.getResources()));
@@ -110,7 +109,25 @@ public class Sleepingohio extends AppCompatActivity {
 
     }
 
-    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+
+            Log.d(TAG, "onKeyDown");
+
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+
+            Sleepingohio.this.finish();
+
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    //TODO deprecated
+    /*@Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
 
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
@@ -125,42 +142,7 @@ public class Sleepingohio extends AppCompatActivity {
 
             if(sleepingStartTime.equals(Constants.NOT_A_NUMBER) || sleepingEndTime.equals(Constants.NOT_A_NUMBER)) {
 
-                //set the time as default time which is from 12:00am to 08:00am
-                SimpleDateFormat sdf_today_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
-                String todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_today_date);
-
-                String sleepTimeByDefault = todayDate + " 00:00:00";
-                String wakeupTimeByDefault = todayDate + " 08:00:00";
-
-                sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
-
-                sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepTimeByDefault, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
-                sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(wakeupTimeByDefault, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
-                Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
-                Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
-
-                SimpleDateFormat sdf2 = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
-                sleepStartTimeRaw = ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf2);
-                sleepEndTimeRaw = ScheduleAndSampleManager.getTimeString(sleepEndTimeLong, sdf2);
-
-                Log.d(TAG, "SleepingStartTime Raw : "+sleepStartTimeRaw);
-                Log.d(TAG, "SleepingEndTime Raw : "+sleepEndTimeRaw);
-
-                boolean firstTimeEnterSleepTimePage = sharedPrefs.getBoolean("FirstTimeEnterSleepTimePage", false);
-
-                if(firstTimeEnterSleepTimePage)
-                    cancelAlarmsByResetSleepTime();
-
-                sharedPrefs.edit().putBoolean("FirstTimeEnterSleepTimePage", true).apply();
-
-                sharedPrefs.edit().putString("SleepingStartTime", sleepStartTimeRaw).apply();
-                sharedPrefs.edit().putString("SleepingEndTime", sleepEndTimeRaw).apply();
-
-                //for easy to maintain
-                sharedPrefs.edit().putLong("sleepStartTimeLong", sleepStartTimeLong).apply();
-                sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
-
-                Utils.settingAllDaysIntervalSampling(getApplicationContext());
+                setDefaultSleepTime();
 
                 Intent intent = new Intent(Sleepingohio.this, MainActivity.class);
                 Bundle bundle = new Bundle();
@@ -184,6 +166,48 @@ public class Sleepingohio extends AppCompatActivity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }*/
+
+    //TODO deprecated
+    private void setDefaultSleepTime(){
+
+        //set the time as default time which is from 12:00am to 08:00am
+        SimpleDateFormat sdf_today_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_today_date);
+
+        String sleepTimeByDefault = todayDate + " 00:00:00";
+        String wakeupTimeByDefault = todayDate + " 08:00:00";
+
+        sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
+
+        sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepTimeByDefault, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
+        sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(wakeupTimeByDefault, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
+        Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
+        Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
+
+        SimpleDateFormat sdf2 = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
+        sleepStartTimeRaw = ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf2);
+        sleepEndTimeRaw = ScheduleAndSampleManager.getTimeString(sleepEndTimeLong, sdf2);
+
+        Log.d(TAG, "SleepingStartTime Raw : "+sleepStartTimeRaw);
+        Log.d(TAG, "SleepingEndTime Raw : "+sleepEndTimeRaw);
+
+        boolean firstTimeEnterSleepTimePage = sharedPrefs.getBoolean("FirstTimeEnterSleepTimePage", false);
+
+        if(firstTimeEnterSleepTimePage)
+            cancelAlarmsByResetSleepTime();
+
+        sharedPrefs.edit().putBoolean("FirstTimeEnterSleepTimePage", true).apply();
+
+        sharedPrefs.edit().putString("SleepingStartTime", sleepStartTimeRaw).apply();
+        sharedPrefs.edit().putString("SleepingEndTime", sleepEndTimeRaw).apply();
+
+        //for easy to maintain
+        sharedPrefs.edit().putLong("sleepStartTimeLong", sleepStartTimeLong).apply();
+        sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
+
+        Utils.settingAllDaysIntervalSampling(getApplicationContext());
+
     }
 
     @Override

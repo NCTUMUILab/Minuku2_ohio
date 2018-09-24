@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import java.util.List;
 import java.util.UUID;
@@ -58,6 +57,7 @@ public class ConnectivityDataRecordDAO implements DAO<ConnectivityDataRecord>{
             values.put(DBHelper.IsMobileAvailable_col, entity.getIsMobileAvailable());
             values.put(DBHelper.IsWifiConnected_col, entity.getIsWifiConnected());
             values.put(DBHelper.IsMobileConnected_col, entity.getIsMobileConnected());
+            values.put(DBHelper.COL_SESSION_ID, entity.getSessionid());
 
             db.insert(DBHelper.connectivity_table, null, values);
         }
