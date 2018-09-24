@@ -15,6 +15,7 @@ public class TransportationModeDataRecord implements DataRecord{
     private int taskDayCount;
     private long hour;
     public String ConfirmedActivityType; //
+    private String sessionid;
 
     public TransportationModeDataRecord(){}
 
@@ -23,6 +24,14 @@ public class TransportationModeDataRecord implements DataRecord{
 //        this.taskDayCount = Constants.daysInSurvey;
 //        this.hour = getmillisecondToHour(creationTime);
         this.ConfirmedActivityType = ConfirmedActivityType;
+    }
+
+    public TransportationModeDataRecord(String ConfirmedActivityType, String sessionid){
+        this.creationTime = new Date().getTime();
+//        this.taskDayCount = Constants.daysInSurvey;
+//        this.hour = getmillisecondToHour(creationTime);
+        this.ConfirmedActivityType = ConfirmedActivityType;
+        this.sessionid = sessionid;
     }
 
     private long getmillisecondToHour(long timeStamp){
@@ -34,6 +43,10 @@ public class TransportationModeDataRecord implements DataRecord{
 
         return mhour;
 
+    }
+
+    public String getSessionid() {
+        return sessionid;
     }
 
     public long getHour(){

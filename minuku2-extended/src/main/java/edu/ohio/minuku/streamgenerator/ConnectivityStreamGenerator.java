@@ -14,6 +14,7 @@ import edu.ohio.minuku.dao.ConnectivityDataRecordDAO;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.DataRecord.ConnectivityDataRecord;
 import edu.ohio.minuku.stream.ConnectivityStream;
 import edu.ohio.minukucore.dao.DAOException;
@@ -95,19 +96,29 @@ public class ConnectivityStreamGenerator extends AndroidStreamGenerator<Connecti
     public boolean updateStream() {
 
         Log.d(TAG, "updateStream called");
+
+        int session_id = 0;
+
+        int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
+
+        //if there exists an ongoing session
+        if (countOfOngoingSession>0){
+            session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
+        }
+
         ConnectivityDataRecord connectivityDataRecord =
                 new ConnectivityDataRecord(mNetworkType,mIsNetworkAvailable, mIsConnected, mIsWifiAvailable,
-                        mIsMobileAvailable, mIsWifiConnected, mIsMobileConnected);
+                        mIsMobileAvailable, mIsWifiConnected, mIsMobileConnected, String.valueOf(session_id));
 
         toOtherconnectDataRecord = connectivityDataRecord;
 
         mStream.add(connectivityDataRecord);
-        Log.d(TAG, "CheckFamiliarOrNot to be sent to event bus" + connectivityDataRecord);
+        Log.d(TAG, "Connectivity to be sent to event bus" + connectivityDataRecord);
         // also post an event.
         EventBus.getDefault().post(connectivityDataRecord);
         try {
+
             mDAO.add(connectivityDataRecord);
-//            mDAO.query_counting();
         } catch (DAOException e) {
             e.printStackTrace();
             return false;

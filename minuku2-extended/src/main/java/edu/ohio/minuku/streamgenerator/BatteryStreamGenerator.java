@@ -13,6 +13,7 @@ import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.BatteryDataRecordDAO;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.DataRecord.BatteryDataRecord;
 import edu.ohio.minuku.stream.BatteryStream;
 import edu.ohio.minukucore.dao.DAOException;
@@ -68,8 +69,18 @@ public class BatteryStreamGenerator extends AndroidStreamGenerator<BatteryDataRe
     public boolean updateStream() {
         Log.d(TAG, "updateStream called");
 
+        int session_id = 0;
+
+        int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
+
+        //if there exists an ongoing session
+        if (countOfOngoingSession>0){
+            session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
+        }
+
+
         BatteryDataRecord batteryDataRecord
-                = new BatteryDataRecord(mBatteryLevel, mBatteryPercentage, mBatteryChargingState, isCharging);
+                = new BatteryDataRecord(mBatteryLevel, mBatteryPercentage, mBatteryChargingState, isCharging, String.valueOf(session_id));
         mStream.add(batteryDataRecord);
         Log.d(TAG, "CheckFamiliarOrNot to be sent to event bus" + batteryDataRecord);
         // also post an event.

@@ -6,16 +6,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import org.greenrobot.eventbus.EventBus;
-
+import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.CSVHelper;
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.UserInteractionDataRecordDAO;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.model.DataRecord.UserInteractionDataRecord;
 import edu.ohio.minuku.stream.UserInteractionStream;
-import edu.ohio.minukucore.dao.DAOException;
 import edu.ohio.minukucore.exception.StreamAlreadyExistsException;
 import edu.ohio.minukucore.exception.StreamNotFoundException;
 import edu.ohio.minukucore.stream.Stream;
@@ -69,22 +68,8 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
 
         Log.e(TAG, "Update stream called.");
 
-        UserInteractionDataRecord userInteractionDataRecord = new UserInteractionDataRecord(present, unlock);
+        DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), present, unlock);
 
-        mStream.add(userInteractionDataRecord);
-
-        Log.d(TAG, "UserInteractionDataRecord to be sent to event bus" + userInteractionDataRecord);
-
-        EventBus.getDefault().post(userInteractionDataRecord);
-        try {
-            mDAO.add(userInteractionDataRecord);
-        } catch (DAOException e) {
-            e.printStackTrace();
-            return false;
-        }catch (NullPointerException e){ //Sometimes no data is normal
-            e.printStackTrace();
-            return false;
-        }
         return true;
     }
 

@@ -16,6 +16,7 @@ import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.Utilities.Utilities;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.DBManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.AnnotationSet;
 import edu.ohio.minuku.model.Session;
 
@@ -76,6 +77,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     //ActionLog
     public static final String action_col = "Action";
+    public static final String userUnlock_col = "UserUnlock";
 
     //ringer
     public static final String RingerMode_col = "RingerMode";
@@ -161,7 +163,6 @@ public class DBHelper extends SQLiteOpenHelper {
     //table name
     public static final String surveydayWithDate_table = "SurveydayWithDate";
     public static final String surveyLink_table = "SurveyLinkList";
-    public static final String locationNoGoogle_table = "LocationNoGoogle";
     public static final String STREAM_TYPE_LOCATION = "Location";
     public static final String activityRecognition_table = "ActivityRecognition";
     public static final String transportationMode_table = "TransportationMode";
@@ -210,13 +211,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
         createSurveyDayWithDateTable(db);
         createSurveyLinkTable(db);
-        createTransportationModeTable(db);
-        createActionLogTable(db);
+
         createSessionTable(db);
-        createARTable(db);
         createUserInteractionTable(db);
+        createActionLogTable(db);
+
+        createTransportationModeTable(db);
+        createARTable(db);
         createLocationTable(db);
-        createLocationNoGoogleTable(db);
         createTelephonyTable(db);
         createRingerTable(db);
         createBatteryTable(db);
@@ -279,7 +281,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 PhoneSignalType_col + " INT," +
                 GsmSignalStrength_col + " INT," +
                 LTESignalStrength_col + " INT," +
-                CdmaSignalStrengthLevel_col + " INT" +
+                CdmaSignalStrengthLevel_col + " INT," +
+                COL_SESSION_ID + " TEXT" +
                 ");";
 
         db.execSQL(cmd);
@@ -292,7 +295,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 transportationMode_table + "(" +
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
                 TIME + " TEXT NOT NULL," +
-                confirmTransportation_col+" TEXT" +
+                confirmTransportation_col+" TEXT, " +
+                COL_SESSION_ID + " TEXT " +
                 ");";
 
         db.execSQL(cmd);
@@ -324,7 +328,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 actionLog_table + "(" +
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
                 TIME + " TEXT NOT NULL," +
-                action_col+" TEXT " +
+                action_col+" TEXT, " +
+                userUnlock_col + " TEXT, "+
+                COL_SESSION_ID + " TEXT" +
                 ");";
 
         db.execSQL(cmd);
@@ -342,7 +348,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 TIME + " TEXT NOT NULL," +
                 ScreenStatus_col+" TEXT," +
                 Latest_Used_App_col+" TEXT," +
-                Latest_Foreground_Activity_col+" TEXT" +
+                Latest_Foreground_Activity_col+" TEXT," +
+                COL_SESSION_ID + " TEXT" +
                 ");";
 
         db.execSQL(cmd);
@@ -361,7 +368,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 IsWifiAvailable_col+" BOOLEAN," +
                 IsMobileAvailable_col+" BOOLEAN," +
                 IsWifiConnected_col+" BOOLEAN," +
-                IsMobileConnected_col+" BOOLEAN" +
+                IsMobileConnected_col+" BOOLEAN," +
+                COL_SESSION_ID + " TEXT" +
                 ");";
 
         db.execSQL(cmd);
@@ -377,7 +385,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 BatteryLevel_col+" INTEGER," +
                 BatteryPercentage_col+" FLOAT," +
                 BatteryChargingState_col+" TEXT," +
-                isCharging_col+" BOOLEAN" +
+                isCharging_col+" BOOLEAN," +
+                COL_SESSION_ID + " TEXT" +
                 ");";
 
         db.execSQL(cmd);
@@ -396,7 +405,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 StreamVolumeNotification_col+" INTEGER," +
                 StreamVolumeRing_col+" INTEGER," +
                 StreamVolumeVoicecall_col+" INTEGER," +
-                StreamVolumeSystem_col+" INTEGER" +
+                StreamVolumeSystem_col+" INTEGER," +
+                COL_SESSION_ID + " TEXT" +
                 ");";
 
         db.execSQL(cmd);
@@ -411,7 +421,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 TIME + " TEXT NOT NULL," +
                 MostProbableActivity_col+" TEXT, " +
                 ProbableActivities_col +" TEXT, " +
-                DetectedTime_col + " TEXT "+
+                DetectedTime_col + " TEXT, "+
+                COL_SESSION_ID + " TEXT" +
                 ");";
 
         db.execSQL(cmd);
@@ -433,22 +444,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 Bearing_col +" FLOAT," +
                 Provider_col +" TEXT, " +
                 COL_SESSION_ID + " TEXT" +
-                ");";
-
-        db.execSQL(cmd);
-
-    }
-
-    public void createLocationNoGoogleTable(SQLiteDatabase db){
-       //Log.d(TAG,"create location NoGoogle table");
-
-        String cmd = "CREATE TABLE " +
-                locationNoGoogle_table + "(" +
-                id+" INTEGER PRIMARY KEY NOT NULL, " +
-                TIME + " TEXT NOT NULL," +
-                latitude_col+" FLOAT,"+
-                longitude_col +" FLOAT, " +
-                Accuracy_col + " FLOAT " +
                 ");";
 
         db.execSQL(cmd);
@@ -545,6 +540,51 @@ public class DBHelper extends SQLiteOpenHelper {
 
             values.put(DBHelper.TIME, createdTime);
             values.put(DBHelper.action_col, action);
+            values.put(DBHelper.userUnlock_col, "");
+
+            int session_id = 0;
+
+            int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
+
+            //if there exists an ongoing session
+            if (countOfOngoingSession>0){
+                session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
+            }
+
+            values.put(DBHelper.COL_SESSION_ID, String.valueOf(session_id));
+
+            rowId = db.insert(DBHelper.actionLog_table, null, values);
+        }
+        catch(NullPointerException e){
+            //e.printStackTrace();
+            rowId = -1;
+        }
+
+        return rowId;
+    }
+
+    public static long insertActionLogTable(long createdTime, String userpresent, String userunlock){
+
+        long rowId = 0;
+
+        try {
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            values.put(DBHelper.TIME, createdTime);
+            values.put(DBHelper.action_col, userpresent);
+            values.put(DBHelper.userUnlock_col, userunlock);
+
+            int session_id = 0;
+
+            int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
+
+            //if there exists an ongoing session
+            if (countOfOngoingSession>0){
+                session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
+            }
+
+            values.put(DBHelper.COL_SESSION_ID, String.valueOf(session_id));
 
             rowId = db.insert(DBHelper.actionLog_table, null, values);
         }

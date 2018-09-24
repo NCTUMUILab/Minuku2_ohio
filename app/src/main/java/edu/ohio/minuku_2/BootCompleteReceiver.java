@@ -31,6 +31,8 @@ public class BootCompleteReceiver extends BroadcastReceiver {
                 dbhelper = new DBHelper(context);
 
                 dbhelper.getWritableDatabase();
+
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "0", "1");
             }finally {
 
                 //here we start the service

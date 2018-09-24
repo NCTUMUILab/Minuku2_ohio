@@ -25,6 +25,7 @@ public class AppUsageDataRecord implements DataRecord{
     private String Recent_Apps;
     //private String Users;
     private String Latest_Foreground_Activity;
+    private String sessionid;
 
     private Context context;
 
@@ -51,13 +52,27 @@ public class AppUsageDataRecord implements DataRecord{
         //this.Users = Users;
     }
 
-    public AppUsageDataRecord(String Screen_Status, String Latest_Used_App, String Latest_Used_App_Time, String Recent_Apps) {
+    public AppUsageDataRecord(String Screen_Status, String Latest_Used_App, String Latest_Foreground_Activity, String sessionid) {
+        this.creationTime = new java.util.Date().getTime();
+        this.Screen_Status = Screen_Status;
+        this.Latest_Used_App = Latest_Used_App;
+        this.Latest_Foreground_Activity = Latest_Foreground_Activity;
+        this.sessionid = sessionid;
+        //this.Users = Users;
+    }
+
+    /*public AppUsageDataRecord(String Screen_Status, String Latest_Used_App, String Latest_Used_App_Time, String Recent_Apps) {
         this.creationTime = new java.util.Date().getTime();
         this.Screen_Status = Screen_Status;
         this.Latest_Used_App = Latest_Used_App;
         this.Latest_Used_App_Time = Latest_Used_App_Time;
         this.Recent_Apps = Recent_Apps;
         //this.Users = Users;
+    }*/
+
+
+    public String getSessionid() {
+        return sessionid;
     }
 
     @Override

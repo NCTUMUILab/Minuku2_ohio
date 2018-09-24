@@ -31,6 +31,8 @@ public class ActivityRecognitionDataRecord implements DataRecord {
     protected JSONObject mData;
     protected long _timestamp;
     protected String mTimestring;
+    private String sessionid;
+
 
     public ActivityRecognitionDataRecord(){
         this.creationTime = new Date().getTime();
@@ -56,6 +58,14 @@ public class ActivityRecognitionDataRecord implements DataRecord {
 
     }
 
+    public ActivityRecognitionDataRecord(DetectedActivity mostProbableActivity, List<DetectedActivity> mProbableActivities,long detectedtime, String sessionid){
+        this.creationTime = new Date().getTime();
+        this.MostProbableActivity = mostProbableActivity;
+        this.mProbableActivities = mProbableActivities;
+        this.Detectedtime = detectedtime;
+        this.sessionid = sessionid;
+    }
+
     public ActivityRecognitionDataRecord(DetectedActivity MostProbableActivity,long Detectedtime){
         this.creationTime = new Date().getTime();
 //        this.taskDayCount = Constants.daysInSurvey;
@@ -63,6 +73,10 @@ public class ActivityRecognitionDataRecord implements DataRecord {
         this.MostProbableActivity = MostProbableActivity;
         this.Detectedtime = Detectedtime;
 
+    }
+
+    public String getSessionid() {
+        return sessionid;
     }
 
     public DetectedActivity getMostProbableActivity(){

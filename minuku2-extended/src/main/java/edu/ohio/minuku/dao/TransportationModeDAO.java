@@ -69,6 +69,7 @@ public class TransportationModeDAO implements DAO<TransportationModeDataRecord>{
 //            values.put(DBHelper.daysInSurvey, entity.getTaskDayCount());
 //            values.put(DBHelper.HOUR, entity.getHour());
             values.put(DBHelper.confirmTransportation_col, entity.getConfirmedActivityString());
+            values.put(DBHelper.COL_SESSION_ID, entity.getSessionid());
 
             db.insert(DBHelper.transportationMode_table, null, values);
         }

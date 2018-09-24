@@ -24,6 +24,7 @@ import edu.ohio.minuku.dao.AppUsageDataRecordDAO;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
+import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.DataRecord.AppUsageDataRecord;
 import edu.ohio.minuku.stream.AppUsageStream;
 import edu.ohio.minukucore.dao.DAOException;
@@ -134,8 +135,17 @@ public class AppUsageStreamGenerator extends AndroidStreamGenerator<AppUsageData
 //        getScreenStatus();
 //        getAppUsageUpdate();
 
+        int session_id = 0;
+
+        int countOfOngoingSession = SessionManager.getInstance().getOngoingSessionIdList().size();
+
+        //if there exists an ongoing session
+        if (countOfOngoingSession>0){
+            session_id = SessionManager.getInstance().getOngoingSessionIdList().get(0);
+        }
+
         Log.d(TAG,"Screen_Status : "+Screen_Status+" LastestForegroundPackage : "+mLastestForegroundPackage+" LastestForegroundActivity : "+mLastestForegroundActivity);
-        AppUsageDataRecord appUsageDataRecord = new AppUsageDataRecord(Screen_Status,mLastestForegroundPackage,mLastestForegroundActivity);
+        AppUsageDataRecord appUsageDataRecord = new AppUsageDataRecord(Screen_Status,mLastestForegroundPackage,mLastestForegroundActivity, String.valueOf(session_id));
 
         //appUsageDataRecord.setCreationTime();
         if(appUsageDataRecord!=null) {
