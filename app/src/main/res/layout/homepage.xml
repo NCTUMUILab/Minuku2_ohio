@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/onlyDeviceId"
@@ -11,6 +11,7 @@
     android:weightSum="1">
 
     <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#666666"
@@ -32,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:paddingRight="30dp"
-            android:text="v25"
+            android:text="v26"
             android:textColor="#ffffff"
             android:textSize="24sp" />
 
@@ -40,15 +41,17 @@
 
 
     <LinearLayout
+        android:id="@+id/layout_userinform"
         android:layout_width="match_parent"
         android:layout_height="111dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/toolbar">
 
         <TextView
             android:id="@+id/userid"
             android:layout_width="234dp"
             android:layout_height="match_parent"
-            android:layout_below="@+id/button2"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
             android:gravity="center_vertical|center"
@@ -60,7 +63,6 @@
             android:id="@+id/group_num"
             android:layout_width="123dp"
             android:layout_height="match_parent"
-            android:layout_below="@+id/button2"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
             android:gravity="center_vertical|center"
@@ -68,70 +70,34 @@
             android:textSize="30sp" />
     </LinearLayout>
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="28dp" />
+    <Button
+        android:id="@+id/Annotate"
+        android:layout_width="250dp"
+        android:layout_height="85dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/button_style"
+        android:text="Trips"
+        android:textAlignment="center"
+        android:textColor="#666666"
+        android:textSize="30sp"
+        android:layout_below="@id/layout_userinform"
+        android:layout_centerHorizontal="true"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:gravity="center_vertical|center_horizontal"
-        android:orientation="horizontal"
-        android:weightSum="1">
-
-        <Button
-            android:id="@+id/Annotate"
-            android:layout_width="250dp"
-            android:layout_height="85dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/button_style"
-            android:text="Trips"
-            android:textAlignment="center"
-            android:textColor="#666666"
-            android:textSize="30sp" />
-
-        <!-- <ImageView
-            android:layout_height="30dp"
-            android:layout_width="30dp"
-            android:layout_gravity="center_vertical|center_horizontal"
-            android:id="@+id/tripstatus">
-
-        </ImageView>-->
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:gravity="center_vertical|center_horizontal"
-        android:orientation="horizontal"
-        android:weightSum="1">
-
-        <Button
-            android:id="@+id/linkList"
-            android:layout_width="250dp"
-            android:layout_height="85dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/button_style"
-            android:text="Surveys"
-            android:textAlignment="center"
-            android:textColor="#666666"
-            android:textSize="30sp"
-            android:visibility="visible" />
-
-        <!--<ImageView
-            android:layout_height="30dp"
-            android:layout_width="30dp"
-            android:layout_gravity="center_vertical|center_horizontal"
-            android:id="@+id/surveystatus">
-
-        </ImageView>-->
-
-    </LinearLayout>
+    <Button
+        android:id="@+id/linkList"
+        android:layout_width="250dp"
+        android:layout_height="85dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/button_style"
+        android:text="Surveys"
+        android:textAlignment="center"
+        android:textColor="#666666"
+        android:textSize="30sp"
+        android:visibility="visible"
+        android:layout_below="@id/Annotate"
+        android:layout_centerHorizontal="true"/>
 
     <TextView
         android:id="@+id/sleepingTime"
@@ -140,7 +106,9 @@
         android:layout_gravity="center"
         android:gravity="center_vertical|center_horizontal"
         android:textColor="#ffffff"
-        android:textSize="25sp" />
+        android:textSize="25sp"
+        android:layout_below="@id/linkList"
+        android:layout_centerHorizontal="true"/>
 
     <Button
         android:id="@+id/settingSleepTime"
@@ -151,7 +119,23 @@
         android:text="Sleep time"
         android:textAlignment="center"
         android:textColor="#666666"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:layout_below="@id/sleepingTime"
+        android:layout_centerHorizontal="true"/>
+
+    <Button
+        android:id="@+id/help"
+        android:layout_width="130dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/button_style"
+        android:text="Help"
+        android:textAlignment="center"
+        android:textColor="#666666"
+        android:textSize="18sp"
+        android:layout_below="@id/settingSleepTime"
+        android:layout_centerHorizontal="true"/>
 
     <Button
         android:id="@+id/closeService"
@@ -162,6 +146,8 @@
         android:text="closeService"
         android:textColor="#666666"
         android:textSize="18sp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:layout_below="@id/help"
+        android:layout_centerHorizontal="true"/>
 
-</LinearLayout>
+</RelativeLayout>

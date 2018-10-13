@@ -93,7 +93,10 @@ public class SurveyTriggerManager {
     private String participantID, groupNum;
     private int weekNum, dailySurveyNum, dailyResponseNum;
 
-    private final String LINK = "https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";//"https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";
+    private final String LINK_NCTU = "https://nctucommunication.qualtrics.com/jfe/form/SV_aWcHPkmdagnfgDb";
+    private final String LINK_OHIO = "https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";
+    private final String LINK = LINK_OHIO;
+
     private final String SURVEY_TEXT = "You have a new survey available now.";
 
     private final int dist_Lowerbound_Outdoorwalking = 50;
@@ -756,6 +759,7 @@ public class SurveyTriggerManager {
                 && Config.daysInSurvey != Config.downloadedDayInSurvey
                 && Config.daysInSurvey != -1
                 && Config.daysInSurvey != 0
+                && Config.daysInSurvey <= Constants.FINALDAY
                 ) {
 
             isTimeToSendSurvey = true;

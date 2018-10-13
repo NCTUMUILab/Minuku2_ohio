@@ -71,7 +71,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -107,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView user_id;
     private TextView sleepingtime;
 
-    private Button ohio_settingSleepTime, ohio_annotate, closeService, tolinkList;
+    private Button ohio_settingSleepTime, ohio_annotate, closeService, tolinkList, help;
     private String projName = "Ohio";
 
     private int requestCode_setting = 1;
@@ -128,15 +127,15 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
 
-        //for testing the over date of the research
+        //TODO if the daysInSurvey is already set, send to userinform again
 
-        if(Config.daysInSurvey > Constants.FINALDAY +1){
+        if(Config.daysInSurvey > Constants.FINALDAY + 1){
 
             setContentView(R.layout.homepage_complete);
             Button finalSurvey = (Button) findViewById(R.id.finalSurvey);
 
             boolean isFinalButtonClicked = sharedPrefs.getBoolean("finalButtonClicked", false);
-            //TODO check the word looks like
+
             String finalButtonText = "PART C\n20 minutes";
             Spannable spannable = new SpannableString(finalButtonText);
             spannable.setSpan(new StyleSpan(Typeface.NORMAL), 0, 6,Spannable.SPAN_INCLUSIVE_INCLUSIVE);
@@ -312,15 +311,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.homepage);
 
         /* alertdialog for checking userid */
-        long downloadtime = -999;
-        try {
-
-            PackageManager pm = getPackageManager();
-            downloadtime = pm.getPackageInfo(Constants.appNameString, 0).firstInstallTime;
-        } catch (PackageManager.NameNotFoundException e) {
-
-            Log.e(TAG, "Exception", e);
-        }
+        long downloadtime = Utils.getDownloadedTime(this);
 
         Log.d(TAG, "downloadtime : " + ScheduleAndSampleManager.getTimeString(downloadtime));
 
@@ -366,38 +357,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /*if (Config.daysInSurvey > Constants.FINALDAY) {
-
-            tolinkList.setText("Final Survey");
-            tolinkList.setOnClickListener(new Button.OnClickListener() {
-
-                @Override
-                public void onClick(View view) {
-
-                    DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to Survey Page");
-
-                    String url = Constants.FINAL_SURVEY_URL+"?d="+ Config.daysInSurvey+"&p="+ Config.USER_ID;
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    startActivity(intent);
-                }
-            });
-        }else{
-
-            tolinkList.setOnClickListener(new Button.OnClickListener() {
-
-                @Override
-                public void onClick(View view) {
-
-                    DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - to Survey Page");
-
-                    startActivity(new Intent(MainActivity.this, SurveyActivity.class));
-                }
-            });
-        }*/
-
         ohio_settingSleepTime = (Button) findViewById(R.id.settingSleepTime);
         ohio_settingSleepTime.setOnClickListener(settingSleepTimeing);
+
+        help = (Button) findViewById(R.id.help);
+        help.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String url = Constants.HELP_URL;
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(url));
+                startActivity(intent);
+            }
+        });
 
         ohio_annotate = (Button) findViewById(R.id.Annotate);
         ohio_annotate.setOnClickListener(ohio_annotateing);
@@ -532,6 +505,16 @@ public class MainActivity extends AppCompatActivity {
                         }
                         else {
 
+                            long installedTime = sharedPrefs.getLong("installedTime", Constants.INVALID_IN_LONG);
+
+                            boolean installedOrNot = false;
+                            if(installedTime == Constants.INVALID_IN_LONG){
+
+                                sharedPrefs.edit().putLong("installedTime", ScheduleAndSampleManager.getCurrentTimeInMillis()).apply();
+
+                                installedOrNot = true;
+                            }
+
                             sharedPrefs.edit().putString("userid", inputID).apply();
                             Config.USER_ID = sharedPrefs.getString("userid", "NA");
                             user_id.setText("Confirmation #");
@@ -544,9 +527,11 @@ public class MainActivity extends AppCompatActivity {
                             sharedPrefs.edit().putString("Email",inputEmail).apply();
                             Config.Email = sharedPrefs.getString("Email", "NA");
 
+
+
                             boolean isEmailValid;
 
-                            isEmailValid = sendingUserInform();
+                            isEmailValid = sendingUserInform(installedOrNot);
                             //TODO for testing
 //                            isEmailValid = true;
 //                            Config.daysInSurvey = 0;
@@ -598,7 +583,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private boolean sendingUserInform(){
+    private boolean sendingUserInform(boolean installedOrNot){
 
         Log.d(TAG, "sendingUserInform");
 
@@ -606,7 +591,7 @@ public class MainActivity extends AppCompatActivity {
 
 //       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=333333
 //      deviceid=375996574474999&email=none@nobody.com&userid=3333333
-        String link = Constants.CHECK_IN_URL + "deviceid=" + Config.DEVICE_ID + "&email=" + Config.Email+"&userid="+ Config.USER_ID;
+        String link = Constants.CHECK_IN_URL + "deviceid=" + Config.DEVICE_ID + "&email=" + Config.Email+"&userid="+ Config.USER_ID+"&install="+installedOrNot;
         String userInformInString = null;
         JSONObject userInform = null;
 
@@ -632,12 +617,17 @@ public class MainActivity extends AppCompatActivity {
             setMidnightStart(userInform);
 
             //TODO if the current day is not day 0, check the email
-            String saved_email = userInform.getString("saved_email");
+            String numrecs = userInform.getString("numrecs");
+
+            Log.d(TAG, "numrecs : "+ numrecs);
+
             String email = userInform.getString("email");
+
+            Log.d(TAG, "email : "+ email);
 
             if(Config.daysInSurvey != 0 && Config.daysInSurvey != -1) {
 
-                if (!email.equals(saved_email)) {
+                if (!email.equals(Config.Email) && !numrecs.equals("1")) {
 
                     emailCheck = false;
 
@@ -652,14 +642,21 @@ public class MainActivity extends AppCompatActivity {
                     Config.Email = sharedPrefs.getString("Email", "NA");
                 }
             }
+
+            Log.d(TAG, "emailCheck : "+ emailCheck);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
+            emailCheck = false;
         } catch (ExecutionException e) {
             e.printStackTrace();
+            emailCheck = false;
         } catch (JSONException e){
             e.printStackTrace();
+            emailCheck = false;
         } catch (NullPointerException e){
             e.printStackTrace();
+            emailCheck = false;
         }
 
         return emailCheck;
@@ -829,26 +826,6 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
-    }
-
-    private long getSpecialTimeInMillis(String givenDateFormat){
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_SLASH);
-        long timeInMilliseconds = 0;
-        try {
-            Date mDate = sdf.parse(givenDateFormat);
-            timeInMilliseconds = mDate.getTime();
-//            Log.d(TAG,"Date in milli :: " + timeInMilliseconds);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return timeInMilliseconds;
-    }
-
-    private String addZero(int date){
-        if(date<10)
-            return String.valueOf("0"+date);
-        else
-            return String.valueOf(date);
     }
 
     //to view Sleepingohio
@@ -1029,7 +1006,7 @@ public class MainActivity extends AppCompatActivity {
                 connection.connect();
 
                 int responseCode = connection.getResponseCode();
-                if (responseCode != HttpsURLConnection.HTTP_BAD_REQUEST) {
+                if (responseCode != HttpsURLConnection.HTTP_OK) { //HTTP_BAD_REQUEST
                     throw new IOException("HTTP error code: " + responseCode);
                 }
 

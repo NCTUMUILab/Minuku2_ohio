@@ -126,90 +126,6 @@ public class Sleepingohio extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    //TODO deprecated
-    /*@Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)  {
-
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-
-            Log.d(TAG, "onKeyDown");
-
-            String sleepingStartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
-            String sleepingEndTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
-
-            Log.d(TAG, "SleepStartTime from sharedPrefs : "+sleepingStartTime);
-            Log.d(TAG, "SleepEndTime from sharedPrefs : "+sleepingEndTime);
-
-            if(sleepingStartTime.equals(Constants.NOT_A_NUMBER) || sleepingEndTime.equals(Constants.NOT_A_NUMBER)) {
-
-                setDefaultSleepTime();
-
-                Intent intent = new Intent(Sleepingohio.this, MainActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("SleepingStartTime", sleepStartTimeRaw);
-                bundle.putString("SleepingEndTime", sleepEndTimeRaw);
-                intent.putExtras(bundle);
-
-                setResult(1, intent);
-
-                startActivity(intent);
-
-                Sleepingohio.this.finish();
-            }else {
-
-                Intent intent = new Intent(this, MainActivity.class);
-                startActivity(intent);
-
-                Sleepingohio.this.finish();
-            }
-            return true;
-        }
-
-        return super.onKeyDown(keyCode, event);
-    }*/
-
-    //TODO deprecated
-    private void setDefaultSleepTime(){
-
-        //set the time as default time which is from 12:00am to 08:00am
-        SimpleDateFormat sdf_today_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
-        String todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_today_date);
-
-        String sleepTimeByDefault = todayDate + " 00:00:00";
-        String wakeupTimeByDefault = todayDate + " 08:00:00";
-
-        sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
-
-        sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepTimeByDefault, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
-        sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(wakeupTimeByDefault, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
-        Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
-        Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
-
-        SimpleDateFormat sdf2 = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
-        sleepStartTimeRaw = ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf2);
-        sleepEndTimeRaw = ScheduleAndSampleManager.getTimeString(sleepEndTimeLong, sdf2);
-
-        Log.d(TAG, "SleepingStartTime Raw : "+sleepStartTimeRaw);
-        Log.d(TAG, "SleepingEndTime Raw : "+sleepEndTimeRaw);
-
-        boolean firstTimeEnterSleepTimePage = sharedPrefs.getBoolean("FirstTimeEnterSleepTimePage", false);
-
-        if(firstTimeEnterSleepTimePage)
-            cancelAlarmsByResetSleepTime();
-
-        sharedPrefs.edit().putBoolean("FirstTimeEnterSleepTimePage", true).apply();
-
-        sharedPrefs.edit().putString("SleepingStartTime", sleepStartTimeRaw).apply();
-        sharedPrefs.edit().putString("SleepingEndTime", sleepEndTimeRaw).apply();
-
-        //for easy to maintain
-        sharedPrefs.edit().putLong("sleepStartTimeLong", sleepStartTimeLong).apply();
-        sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
-
-        Utils.settingAllDaysIntervalSampling(getApplicationContext());
-
-    }
-
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
@@ -236,6 +152,20 @@ public class Sleepingohio extends AppCompatActivity {
         );
     }
 
+    private long getSleepingRange(long sleepStartTimeCheck, long sleepEndTimeCheck) {
+
+        long sleepingRange = sleepEndTimeCheck - sleepStartTimeCheck;
+
+        if (sleepingRange < 0) {
+
+            sleepingRange += Constants.MILLISECONDS_PER_DAY;
+        }
+
+        sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
+
+        return sleepingRange;
+    }
+
     private Button.OnClickListener confirming = new Button.OnClickListener() {
         public void onClick(View v) {
 
@@ -255,8 +185,12 @@ public class Sleepingohio extends AppCompatActivity {
 
             long sleepStartTimeCheck = sleepStartTimeLong, sleepEndTimeCheck = sleepEndTimeLong;
 
+            //TODO replace the code below
+//            long sleepingRange = getSleepingRange(sleepStartTimeLong, sleepEndTimeLong);
+
             long sleepingRange;
 
+            //TODO deprecated
             if (!sleepStartTimeAMPM.equals(sleepEndTimeAMPM)) {
 
                 //we add the date to get the accurate range

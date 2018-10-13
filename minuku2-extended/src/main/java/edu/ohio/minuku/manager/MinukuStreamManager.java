@@ -313,7 +313,6 @@ public class MinukuStreamManager implements StreamManager {
                     /**
                      * 2 if the new activity is moving, we will first determine whether this is continuing the previous activity or a new activity. If it is a continuous one we will not add a new session but let the previous activity in the ongoing
                      * **/
-
                     if(!transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NO_TRANSPORTATION)
                             && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NA)) {
 

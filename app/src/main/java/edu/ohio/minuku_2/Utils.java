@@ -52,8 +52,8 @@ import java.util.regex.Pattern;
 import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
-import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.config.Config;
+import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku_2.manager.SurveyTriggerManager;
 
 /**
@@ -92,6 +92,30 @@ public class Utils {
 
     public static boolean isEmailEasyValid(String email) {
         return email.contains("@");
+    }
+
+    public static long getDownloadedTime(Context context){
+
+        long downloadtime = -999;
+        try {
+
+            PackageManager pm = context.getPackageManager();
+            downloadtime = pm.getPackageInfo(Constants.appNameString, 0).firstInstallTime;
+        } catch (PackageManager.NameNotFoundException e) {
+
+            Log.e(TAG, "Exception", e);
+        }
+
+        return downloadtime;
+    }
+
+    public static long getDateTime(long time){
+
+        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String date = ScheduleAndSampleManager.getTimeString(time, sdf_date);
+        long dateTime = ScheduleAndSampleManager.getTimeInMillis(date, sdf_date);
+
+        return dateTime;
     }
 
     public static void getDeviceid(Context context){

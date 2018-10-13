@@ -24,14 +24,12 @@ public class CSVHelper {
 
     public static final String CSV_REBOOT = "Reboot.csv";
 
-    public static final String CSV_LOCATION_NOGOOGLE = "Location_NoGoogle.csv";
     public static final String CSV_LOCATION_GOOGLE = "Location_Google.csv";
 
     public static final String CSV_CHECK_DATAFORMAT = "DataFormat.csv";
 
     public static final String CSV_UserInteract = "UserInteraction.csv";
     public static final String CSV_PULLING_DATA_CHECK = "pulling_data_check.csv";
-    public static final String CSV_WIFI_RECEIVER_CHECK = "WIFI_Receiver_check.csv";
     public static final String CSV_SESSION_ACTIONLOG_FORMAT = "ActionLog.csv";
     public static final String CSV_SESSION_CONCAT_CHECK = "Session_concat.csv";
     public static final String CSV_ALARM_CHECK = "Alarm_check.csv";

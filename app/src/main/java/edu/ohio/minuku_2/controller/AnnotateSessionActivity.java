@@ -12,6 +12,8 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -150,8 +152,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         final View layout = inflater.inflate(R.layout.splitedmap_dialog,null);
 
         builder.setView(layout)
-                .setPositiveButton("Confirm", null)
-                .setNegativeButton("Cancel", null);
+                .setPositiveButton(getResources().getString(R.string.confirm), null)
+                .setNegativeButton(getResources().getString(R.string.cancel), null);
 
         final AlertDialog mAlertDialog = builder.create();
         mAlertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
@@ -198,14 +200,14 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                             }
 
-                            Toast.makeText(AnnotateSessionActivity.this, "Your trips were split successfully!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AnnotateSessionActivity.this, getResources().getString(R.string.reminder_trip_split_successfully), Toast.LENGTH_SHORT).show();
 
                             dialogInterface.dismiss();
 
                             AnnotateSessionActivity.this.finish();
                         }else {
 
-                            Toast.makeText(AnnotateSessionActivity.this, "Please click the map to set the split location", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AnnotateSessionActivity.this, getResources().getString(R.string.reminder_to_split_trip_by_clicking_map), Toast.LENGTH_SHORT).show();
                         }
 
                     }
@@ -219,7 +221,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     private void showMapInDialog(Dialog dialog, final View view){
 
         MapView mapView = (MapView) view.findViewById(R.id.mapView);
-        Log.d(TAG, "mapView is existed ? " + (mapView != null));
         MapsInitializer.initialize(this);
 
         mapView.onCreate(dialog.onSaveInstanceState());
@@ -228,15 +229,11 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             @Override
             public void onMapReady(final GoogleMap googleMap) {
 
-                Log.d(TAG, "MapView onMapReady");
-                Log.d(TAG, "Is mSession existed ? " + (mSession!=null));
-
                 if (mSession!=null) {
 
                     showRecordingVizualization((int) mSession.getId(), googleMap);
 
                     ArrayList<LatLng> points = new ArrayList<>();
-//                    ArrayList<LatLng> points = getLocationPointsToDrawOnMap(mSession.getId());
 
                     try{
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -258,8 +255,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                         LatLng middleLagLng = points.get((points.size()/2));
 
                         Log.d(TAG, "[test show trips] the session is not in the currently recording session");
-                        //we first need to know what visualization we want to use, then we get data for that visualization
 
+                        //we first need to know what visualization we want to use, then we get data for that visualization
                         //show maps with path (draw polylines)
                         showMapWithPaths(googleMap, points, middleLagLng, startLatLng, endLatLng);
                     }
@@ -552,9 +549,28 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             @Override
             public void onClick(View v) {
 
-                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "EditText - Optional Note");
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "EditText - click - Optional Note");
             }
         });
+
+        optionalNote.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "EditText - onTextChanged - Optional Note");
+            }
+        });
+
 
         ques1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -744,14 +760,13 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_DATE_TEXT_HOUR_MIN_AMPM);
 
         if (endTime==0){
-            time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - Unknown" );
-        }
-        else {
+            time.setText( getResources().getString(R.string.page_annotate_session_duration_time) + ScheduleAndSampleManager.getTimeString(startTime, sdf) + getResources().getString(R.string.page_annotate_session_duration_time_till_unknown) );
+        } else {
 
             if (SessionManager.isSessionOngoing(mSessionId))
-                time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - Now"  );
+                time.setText( getResources().getString(R.string.page_annotate_session_duration_time) + ScheduleAndSampleManager.getTimeString(startTime, sdf) + getResources().getString(R.string.page_annotate_session_duration_time_till_now)  );
             else
-                time.setText( "Time: " + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - " + ScheduleAndSampleManager.getTimeString(endTime, sdf)  );
+                time.setText( getResources().getString(R.string.page_annotate_session_duration_time) + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - " + ScheduleAndSampleManager.getTimeString(endTime, sdf)  );
         }
 
         //Log.d(TAG,"[test show trip] setting time label" + time.getText().toString());
@@ -777,7 +792,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                 AnnotateSessionActivity.this.finish();
             }else
-                Toast.makeText(AnnotateSessionActivity.this,"Please complete all the questions!!",Toast.LENGTH_SHORT).show();
+                Toast.makeText(AnnotateSessionActivity.this, getResources().getString(R.string.reminder_must_answer_all_question), Toast.LENGTH_SHORT).show();
 
         }
     };
@@ -805,8 +820,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Delete");
 
             new AlertDialog.Builder(AnnotateSessionActivity.this)
-                    .setTitle("Delete")
-                    .setMessage("Are you sure you want to delete this trip?")
+                    .setTitle(getResources().getString(R.string.dialog_delete_title))
+                    .setMessage(getResources().getString(R.string.dialog_delete_message))
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -818,12 +833,12 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                             //update the background data corresponding, -1 indicated that it was gone
                             DBHelper.updateRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, mSessionId, -1);
 
-                            Toast.makeText(AnnotateSessionActivity.this,"Your trip was deleted!",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AnnotateSessionActivity.this, getResources().getString(R.string.reminder_trip_deleted), Toast.LENGTH_SHORT).show();
 
                             AnnotateSessionActivity.this.finish();
                         }
                     })
-                    .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    .setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
@@ -894,13 +909,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
     }
 
-    private String addZero(int date){
-        if(date<10)
-            return String.valueOf("0"+date);
-        else
-            return String.valueOf(date);
-    }
-
     public ArrayList<LatLng> getLocationPointsToDrawOnMap(int sessionId) {
 
         ArrayList<LatLng> points = new ArrayList<>();
@@ -946,19 +954,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             super.onPostExecute(points);
 
             Log.d(TAG, "[test show trip] in onPostExecute, the poitns obtained are : " + points.size());
-            /*if (points.size()>0){
-
-                LatLng startLatLng  = points.get(0);
-                LatLng endLatLng = points.get(points.size()-1);
-                LatLng middleLagLng = points.get((points.size()/2));
-
-                Log.d(TAG, "[test show trips] the session is not in the currently recording session");
-                //we first need to know what visualization we want to use, then we get data for that visualization
-
-                //show maps with path (draw polylines)
-                showMapWithPaths(mGoogleMap, points, middleLagLng, startLatLng, endLatLng);
-            }*/
-
         }
 
     }
