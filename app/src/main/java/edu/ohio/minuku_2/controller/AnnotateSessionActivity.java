@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.location.Location;
@@ -92,6 +93,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     private ArrayList<Long> mESMOpenTimes;
     private long mESMSubmitTime = 0;
 
+    private SharedPreferences sharedPrefs;
+
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
@@ -106,9 +109,15 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         mRadioGroups = new ArrayList<RadioGroup>();
 
         bundle = getIntent().getExtras();
+
+        sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
+
+        //TODO sessionid
         mSessionId = Integer.parseInt(bundle.getString("sessionkey_id"));
 
         Log.d(TAG,"[test show trip] on create session id: : " + mSessionId);
+
+        sharedPrefs.edit().putInt("annotationSessionid", mSessionId).apply();
 
         mSession = SessionManager.getSession(mSessionId);
     }
@@ -127,6 +136,17 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         return super.onKeyDown(keyCode, event);
     }
 
+
+    public void onDestroy() {
+        super.onDestroy();
+
+        Log.d(TAG, "onDestroy");
+
+        //TODO reinitialized the sessionid due to leaving the page
+        sharedPrefs.edit().putInt("annotationSessionid", Constants.INVALID_IN_INT).apply();
+
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -137,6 +157,8 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         //open the ESM. record the time
         mESMOpenTimes.add(ScheduleAndSampleManager.getCurrentTimeInMillis()) ;
+
+        mSessionId = sharedPrefs.getInt("annotationSessionid",  Constants.INVALID_IN_INT);
 
         mSession = SessionManager.getSession(mSessionId);
         //Log.d(TAG, "[test show trip] loading session " + mSession.getId() + " the annotations are " + mSession.getAnnotationsSet().toJSONObject().toString());

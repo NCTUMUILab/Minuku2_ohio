@@ -27,6 +27,7 @@ public class CSVHelper {
     public static final String CSV_LOCATION_GOOGLE = "Location_Google.csv";
 
     public static final String CSV_CHECK_DATAFORMAT = "DataFormat.csv";
+    public static final String CSV_CHECK_CHECK_IN = "CheckCheckin.csv";
 
     public static final String CSV_UserInteract = "UserInteraction.csv";
     public static final String CSV_PULLING_DATA_CHECK = "pulling_data_check.csv";

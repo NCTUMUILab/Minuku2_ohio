@@ -30,10 +30,15 @@
     <string name="cancel">cancel</string>
     <string name="confirm">confirm</string>
 
+    <string name="log_in_title">Please enter your Confirmation # and Contact Email below.</string>
+    <string name="log_in_confirmation_number_hint">Confirmation #</string>
+    <string name="log_in_contact_email_hint">Contact Email</string>
+
     <string name="page_annotate_session_duration_time">Time: </string>
     <string name="page_annotate_session_duration_time_till_unknown"> - Unknown</string>
     <string name="page_annotate_session_duration_time_till_now"> - Now</string>
 
+    <string name="reminder_email_check">Please recheck your Confirmation # and Email. If you are unable to sign-in, please email DailyMobilityStudy@gmail.com.</string>
     <string name="reminder_must_answer_all_question">Please answer each question above.</string>
     <string name="reminder_trip_deleted">Your trip was deleted!</string>
     <string name="reminder_trip_split_successfully">Your trips were split successfully!</string>

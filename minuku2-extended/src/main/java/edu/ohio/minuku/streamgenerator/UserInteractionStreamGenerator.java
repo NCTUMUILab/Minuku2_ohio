@@ -36,6 +36,10 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
     private String present = STRING_FALSE;
     private String unlock = STRING_FALSE;
 
+    private final String ACTION_USERPRESENT = "userPresent";
+    private final String ACTION_USERUNLOCK = "userUnlock";
+    private final String ACTION_SCREENOFF = "screenOff";
+
     public UserInteractionStreamGenerator (Context applicationContext) {
 
         super(applicationContext);
@@ -68,8 +72,6 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
 
         Log.e(TAG, "Update stream called.");
 
-        DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), present, unlock);
-
         return true;
     }
 
@@ -89,6 +91,7 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_USER_PRESENT);
         intentFilter.addAction(Intent.ACTION_USER_UNLOCKED);
+        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
         mApplicationContext.registerReceiver(mBroadcastReceiver, intentFilter);
 
         CSVHelper.storeToCSV(CSVHelper.CSV_UserInteract, "present", "unlock");
@@ -107,12 +110,27 @@ public class UserInteractionStreamGenerator extends AndroidStreamGenerator<UserI
 
             if (action.equals(Intent.ACTION_USER_PRESENT)) {
 
-                present = STRING_TRUE;
+//                present = STRING_TRUE;
+
+                Log.d(TAG, "user present : "+ ACTION_USERPRESENT);
+
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), ACTION_USERPRESENT);
             }
 
             if (action.equals(Intent.ACTION_USER_UNLOCKED)) {
 
-                unlock = STRING_TRUE;
+//                unlock = STRING_TRUE;
+
+                Log.d(TAG, "user unlock : "+ ACTION_USERUNLOCK);
+
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), ACTION_USERUNLOCK);
+            }
+
+            if (action.equals(Intent.ACTION_SCREEN_OFF)) {
+
+                Log.d(TAG, "screen off : "+ ACTION_SCREENOFF);
+
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), ACTION_SCREENOFF);
             }
 
             Log.d(TAG, "present : "+ present);

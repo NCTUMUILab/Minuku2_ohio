@@ -140,6 +140,7 @@ public class Constants {
 
     public static final String NOT_A_NUMBER = "NA";
 
+    public static final int INVALID_IN_INT = -1;
     public static final long INVALID_IN_LONG = -999;
     public static final String INVALID_IN_STRING = "NA";
 
@@ -155,6 +156,7 @@ public class Constants {
 
 
     public static final String CHECK_IN_URL = "http://mcog.asc.ohio-state.edu/apps/servicerec?";
+    public static final String CHECK_IN_URL_USER_INFORM = "http://mcog.asc.ohio-state.edu/apps/useridcheck?";
 
     public static final String FINAL_SURVEY_URL_NCTU = "https://nctucommunication.qualtrics.com/jfe/form/SV_aVS9WRCNnfgRNGd";
     public static final String FINAL_SURVEY_URL_OHIO = "https://osu.az1.qualtrics.com/jfe/form/SV_2bPukwuNSojU4Sx";

@@ -41,17 +41,31 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
@@ -94,7 +108,7 @@ public class BackgroundService extends Service {
 
     private String ongoingNotificationText;
 
-    private int showOngoingNotificationCount = 0;
+    private int showOngoingNotificationCount;
 
     public static boolean isBackgroundServiceRunning = false;
     public static boolean isBackgroundRunnableRunning = false;
@@ -115,6 +129,12 @@ public class BackgroundService extends Service {
         streamManager = MinukuStreamManager.getInstance();
 
         mScheduledExecutorService = Executors.newScheduledThreadPool(Constants.STREAM_UPDATE_THREAD_SIZE);
+
+        showOngoingNotificationCount = sharedPrefs.getInt("showOngoingNotificationCount", 0);
+
+        Log.d(TAG, "showOngoingNotificationCount : "+ showOngoingNotificationCount);
+
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, "oncreate showOngoingNotificationCount : "+showOngoingNotificationCount);
 
         intentFilter = new IntentFilter();
 //        intentFilter.addAction(CONNECTIVITY_ACTION);
@@ -235,7 +255,7 @@ public class BackgroundService extends Service {
 //                    Log.d(TAG, "DEVICE_ID : "+Constants.DEVICE_ID);
                 }
 
-                //update every minute
+                //update every 2 minutes
                 if(showOngoingNotificationCount % 12 == 0) {
 
                     CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "before checkAndRequestPermission");
@@ -245,9 +265,10 @@ public class BackgroundService extends Service {
                     CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after checkAndRequestPermission");
                 }
 
+                //update every 30 minutes
+                if(showOngoingNotificationCount % 180 == 0){
 
-
-                if(showOngoingNotificationCount % 150 == 0){
+                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, "update ongoing showOngoingNotificationCount : "+showOngoingNotificationCount);
 
                     CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to updateOngoingNotification");
 
@@ -256,7 +277,22 @@ public class BackgroundService extends Service {
                     CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after updateOngoingNotification");
                 }
 
+                //update every 3 hours
+                if(showOngoingNotificationCount % 1080 == 0){
+
+                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, "check-in showOngoingNotificationCount : "+showOngoingNotificationCount);
+
+                    //TODO check the response time is already 3 hours
+                    sendingUserInform();
+
+                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, ScheduleAndSampleManager.getCurrentTimeString(),"Check-in");
+                }
+
                 showOngoingNotificationCount++;
+
+                showOngoingNotificationCount %= 1080;
+
+                sharedPrefs.edit().putInt("showOngoingNotificationCount", showOngoingNotificationCount).apply();
 
             }catch (Exception e){
 
@@ -266,6 +302,54 @@ public class BackgroundService extends Service {
             }
         }
     };
+
+    private void sendingUserInform(){
+
+        if(Config.DEVICE_ID.equals("NA")){
+            return;
+        }
+
+//       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=3333333
+//      deviceid=375996574474999&email=none@nobody.com&userid=333333
+
+        int androidVersion = Build.VERSION.SDK_INT;
+
+        String link = Constants.CHECK_IN_URL + "deviceid=" + Config.DEVICE_ID + "&email=" + Config.Email
+                +"&userid="+ Config.USER_ID+"&android_ver="+androidVersion
+                +"&Manufacturer="+Build.MANUFACTURER+"&Model="+Build.MODEL+"&Product="+Build.PRODUCT;
+        String userInformInString;
+        JSONObject userInform = null;
+
+        //Log.d(TAG, "user inform link : "+ link);
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                userInformInString = new HttpAsyncGetUserInformFromServer().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                        link).get();
+            else
+                userInformInString = new HttpAsyncGetUserInformFromServer().execute(
+                        link).get();
+
+            userInform = new JSONObject(userInformInString);
+
+            Log.d(TAG, "userInform : " + userInform);
+
+            sharedPrefs.edit().putLong("lastCheckInTime", ScheduleAndSampleManager.getCurrentTimeInMillis()).apply();
+
+        } catch (InterruptedException e) {
+
+        } catch (ExecutionException e) {
+
+        } catch (JSONException e){
+
+        } catch (NullPointerException e){
+
+        }
+
+        //In order to set the survey link
+//        setDaysInSurvey(userInform);
+
+    }
 
     private Notification getSleepNotification(String text){
 
@@ -719,6 +803,83 @@ public class BackgroundService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private class HttpAsyncGetUserInformFromServer extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected void onPreExecute(){
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            String result=null;
+
+            int HTTP_TIMEOUT = 10 * (int) Constants.MILLISECONDS_PER_SECOND;
+            int SOCKET_TIMEOUT = 20 * (int) Constants.MILLISECONDS_PER_SECOND;
+
+            HttpURLConnection connection = null;
+            BufferedReader reader = null;
+
+            try {
+                URL url = new URL(params[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setReadTimeout(HTTP_TIMEOUT);
+                connection.setConnectTimeout(SOCKET_TIMEOUT);
+                connection.connect();
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode != HttpsURLConnection.HTTP_OK) {
+                    throw new IOException("HTTP error code: " + responseCode);
+                }
+
+                InputStream stream = connection.getInputStream();
+
+                if (stream != null) {
+
+                    reader = new BufferedReader(new InputStreamReader(stream));
+
+                    StringBuffer buffer = new StringBuffer();
+                    String line = "";
+
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line+"\n");
+                    }
+
+                    return buffer.toString();
+                }else{
+
+                    return "";
+                }
+
+            } catch (MalformedURLException e) {
+                Log.e(TAG, "MalformedURLException");
+                e.printStackTrace();
+            } catch (IOException e) {
+                Log.e(TAG, "IOException");
+                e.printStackTrace();
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException e) {
+
+                }
+            }
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+        }
     }
 
     BroadcastReceiver CheckRunnableReceiver = new BroadcastReceiver() {

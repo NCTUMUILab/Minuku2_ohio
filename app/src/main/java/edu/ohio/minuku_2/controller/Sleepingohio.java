@@ -191,6 +191,7 @@ public class Sleepingohio extends AppCompatActivity {
             long sleepingRange;
 
             //TODO deprecated
+            //TODO change it to can be set to start from am pm
             if (!sleepStartTimeAMPM.equals(sleepEndTimeAMPM)) {
 
                 //we add the date to get the accurate range

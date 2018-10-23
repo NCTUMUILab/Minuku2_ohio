@@ -10,6 +10,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
 import android.util.Log;
 
 import org.javatuples.Ennead;
@@ -81,7 +82,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v26";
+    private String versionNumber = "v1.0.0";
+
+    private Handler handler;
+    private Runnable runnable = null;
 
     public static final int HTTP_TIMEOUT = 10 * (int) Constants.MILLISECONDS_PER_SECOND;
     public static final int SOCKET_TIMEOUT = 20 * (int) Constants.MILLISECONDS_PER_SECOND;
@@ -180,7 +184,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
             sendingDumpData();
 
-            //TODO update nowTime
+            //update nowTime
             setNowTime();
         }
 
@@ -189,15 +193,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
         sendingSurveyLinkData();
 
-
-        long lastCheckInTime = sharedPrefs.getLong("lastCheckInTime", Constants.INVALID_IN_LONG);
-
-        //isAlive or checkin
-        if(ScheduleAndSampleManager.getCurrentTimeInMillis() - lastCheckInTime >= Constants.MILLISECONDS_PER_HOUR * 3){
-
-            //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
-            sendingUserInform();
-        }
+        //TODO log Trip Survey Schema example
 
     }
 

@@ -575,7 +575,8 @@ public class SurveyTriggerManager {
 
                 //Log.d(TAG, "userid: " + userid);
 
-                //after a day
+                //TODO after a day
+                //TODO switch the survey day after the bed time
                 if (!lastTimeSend_today.equals(today)) {
 
                     //-1 is for the survey day got from the server should be set to 0
@@ -1215,7 +1216,6 @@ public class SurveyTriggerManager {
         //register action alarm
         IntentFilter alarm_filter = new IntentFilter(Constants.INTERVAL_SAMPLE);
         mContext.registerReceiver(IntervalSampleReceiver, alarm_filter);
-
     }
 
     public void unregisterActionAlarmReceiver(){

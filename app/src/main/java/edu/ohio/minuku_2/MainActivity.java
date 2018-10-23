@@ -454,7 +454,7 @@ public class MainActivity extends AppCompatActivity {
         TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT,1.0f);
 
         final EditText editText_confirmNum = new EditText(MainActivity.this);
-        editText_confirmNum.setHint("Confirmation number");
+        editText_confirmNum.setHint(getResources().getString(R.string.log_in_confirmation_number_hint));
         editText_confirmNum.setGravity(Gravity.CENTER_HORIZONTAL);
         editText_confirmNum.setLayoutParams(params);
         editText_confirmNum.setFilters(new InputFilter[] {
@@ -463,7 +463,7 @@ public class MainActivity extends AppCompatActivity {
         layout.addView(editText_confirmNum);
 
         final EditText editText_Email = new EditText(MainActivity.this);
-        editText_Email.setHint("your Email");
+        editText_Email.setHint(getResources().getString(R.string.log_in_contact_email_hint));
         editText_Email.setGravity(Gravity.CENTER_HORIZONTAL);
         editText_Email.setLayoutParams(params);
         layout.addView(editText_Email);
@@ -473,7 +473,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this)
-                .setTitle("Please fill in your confirmation number and Email.")
+                .setTitle(getResources().getString(R.string.log_in_title))
                 .setView(layout)
                 .setPositiveButton(R.string.ok, null)
                 .setCancelable(false);
@@ -528,10 +528,8 @@ public class MainActivity extends AppCompatActivity {
                             Config.Email = sharedPrefs.getString("Email", "NA");
 
 
+                            boolean isEmailValid = checkUserInform();
 
-                            boolean isEmailValid;
-
-                            isEmailValid = sendingUserInform(installedOrNot);
                             //TODO for testing
 //                            isEmailValid = true;
 //                            Config.daysInSurvey = 0;
@@ -544,6 +542,8 @@ public class MainActivity extends AppCompatActivity {
                             //TODO...
 
                             if(isEmailValid){
+
+                                sendingUserInform(installedOrNot);
 
                                 startSettingSleepingTime(); //the appearing order is reversed from the code.
 
@@ -568,7 +568,8 @@ public class MainActivity extends AppCompatActivity {
                                 editText_confirmNum.setText("");
                                 editText_Email.setText("");
 
-                                Toast.makeText(MainActivity.this,"Error, please try re-entering your email",Toast.LENGTH_SHORT).show();
+                                //Please enter
+                                Toast.makeText(MainActivity.this, getResources().getString(R.string.reminder_email_check), Toast.LENGTH_LONG).show();
                             }
 
                         }
@@ -583,6 +584,69 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private boolean checkUserInform(){
+
+        boolean emailCheck = true;
+
+        String userinformLink = Constants.CHECK_IN_URL_USER_INFORM + "userid=" + Config.USER_ID;
+        Log.d(TAG, "user inform link : "+ userinformLink);
+
+        String userInformInString = null;
+        JSONObject userInform = null;
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                userInformInString = new HttpAsyncGetUserInformFromServer().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                        userinformLink).get();
+            else
+                userInformInString = new HttpAsyncGetUserInformFromServer().execute(
+                        userinformLink).get();
+
+            Log.d(TAG, "user inform String : "+ userInformInString);
+
+            userInformInString = userInformInString.replace("[","").replace("]","");
+
+            userInform = new JSONObject(userInformInString);
+
+            Log.d(TAG, "user inform : "+ userInform);
+
+            String email = userInform.getString("email");
+
+            if(!email.equals(Constants.INVALID_IN_STRING) && !Config.Email.equals(email)){
+
+                emailCheck = false;
+
+                //reinitialize the value
+                sharedPrefs.edit().putString("userid", "NA").apply();
+                Config.USER_ID = sharedPrefs.getString("userid", "NA");
+
+                sharedPrefs.edit().putString("groupNum", "NA").apply();
+                Config.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
+
+                sharedPrefs.edit().putString("Email","NA").apply();
+                Config.Email = sharedPrefs.getString("Email", "NA");
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            emailCheck = false;
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            emailCheck = false;
+        } catch (JSONException e){
+            e.printStackTrace();
+
+            emailCheck = true;
+
+        } catch (NullPointerException e){
+            e.printStackTrace();
+            emailCheck = false;
+        }
+
+        return emailCheck;
+
+    }
+
     private boolean sendingUserInform(boolean installedOrNot){
 
         Log.d(TAG, "sendingUserInform");
@@ -592,10 +656,10 @@ public class MainActivity extends AppCompatActivity {
 //       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=333333
 //      deviceid=375996574474999&email=none@nobody.com&userid=3333333
         String link = Constants.CHECK_IN_URL + "deviceid=" + Config.DEVICE_ID + "&email=" + Config.Email+"&userid="+ Config.USER_ID+"&install="+installedOrNot;
+        Log.d(TAG, "check-in link : "+ link);
+
         String userInformInString = null;
         JSONObject userInform = null;
-
-        Log.d(TAG, "user inform link : "+ link);
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -615,35 +679,6 @@ public class MainActivity extends AppCompatActivity {
             setDownloadedDaysInSurveyIs(userInform);
 
             setMidnightStart(userInform);
-
-            //TODO if the current day is not day 0, check the email
-            String numrecs = userInform.getString("numrecs");
-
-            Log.d(TAG, "numrecs : "+ numrecs);
-
-            String email = userInform.getString("email");
-
-            Log.d(TAG, "email : "+ email);
-
-            if(Config.daysInSurvey != 0 && Config.daysInSurvey != -1) {
-
-                if (!email.equals(Config.Email) && !numrecs.equals("1")) {
-
-                    emailCheck = false;
-
-                    //reinitialize the value
-                    sharedPrefs.edit().putString("userid", "NA").apply();
-                    Config.USER_ID = sharedPrefs.getString("userid", "NA");
-
-                    sharedPrefs.edit().putString("groupNum", "NA").apply();
-                    Config.GROUP_NUM = sharedPrefs.getString("groupNum", "NA");
-
-                    sharedPrefs.edit().putString("Email","NA").apply();
-                    Config.Email = sharedPrefs.getString("Email", "NA");
-                }
-            }
-
-            Log.d(TAG, "emailCheck : "+ emailCheck);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -914,6 +949,8 @@ public class MainActivity extends AppCompatActivity {
         int permissionStatus= ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE);
         if(permissionStatus==PackageManager.PERMISSION_GRANTED){
             Config.DEVICE_ID = mngr.getDeviceId();
+
+            sharedPrefs.edit().putString("DEVICE_ID",  Config.DEVICE_ID).apply();
 
             Log.e(TAG,"DEVICE_ID"+ Config.DEVICE_ID+" : "+mngr.getDeviceId());
         }

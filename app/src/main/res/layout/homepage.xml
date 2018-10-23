@@ -33,9 +33,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:paddingRight="30dp"
-            android:text="v26"
+            android:text="v1.0.0"
             android:textColor="#ffffff"
-            android:textSize="24sp" />
+            android:textSize="14sp" />
 
     </android.support.v7.widget.Toolbar>
 
@@ -149,5 +149,18 @@
         android:visibility="gone"
         android:layout_below="@id/help"
         android:layout_centerHorizontal="true"/>
+
+    <!--<TextView
+        android:id="@+id/app_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/help"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:gravity="bottom"
+        android:paddingRight="30dp"
+        android:text="v1.0.0"
+        android:textColor="#ffffff"
+        android:textSize="14sp" />-->
 
 </RelativeLayout>
