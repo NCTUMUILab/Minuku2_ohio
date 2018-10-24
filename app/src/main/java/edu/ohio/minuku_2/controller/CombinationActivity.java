@@ -18,7 +18,6 @@ import java.util.concurrent.ExecutionException;
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku_2.R;
@@ -148,7 +147,7 @@ public class CombinationActivity extends Activity {
             DBHelper.updateSessionTable(sessionToCombineId, currentStartTime, currentEndTime);
             DBHelper.updateSessionTableToCombined(sessionToCombineId, Constants.SESSION_SUBJECTIVELY_COMBINE_FLAG);
 
-            Toast.makeText(CombinationActivity.this,"Your trips were combined successfully!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(CombinationActivity.this, getResources().getString(R.string.reminder_trips_combined_successfully), Toast.LENGTH_SHORT).show();
 
             finish();
         }
@@ -164,7 +163,7 @@ public class CombinationActivity extends Activity {
 
         @Override
         protected void onPreExecute() {
-//            Log.d(TAG,"[test show trip] onPreExecute");
+
         }
 
         @Override
@@ -180,8 +179,6 @@ public class CombinationActivity extends Activity {
 
             if(confirm != null) {
 
-                Log.d(TAG, "mSessions.size() : " + mSessions.size());
-                Log.d(TAG, "confirm getVisibility() : " + (int) confirm.getVisibility());
                 if (mSessions.size() == 0)
                     confirm.setVisibility(View.GONE);
                 else
@@ -191,9 +188,6 @@ public class CombinationActivity extends Activity {
             listview.setAdapter(combinedListAdapter);
         }
 
-        /*
-        this async task obtain a list of sessions
-         */
         @Override
         protected ArrayList<Session> doInBackground(String... params) {
 
@@ -201,10 +195,7 @@ public class CombinationActivity extends Activity {
 
             try {
 
-//                sessions = SessionManager.getRecentSessions(sessionToCombineId);
-
                 sessions = SessionManager.getRecentNotBeenCombinedSessions(sessionToCombineId);
-
             }catch (Exception e) {
 
             }

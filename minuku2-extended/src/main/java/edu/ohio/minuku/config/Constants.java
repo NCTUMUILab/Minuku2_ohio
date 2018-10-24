@@ -140,7 +140,9 @@ public class Constants {
 
     public static final String NOT_A_NUMBER = "NA";
 
+    public static final int INVALID_IN_INT = -1;
     public static final long INVALID_IN_LONG = -999;
+    public static final String INVALID_IN_STRING = "NA";
 
     public static final String SURVEY_INCOMPLETE_FLAG = "0";
     public static final String SURVEY_COMPLETE_FLAG = "1";
@@ -150,10 +152,18 @@ public class Constants {
     public static final String TEXT_TO_SERVER_SURVEY_COMPLETE = "complete";
     public static final String TEXT_TO_SERVER_SURVEY_ERROR = "error";
 
-    public static final int FINALDAY = 3; //real: 14, test: 3
+    public static final int FINALDAY = 14; //real: 14, test: 3
+
 
     public static final String CHECK_IN_URL = "http://mcog.asc.ohio-state.edu/apps/servicerec?";
-    public static final String FINAL_SURVEY_URL = "https://osu.az1.qualtrics.com/jfe/form/SV_2bPukwuNSojU4Sx";
+    public static final String CHECK_IN_URL_USER_INFORM = "http://mcog.asc.ohio-state.edu/apps/useridcheck?";
+
+    public static final String FINAL_SURVEY_URL_NCTU = "https://nctucommunication.qualtrics.com/jfe/form/SV_aVS9WRCNnfgRNGd";
+    public static final String FINAL_SURVEY_URL_OHIO = "https://osu.az1.qualtrics.com/jfe/form/SV_2bPukwuNSojU4Sx";
+    public static final String FINAL_SURVEY_URL = FINAL_SURVEY_URL_OHIO;
+
+    public static final String HELP_URL = "http://u.osu.edu/dailymobilitystudy/";
+
 
     public static final String INTERVAL_SAMPLE = "INTERVAL_SAMPLE";
 

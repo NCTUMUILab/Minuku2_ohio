@@ -436,8 +436,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 STREAM_TYPE_LOCATION + "(" +
                 id+" INTEGER PRIMARY KEY NOT NULL, " +
                 TIME + " TEXT NOT NULL," +
-                latitude_col+" FLOAT,"+
-                longitude_col +" FLOAT, " +
+                latitude_col+" TEXT,"+
+                longitude_col +" TEXT, " +
                 Accuracy_col + " FLOAT, " +
                 Altitude_col +" FLOAT," +
                 Speed_col +" FLOAT," +

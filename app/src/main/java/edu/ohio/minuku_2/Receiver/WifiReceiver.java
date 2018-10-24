@@ -10,6 +10,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
 import android.util.Log;
 
 import org.javatuples.Ennead;
@@ -73,9 +74,7 @@ public class WifiReceiver extends BroadcastReceiver {
     private SharedPreferences sharedPrefs;
 
     private int year,month,day,hour,min;
-    private int lastDay;
 
-    private long _id = -9;
     private long latestUpdatedTime = -9999;
     private long nowTime = -9999;
     private long startTime = -9999;
@@ -83,14 +82,20 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v25";
+    private String versionNumber = "v1.0.0";
+
+    private Handler handler;
+    private Runnable runnable = null;
 
     public static final int HTTP_TIMEOUT = 10 * (int) Constants.MILLISECONDS_PER_SECOND;
     public static final int SOCKET_TIMEOUT = 20 * (int) Constants.MILLISECONDS_PER_SECOND;
 
-    private static final String postTripUrl = "http://mcog.asc.ohio-state.edu/apps/tripdump/";
-    private static final String postDumpUrl = "http://mcog.asc.ohio-state.edu/apps/devicedump/";
-    private static final String postSurveyLinkUrl = "http://mcog.asc.ohio-state.edu/apps/surveydump/";
+    private static final String SERVER_OHIO = "http://mcog.asc.ohio-state.edu/apps/";
+    private static final String SERVER_NCTU = "https://cmogflaskbackend.minuku.org/apps/";
+
+    private static final String postTripUrl = SERVER_OHIO+"tripdump/";
+    private static final String postDumpUrl = SERVER_OHIO+"devicedump/";
+    private static final String postSurveyLinkUrl = SERVER_OHIO+"surveydump/";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -115,8 +120,6 @@ public class WifiReceiver extends BroadcastReceiver {
         year = sharedPrefs.getInt("StartYear", mYear);
         month = sharedPrefs.getInt("StartMonth", mMonth);
         day = sharedPrefs.getInt("StartDay", mDay);
-
-        lastDay = sharedPrefs.getInt("lastDay", day);
 
         Config.USER_ID = sharedPrefs.getString("userid","NA");
         Config.GROUP_NUM = sharedPrefs.getString("groupNum","NA");
@@ -181,27 +184,16 @@ public class WifiReceiver extends BroadcastReceiver {
 
             sendingDumpData();
 
-            //TODO update nowTime
+            //update nowTime
             setNowTime();
         }
 
-        // Trip, SurveyLink detail
 
         sendingTripData(nowTime);
 
         sendingSurveyLinkData();
 
-
-        long lastCheckInTime = sharedPrefs.getLong("lastCheckInTime", Constants.INVALID_IN_LONG);
-
-        //isAlive or checkin
-
-        //TODO for checking the server matter
-        if(ScheduleAndSampleManager.getCurrentTimeInMillis() - lastCheckInTime >= Constants.MILLISECONDS_PER_HOUR * 3){
-
-            //by sending http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=3559960704778000&email=test.com&userId=XXXX
-            sendingUserInform();
-        }
+        //TODO log Trip Survey Schema example
 
     }
 
@@ -512,17 +504,17 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     surveyJson.put("clickedtime", clickedtime);
 
-                    /*if(!clickedtime.equals("")){
+                    if(clickedtime != null && !clickedtime.isEmpty()){
 
                         surveyJson.put("clickedtime", clickedtime.substring(0, clickedtime.length() - 3));
                     }else{
 
-                        surveyJson.put("clickedtime", clickedtime);
-                    }*/
+                        surveyJson.put("clickedtime", Constants.NOT_A_NUMBER);
+                    }
 
                     String completeType = surveyCursor.getString(5);
 
-                    if(completeType.equals(Constants.SURVEY_INCOMPLETE_FLAG)){
+                    if(completeType.equals(Constants.SURVEY_INCOMPLETE_FLAG) || completeType.equals("-1")){
 
                         completeType = Constants.TEXT_TO_SERVER_SURVEY_INCOMPLETE;
                     }else if(completeType.equals(Constants.SURVEY_COMPLETE_FLAG)){
@@ -791,9 +783,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private void setNowTime(){
 
-//        nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
+        nowTime = new Date().getTime() - Constants.MILLISECONDS_PER_DAY;
 
-        nowTime = new Date().getTime(); //TODO for testing
+//        nowTime = new Date().getTime(); //TODO for testing
     }
 
     //use HTTPAsyncTask to poHttpAsyncPostJsonTaskst data
