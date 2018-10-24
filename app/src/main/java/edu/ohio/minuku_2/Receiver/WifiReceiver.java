@@ -504,17 +504,17 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     surveyJson.put("clickedtime", clickedtime);
 
-                    /*if(!clickedtime.equals("")){
+                    if(clickedtime != null && !clickedtime.isEmpty()){
 
                         surveyJson.put("clickedtime", clickedtime.substring(0, clickedtime.length() - 3));
                     }else{
 
-                        surveyJson.put("clickedtime", clickedtime);
-                    }*/
+                        surveyJson.put("clickedtime", Constants.NOT_A_NUMBER);
+                    }
 
                     String completeType = surveyCursor.getString(5);
 
-                    if(completeType.equals(Constants.SURVEY_INCOMPLETE_FLAG)){
+                    if(completeType.equals(Constants.SURVEY_INCOMPLETE_FLAG) || completeType.equals("-1")){
 
                         completeType = Constants.TEXT_TO_SERVER_SURVEY_INCOMPLETE;
                     }else if(completeType.equals(Constants.SURVEY_COMPLETE_FLAG)){
