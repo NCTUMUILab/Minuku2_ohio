@@ -435,7 +435,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
                 }
 
-                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "Trip ", annotatedtripdata.toString());
+//                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "Trip ", annotatedtripdata.toString());
 
                 sessionJsons.add(annotatedtripdata);
             }catch (IndexOutOfBoundsException e){
@@ -538,7 +538,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     Log.d(TAG, "[show data response] SurveyLink data :"+surveyJson.toString());
 
-                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "SurveyLink", surveyJson.toString());
+//                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "SurveyLink", surveyJson.toString());
 
                     try {
 
@@ -698,7 +698,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
         Log.d(TAG,"[show data response] checking data Dump : "+ data.toString());
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT,"Dump", data.toString());
+//        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT,"Dump", data.toString());
 
         try {
 
@@ -734,8 +734,6 @@ public class WifiReceiver extends BroadcastReceiver {
                         data.toString(),
                         "Dump",
                         curr).get();
-
-            //TODO didn't return anything
 
             Log.d(TAG, "[show data response] Dump lastTimeInServer : "+lastTimeInServer);
 

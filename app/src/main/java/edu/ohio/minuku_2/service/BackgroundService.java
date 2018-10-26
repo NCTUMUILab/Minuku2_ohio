@@ -278,15 +278,15 @@ public class BackgroundService extends Service {
                 }
 
                 //update every 3 hours
-                if(showOngoingNotificationCount % 1080 == 0){
+                /*if(showOngoingNotificationCount % 1080 == 0){
 
                     CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, "check-in showOngoingNotificationCount : "+showOngoingNotificationCount);
 
-                    //TODO check the response time is already 3 hours
+                    //check the response time is already 3 hours
                     sendingUserInform();
 
                     CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, ScheduleAndSampleManager.getCurrentTimeString(),"Check-in");
-                }
+                }*/
 
                 showOngoingNotificationCount++;
 
