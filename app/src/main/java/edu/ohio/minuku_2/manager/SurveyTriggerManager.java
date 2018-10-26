@@ -283,6 +283,7 @@ public class SurveyTriggerManager {
 
         Log.d(TAG, "[test alarm] wakeSleepDateIsSame : "+wakeSleepDateIsSame);
 
+        //if the bed time date is same as the start time implies that the survey time would cross the midnight
         if(wakeSleepDateIsSame) {
 
             surveyEndTime = getSpecialTimeInMillis(tomorformat+" "+sleepingstartTime+":00");
@@ -532,6 +533,7 @@ public class SurveyTriggerManager {
             dailySurveyNum = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
             dailyResponseNum = sharedPrefs.getInt("dailyResponseNum", 0);
 
+
             Date curDate = new Date(System.currentTimeMillis());
             SimpleDateFormat df = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY_Slash);
             today = df.format(curDate);
@@ -577,7 +579,16 @@ public class SurveyTriggerManager {
 
                 //TODO after a day
                 //TODO switch the survey day after the bed time
-                if (!lastTimeSend_today.equals(today)) {
+                long sleepStartTimeLong = sharedPrefs.getLong("sleepStartTimeLong", Constants.INVALID_IN_LONG);
+                Log.d(TAG, "sleepStartTimeLong String : "+ ScheduleAndSampleManager.getTimeString(sleepStartTimeLong));
+
+                long nextSleepTime = sharedPrefs.getLong("nextSleepTime", sleepStartTimeLong + Constants.MILLISECONDS_PER_DAY);
+                Log.d(TAG, "nextSleepTime String : "+ ScheduleAndSampleManager.getTimeString(nextSleepTime));
+
+//                if (!lastTimeSend_today.equals(today)) {
+                if (ScheduleAndSampleManager.getCurrentTimeInMillis() >= nextSleepTime || lastTimeSend_today.equals(Constants.NOT_A_NUMBER)) {
+
+                    Log.d(TAG, "over a day !!");
 
                     //-1 is for the survey day got from the server should be set to 0
                     if(Config.daysInSurvey == -1) {
@@ -587,7 +598,7 @@ public class SurveyTriggerManager {
 
                         //Prevent the situation that they download at the day which is not the first day of the research.
                         //which means they get the daysInSurvey is x|x>0 instead of -1, just keep it.
-                        if(!lastTimeSend_today.equals("NA")){
+                        if(!lastTimeSend_today.equals(Constants.NOT_A_NUMBER)){
 
                             Config.daysInSurvey++;
 
@@ -645,9 +656,12 @@ public class SurveyTriggerManager {
                     last_Walking_Survey_Time = -999;
                     sharedPrefs.edit().putLong("last_Walking_Survey_Time", last_Walking_Survey_Time).apply();
 
-                    if (lastTimeSend_today.equals("NA")) {
+                    if (lastTimeSend_today.equals(Constants.NOT_A_NUMBER)) {
                         //setting up the parameter for the survey LINK
                         setUpSurveyLink();
+                    }else{
+
+                        sharedPrefs.edit().putLong("nextSleepTime", nextSleepTime + Constants.MILLISECONDS_PER_DAY).apply();
                     }
 
                     lastTimeSend_today = today;

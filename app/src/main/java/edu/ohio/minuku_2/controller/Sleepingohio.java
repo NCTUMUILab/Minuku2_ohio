@@ -159,9 +159,12 @@ public class Sleepingohio extends AppCompatActivity {
         if (sleepingRange < 0) {
 
             sleepingRange += Constants.MILLISECONDS_PER_DAY;
-        }
 
-        sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
+            sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
+        }else {
+
+            sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
+        }
 
         return sleepingRange;
     }
@@ -186,13 +189,13 @@ public class Sleepingohio extends AppCompatActivity {
             long sleepStartTimeCheck = sleepStartTimeLong, sleepEndTimeCheck = sleepEndTimeLong;
 
             //TODO replace the code below
-//            long sleepingRange = getSleepingRange(sleepStartTimeLong, sleepEndTimeLong);
+            long sleepingRange = getSleepingRange(sleepStartTimeLong, sleepEndTimeLong);
 
-            long sleepingRange;
+//            long sleepingRange;
 
             //TODO deprecated
             //TODO change it to can be set to start from am pm
-            if (!sleepStartTimeAMPM.equals(sleepEndTimeAMPM)) {
+            /*if (!sleepStartTimeAMPM.equals(sleepEndTimeAMPM)) {
 
                 //we add the date to get the accurate range
 //                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
@@ -211,7 +214,7 @@ public class Sleepingohio extends AppCompatActivity {
                 sleepingRange = sleepEndTimeCheck - sleepStartTimeCheck;
 
                 sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
-            }
+            }*/
 
             Log.d(TAG, "sleepStartTimeCheck : " + sleepStartTimeCheck);
             Log.d(TAG, "sleepEndTimeCheck : " + sleepEndTimeCheck);
@@ -258,6 +261,7 @@ public class Sleepingohio extends AppCompatActivity {
                 //for easy to maintain
                 sharedPrefs.edit().putLong("sleepStartTimeLong", sleepStartTimeLong).apply();
                 sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
+                sharedPrefs.edit().putLong("nextSleepTime", sleepStartTimeLong + Constants.MILLISECONDS_PER_DAY).apply();
 
                 Utils.settingAllDaysIntervalSampling(getApplicationContext());
 
