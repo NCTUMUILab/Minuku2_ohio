@@ -223,7 +223,7 @@ public class Utils {
 //        Log.d(TAG, "period : "+period);
 
         sharedPrefs.edit().putLong("PeriodLong", period).apply();
-
+        sharedPrefs.edit().putBoolean("IsSleepTimeSet", true).apply();
     }
 
     public static void setDefaultSleepTime(Context context){

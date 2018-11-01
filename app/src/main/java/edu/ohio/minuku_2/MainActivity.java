@@ -388,6 +388,8 @@ public class MainActivity extends AppCompatActivity {
         String sleepStartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);//"Please select your sleeping time"
         String sleepEndTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);//"Please select your wake up time"
 
+        Log.d(TAG, "SleepingStartTime : "+sleepStartTime+" SleepingEndTime : "+sleepEndTime);
+
         if (!sleepStartTime.equals(Constants.NOT_A_NUMBER) && !sleepEndTime.equals(Constants.NOT_A_NUMBER)) {
 
             String[] sleepStartDetail = sleepStartTime.split(":");
@@ -816,6 +818,8 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
                     String sleepStartTime = data.getExtras().getString("SleepingStartTime");
                     String sleepEndTime = data.getExtras().getString("SleepingEndTime");
+
+                    Log.d(TAG, "SleepingStartTime : "+sleepStartTime+" SleepingEndTime : "+sleepEndTime);
 
                     if(!sleepStartTime.equals("Please select your start time")&&!sleepEndTime.equals("Please select your end time")) {
 

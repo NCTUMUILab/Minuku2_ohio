@@ -159,13 +159,14 @@ public class SurveyTriggerManager {
 
     private void initialize() {
 
-        Boolean setAllDaysIntervalSamplingOrNot = sharedPrefs.getBoolean("setAllDaysIntervalSamplingOrNot", true);
+        //TODO don't set the default times again
+        /*Boolean setAllDaysIntervalSamplingOrNot = sharedPrefs.getBoolean("setAllDaysIntervalSamplingOrNot", true);
 
         if(setAllDaysIntervalSamplingOrNot) {
 
             Utils.settingAllDaysIntervalSampling(mContext);
             sharedPrefs.edit().putBoolean("setAllDaysIntervalSamplingOrNot", false).apply();
-        }
+        }*/
 
         lastTimeSend_today = sharedPrefs.getString("lastTimeSend_today","NA");
         interval_sampled = sharedPrefs.getInt("interval_sampled", 0);

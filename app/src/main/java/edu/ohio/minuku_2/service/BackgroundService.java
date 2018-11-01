@@ -163,8 +163,14 @@ public class BackgroundService extends Service {
                 PendingIntent.getBroadcast(this, 0, new Intent(CHECK_RUNNABLE_ACTION), 0)
         );
 
-        Utils.setDefaultSleepTime(getApplicationContext());
 
+        //TODO set the value to prevent to reset the Default time back
+        boolean isSleepTimeSet = sharedPrefs.getBoolean("IsSleepTimeSet", false);
+        if(!isSleepTimeSet) {
+
+            Log.d(TAG, "setDefaultSleepTime");
+            Utils.setDefaultSleepTime(getApplicationContext());
+        }
 
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
