@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.Build;
 import android.util.Log;
@@ -60,8 +59,6 @@ public class SurveyTriggerManager {
     public static final int REFRESH_FREQUENCY = 20; //20s, 10000ms
     public static final int BACKGROUND_RECORDING_INITIAL_DELAY = 0;
 
-    private String userid;
-
     private static String today;
     private String lastTimeSend_today;
 
@@ -75,9 +72,6 @@ public class SurveyTriggerManager {
 
     private static int interval_sampled;
     private int walkoutdoor_sampled;
-    private int walk_first_sampled;
-    private int walk_second_sampled;
-    private int walk_third_sampled;
 
     private boolean sameTripPrevent;
 
@@ -86,12 +80,9 @@ public class SurveyTriggerManager {
 
     public static long time_base = 0;
 
-    private String transportation;
-
     private boolean alarmregistered;
 
-    private String participantID, groupNum;
-    private int weekNum, dailySurveyNum, dailyResponseNum;
+    private int dailySurveyNum, dailyResponseNum;
 
     private final String LINK_NCTU = "https://nctucommunication.qualtrics.com/jfe/form/SV_aWcHPkmdagnfgDb";
     private final String LINK_OHIO = "https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";
@@ -117,8 +108,6 @@ public class SurveyTriggerManager {
         mContext = context;
 
         sharedPrefs = mContext.getSharedPreferences(Constants.sharedPrefString, mContext.MODE_PRIVATE);
-
-        transportation = "NA";
 
         lastTimeSend_today = sharedPrefs.getString("lastTimeSend_today","NA");
 
@@ -159,14 +148,6 @@ public class SurveyTriggerManager {
 
     private void initialize() {
 
-        Boolean setAllDaysIntervalSamplingOrNot = sharedPrefs.getBoolean("setAllDaysIntervalSamplingOrNot", true);
-
-        if(setAllDaysIntervalSamplingOrNot) {
-
-            Utils.settingAllDaysIntervalSampling(mContext);
-            sharedPrefs.edit().putBoolean("setAllDaysIntervalSamplingOrNot", false).apply();
-        }
-
         lastTimeSend_today = sharedPrefs.getString("lastTimeSend_today","NA");
         interval_sampled = sharedPrefs.getInt("interval_sampled", 0);
         alarmregistered = sharedPrefs.getBoolean("alarmregistered",false);
@@ -175,7 +156,6 @@ public class SurveyTriggerManager {
         Config.downloadedDayInSurvey = sharedPrefs.getInt("downloadedDayInSurvey", Config.downloadedDayInSurvey);
 
         runMainThread();
-
     }
 
     public void runMainThread(){
@@ -502,93 +482,66 @@ public class SurveyTriggerManager {
         }
     }
 
+    private void checkAlarmAndSurveylink(){
+
+        //30: 10 mins, 60: 20 mins
+        if(alarmCheckCount == 60) {
+
+            Log.d(TAG, "confirmAlarmExist");
+
+            confirmAlarmExist();
+            alarmCheckCount = 0;
+
+            Log.d(TAG, "checking if there is a LINK unavailable and missed");
+
+            checkSurveyLinkOvertime();
+
+        }else {
+
+            alarmCheckCount++;
+        }
+    }
+
     Runnable RunningForGivingSurveyOrNot = new Runnable() {
         @Override
         public void run() {
 
-            //30: 10 mins, 60: 20 mins
-            if(alarmCheckCount == 60) {
-
-                Log.d(TAG, "confirmAlarmExist");
-
-                confirmAlarmExist();
-                alarmCheckCount = 0;
-
-                Log.d(TAG, "checking if there is a LINK unavailable and missed");
-
-                checkSurveyLinkOvertime();
-
-            }else {
-
-                alarmCheckCount++;
-            }
-
-            userid = Config.DEVICE_ID;
+            checkAlarmAndSurveylink();
 
             //variable for LINK
-            participantID = sharedPrefs.getString("userid", "NA");
-            groupNum = sharedPrefs.getString("groupNum", "NA");
-            weekNum = sharedPrefs.getInt("weekNum", 0);
-//            dailySurveyNum = sharedPrefs.getInt("dailySurveyNum", 0);
+            Config.USER_ID = sharedPrefs.getString("userid", Constants.NOT_A_NUMBER);
+            Config.GROUP_NUM = sharedPrefs.getString("groupNum", Constants.NOT_A_NUMBER);
+            Config.Email = sharedPrefs.getString("Email", Constants.NOT_A_NUMBER);
+
             dailySurveyNum = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
             dailyResponseNum = sharedPrefs.getInt("dailyResponseNum", 0);
-
 
             Date curDate = new Date(System.currentTimeMillis());
             SimpleDateFormat df = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY_Slash);
             today = df.format(curDate);
 
             //get sleep time and get up time from sharedpreference
-            String startSleepingTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);//"22:00"
-            String endSleepingTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);//"08:00"
+            String startSleepingTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
+            String endSleepingTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
 
-            //Log.d(TAG,"startSleepingTime : "+ startSleepingTime + " endSleepingTime : "+ endSleepingTime);
+//            Log.d(TAG,"startSleepingTime : "+ ScheduleAndSampleManager.getTimeString(Long.valueOf(startSleepingTime)) + " endSleepingTime : "+ ScheduleAndSampleManager.getTimeString(Long.valueOf(endSleepingTime)));
 
             if(!startSleepingTime.equals(Constants.NOT_A_NUMBER) && !endSleepingTime.equals(Constants.NOT_A_NUMBER)) {
 
-                //calculate today's bed time
-                long bedTime;
-                boolean wakeSleepDateIsSame = sharedPrefs.getBoolean("WakeSleepDateIsSame", false);
-
-                if(wakeSleepDateIsSame){
-
-                    Date tomorDate = new Date(ScheduleAndSampleManager.getCurrentTimeInMillis()+Constants.MILLISECONDS_PER_DAY);
-                    String tomorrow = df.format(tomorDate);
-                    bedTime = getSpecialTimeInMillis(tomorrow + " " + startSleepingTime + ":00");
-
-                    //updated the last survey when it's time to sleep if it haven't been opened
-                    if(bedTime < ScheduleAndSampleManager.getCurrentTimeInMillis()) {
-
-                        Date yesterdayDate = new Date(ScheduleAndSampleManager.getCurrentTimeInMillis() - Constants.MILLISECONDS_PER_DAY);
-                        String yesterday = df.format(yesterdayDate);
-
-                        updateLastSurvey(yesterday);
-                    }
-                }else{
-
-                    bedTime = getSpecialTimeInMillis(today + " " + startSleepingTime + ":00");
-
-                    //updated the last survey when it's time to sleep if it haven't been opened
-                    if(bedTime < ScheduleAndSampleManager.getCurrentTimeInMillis()) {
-
-                        updateLastSurvey(today);
-                    }
-                }
-
-                //Log.d(TAG, "userid: " + userid);
-
-                //TODO after a day
-                //TODO switch the survey day after the bed time
+                //after a day, switch the survey day after the bed time
                 long sleepStartTimeLong = sharedPrefs.getLong("sleepStartTimeLong", Constants.INVALID_IN_LONG);
                 Log.d(TAG, "sleepStartTimeLong String : "+ ScheduleAndSampleManager.getTimeString(sleepStartTimeLong));
 
                 long nextSleepTime = sharedPrefs.getLong("nextSleepTime", sleepStartTimeLong + Constants.MILLISECONDS_PER_DAY);
                 Log.d(TAG, "nextSleepTime String : "+ ScheduleAndSampleManager.getTimeString(nextSleepTime));
 
-//                if (!lastTimeSend_today.equals(today)) {
+                //is over a day
                 if (ScheduleAndSampleManager.getCurrentTimeInMillis() >= nextSleepTime || lastTimeSend_today.equals(Constants.NOT_A_NUMBER)) {
 
                     Log.d(TAG, "over a day !!");
+
+                    //TODO today could be removed
+                    updateLastSurvey(today);
 
                     //-1 is for the survey day got from the server should be set to 0
                     if(Config.daysInSurvey == -1) {
@@ -596,15 +549,15 @@ public class SurveyTriggerManager {
                         Config.daysInSurvey = 0;
                     }else {
 
-                        //Prevent the situation that they download at the day which is not the first day of the research.
+                        //prevent the situation that they download at the day which is not the first day of the research.
                         //which means they get the daysInSurvey is x|x>0 instead of -1, just keep it.
                         if(!lastTimeSend_today.equals(Constants.NOT_A_NUMBER)){
 
                             Config.daysInSurvey++;
-
-                            Log.d(TAG, "[check daysInSurvey] daysInSurvey : "+ Config.daysInSurvey);
                         }
                     }
+
+                    Log.d(TAG, "[check daysInSurvey] daysInSurvey : "+ Config.daysInSurvey);
 
                     sharedPrefs.edit().putInt("daysInSurvey", Config.daysInSurvey).apply();
 
@@ -625,17 +578,6 @@ public class SurveyTriggerManager {
                     walkoutdoor_sampled = 0;
                     sharedPrefs.edit().putInt("walkoutdoor_sampled", walkoutdoor_sampled).apply();
 
-                    walk_first_sampled = 0;
-                    sharedPrefs.edit().putInt("walk_first_sampled", walk_first_sampled).apply();
-                    walk_second_sampled = 0;
-                    sharedPrefs.edit().putInt("walk_second_sampled", walk_second_sampled).apply();
-                    walk_third_sampled = 0;
-                    sharedPrefs.edit().putInt("walk_third_sampled", walk_third_sampled).apply();
-
-                    //total 6 surveys a day
-//                    interval_sample_number = 6;
-//                    sharedPrefs.edit().putInt("interval_sample_number", interval_sample_number).apply();
-
                     //set period to default
                     for(int p=1 ; p<=6 ; p++) {
                         sharedPrefs.edit().putBoolean("Period" + p, true).apply();
@@ -646,14 +588,13 @@ public class SurveyTriggerManager {
                         sharedPrefs.edit().putBoolean("MobilePeriod" + p, true).apply();
                     }
 
-
                     interval_sampled = 0;
                     sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
 
-                    last_Survey_Time = -999;
+                    last_Survey_Time = Constants.INVALID_IN_LONG;
                     sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
 
-                    last_Walking_Survey_Time = -999;
+                    last_Walking_Survey_Time = Constants.INVALID_IN_LONG;
                     sharedPrefs.edit().putLong("last_Walking_Survey_Time", last_Walking_Survey_Time).apply();
 
                     if (lastTimeSend_today.equals(Constants.NOT_A_NUMBER)) {
@@ -666,85 +607,89 @@ public class SurveyTriggerManager {
 
                     lastTimeSend_today = today;
                     sharedPrefs.edit().putString("lastTimeSend_today", lastTimeSend_today).apply();
-
                 }
 
-                boolean isSleepingTime = InSleepingTime(startSleepingTime, endSleepingTime);
-
-                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "[test mobile triggering] is sleeping time ? "+ !isSleepingTime);
-
-                //temporarily remove the trigger limit
-                if (!isSleepingTime) {
-
-                    //Log.d(TAG, "it's not sleeping time");
-
-                    /** see if the user is walking in the last minute **/
-                    long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
-                    long lastminute = now - Constants.MILLISECONDS_PER_MINUTE;
-
-                    //1. we get walking session
-                    //try : prevent the situation that the session hasn't created
-                    try {
-
-                        int sessionId = SessionManager.getOngoingSessionIdList().get(0);
-                        Session session = SessionManager.getSession(sessionId);
-
-                        //Log.d(TAG, "sessionId : " + sessionId);
-
-                        //see if the session is walking session
-                        ArrayList<Annotation> annotations = session.getAnnotationsSet().getAnnotationByContent(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_ON_FOOT);
-
-                        //session startTime
-                        long sessionStartTime = session.getStartTime();
-
-                        Log.d(TAG, "[test mobile triggering] annotations size > 0 ? " + (annotations.size() > 0));
-                        Log.d(TAG, "[test mobile triggering] sessionStartTime < lastminute ? " + (sessionStartTime < lastminute));
-                        Log.d(TAG, "[test mobile triggering] isWalkingOutdoor ? " + isWalkingOutdoor(lastminute, now));
-
-                        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "annotations size > 0 ? "+ (annotations.size() > 0));
-                        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "sessionStartTime < lastminute ? "+ (sessionStartTime < lastminute));
-                        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "isWalkingOutdoor ? "+ isWalkingOutdoor(lastminute, now));
-
-                        //if the session is on foot and has lasted for one minute
-                        if (annotations.size() > 0 && sessionStartTime < lastminute && isWalkingOutdoor(lastminute, now)) {
-
-                            walkoutdoor_sampled = sharedPrefs.getInt("walkoutdoor_sampled", 0);
-
-                            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "before checking the time, sameTripPrevent : "+ sameTripPrevent);
-                            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Condition: walkoutdoor_sampled Count : "+ walkoutdoor_sampled);
-                            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Condition: walkoutdoor_sampled Count < 3 ? "+ (walkoutdoor_sampled < 3));
-
-                            Log.d(TAG, "[test mobile triggering] walkoutdoor_sampled < 3 ? " + (walkoutdoor_sampled < 3));
-                            Log.d(TAG, "[test mobile triggering] sameTripPrevent == false ? " + (sameTripPrevent == false));
-
-                            //the user is walking outdoor we need to trigger a survey
-                            if (walkoutdoor_sampled < 3 && sameTripPrevent == false) {
-
-                                //judge the period of the day by 6
-                                boolean isTimeForSurvey = isTimeForSurvey(noti_walk);
-
-                                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Condition: isTimeForSurvey ? "+ isTimeForSurvey);
-                                Log.d(TAG, "[test mobile triggering] isTimeForSurvey(noti_walk) ? " + isTimeForSurvey);
-
-                                if (isTimeForSurvey) {
-
-                                    CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Conditions is satisfied, going to trigger the notification.");
-
-                                    triggerWalkingSurvey();
-
-                                    CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "The mobile notification is triggered!!");
-                                }
-                            }
-                        }
-                    } catch (IndexOutOfBoundsException e) {
-
-                    } catch (NullPointerException e) {
-
-                    }
-                }
+                checkIsWalkingSurvey(startSleepingTime, endSleepingTime);
             }
         }
     };
+
+    private void checkIsWalkingSurvey(String startSleepingTime, String endSleepingTime){
+
+        boolean isSleepingTime = InSleepingTime(startSleepingTime, endSleepingTime);
+
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "[test mobile triggering] is sleeping time ? "+ !isSleepingTime);
+
+        //temporarily remove the trigger limit
+        if (!isSleepingTime) {
+
+            //Log.d(TAG, "it's not sleeping time");
+
+            /** see if the user is walking in the last minute **/
+            long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
+            long lastMinute = now - Constants.MILLISECONDS_PER_MINUTE;
+
+            //1. we get walking session
+            //try : prevent the situation that the session hasn't created
+            try {
+
+                int sessionId = SessionManager.getOngoingSessionIdList().get(0);
+                Session session = SessionManager.getSession(sessionId);
+
+                //Log.d(TAG, "sessionId : " + sessionId);
+
+                //see if the session is walking session
+                ArrayList<Annotation> annotations = session.getAnnotationsSet().getAnnotationByContent(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_ON_FOOT);
+
+                //session startTime
+                long sessionStartTime = session.getStartTime();
+
+                Log.d(TAG, "[test mobile triggering] annotations size > 0 ? " + (annotations.size() > 0));
+                Log.d(TAG, "[test mobile triggering] sessionStartTime < lastminute ? " + (sessionStartTime < lastMinute));
+                Log.d(TAG, "[test mobile triggering] isWalkingOutdoor ? " + isWalkingOutdoor(lastMinute, now));
+
+                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "annotations size > 0 ? "+ (annotations.size() > 0));
+                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "sessionStartTime < lastminute ? "+ (sessionStartTime < lastMinute));
+                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "isWalkingOutdoor ? "+ isWalkingOutdoor(lastMinute, now));
+
+                //if the session is on foot and has lasted for one minute
+                if (annotations.size() > 0 && sessionStartTime < lastMinute && isWalkingOutdoor(lastMinute, now)) {
+
+                    walkoutdoor_sampled = sharedPrefs.getInt("walkoutdoor_sampled", 0);
+
+                    CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "before checking the time, sameTripPrevent : "+ sameTripPrevent);
+                    CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Condition: walkoutdoor_sampled Count : "+ walkoutdoor_sampled);
+                    CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Condition: walkoutdoor_sampled Count < 3 ? "+ (walkoutdoor_sampled < 3));
+
+                    Log.d(TAG, "[test mobile triggering] walkoutdoor_sampled < 3 ? " + (walkoutdoor_sampled < 3));
+                    Log.d(TAG, "[test mobile triggering] sameTripPrevent == false ? " + (sameTripPrevent == false));
+
+                    //the user is walking outdoor we need to trigger a survey
+                    if (walkoutdoor_sampled < 3 && sameTripPrevent == false) {
+
+                        //judge the period of the day by 6
+                        boolean isTimeForSurvey = isTimeForSurvey(noti_walk);
+
+                        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Condition: isTimeForSurvey ? "+ isTimeForSurvey);
+                        Log.d(TAG, "[test mobile triggering] isTimeForSurvey(noti_walk) ? " + isTimeForSurvey);
+
+                        if (isTimeForSurvey) {
+
+                            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Conditions is satisfied, going to trigger the notification.");
+
+                            triggerWalkingSurvey();
+
+                            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "The mobile notification is triggered!!");
+                        }
+                    }
+                }
+            } catch (IndexOutOfBoundsException e) {
+
+            } catch (NullPointerException e) {
+
+            }
+        }
+    }
 
     private boolean isTimeForSurvey(String noti_type) {
 
@@ -884,19 +829,10 @@ public class SurveyTriggerManager {
         int TaskDayCount = sharedPrefs.getInt("daysInSurvey", Config.daysInSurvey);
         TaskDayCount++;
 
-        if ((TaskDayCount - 1) % 7 == 0) { //1, 8, 15
-            weekNum++;
-        }
-
         dailySurveyNum = TaskDayCount % 7;
-//        if (dailySurveyNum == 0)
-//            dailySurveyNum = 7;
 
         dailyResponseNum = 0;
 
-
-//        sharedPrefs.edit().putInt("daysInSurvey", TaskDayCount).apply();
-        sharedPrefs.edit().putInt("weekNum", weekNum).apply();
         sharedPrefs.edit().putInt("dailySurveyNum", dailySurveyNum).apply();
         sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
 
@@ -921,11 +857,6 @@ public class SurveyTriggerManager {
         triggerQualtrics(noti_type);
 
         addSurveyLinkToDB(noti_type);
-
-
-        //after we send out the survey decrease the needed number for the interval_sample_number
-//        interval_sample_number--;
-//        sharedPrefs.edit().putInt("interval_sample_number", interval_sample_number).apply();
 
         //update the last survey time
         last_Survey_Time = new Date().getTime();
@@ -958,7 +889,6 @@ public class SurveyTriggerManager {
         //preventing the same on_foot trip will trigger two notifications.
         sameTripPrevent = true;
         sharedPrefs.edit().putBoolean("sameTripPrevent", sameTripPrevent).apply();
-
     }
 
     public boolean isWalkingOutdoor(long walkingStarTime, long walkingEndtime) {
@@ -1044,7 +974,7 @@ public class SurveyTriggerManager {
         dailyResponseNum++;
         sharedPrefs.edit().putInt("dailyResponseNum", dailyResponseNum).apply();
 
-        String mob = "";
+        String mob;
         if(noti_type.equals(noti_walk)){
 
             mob = "1";
@@ -1058,35 +988,25 @@ public class SurveyTriggerManager {
 
         int periodNum = getPeriodNum(ScheduleAndSampleManager.getCurrentTimeInMillis());
 
-        String linktoShow = LINK + "?p="+participantID + "&g=" + groupNum + "&d=" + daysInSurvey + "&n=" + periodNum + "&m=" + mob;
+        String linktoShow = LINK + "?p="+Config.USER_ID + "&g=" + Config.GROUP_NUM + "&d=" + daysInSurvey + "&n=" + periodNum + "&m=" + mob;
 
         ContentValues values = new ContentValues();
 
-        try {
+        try{
 
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-
-            values.put(DBHelper.generateTime_col, new Date().getTime());
-            values.put(DBHelper.link_col, linktoShow);
-            values.put(DBHelper.surveyType_col, noti_type);
-            values.put(DBHelper.openFlag_col, -1); //they can't enter the LINK by the notification.
-            values.put(DBHelper.sentOrNot_col, Constants.SURVEYLINK_SHOULDNT_BEEN_SENT_FLAG);
-
-            db.insert(DBHelper.surveyLink_table, null, values);
-        }
-        catch(NullPointerException e){
-            //e.printStackTrace();
-        }
-        finally {
+            DBHelper.updateSurveyBydn(linktoShow, noti_type, daysInSurvey, periodNum);
+        } finally {
 
             values.clear();
             DBManager.getInstance().closeDatabase();
 
-            // +1 is because it will be add after this function but we show the afterPlus one.
-            int surveyNum = interval_sampled + walkoutdoor_sampled + 1;
+            //TODO deprecated, +1 is because it will be add after this function but we show the afterPlus one.
+//            int surveyNum = interval_sampled + walkoutdoor_sampled + 1;
+
+            int surveyNum = periodNum;
 
             Utils.storeToCSV_IntervalSurveyCreated(ScheduleAndSampleManager.getCurrentTimeInMillis()
-                    , surveyNum, linktoShow, noti_type, mContext);
+                    , daysInSurvey, surveyNum, linktoShow, noti_type, mContext);
         }
     }
 
@@ -1159,7 +1079,8 @@ public class SurveyTriggerManager {
         long startTime = ScheduleAndSampleManager.getTimeInMillis(todayDate, sdf);
         long endTime = startTime + Constants.MILLISECONDS_PER_DAY;
 
-        ArrayList<String> linkDataToday = DataHandler.getSurveyData(startTime, endTime);
+//        ArrayList<String> linkDataToday = DataHandler.getSurveyData(startTime, endTime);
+        ArrayList<String> linkDataToday = DBHelper.querySurveyLinks();
 
         //if there have data in DB
         if(!linkDataToday.isEmpty() || linkDataToday == null) {
@@ -1174,7 +1095,6 @@ public class SurveyTriggerManager {
                 DataHandler.updateSurveyMissTime(id, DBHelper.missedTime_col);
             }
         }
-
     }
 
     private void triggerQualtrics(String noti_type){

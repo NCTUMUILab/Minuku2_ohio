@@ -10,7 +10,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Handler;
 import android.util.Log;
 
 import org.javatuples.Ennead;
@@ -73,7 +72,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private SharedPreferences sharedPrefs;
 
-    private int year,month,day,hour,min;
+    private int year, month, day, hour, min;
 
     private long latestUpdatedTime = -9999;
     private long nowTime = -9999;
@@ -84,9 +83,6 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private String versionNumber = "v1.0.0";
 
-    private Handler handler;
-    private Runnable runnable = null;
-
     public static final int HTTP_TIMEOUT = 10 * (int) Constants.MILLISECONDS_PER_SECOND;
     public static final int SOCKET_TIMEOUT = 20 * (int) Constants.MILLISECONDS_PER_SECOND;
 
@@ -96,6 +92,8 @@ public class WifiReceiver extends BroadcastReceiver {
     private static final String postTripUrl = SERVER_OHIO+"tripdump/";
     private static final String postDumpUrl = SERVER_OHIO+"devicedump/";
     private static final String postSurveyLinkUrl = SERVER_OHIO+"surveydump/";
+
+    private static final String querySurveyLinkUrl = "http://mcog.asc.ohio-state.edu/apps/surveycheck?userid=";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -136,10 +134,69 @@ public class WifiReceiver extends BroadcastReceiver {
             if (activeNetwork != null &&
                     activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
 
+                updateSurveyLinkState();
+
                 uploadData();
             }
         }
 
+    }
+
+    private void updateSurveyLinkState(){
+
+        try {
+
+            JSONArray surveyDataJson = querySurveyDataFromServer();
+
+            //based on the d and n value, update the survey link data.
+            for(int index = 0; index < surveyDataJson.length(); index++){
+
+                JSONObject surveyDataPiece = new JSONObject(surveyDataJson.get(index).toString());
+
+                int d = surveyDataPiece.getInt("d");
+                int n = surveyDataPiece.getInt("n");
+
+                Log.d(TAG, "surveyDataPiece d : " + d + ", n : " + n);
+
+                DBHelper.updateSurveyBydn(d, n);
+            }
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+    private JSONArray querySurveyDataFromServer() throws JSONException{
+
+        if(Config.USER_ID.equals(Constants.NOT_A_NUMBER)){
+            return new JSONArray();
+        }
+
+        String surveyData, link = querySurveyLinkUrl+Config.USER_ID;
+//        JSONObject surveyDataJson = new JSONObject();
+
+        JSONArray surveyDataJson = new JSONArray();
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                surveyData = new HttpAsyncGetJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                        link).get();
+            else
+                surveyData = new HttpAsyncGetJsonTask().execute(
+                        link).get();
+
+            surveyDataJson = new JSONArray(surveyData);
+
+            Log.d(TAG, "surveyDataJson : " + surveyDataJson);
+
+        } catch (InterruptedException e) {
+
+        } catch (ExecutionException e) {
+
+        } catch (NullPointerException e){
+
+        }
+
+        return surveyDataJson;
     }
 
     private void uploadData(){
@@ -188,62 +245,9 @@ public class WifiReceiver extends BroadcastReceiver {
             setNowTime();
         }
 
-
         sendingTripData(nowTime);
 
         sendingSurveyLinkData();
-
-        //TODO log Trip Survey Schema example
-
-    }
-
-    //the replacement function of IsAlive
-    private void sendingUserInform(){
-
-        if(Config.DEVICE_ID.equals("NA")){
-            return;
-        }
-
-//       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=3333333
-//      deviceid=375996574474999&email=none@nobody.com&userid=333333
-
-        int androidVersion = Build.VERSION.SDK_INT;
-
-        String link = Constants.CHECK_IN_URL + "deviceid=" + Config.DEVICE_ID + "&email=" + Config.Email
-                +"&userid="+ Config.USER_ID+"&android_ver="+androidVersion
-                +"&Manufacturer="+Build.MANUFACTURER+"&Model="+Build.MODEL+"&Product="+Build.PRODUCT;
-        String userInformInString;
-        JSONObject userInform = null;
-
-        //Log.d(TAG, "user inform link : "+ link);
-
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                userInformInString = new HttpAsyncGetUserInformFromServer().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                        link).get();
-            else
-                userInformInString = new HttpAsyncGetUserInformFromServer().execute(
-                        link).get();
-
-            userInform = new JSONObject(userInformInString);
-
-            //Log.d(TAG, "userInform : " + userInform);
-
-            sharedPrefs.edit().putLong("lastCheckInTime", ScheduleAndSampleManager.getCurrentTimeInMillis()).apply();
-
-        } catch (InterruptedException e) {
-
-        } catch (ExecutionException e) {
-
-        } catch (JSONException e){
-
-        } catch (NullPointerException e){
-
-        }
-
-        //In order to set the survey link
-//        setDaysInSurvey(userInform);
-
     }
 
     private void sendingTripData(long time24HrAgo){
@@ -261,6 +265,8 @@ public class WifiReceiver extends BroadcastReceiver {
             String lastTimeInServer;
 
             try {
+
+                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Trip", "Before sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(Long.valueOf(data.getString("EndTime")) * Constants.MILLISECONDS_PER_SECOND));
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                     lastTimeInServer = new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
@@ -283,6 +289,9 @@ public class WifiReceiver extends BroadcastReceiver {
                 Log.d(TAG, "[show data response] check sent EndTime : " + data.getString("EndTime"));
                 Log.d(TAG, "[show data response] check latest data in server's lastinsert : " + lasttimeInServerJson.getString("lastinsert"));
                 Log.d(TAG, "[show data response] check condition : " + data.getString("EndTime").equals(lasttimeInServerJson.getString("lastinsert")));
+
+                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Trip", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(Long.valueOf(lasttimeInServerJson.getString("lastinsert")) * Constants.MILLISECONDS_PER_SECOND));
+                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Trip", "EndTime == lastinsert ? "+data.getString("EndTime").equals(lasttimeInServerJson.getString("lastinsert")));
 
                 if(data.getString("EndTime").equals(lasttimeInServerJson.getString("lastinsert"))){
 
@@ -424,7 +433,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     //adding the annotations data
                     annotatedtripdata.put("Annotations", ESMJSON);
 
-                    annotatedtripdata.put("PeriodNumber", sessionToSend.getPeriodNum());
+//                    annotatedtripdata.put("PeriodNumber", sessionToSend.getPeriodNum());
                     annotatedtripdata.put("d", sessionToSend.getSurveyDay());
 
                 } catch (JSONException e) {
@@ -448,12 +457,12 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public void sendingSurveyLinkData(){
 
-        long timeOfData = -999;
+        long timeOfData = Constants.INVALID_IN_LONG;
 
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
         Cursor surveyCursor = db.rawQuery("SELECT * FROM "+DBHelper.surveyLink_table +
-                " WHERE " + DBHelper.sentOrNot_col + " <> "+Constants.SURVEYLINK_IS_ALREADY_SENT_FLAG, null);
+                " WHERE " + DBHelper.sentOrNot_col + " = "+Constants.SURVEYLINK_SHOULD_BE_SENT_FLAG, null);
 
         //where openflag != -1, implies it hasn't been opened or missed, set as clickedtime
 
@@ -542,9 +551,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     try {
 
-                        CSVHelper.dataUploadingCSV("Survey Link", surveyJson.getString("triggerTimeString"));
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Survey Link", "Before sending, from the server, the latest EndTime : "+surveyJson.getString("triggerTimeString"));
                     }catch (JSONException e){
-
+                        e.printStackTrace();
                     }
 
                     String timeInServer;
@@ -572,7 +581,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
                         long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
 
-//                        CSVHelper.dataUploadingCSV("Survey Link", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Survey Link", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Survey Link", "timeOfData == fromServer ? "+(timeOfData == fromServer));
 
                         Log.d(TAG, "[check query] going to change the latest id");
 
@@ -584,9 +594,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
                             Log.d(TAG, "[check query] survey sent successfully ");
 
-                            String id = surveyCursor.getString(DBHelper.COL_INDEX_ID);
+//                            String id = surveyCursor.getString(DBHelper.COL_INDEX_ID);
 
-                            DBHelper.updateSurveyToAlreadyBeenSent(Integer.valueOf(id));
+//                            DBHelper.updateSurveyToAlreadyBeenSent(Integer.valueOf(id));
                         }
 
                         surveyCursor.moveToNext();
@@ -594,11 +604,11 @@ public class WifiReceiver extends BroadcastReceiver {
                     } catch (InterruptedException e) {
                     } catch (ExecutionException e) {
                     } catch (JSONException e){
+                        e.printStackTrace();
                     }
-
                 }
             }catch (JSONException e){
-
+                e.printStackTrace();
             }catch (Exception e) {
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "SurveyLink");
@@ -702,9 +712,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
         try {
 
-            CSVHelper.dataUploadingCSV("Dump", "Going to send the data with EndTime : " + data.getString("EndTimeString"));
-            CSVHelper.dataUploadingCSV("Dump", "Going to send the data with deviceId : " + data.getString("device_id"));
-            CSVHelper.dataUploadingCSV("Dump", "Going to send the data with surveyDay : " + data.getString("d"));
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Dump","Going to send the data with EndTime : "+ data.getString("EndTimeString"));
         }catch (JSONException e){
 
         }
@@ -743,7 +751,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
             long fromServer = Long.valueOf(lasttimeInServerJson.getString("lastinsert"));
 
-            CSVHelper.dataUploadingCSV("Dump", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Dump", "After sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Dump", "endTime == lastinsert ? "+(endTimeOfJson == fromServer));
 
             //check the data is sent completely
             if(endTimeOfJson == fromServer) {
@@ -1448,54 +1457,52 @@ public class WifiReceiver extends BroadcastReceiver {
 
     }
 
-    private void storeUserInteract(JSONObject data){
+    //the replacement function of IsAlive
+    private void sendingUserInform(){
 
-        //Log.d(TAG, "storeUserInteract");
-
-        try {
-
-            JSONArray userInteractAndtimestampsJson = new JSONArray();
-
-            SQLiteDatabase db = DBManager.getInstance().openDatabase();
-            Cursor cursor = db.rawQuery("SELECT * FROM "+DBHelper.userInteraction_table+" WHERE "+DBHelper.TIME+" BETWEEN"+" '"+startTime+"' "+"AND"+" '"+endTime+"' ", null);
-
-            int rows = cursor.getCount();
-            if(rows!=0){
-                cursor.moveToFirst();
-                for(int i=0;i<rows;i++) {
-                    String timestamp = cursor.getString(1);
-                    String present = cursor.getString(2);
-                    String unlock = cursor.getString(3);
-                    String background = cursor.getString(4);
-                    String foreground = cursor.getString(5);
-
-                    //convert into second
-                    String timestampInSec = timestamp.substring(0, timestamp.length()-3);
-
-                    //<timestamps, action>
-                    Quintet<String, String, String, String, String> userInteractTuple = new Quintet<>(timestampInSec, present, unlock, background, foreground);
-
-                    String dataInPythonTuple = TupleHelper.toPythonTuple(userInteractTuple);
-
-                    userInteractAndtimestampsJson.put(dataInPythonTuple);
-
-                    cursor.moveToNext();
-                }
-
-                data.put("UserInteract", userInteractAndtimestampsJson);
-
-            }
-        }catch (JSONException e){
-
-        }catch(NullPointerException e){
-
-        }catch (Exception e){
-
-            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, "UserInteract");
-            CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
+        if(Config.DEVICE_ID.equals("NA")){
+            return;
         }
 
-        Log.d(TAG,"UserInteract data : "+ data.toString());
+//       ex. http://mcog.asc.ohio-state.edu/apps/servicerec?deviceid=375996574474999&email=none@nobody.com&userid=3333333
+//      deviceid=375996574474999&email=none@nobody.com&userid=333333
+
+        int androidVersion = Build.VERSION.SDK_INT;
+
+        String link = Constants.CHECK_IN_URL + "deviceid=" + Config.DEVICE_ID + "&email=" + Config.Email
+                +"&userid="+ Config.USER_ID+"&android_ver="+androidVersion
+                +"&Manufacturer="+Build.MANUFACTURER+"&Model="+Build.MODEL+"&Product="+Build.PRODUCT;
+        String userInformInString;
+        JSONObject userInform = null;
+
+        //Log.d(TAG, "user inform link : "+ link);
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                userInformInString = new HttpAsyncGetJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                        link).get();
+            else
+                userInformInString = new HttpAsyncGetJsonTask().execute(
+                        link).get();
+
+            userInform = new JSONObject(userInformInString);
+
+            //Log.d(TAG, "userInform : " + userInform);
+
+            sharedPrefs.edit().putLong("lastCheckInTime", ScheduleAndSampleManager.getCurrentTimeInMillis()).apply();
+
+        } catch (InterruptedException e) {
+
+        } catch (ExecutionException e) {
+
+        } catch (JSONException e){
+
+        } catch (NullPointerException e){
+
+        }
+
+        //In order to set the survey link
+//        setDaysInSurvey(userInform);
 
     }
 
@@ -1544,12 +1551,11 @@ public class WifiReceiver extends BroadcastReceiver {
             return String.valueOf(date);
     }
 
-    private class HttpAsyncGetUserInformFromServer extends AsyncTask<String, Void, String> {
+    private class HttpAsyncGetJsonTask extends AsyncTask<String, Void, String> {
 
         @Override
         protected void onPreExecute(){
-            //Log.d(TAG, "onPreExecute");
-            Utils.checkinresponseStoreToCSV(ScheduleAndSampleManager.getCurrentTimeInMillis(), context);
+
         }
 
         @Override
@@ -1616,9 +1622,8 @@ public class WifiReceiver extends BroadcastReceiver {
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            //Log.d(TAG, "get http post result " + result);
+            Log.d(TAG, "get http post result " + result);
 
-            Utils.checkinresponseStoreToCSV(ScheduleAndSampleManager.getCurrentTimeInMillis(), context, result);
         }
 
     }

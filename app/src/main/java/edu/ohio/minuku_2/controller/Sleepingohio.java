@@ -191,31 +191,6 @@ public class Sleepingohio extends AppCompatActivity {
             //TODO replace the code below
             long sleepingRange = getSleepingRange(sleepStartTimeLong, sleepEndTimeLong);
 
-//            long sleepingRange;
-
-            //TODO deprecated
-            //TODO change it to can be set to start from am pm
-            /*if (!sleepStartTimeAMPM.equals(sleepEndTimeAMPM)) {
-
-                //we add the date to get the accurate range
-//                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
-//                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate + " " + sleepStartTimeHour + ":" + sleepStartTimeMin + " " + sleepStartTimeAMPM, sdf_);
-//                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(tomorrDate + " " + sleepEndTimeHour + ":" + sleepEndTimeMin + " " + sleepEndTimeAMPM, sdf_);
-
-                sleepingRange = sleepEndTimeCheck - sleepStartTimeCheck + Constants.MILLISECONDS_PER_DAY;
-
-                sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
-            } else {
-
-//                SimpleDateFormat sdf_ = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_HOUR_MIN_AMPM, Locale.US);
-//                sleepStartTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate + " " + sleepStartTimeHour + ":" + sleepStartTimeMin + " " + sleepStartTimeAMPM, sdf_);
-//                sleepEndTimeCheck = ScheduleAndSampleManager.getTimeInMillis(todayDate + " " + sleepEndTimeHour + ":" + sleepEndTimeMin + " " + sleepEndTimeAMPM, sdf_);
-
-                sleepingRange = sleepEndTimeCheck - sleepStartTimeCheck;
-
-                sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
-            }*/
-
             Log.d(TAG, "sleepStartTimeCheck : " + sleepStartTimeCheck);
             Log.d(TAG, "sleepEndTimeCheck : " + sleepEndTimeCheck);
 
@@ -248,12 +223,26 @@ public class Sleepingohio extends AppCompatActivity {
                 Log.d(TAG, "SleepingStartTime Raw : "+sleepStartTimeRaw);
                 Log.d(TAG, "SleepingEndTime Raw : "+sleepEndTimeRaw);
 
-                boolean firstTimeEnterSleepTimePage = sharedPrefs.getBoolean("FirstTimeEnterSleepTimePage", false);
+                //TODO if the hour and min didn't changed, don't reset the overview interval sample times
 
-                if(firstTimeEnterSleepTimePage)
-                    cancelAlarmsByResetSleepTime();
+                String previousSleepingStartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
+                String previousSleepingEndTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
+                Log.d(TAG, "previousSleepingStartTime : "+ previousSleepingStartTime);
+                Log.d(TAG, "previousSleepingEndTime : "+ previousSleepingEndTime);
 
-                sharedPrefs.edit().putBoolean("FirstTimeEnterSleepTimePage", true).apply();
+                if(sleepStartTimeRaw.equals(previousSleepingStartTime) && sleepEndTimeRaw.equals(previousSleepingEndTime)){
+
+                    Log.d(TAG, "previousSleepingTime is same as the current one, don't reset the survey times");
+                }else {
+
+                    boolean firstTimeEnterSleepTimePage = sharedPrefs.getBoolean("FirstTimeEnterSleepTimePage", false);
+
+                    if(firstTimeEnterSleepTimePage)
+                        cancelAlarmsByResetSleepTime();
+
+                    sharedPrefs.edit().putBoolean("FirstTimeEnterSleepTimePage", true).apply();
+                    Utils.settingAllDaysIntervalSampling(getApplicationContext());
+                }
 
                 sharedPrefs.edit().putString("SleepingStartTime", sleepStartTimeRaw).apply();
                 sharedPrefs.edit().putString("SleepingEndTime", sleepEndTimeRaw).apply();
@@ -262,8 +251,6 @@ public class Sleepingohio extends AppCompatActivity {
                 sharedPrefs.edit().putLong("sleepStartTimeLong", sleepStartTimeLong).apply();
                 sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
                 sharedPrefs.edit().putLong("nextSleepTime", sleepStartTimeLong + Constants.MILLISECONDS_PER_DAY).apply();
-
-                Utils.settingAllDaysIntervalSampling(getApplicationContext());
 
                 Intent intent = new Intent(Sleepingohio.this, MainActivity.class);
                 Bundle bundle = new Bundle();
