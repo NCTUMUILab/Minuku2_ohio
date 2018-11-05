@@ -107,7 +107,7 @@ public class DataHandler {
 
         //Log.d(TAG, "getSurveyData");
 
-        ArrayList<String> results = new ArrayList<String>();
+        ArrayList<String> results;
 
         //get the data from the query.
         results = DBHelper.querySurveyLinkBetweenTimes(startTime, endTime);

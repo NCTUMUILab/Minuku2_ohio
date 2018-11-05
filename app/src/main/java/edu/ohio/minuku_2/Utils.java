@@ -374,7 +374,7 @@ public class Utils {
     }
 
 
-    public static void storeToCSV_IntervalSurveyCreated(long triggeredTimestamp, int surveyNum, String surveyLink, String noti_type,Context context){
+    public static void storeToCSV_IntervalSurveyCreated(long triggeredTimestamp, int daysInSurvey, int surveyNum, String surveyLink, String noti_type, Context context){
 
         String sFileName = "IntervalSurveyState.csv";
 
@@ -420,14 +420,14 @@ public class Utils {
             Boolean startSurveying = sharedPrefs.getBoolean("startSurveying", true);
 
             if(startSurveying) {
+
                 List<String[]> title = new ArrayList<String[]>();
 
-                title.add(new String[]{"triggeredTime", "Survey #", "clicked", "clickedTime","Survey link", "Noti Type","Period Number", "Overall rate"});
+                title.add(new String[]{"triggeredTime", "Day #(d)", "Survey #(n)", "clicked", "clickedTime","Survey link", "Noti Type", "Overall rate"});
 
                 csv_writer.writeAll(title);
 
                 sharedPrefs.edit().putBoolean("startSurveying", false).apply();
-
             }
 
             String triggeredTimeString = ScheduleAndSampleManager.getTimeString(triggeredTimestamp);
@@ -436,7 +436,7 @@ public class Utils {
 
             List<String[]> data = new ArrayList<String[]>();
 
-            data.add(new String[]{triggeredTimeString, "Survey "+surveyNum, "",  "", surveyLink, noti_type, periodNum, rateString+"%"});
+            data.add(new String[]{triggeredTimeString, "Day "+daysInSurvey,"Survey "+surveyNum, "",  "", surveyLink, noti_type, rateString+"%"});
 
             csv_writer.writeAll(data);
 
