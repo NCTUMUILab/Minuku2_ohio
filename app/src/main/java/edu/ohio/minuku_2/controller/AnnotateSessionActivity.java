@@ -3,11 +3,9 @@ package edu.ohio.minuku_2.controller;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -53,7 +51,6 @@ import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.Session;
@@ -164,7 +161,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         //Log.d(TAG, "[test show trip] loading session " + mSession.getId() + " the annotations are " + mSession.getAnnotationsSet().toJSONObject().toString());
 
         initAnnotationView();
-
     }
 
     private void triggerAlertDialog(){
@@ -894,9 +890,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             , String ans4, String optionalNote){
         //Log.d(TAG, "updateSessionWithAnnotation");
 
-        ContentValues values = new ContentValues();
-        SQLiteDatabase db = DBManager.getInstance().openDatabase();
-
         //create annoation from the ESM
         Annotation annotation = new Annotation();
 
@@ -927,8 +920,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         //update session with its annotation to the session table
         DBHelper.updateSessionTable(mSession.getId(), mSession.getEndTime(), mSession.getAnnotationsSet());
-
-
     }
 
     public ArrayList<LatLng> getLocationPointsToDrawOnMap(int sessionId) {

@@ -50,7 +50,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import edu.ohio.minuku.Data.DBHelper;
-import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.Utilities.TupleHelper;
@@ -94,6 +93,7 @@ public class WifiReceiver extends BroadcastReceiver {
     private static final String postSurveyLinkUrl = SERVER_OHIO+"surveydump/";
 
     private static final String querySurveyLinkUrl = "http://mcog.asc.ohio-state.edu/apps/surveycheck?userid=";
+    private static final String queryTripUrl = "http://mcog.asc.ohio-state.edu/apps/tripcheck?userid=";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -135,6 +135,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
 
                 updateSurveyLinkState();
+                updateTripState();
 
                 uploadData();
             }
@@ -142,11 +143,36 @@ public class WifiReceiver extends BroadcastReceiver {
 
     }
 
+    private void updateTripState(){
+
+        try {
+
+            JSONArray tripDataJson = queryDataFromServer(queryTripUrl);
+
+            //based on the createdTime, update the trip data.
+            for(int index = 0; index < tripDataJson.length(); index++){
+
+                JSONObject tripDataPiece = new JSONObject(tripDataJson.get(index).toString());
+
+                if(!tripDataPiece.has("CreatedTime"))
+                    continue;
+
+                String createdTime = tripDataPiece.getString("CreatedTime");
+                Log.d(TAG, "Sent createdTime : "+createdTime);
+                CSVHelper.storeToCSV(CSVHelper.CSV_SERVER_DATA_STATE, "Sent createdTime : "+createdTime);
+
+                DBHelper.updateSessionTableByCreatedTime(Long.valueOf(createdTime), Constants.SESSION_IS_ALREADY_SENT_FLAG);
+            }
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
     private void updateSurveyLinkState(){
 
         try {
 
-            JSONArray surveyDataJson = querySurveyDataFromServer();
+            JSONArray surveyDataJson = queryDataFromServer(querySurveyLinkUrl);
 
             //based on the d and n value, update the survey link data.
             for(int index = 0; index < surveyDataJson.length(); index++){
@@ -165,28 +191,27 @@ public class WifiReceiver extends BroadcastReceiver {
         }
     }
 
-    private JSONArray querySurveyDataFromServer() throws JSONException{
+    private JSONArray queryDataFromServer(String queryLink) throws JSONException{
 
         if(Config.USER_ID.equals(Constants.NOT_A_NUMBER)){
             return new JSONArray();
         }
 
-        String surveyData, link = querySurveyLinkUrl+Config.USER_ID;
-//        JSONObject surveyDataJson = new JSONObject();
+        String data, link = queryLink+Config.USER_ID;
 
-        JSONArray surveyDataJson = new JSONArray();
+        JSONArray dataJson = new JSONArray();
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                surveyData = new HttpAsyncGetJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                data = new HttpAsyncGetJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
                         link).get();
             else
-                surveyData = new HttpAsyncGetJsonTask().execute(
+                data = new HttpAsyncGetJsonTask().execute(
                         link).get();
 
-            surveyDataJson = new JSONArray(surveyData);
+            dataJson = new JSONArray(data);
 
-            Log.d(TAG, "surveyDataJson : " + surveyDataJson);
+            Log.d(TAG, "dataJson : " + dataJson);
 
         } catch (InterruptedException e) {
 
@@ -196,7 +221,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
         }
 
-        return surveyDataJson;
+        return dataJson;
     }
 
     private void uploadData(){
@@ -266,6 +291,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
             try {
 
+                CSVHelper.storeToCSV(CSVHelper.CSV_SERVER_DATA_STATE, "Going to send SessionId : "+data.getString("sessionid"));
+                Log.d(TAG, "Going to send SessionId : "+data.getString("sessionid"));
+
                 CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Trip", "Before sending, getting from the server, the latest EndTime : "+ScheduleAndSampleManager.getTimeString(Long.valueOf(data.getString("EndTime")) * Constants.MILLISECONDS_PER_SECOND));
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -296,8 +324,8 @@ public class WifiReceiver extends BroadcastReceiver {
                 if(data.getString("EndTime").equals(lasttimeInServerJson.getString("lastinsert"))){
 
                     //update the sent Session to already be sent
-                    String sentSessionId = data.getString("sessionid");
-                    DataHandler.updateSession(Integer.valueOf(sentSessionId), Constants.SESSION_IS_ALREADY_SENT_FLAG);
+//                    String sentSessionId = data.getString("sessionid");
+//                    DataHandler.updateSession(Integer.valueOf(sentSessionId), Constants.SESSION_IS_ALREADY_SENT_FLAG);
                 }
 
             } catch (InterruptedException e) {
@@ -316,7 +344,6 @@ public class WifiReceiver extends BroadcastReceiver {
 
         ArrayList<JSONObject> sessionJsons = new ArrayList<>();
 
-//        ArrayList<String> unsentSessions = DBHelper.queryUnSentSessions();
         ArrayList<String> overTimeSessions = DBHelper.querySessions(time24HrAgo);
 
         for(int index = 0; index < overTimeSessions.size(); index++){
@@ -353,12 +380,13 @@ public class WifiReceiver extends BroadcastReceiver {
                     long sessionEndTime = sessionToSend.getEndTime();
                     long StartTime = sessionStartTime / Constants.MILLISECONDS_PER_SECOND;
                     long EndTime = sessionEndTime / Constants.MILLISECONDS_PER_SECOND;
-
+                    long CreatedTime = sessionToSend.getCreatedTime();
                     //Log.d(TAG, "Annotation StartTime : " + StartTime);
                     //Log.d(TAG, "Annotation EndTime : " + EndTime);
 
                     annotatedtripdata.put("sessionid", sessionToSend.getId());
 
+                    annotatedtripdata.put("CreatedTime", CreatedTime);
                     annotatedtripdata.put("StartTime", StartTime);
                     annotatedtripdata.put("EndTime", EndTime);
                     annotatedtripdata.put("StartTimeString", ScheduleAndSampleManager.getTimeString(sessionStartTime));

@@ -369,6 +369,7 @@ public class MinukuStreamManager implements StreamManager {
                     //insert into the session table;
                     int sessionId = (int) sessionCount + 1;
                     Session session = new Session(sessionId);
+                    session.setCreatedTime(getCurrentTimeInMilli() / Constants.MILLISECONDS_PER_SECOND);
                     session.setStartTime(getCurrentTimeInMilli());
                     Annotation annotation = new Annotation();
                     annotation.setContent(transportationModeDataRecord.getConfirmedActivityString());

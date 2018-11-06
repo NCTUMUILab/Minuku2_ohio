@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -33,8 +32,6 @@ public class TripListActivity extends Activity {
 
     private Context mContext;
     private ListView listview;
-    private ArrayList<String> liststr;
-    private ArrayAdapter<String> listAdapter;
 
     ArrayList<Session> mSessions;
 
@@ -53,7 +50,6 @@ public class TripListActivity extends Activity {
         }else{
 
             setContentView(R.layout.triplist_activity);
-            liststr = new ArrayList<String>();
             mSessions = new ArrayList<Session>();
         }
     }

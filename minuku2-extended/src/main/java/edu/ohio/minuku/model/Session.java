@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class Session {
 
+    private long mCreatedTime=0;
 	private long mStartTime=0;
     private long mEndtime=0;
 	private int mId;
@@ -64,6 +65,14 @@ public class Session {
         for (int i=0; i<contextsources.length; i++){
             addContextSourceType(contextsources[i]);
         }
+    }
+
+    public long getCreatedTime() {
+        return mCreatedTime;
+    }
+
+    public void setCreatedTime(long mCreatedTime) {
+        this.mCreatedTime = mCreatedTime;
     }
 
     public int getSurveyDay() {
