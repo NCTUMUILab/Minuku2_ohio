@@ -85,7 +85,9 @@ public class CombinationActivity extends Activity {
                 chkItem.setChecked(!chkItem.isChecked());
 //                listShow.set(position, chkItem.isChecked());
 
-                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "List - trip to combine");
+                Session sessionChosen = mSessions.get(position);
+
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "List - trip to combine - Chosen to be combined sessionid : "+sessionChosen.getId() + " - sessionid : " +sessionToCombineId);
 
                 if(chkItem.isChecked())
                     sessionPosList.add(position);
@@ -114,7 +116,7 @@ public class CombinationActivity extends Activity {
     private Button.OnClickListener confirming = new Button.OnClickListener() {
         public void onClick(View v) {
 
-            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Confirm the combination");
+            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Confirm the combination - sessionid : "+ sessionToCombineId);
 
             Session currentSession = SessionManager.getSession(sessionToCombineId);
 

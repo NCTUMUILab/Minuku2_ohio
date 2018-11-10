@@ -103,7 +103,7 @@ public class WifiReceiver extends BroadcastReceiver {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
-        //get timezone //prevent the issue when the user start the app in wifi available environment.
+        //get timezone, prevent the issue when the user start the app in wifi available environment.
         TimeZone tz = TimeZone.getDefault();
         Calendar cal = Calendar.getInstance(tz);
         int mYear = cal.get(Calendar.YEAR);

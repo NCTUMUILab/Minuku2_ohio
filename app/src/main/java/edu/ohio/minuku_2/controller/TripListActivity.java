@@ -64,8 +64,9 @@ public class TripListActivity extends Activity {
         Intent intent = new Intent(TripListActivity.this, AnnotateSessionActivity.class);
         intent.putExtras(bundle);
 
-        startActivity(intent);
+        DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "List - trip to annotate - sessionId : "+sessionId);
 
+        startActivity(intent);
     }
 
     @Override
@@ -109,8 +110,6 @@ public class TripListActivity extends Activity {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "List - trip to annotate");
 
                 if(!OhioListAdapter.dataPos.contains(position)) {
 //                    Log.d(TAG, "[[test show trip]] click on the session position " + position);

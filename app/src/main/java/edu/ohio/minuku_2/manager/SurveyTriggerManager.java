@@ -239,13 +239,10 @@ public class SurveyTriggerManager {
         ArrayList<Long> times = new ArrayList<>();
         ArrayList<String> time_bounds = new ArrayList<>();
 
-        long now = ScheduleAndSampleManager.getCurrentTimeInMillis();
-//        Random random = new Random(now);
-//        RandomNumber randomNumber = new RandomNumber();
         int sample_period;
 
-        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER); //"22:00"
-        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER); //"08:00"
+        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
+        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
 
 
         boolean wakeSleepDateIsSame = sharedPrefs.getBoolean("WakeSleepDateIsSame", false);
@@ -266,8 +263,8 @@ public class SurveyTriggerManager {
         //if the bed time date is same as the start time implies that the survey time would cross the midnight
         if(wakeSleepDateIsSame) {
 
-            surveyEndTime = getSpecialTimeInMillis(tomorformat+" "+sleepingstartTime+":00");
-            Log.d(TAG, "[test alarm] sleepingstartTime : " + tomorformat + " " + sleepingstartTime + ":00");
+            surveyEndTime = getSpecialTimeInMillis(tomorformat+" "+"00:00:00");
+            Log.d(TAG, "[test alarm] sleepingstartTime : " + tomorformat + " " + "00:00:00");
         }else{
 
             surveyEndTime = getSpecialTimeInMillis(yMdformat+" "+sleepingstartTime+":00");
@@ -535,13 +532,16 @@ public class SurveyTriggerManager {
                 long nextSleepTime = sharedPrefs.getLong("nextSleepTime", sleepStartTimeLong + Constants.MILLISECONDS_PER_DAY);
                 Log.d(TAG, "nextSleepTime String : "+ ScheduleAndSampleManager.getTimeString(nextSleepTime));
 
+                Log.d(TAG, "[test sleep time issue] is over next Sleep Time ? "+(ScheduleAndSampleManager.getCurrentTimeInMillis() >= nextSleepTime));
+                Log.d(TAG, "[test sleep time issue] is lastTimeSend_today NA ? "+(lastTimeSend_today.equals(Constants.NOT_A_NUMBER)));
+
                 //is over a day
-                if (ScheduleAndSampleManager.getCurrentTimeInMillis() >= nextSleepTime || lastTimeSend_today.equals(Constants.NOT_A_NUMBER)) {
+//                if (ScheduleAndSampleManager.getCurrentTimeInMillis() >= nextSleepTime || lastTimeSend_today.equals(Constants.NOT_A_NUMBER)) {
+                if(!lastTimeSend_today.equals(today)){
 
-                    Log.d(TAG, "over a day !!");
+                    Log.d(TAG, "[test sleep time issue] over a day !!");
 
-                    //TODO today could be removed
-                    updateLastSurvey(today);
+                    updateLastSurvey();
 
                     //-1 is for the survey day got from the server should be set to 0
                     if(Config.daysInSurvey == -1) {
@@ -557,7 +557,7 @@ public class SurveyTriggerManager {
                         }
                     }
 
-                    Log.d(TAG, "[check daysInSurvey] daysInSurvey : "+ Config.daysInSurvey);
+                    Log.d(TAG, "[test sleep time issue] daysInSurvey : "+ Config.daysInSurvey);
 
                     sharedPrefs.edit().putInt("daysInSurvey", Config.daysInSurvey).apply();
 
@@ -1066,18 +1066,13 @@ public class SurveyTriggerManager {
         return (int) (time-time_base);
     }
 
-    private void updateLastSurvey(String day){
+    private void updateLastSurvey(){
 
         //update the sameTripPrevent
         sameTripPrevent = false;
         sharedPrefs.edit().putBoolean("sameTripPrevent", sameTripPrevent).apply();
 
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "after check the time, sameTripPrevent : "+ sameTripPrevent);
-
-        String todayDate = day+" 00:00:00";
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE_Slash);
-        long startTime = ScheduleAndSampleManager.getTimeInMillis(todayDate, sdf);
-        long endTime = startTime + Constants.MILLISECONDS_PER_DAY;
 
 //        ArrayList<String> linkDataToday = DataHandler.getSurveyData(startTime, endTime);
         ArrayList<String> linkDataToday = DBHelper.querySurveyLinks();
@@ -1101,7 +1096,7 @@ public class SurveyTriggerManager {
 
         Log.d(TAG, "[test mobile triggering] triggerQualtrics");
 
-        updateLastSurvey(today);
+        updateLastSurvey();
 
         String notiText = SURVEY_TEXT;
 

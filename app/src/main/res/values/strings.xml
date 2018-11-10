@@ -44,6 +44,11 @@
     <string name="reminder_trip_split_successfully">Your trips were split successfully!</string>
     <string name="reminder_to_split_trip_by_clicking_map">Please click the map to set the split location</string>
     <string name="reminder_trips_combined_successfully">Your trips were combined successfully!</string>
+    <string name="reminder_bedtime_range_error">Please check your bed time. Your bed time must be between 8pm and 4am.</string>
+    <string name="reminder_wakeuptime_range_error">Please check your wake time. Your wake time must be between 4am and 12pm.</string>
+    <string name="reminder_bedtime_check">Please select your bed time</string>
+    <string name="reminder_wakeuptime_check">Please select your wake time</string>
+    <string name="reminder_sleeptime_changed">Your Sleep Time has been updated! Please note that updates do not take effect until the next calendar day.</string>
 
     <string name="dialog_delete_title">Delete</string>
     <string name="dialog_delete_message">Are you sure you want to delete this trip?</string>
