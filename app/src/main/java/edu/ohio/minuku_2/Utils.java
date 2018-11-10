@@ -169,7 +169,7 @@ public class Utils {
 
         //14 is the total of the research days
         int countOfDaysInSurvey = Constants.FINALDAY - Config.daysInSurvey;
-        for(int DaysInSurvey = 1; DaysInSurvey <= countOfDaysInSurvey; DaysInSurvey++ ){
+        for(int daysInSurvey = 1; daysInSurvey <= countOfDaysInSurvey; daysInSurvey++ ){
 
 //            Log.d(TAG, "[test alarm] DaysInSurvey : "+DaysInSurvey);
 
@@ -179,7 +179,7 @@ public class Utils {
             comment.add("Trigger times");
             CSVHelper.storeToCSV(CSVHelper.CSV_Interval_Samples_Times, comment);
 
-            SurveyTriggerManager.settingIntervalSampling(DaysInSurvey, context);
+            SurveyTriggerManager.settingIntervalSampling(daysInSurvey, context);
 
             storeToCSV_IntervalSamplesTimes();
 
@@ -197,7 +197,7 @@ public class Utils {
         storeToCSV_Interval_Samples_Times_split();
 
         SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
-        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER); //"22:00"
+        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
         String sleepingendTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
 
         SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);

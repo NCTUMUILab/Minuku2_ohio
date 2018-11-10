@@ -196,6 +196,8 @@ public class SessionManager {
         /** 1. create sessions from the properies obtained **/
         session = new Session(id, startTime);
 
+        session.setCreatedTime(Long.parseLong(separated[DBHelper.COL_INDEX_SESSION_CREATED_TIME]));
+
         /**2. get end time (or time of the last record) of the sesison**/
 
         long endTime = 0;

@@ -3,11 +3,9 @@ package edu.ohio.minuku_2.controller;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -53,7 +51,6 @@ import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
-import edu.ohio.minuku.manager.DBManager;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.Session;
@@ -164,7 +161,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         //Log.d(TAG, "[test show trip] loading session " + mSession.getId() + " the annotations are " + mSession.getAnnotationsSet().toJSONObject().toString());
 
         initAnnotationView();
-
     }
 
     private void triggerAlertDialog(){
@@ -193,7 +189,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                     @Override
                     public void onClick(View view) {
 
-                        DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Confirm split");
+                        DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Confirm split - sessionid : "+ mSessionId);
 
                         if(IsSplitLocationChosen) {
 
@@ -287,7 +283,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                         @Override
                         public void onMapClick(LatLng latLng) {
 
-                            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Annotation Map");
+                            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Annotation Map - sessionid : "+ mSessionId);
 
                             //remove the current marker
                             if(currentMarkerKey != -1){
@@ -571,7 +567,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             @Override
             public void onClick(View v) {
 
-                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "EditText - click - Optional Note");
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "EditText - click - Optional Note - sessionid : "+ mSessionId);
             }
         });
 
@@ -589,7 +585,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
 
-                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "EditText - onTextChanged - Optional Note");
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "EditText - onTextChanged - Optional Note - sessionid : "+ mSessionId);
             }
         });
 
@@ -597,7 +593,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         ques1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
 
-                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Ques1 - Ans"+(checkedId+1));
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Ques1 - Ans"+(checkedId+1)+" - sessionid : "+ mSessionId);
 
                 if(checkedId==-1){
 
@@ -613,7 +609,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         ques2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
 
-                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Ques2 - Ans"+(checkedId+1));
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Ques2 - Ans"+(checkedId+1)+" - sessionid : "+ mSessionId);
 
                 if(checkedId==-1){
 
@@ -628,7 +624,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         ques3.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
 
-                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Ques3 - Ans"+(checkedId+1));
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Ques3 - Ans"+(checkedId+1)+" - sessionid : "+ mSessionId);
 
                 if(checkedId==-1){
 
@@ -644,7 +640,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         ques4.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
 
-                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Ques4 - Ans"+(checkedId+1));
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Ques4 - Ans"+(checkedId+1)+" - sessionid : "+ mSessionId);
 
                 if(checkedId==-1){
 
@@ -806,7 +802,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
             //Log.d(TAG, "ans1 : "+ans1+" ans2 : "+ans2+" ans3 : "+ans3+" ans4 : "+ ans4 +" ans4_2 : "+ans4_2);
 
-            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Submit");
+            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Submit - sessionid : "+ mSessionId);
 
             if(isAllSelected() || combineOrDelete){
 
@@ -822,7 +818,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     private Button.OnClickListener combining = new Button.OnClickListener() {
         public void onClick(View v) {
 
-            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Combine");
+            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Combine - sessionid : "+ mSessionId);
 
             Intent intent = new Intent(AnnotateSessionActivity.this, CombinationActivity.class);
 
@@ -839,7 +835,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     private Button.OnClickListener deleting = new Button.OnClickListener() {
         public void onClick(View v) {
 
-            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Delete");
+            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Delete - sessionid : "+ mSessionId);
 
             new AlertDialog.Builder(AnnotateSessionActivity.this)
                     .setTitle(getResources().getString(R.string.dialog_delete_title))
@@ -848,7 +844,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
-                            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Delete - Confirm");
+                            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Delete - Confirm - sessionid : "+ mSessionId);
 
                             DBHelper.deleteSessionTable(mSessionId);
 
@@ -864,7 +860,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
-                            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Delete - Cancel");
+                            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Delete - Cancel - sessionid : "+ mSessionId);
 
                         }
                     }).show();
@@ -875,7 +871,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     private Button.OnClickListener splitting = new Button.OnClickListener(){
         public void onClick(View v) {
 
-            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Split");
+            DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Split - sessionid : "+ mSessionId);
 
             triggerAlertDialog();
         }
@@ -893,9 +889,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     private void updateSessionWithAnnotation(String ans1, String ans2, String ans3
             , String ans4, String optionalNote){
         //Log.d(TAG, "updateSessionWithAnnotation");
-
-        ContentValues values = new ContentValues();
-        SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
         //create annoation from the ESM
         Annotation annotation = new Annotation();
@@ -927,8 +920,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         //update session with its annotation to the session table
         DBHelper.updateSessionTable(mSession.getId(), mSession.getEndTime(), mSession.getAnnotationsSet());
-
-
     }
 
     public ArrayList<LatLng> getLocationPointsToDrawOnMap(int sessionId) {
