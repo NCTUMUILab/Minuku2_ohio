@@ -18,6 +18,7 @@ import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
+import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku_2.R;
@@ -166,8 +167,12 @@ public class TripListActivity extends Activity {
             try {
 
 //                sessions = SessionManager.getRecentSessions();
-                sessions = SessionManager.getRecentNotBeenCombinedSessions();
+                sessions = SessionManager.getRecentToShowSessions();
 
+                for(Session session: sessions){
+
+                    Log.d(TAG, "session "+session.getId());
+                }
             }catch (Exception e) {
 //                Log.d(TAG,"Exception");
 //                e.printStackTrace();

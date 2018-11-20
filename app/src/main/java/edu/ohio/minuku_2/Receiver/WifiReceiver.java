@@ -158,13 +158,13 @@ public class WifiReceiver extends BroadcastReceiver {
                     continue;
 
                 String createdTime = tripDataPiece.getString("CreatedTime");
-                Log.d(TAG, "Sent createdTime : "+createdTime);
-                CSVHelper.storeToCSV(CSVHelper.CSV_SERVER_DATA_STATE, "Sent createdTime : "+createdTime);
+//                Log.d(TAG, "Sent createdTime : "+createdTime);
+//                CSVHelper.storeToCSV(CSVHelper.CSV_SERVER_DATA_STATE, "Sent createdTime : "+createdTime);
 
                 DBHelper.updateSessionTableByCreatedTime(Long.valueOf(createdTime), Constants.SESSION_IS_ALREADY_SENT_FLAG);
             }
         }catch (JSONException e){
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
@@ -182,12 +182,12 @@ public class WifiReceiver extends BroadcastReceiver {
                 int d = surveyDataPiece.getInt("d");
                 int n = surveyDataPiece.getInt("n");
 
-                Log.d(TAG, "surveyDataPiece d : " + d + ", n : " + n);
+//                Log.d(TAG, "surveyDataPiece d : " + d + ", n : " + n);
 
                 DBHelper.updateSurveyBydn(d, n);
             }
         }catch (JSONException e){
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
@@ -211,7 +211,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
             dataJson = new JSONArray(data);
 
-            Log.d(TAG, "dataJson : " + dataJson);
+//            Log.d(TAG, "dataJson : " + dataJson);
 
         } catch (InterruptedException e) {
 
@@ -272,7 +272,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
         sendingTripData(nowTime);
 
-        sendingSurveyLinkData();
+        sendingSurveyLinkData(nowTime);
     }
 
     private void sendingTripData(long time24HrAgo){
@@ -393,6 +393,9 @@ public class WifiReceiver extends BroadcastReceiver {
                     annotatedtripdata.put("EndTimeString", ScheduleAndSampleManager.getTimeString(sessionEndTime));
 
                     annotatedtripdata.put("TripMin", sessionToSend.isLongEnough());
+                    annotatedtripdata.put("type", getSessionTypeName(sessionToSend.getType()));
+                    annotatedtripdata.put("referenceId", sessionToSend.getReferenceId());
+                    annotatedtripdata.put("displayed", sessionToSend.isToShow());
 
                     //getting the answers in the annotation.
                     if(annotations.size() > 0) {
@@ -426,10 +429,6 @@ public class WifiReceiver extends BroadcastReceiver {
                                 openTimesInStringToShow += ", ";
                             }
                         }
-
-//                        long annotationOpenTimes = Long.valueOf(annotationOpenTimesString);
-//                        ESMJSON.put("openTimes", annotationOpenTimes / Constants.MILLISECONDS_PER_SECOND);
-//                        ESMJSON.put("openTimeString", ScheduleAndSampleManager.getTimeString(annotationOpenTimes));
 
                         ESMJSON.put("openTimes", openTimesInLongToShow);
                         ESMJSON.put("openTimeString", openTimesInStringToShow);
@@ -472,7 +471,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     CSVHelper.storeToCSV(CSVHelper.CSV_PULLING_DATA_CHECK, Utils.getStackTrace(e));
                 }
 
-//                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "Trip ", annotatedtripdata.toString());
+                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT, "Trip ", annotatedtripdata.toString());
 
                 sessionJsons.add(annotatedtripdata);
             }catch (IndexOutOfBoundsException e){
@@ -483,14 +482,33 @@ public class WifiReceiver extends BroadcastReceiver {
         return sessionJsons;
     }
 
-    public void sendingSurveyLinkData(){
+    public String getSessionTypeName(int type){
+
+        switch(type) {
+            case Constants.SESSION_TYPE_ORIGINAL:
+                return "original";
+            case Constants.SESSION_TYPE_COMBINED:
+                return "combined";
+            case Constants.SESSION_TYPE_DELETED:
+                return "deleted";
+            case Constants.SESSION_TYPE_SPLIT:
+                return "split";
+            case Constants.SESSION_TYPE_SHORT:
+                return "short";
+            case Constants.SESSION_TYPE_CHANGED:
+                return "changed";
+        }
+        return "original";
+    }
+
+    public void sendingSurveyLinkData(long time24HrAgo){
 
         long timeOfData = Constants.INVALID_IN_LONG;
 
         SQLiteDatabase db = DBManager.getInstance().openDatabase();
 
         Cursor surveyCursor = db.rawQuery("SELECT * FROM "+DBHelper.surveyLink_table +
-                " WHERE " + DBHelper.sentOrNot_col + " = "+Constants.SURVEYLINK_SHOULD_BE_SENT_FLAG, null);
+                " WHERE " + DBHelper.sentOrNot_col + " = "+Constants.SURVEYLINK_SHOULD_BE_SENT_FLAG + " AND "+ DBHelper.generateTime_col + " < " + time24HrAgo , null);
 
         //where openflag != -1, implies it hasn't been opened or missed, set as clickedtime
 
@@ -1171,7 +1189,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     String timestampInSec = timestamp.substring(0, timestamp.length()-3);
                     String detectedTimeInSec = detectedTime.substring(0, timestamp.length()-3);
 
-                    //<timestamps, MostProbableActivity, ProbableActivities>
+                    //<timestamps, MostProbableActivity, ProbableActivities, detectedTimeInSec, sessionid>
                     Quintet<String, String, String, String, String> arTuple = new Quintet<>(timestampInSec, mostProbableActivity, probableActivities, detectedTimeInSec, sessionid);
 
                     String dataInPythonTuple = TupleHelper.toPythonTuple(arTuple);
@@ -1232,7 +1250,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     String timestampInSec = timestamp.substring(0, timestamp.length()-3);
 
                     //<timestampInSec, streamVolumeSystem, streamVolumeVoicecall, streamVolumeRing,
-                    // streamVolumeNotification, streamVolumeMusic, audioMode, ringerMode>
+                    // streamVolumeNotification, streamVolumeMusic, audioMode, ringerMode, sessionid>
                     Ennead<String, String, String, String, String, String, String, String, String> ringerTuple
                             = new Ennead<>(timestampInSec, streamVolumeSystem, streamVolumeVoicecall, streamVolumeRing,
                             streamVolumeNotification, streamVolumeMusic, audioMode, ringerMode, sessionid);

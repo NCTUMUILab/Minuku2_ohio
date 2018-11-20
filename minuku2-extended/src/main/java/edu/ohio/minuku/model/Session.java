@@ -14,12 +14,15 @@ public class Session {
     //we need to rememeber this number in order to cancel the ongoing notification when the current session is done.
     private int mOngoingNotificationId=-1;
 	protected AnnotationSet mAnnotationSet;
-	private boolean mIsLongEnough = true ;
+	private boolean mIsLongEnough = true;
 	private boolean mIsModified = false;
     private int mIsSent;
     private int mIsCombined;
     private int periodNum;
     private int surveyDay;
+    private int type;
+    private String referenceId = "";
+    private boolean toShow = true;
 
     // this should be defined based on what's being activated.
     ArrayList<String> mContextSourceNames;
@@ -103,6 +106,14 @@ public class Session {
         mIsModified = isModified;
     }
 
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
     public boolean isPaused() {
         return mPaused;
     }
@@ -135,6 +146,14 @@ public class Session {
         this.mOngoingNotificationId = ongoingNotificationId;
     }
 
+    public boolean isToShow() {
+        return toShow;
+    }
+
+    public void setToShow(boolean toShow) {
+        this.toShow = toShow;
+    }
+
     public void setTask(int taskId) {
         mTaskId = taskId;
     }
@@ -143,11 +162,17 @@ public class Session {
         this.mTaskId = taskId;
     }
 
-
 	public int getTaskId(){
 		return mTaskId;
 	}
-	
+
+    public String getReferenceId() {
+        return referenceId;
+    }
+
+    public void setReferenceId(String referenceId) {
+        this.referenceId = referenceId;
+    }
 	
 	public void setStartTime(long t){
 		mStartTime = t;

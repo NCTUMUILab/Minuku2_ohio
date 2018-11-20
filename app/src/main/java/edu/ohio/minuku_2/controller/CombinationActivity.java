@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
+import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.SessionManager;
 import edu.ohio.minuku.model.Session;
@@ -123,6 +124,12 @@ public class CombinationActivity extends Activity {
             long currentStartTime = currentSession.getStartTime();
             long currentEndTime = currentSession.getEndTime();
 
+            Session lastSession = SessionManager.getLastSession();
+            int sessionCount = lastSession.getId();
+            int newSessionId = sessionCount + 1;
+
+            String referenceId = "";
+
             //combine the time and update to the current session
             for(int index = 0; index < sessionPosList.size(); index++) {
 
@@ -143,11 +150,36 @@ public class CombinationActivity extends Activity {
                 DBHelper.updateSessionTable(sessionid, Constants.SESSION_SHOULD_BE_SENT_FLAG, Constants.SESSION_IS_COMBINED_FLAG);
 
                 //update the background data with the corresponding sessionids
-                DBHelper.updateRecordsInSessionConcat(DBHelper.STREAM_TYPE_LOCATION, sessionid, sessionToCombineId);
+//                DBHelper.updateRecordsInSessionConcat(DBHelper.STREAM_TYPE_LOCATION, sessionid, sessionToCombineId);
+                DBHelper.updateRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, sessionid, newSessionId);
+
+                if(index == 0){
+                    referenceId += sessionid;
+                }else{
+                    referenceId += "," + sessionid;
+                }
             }
 
-            DBHelper.updateSessionTable(sessionToCombineId, currentStartTime, currentEndTime);
-            DBHelper.updateSessionTableToCombined(sessionToCombineId, Constants.SESSION_SUBJECTIVELY_COMBINE_FLAG);
+            referenceId += ","+sessionToCombineId;
+
+            DBHelper.hideSessionTable(sessionToCombineId, Constants.SESSION_TYPE_CHANGED);
+            DBHelper.updateRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, sessionToCombineId, newSessionId);
+
+            Session session = new Session(sessionToCombineId);
+            session.setId(newSessionId);
+            session.setCreatedTime(ScheduleAndSampleManager.getCurrentTimeInMillis() / Constants.MILLISECONDS_PER_SECOND);
+            session.setStartTime(currentStartTime);
+            session.setEndTime(currentEndTime);
+            session.setIsSent(Constants.SESSION_SHOULDNT_BEEN_SENT_FLAG);
+            session.setIsCombined(Constants.SESSION_NEVER_GET_COMBINED_FLAG);
+            session.setSurveyDay(Config.daysInSurvey);
+            session.setType(Constants.SESSION_TYPE_COMBINED);
+            session.setReferenceId("("+referenceId+")");
+            session.setToShow(true);
+
+            DBHelper.insertSessionTable(session);
+//            DBHelper.updateSessionTable(sessionToCombineId, currentStartTime, currentEndTime);
+//            DBHelper.updateSessionTableToCombined(sessionToCombineId, Constants.SESSION_SUBJECTIVELY_COMBINE_FLAG);
 
             Toast.makeText(CombinationActivity.this, getResources().getString(R.string.reminder_trips_combined_successfully), Toast.LENGTH_SHORT).show();
 
@@ -197,7 +229,8 @@ public class CombinationActivity extends Activity {
 
             try {
 
-                sessions = SessionManager.getRecentNotBeenCombinedSessions(sessionToCombineId);
+//                sessions = SessionManager.getRecentNotBeenCombinedSessions(sessionToCombineId);
+                sessions = SessionManager.getRecentToShowSessions(sessionToCombineId);
             }catch (Exception e) {
 
             }

@@ -479,7 +479,7 @@ public class Sleepingohio extends AppCompatActivity {
 
                             if(sleepStartTimeToCheck > bedUpperBoundTime && sleepStartTimeToCheck < bedLowerBoundTime){
 
-                                Toast.makeText(Sleepingohio.this, getResources().getString(R.string.reminder_bedtime_range_error), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(Sleepingohio.this, getResources().getString(R.string.reminder_bedtime_range_error), Toast.LENGTH_LONG).show();
                             }else {
 
                                 sleepStartTimeLong = sleepStartTimeToCheck;

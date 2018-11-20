@@ -266,7 +266,6 @@ public class MinukuStreamManager implements StreamManager {
             /**
              * 1. check if the new activity label is different from the previous activity label. IF it is different, we should do something
              * **/
-
             if (!this.transportationModeDataRecord.getConfirmedActivityString().equals(transportationModeDataRecord.getConfirmedActivityString())) {
 
                 //Log.d(TAG, "test combine test trip: the new acitivty is different from the previous!");
@@ -292,6 +291,7 @@ public class MinukuStreamManager implements StreamManager {
                     if(SessionManager.getOngoingSessionIdList().size() > 0){
 
                         try {
+
                             lastSession = SessionManager.getSession(SessionManager.getOngoingSessionIdList().get(0));
                         }catch (IndexOutOfBoundsException e){
 
@@ -317,7 +317,6 @@ public class MinukuStreamManager implements StreamManager {
                             && !transportationModeDataRecord.getConfirmedActivityString().equals(TransportationModeStreamGenerator.TRANSPORTATION_MODE_NAME_NA)) {
 
                         /** check if the new activity should be combine: if the new transportation mode is the same as the mode of the previous session and the time is 5 minutes **/
-
                         boolean shouldCombineWithLastSession = false;
                         long now = getCurrentTimeInMilli();
                         shouldCombineWithLastSession = SessionManager.examineSessionCombinationByActivityAndTime(lastSession, transportationModeDataRecord.getConfirmedActivityString(),now );
@@ -336,7 +335,6 @@ public class MinukuStreamManager implements StreamManager {
                             addSessionFlag = true;
                             //Log.d(TAG, "test combine: we should not combine the new transportation activity with the last session " );
                         }
-
                     }
 
                     //to end a session (the previous is moving)
@@ -352,6 +350,15 @@ public class MinukuStreamManager implements StreamManager {
                         long endTime = getCurrentTimeInMilli();
                         lastSession.setEndTime(endTime);
                         lastSession.setLongEnough(isSessionLongEnough);
+
+                        if(!isSessionLongEnough) {
+                            lastSession.setType(Constants.SESSION_TYPE_SHORT);
+                            lastSession.setToShow(false);
+                        }else{
+
+                            lastSession.setType(Constants.SESSION_TYPE_ORIGINAL);
+                            lastSession.setToShow(true);
+                        }
 
                         //end the current session
                         SessionManager.endCurSession(lastSession);
@@ -378,6 +385,8 @@ public class MinukuStreamManager implements StreamManager {
                     session.setIsSent(Constants.SESSION_SHOULDNT_BEEN_SENT_FLAG);
                     session.setIsCombined(Constants.SESSION_NEVER_GET_COMBINED_FLAG);
                     session.setSurveyDay(Config.daysInSurvey);
+                    session.setType(Constants.SESSION_TYPE_ORIGINAL);
+                    session.setToShow(true);
 
                     int periodNum = Utilities.getPeriodNum(ScheduleAndSampleManager.getCurrentTimeInMillis(), sharedPrefs);
 
