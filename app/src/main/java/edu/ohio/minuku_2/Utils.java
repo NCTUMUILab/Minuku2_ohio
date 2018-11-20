@@ -142,8 +142,7 @@ public class Utils {
         boolean isInvalid = inputID.matches("") ||
                 !tryParseInt(inputID) ||
                 inputID.length()!=6 ||
-                Integer.valueOf(inputID.substring(0, 1))>4 ||
-                Integer.valueOf(inputID.substring(0, 1))==0;
+                Integer.valueOf(inputID.substring(0, 1))>3;
 
         return isInvalid;
     }

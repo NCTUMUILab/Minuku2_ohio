@@ -109,7 +109,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
         sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
 
-        //TODO sessionid
         mSessionId = Integer.parseInt(bundle.getString("sessionkey_id"));
 
         Log.d(TAG,"[test show trip] on create session id: : " + mSessionId);
@@ -195,25 +194,52 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                             try {
 
-                                //update the session into two different sessions
-                                //1st session
-                                DBHelper.updateSessionTable(mSessionId, mSession.getStartTime(), splittingTime);
+                                //TODO add the information to show they are from the same trip.
+                                //keep the original one hided
+                                DBHelper.hideSessionTable(mSessionId, Constants.SESSION_TYPE_CHANGED);
 
-                                //2nd session
+                                //update the session into two different sessions
                                 Session lastSession = SessionManager.getLastSession();
                                 int sessionCount = lastSession.getId();
 
-                                int sessionId = (int) sessionCount + 1;
-                                Session session = mSession;
-                                session.setStartTime(splittingTime);
-                                session.setLongEnough(true);
-                                session.setId(sessionId);
+                                long originStartTime = mSession.getStartTime();
+                                long originEndTime = mSession.getEndTime();
 
-                                DBHelper.insertSessionTable(session);
+                                Log.d(TAG, "originStartTime : "+ScheduleAndSampleManager.getTimeString(originStartTime));
+                                Log.d(TAG, "originEndTime : "+ScheduleAndSampleManager.getTimeString(originEndTime));
+                                Log.d(TAG, "splittingTime : "+ScheduleAndSampleManager.getTimeString(splittingTime));
+
+                                //1st session
+                                Session firstSession = mSession;
+                                firstSession.setCreatedTime(ScheduleAndSampleManager.getCurrentTimeInMillis() / Constants.MILLISECONDS_PER_SECOND);
+                                firstSession.setStartTime(originStartTime);
+                                firstSession.setEndTime(splittingTime);
+                                firstSession.setLongEnough(true);
+                                firstSession.setId(sessionCount + 1);
+                                firstSession.setToShow(true);
+                                firstSession.setReferenceId(String.valueOf(mSessionId));
+                                firstSession.setType(Constants.SESSION_TYPE_SPLIT);
+
+//                                DBHelper.updateSessionTable(mSessionId, mSession.getStartTime(), splittingTime);
+                                DBHelper.insertSessionTable(firstSession);
+                                DBHelper.updateRecordsInSessionBeforeSplit(DBHelper.STREAM_TYPE_LOCATION, splittingTime, mSessionId, firstSession.getId());
+
+                                //2nd session
+                                Session secondSession = mSession;
+                                secondSession.setCreatedTime(ScheduleAndSampleManager.getCurrentTimeInMillis() / Constants.MILLISECONDS_PER_SECOND);
+                                secondSession.setStartTime(splittingTime);
+                                secondSession.setEndTime(originEndTime);
+                                secondSession.setLongEnough(true);
+                                secondSession.setId(sessionCount + 2);
+                                secondSession.setToShow(true);
+                                secondSession.setReferenceId(String.valueOf(mSessionId));
+                                secondSession.setType(Constants.SESSION_TYPE_SPLIT);
+
+                                DBHelper.insertSessionTable(secondSession);
 
                                 //update session locations' session id,
                                 //set the time after splittingTime to the old ids concatenating with the new id
-                                DBHelper.updateRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, splittingTime, mSessionId, session.getId());
+                                DBHelper.updateRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, splittingTime, mSessionId, secondSession.getId());
                             } catch (ArrayIndexOutOfBoundsException e) {
 
                             }
@@ -723,7 +749,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                 button.setChecked(true);
             }
-
         }
     }
 
@@ -846,10 +871,12 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                             DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "Button - Delete - Confirm - sessionid : "+ mSessionId);
 
-                            DBHelper.deleteSessionTable(mSessionId);
+                            //TODO still keep them and add a field to not show them
+                            DBHelper.hideSessionTable(mSessionId, Constants.SESSION_TYPE_DELETED);
+//                            DBHelper.deleteSessionTable(mSessionId);
 
                             //update the background data corresponding, -1 indicated that it was gone
-                            DBHelper.updateRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, mSessionId, -1);
+//                            DBHelper.updateRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, mSessionId, -1);
 
                             Toast.makeText(AnnotateSessionActivity.this, getResources().getString(R.string.reminder_trip_deleted), Toast.LENGTH_SHORT).show();
 

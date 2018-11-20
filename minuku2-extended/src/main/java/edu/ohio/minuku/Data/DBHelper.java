@@ -150,6 +150,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COL_SESSION_COMBINEDORNOT_FLAG = "combinedOrNot";
     public static final String COL_SESSION_PERIODNUMBER_FLAG = "periodnumber";
     public static final String COL_SESSION_SURVEYDAY_FLAG = "surveyDay";
+    public static final String COL_SESSION_TYPE = "Type";
+    public static final String COL_SESSION_REFERENCE = "reference";
+    public static final String COL_SESSION_TO_SHOW = "toShow";
     public static final int COL_INDEX_SESSION_ID = 0;
     public static final int COL_INDEX_SESSION_CREATED_TIME = 1;
     public static final int COL_INDEX_SESSION_START_TIME = 2;
@@ -161,7 +164,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final int COL_INDEX_SESSION_COMBINEDORNOT_FLAG = 8;
     public static final int COL_INDEX_SESSION_PERIODNUMBER_FLAG = 9;
     public static final int COL_INDEX_SESSION_SURVEYDAY_FLAG = 10;
-
+    public static final int COL_INDEX_SESSION_TYPE = 11;
+    public static final int COL_INDEX_SESSION_REFERENCE = 12;
+    public static final int COL_INDEX_SESSION_TO_SHOW = 13;
     //table name
     public static final String surveydayWithDate_table = "SurveydayWithDate";
     public static final String surveyLink_table = "SurveyLinkList";
@@ -470,7 +475,10 @@ public class DBHelper extends SQLiteOpenHelper {
                 COL_SESSION_SENTORNOT_FLAG + " INTEGER, " +
                 COL_SESSION_COMBINEDORNOT_FLAG + " INTEGER, " +
                 COL_SESSION_PERIODNUMBER_FLAG + " INTEGER, " +
-                COL_SESSION_SURVEYDAY_FLAG + " INTEGER "+
+                COL_SESSION_SURVEYDAY_FLAG + " INTEGER, "+
+                COL_SESSION_TYPE + " INTEGER, "+
+                COL_SESSION_REFERENCE + " TEXT, "+
+                COL_SESSION_TO_SHOW + " INTEGER "+
                 ");";
 
         db.execSQL(cmd);
@@ -625,14 +633,11 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(COL_SESSION_COMBINEDORNOT_FLAG, session.getIsCombined());
             values.put(COL_SESSION_PERIODNUMBER_FLAG, session.getPeriodNum());
             values.put(COL_SESSION_SURVEYDAY_FLAG, session.getSurveyDay());
+            values.put(COL_SESSION_TYPE, session.getType());
+            values.put(COL_SESSION_REFERENCE, session.getReferenceId());
+            values.put(COL_SESSION_TO_SHOW, session.isToShow());
 
             rowId = db.insert(SESSION_TABLE_NAME, null, values);
-
-            Log.d(TAG, "[show split trip] Session is long enough ? "+session.isLongEnough());
-            Log.d(TAG, "[show split trip] Session is Sent ? "+session.getIsSent());
-            Log.d(TAG, "[show split trip] Session is Combined ? "+session.getIsCombined());
-            Log.d(TAG, "[show split trip] Session's starttime ? "+session.getStartTime());
-            Log.d(TAG, "[show split trip] Session is endtime ? "+session.getEndTime());
 
         }catch(Exception e){
 
@@ -777,6 +782,82 @@ public class DBHelper extends SQLiteOpenHelper {
                     COL_SESSION_START_TIME + " < " + endTime + " and " +
                     COL_SESSION_COMBINEDORNOT_FLAG + " <> " + Constants.SESSION_IS_COMBINED_FLAG +
                     " order by " + COL_SESSION_START_TIME + " DESC ";
+
+            //Log.d(TAG, "test combine [querySessionsBetweenTimes] the query statement is " +sql);
+
+            Cursor cursor = db.rawQuery(sql, null);
+            int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+                }
+                rows.add(curRow);
+            }
+            cursor.close();
+//           //Log.d(TAG,"cursor.getCount : "+cursor.getCount());
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+        return rows;
+
+    }
+
+    public static ArrayList<String> queryToShowSessionsBetweenTimes(long startTime, long endTime) {
+
+        ArrayList<String> rows = new ArrayList<String>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME +
+                    " where " + COL_SESSION_START_TIME + " > " + startTime + " and " +
+                    COL_SESSION_START_TIME + " < " + endTime + " and " +
+                    COL_SESSION_TO_SHOW+ " = 1" +
+                    " order by " + COL_SESSION_START_TIME + " DESC ";
+
+            //Log.d(TAG, "test combine [querySessionsBetweenTimes] the query statement is " +sql);
+
+            Cursor cursor = db.rawQuery(sql, null);
+            int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+                }
+                rows.add(curRow);
+            }
+            cursor.close();
+//           //Log.d(TAG,"cursor.getCount : "+cursor.getCount());
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+        return rows;
+
+    }
+
+    public static ArrayList<String> queryToShowSessionsBetweenTimes(long startTime, long endTime, int sessionid) {
+
+        ArrayList<String> rows = new ArrayList<String>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME +
+                    " where " + COL_SESSION_START_TIME + " > " + startTime + " and " +
+                    COL_SESSION_START_TIME + " < " + endTime + " and " +
+                    COL_SESSION_TO_SHOW+ " = 1" + " and " +
+                    COL_ID + " <> " + sessionid + " order by " + COL_SESSION_START_TIME + " DESC ";
 
             //Log.d(TAG, "test combine [querySessionsBetweenTimes] the query statement is " +sql);
 
@@ -1379,6 +1460,40 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
+    public static void updateRecordsInSessionBeforeSplit(String table_name, long splittingTime, int currentSessionId, int newSessionid) {
+
+//        String where = COL_SESSION_ID + " = " + currentSessionId;
+
+        //get the exact session id in the delimiters
+        String querySessionidInDelimiters = "( '"+Constants.SESSION_DELIMITER + "' || RTRIM("+COL_SESSION_ID+") || '" + Constants.SESSION_DELIMITER+"' )"
+                +"LIKE ('%" +Constants.SESSION_DELIMITER + "' || " + currentSessionId + " || '" + Constants.SESSION_DELIMITER + "%')";
+
+        String querySessionid = COL_SESSION_ID + " = " + currentSessionId;
+
+        String afterSplitting = TIME + " < " + splittingTime;
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            values.put(COL_SESSION_ID, newSessionid);
+
+            db.update(table_name, values, querySessionidInDelimiters
+//                            + " or " + querySessionidBetweenSpaceAndDelimiter
+//                            + " or " + querySessionid
+                            +" and " + afterSplitting
+                    , null);
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+            Log.e(TAG, "SessionConcat exception", e);
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_SESSION_CONCAT_CHECK, Utilities.getStackTrace(e));
+        }
+    }
+
     public static void updateRecordsInSessionConcat(String table_name, int currentSessionId, int newSessionid) {
 
         //get the exact session id in the delimiters
@@ -1472,7 +1587,7 @@ public class DBHelper extends SQLiteOpenHelper {
      * @param endTime
      * @param sessionLongEnoughFlag
      */
-    public static void updateSessionTable(int session_id, long endTime, boolean sessionLongEnoughFlag){
+    public static void updateSessionTable(int session_id, long endTime, boolean sessionLongEnoughFlag, int sessionType, boolean sessionToShow){
 
         String where = COL_ID + " = " +  session_id;
 
@@ -1482,12 +1597,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
             values.put(COL_SESSION_END_TIME, endTime);
             values.put(COL_SESSION_LONG_ENOUGH_FLAG, sessionLongEnoughFlag);
+            values.put(COL_SESSION_TYPE, sessionType);
+            values.put(COL_SESSION_TO_SHOW, sessionToShow);
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 
             DBManager.getInstance().closeDatabase();
 
-//            Log.d(TAG, "test combine: completing updating end time for sesssion" + id );
+//            Log.d(TAG, "test combine: completing updating end time for session" + id );
 
         }catch(Exception e){
 
@@ -1495,7 +1612,6 @@ public class DBHelper extends SQLiteOpenHelper {
             CSVHelper.storeToCSV(CSVHelper.CSV_SESSION_CONCAT_CHECK, Utilities.getStackTrace(e));
 
         }
-
     }
 
     public static void updateSessionTable(int sessionId, int toBeSent){
@@ -1567,6 +1683,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
             values.put(COL_SESSION_SENTORNOT_FLAG, toBeSent);
             values.put(COL_SESSION_COMBINEDORNOT_FLAG, isCombined);
+            values.put(COL_SESSION_TO_SHOW, false);
+            values.put(COL_SESSION_TYPE, Constants.SESSION_TYPE_CHANGED);
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 
@@ -1592,7 +1710,26 @@ public class DBHelper extends SQLiteOpenHelper {
         }catch(Exception e){
             e.printStackTrace();
         }
+    }
 
+    public static void hideSessionTable(int sessionId, int type){
+
+        String where = COL_ID + " = " +  sessionId;
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            values.put(COL_SESSION_TYPE, type);
+            values.put(COL_SESSION_TO_SHOW, false);
+
+            db.update(SESSION_TABLE_NAME, values, where, null);
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public static void updateSessionTable(int sessionId, long startTime , long endTime){

@@ -210,15 +210,16 @@ public class SessionManager {
         //there 's no end time of the session, we take the time of the last record
         else {
             endTime = getLastRecordTimeinSession(session.getId());
-
         }
         //Log.d(TAG, "[test combine] testgetdata the end time is now:  " + ScheduleAndSampleManager.getTimeString(endTime));
 
         boolean islongEnough= true;
         boolean isModified = false;
+        boolean isToShow = true;
 
         if (!separated[DBHelper.COL_INDEX_SESSION_LONG_ENOUGH_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_LONG_ENOUGH_FLAG].equals("")){
-            islongEnough = Boolean.parseBoolean(separated[DBHelper.COL_INDEX_SESSION_LONG_ENOUGH_FLAG]);
+//            islongEnough = Boolean.parseBoolean(separated[DBHelper.COL_INDEX_SESSION_LONG_ENOUGH_FLAG]);
+            islongEnough = "1".equals(separated[DBHelper.COL_INDEX_SESSION_TO_SHOW]);
         }
 
         if (!separated[DBHelper.COL_INDEX_SESSION_MODIFIED_FLAG].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_MODIFIED_FLAG].equals("")){
@@ -245,6 +246,19 @@ public class SessionManager {
             session.setSurveyDay(Integer.valueOf(separated[DBHelper.COL_INDEX_SESSION_SURVEYDAY_FLAG]));
         }
 
+        if (!separated[DBHelper.COL_INDEX_SESSION_TYPE].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_TYPE].equals("")) {
+
+            session.setType(Integer.valueOf(separated[DBHelper.COL_INDEX_SESSION_TYPE]));
+        }
+
+        if (!separated[DBHelper.COL_INDEX_SESSION_TO_SHOW].equals("null") && !separated[DBHelper.COL_INDEX_SESSION_TO_SHOW].equals("")) {
+
+//            isToShow = Boolean.parseBoolean(separated[DBHelper.COL_INDEX_SESSION_TO_SHOW]);
+            isToShow = "1".equals(separated[DBHelper.COL_INDEX_SESSION_TO_SHOW]);
+        }
+
+        session.setToShow(isToShow);
+        session.setReferenceId(separated[DBHelper.COL_INDEX_SESSION_REFERENCE]);
         session.setLongEnough(islongEnough);
         session.setModified(isModified);
 
@@ -360,9 +374,9 @@ public class SessionManager {
      * @param endTime
      * @param isLongEnough
      */
-    public static void updateCurSessionEndInfoTo(int sessionId, long endTime, boolean isLongEnough){
+    public static void updateCurSessionEndInfoTo(int sessionId, long endTime, boolean isLongEnough, int sessionType, boolean sessionToShow){
 
-        DBHelper.updateSessionTable(sessionId, endTime, isLongEnough);
+        DBHelper.updateSessionTable(sessionId, endTime, isLongEnough, sessionType, sessionToShow);
     }
 
     /**
@@ -441,8 +455,7 @@ public class SessionManager {
         getOngoingSessionIdList().add(session.getId());
 
         //update session with end time and long enough flag.
-        updateCurSessionEndInfoTo(session.getId(),0,true);
-
+        updateCurSessionEndInfoTo(session.getId(),0,true, session.getType(), session.isToShow());
     }
 
     /**
@@ -464,7 +477,7 @@ public class SessionManager {
         //Log.d(TAG, "test combine: after remove gooing the list is  " + getOngoingSessionIdList().toString());
 
         //update session with end time and long enough flag.
-        updateCurSessionEndInfoTo(session.getId(),session.getEndTime(),session.isLongEnough());
+        updateCurSessionEndInfoTo(session.getId(),session.getEndTime(),session.isLongEnough(), session.getType(), session.isToShow());
         //Log.d(TAG, "test combine: after adding end time and longlong in  session in tge DB  " );
 
     }
@@ -563,7 +576,7 @@ public class SessionManager {
 
 
         //query//get sessions between the starTime and endTime
-        ArrayList<String> res =  DBHelper.querySessionsBetweenTimes(queryStartTime, queryEndTime);
+        ArrayList<String> res = DBHelper.querySessionsBetweenTimes(queryStartTime, queryEndTime);
 
 
         //Log.d(TAG, "[test show trip] getRecentSessions get res: " +  res);
@@ -592,6 +605,58 @@ public class SessionManager {
 
         //query//get sessions between the starTime and endTime
         ArrayList<String> res =  DBHelper.queryNotBeenCombinedSessionsBetweenTimes(queryStartTime, queryEndTime);
+
+        Log.d(TAG, "[show split trip]  getRecentSessions get res : " +  res.size());
+
+        //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
+        for (int i=0; i<res.size() ; i++) {
+
+            Session session = convertStringToSession(res.get(i));
+            sessions.add(session);
+        }
+
+        return sessions;
+    }
+
+    public static ArrayList<Session> getRecentToShowSessions() {
+
+        ArrayList<Session> sessions = new ArrayList<Session>();
+
+        long queryEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+        //start time = a specific hours ago
+        long queryStartTime = ScheduleAndSampleManager.getCurrentTimeInMillis() - Constants.MILLISECONDS_PER_HOUR * SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR;
+
+        //Log.d(TAG, " [test show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
+
+
+        //query//get sessions between the starTime and endTime
+        ArrayList<String> res =  DBHelper.queryToShowSessionsBetweenTimes(queryStartTime, queryEndTime);
+
+        Log.d(TAG, "[show split trip]  getRecentSessions get res : " +  res.size());
+
+        //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
+        for (int i=0; i<res.size() ; i++) {
+
+            Session session = convertStringToSession(res.get(i));
+            sessions.add(session);
+        }
+
+        return sessions;
+    }
+
+    public static ArrayList<Session> getRecentToShowSessions(int sessionid) {
+
+        ArrayList<Session> sessions = new ArrayList<Session>();
+
+        long queryEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+        //start time = a specific hours ago
+        long queryStartTime = ScheduleAndSampleManager.getCurrentTimeInMillis() - Constants.MILLISECONDS_PER_HOUR * SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR;
+
+        //Log.d(TAG, " [test show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
+
+
+        //query//get sessions between the starTime and endTime
+        ArrayList<String> res =  DBHelper.queryToShowSessionsBetweenTimes(queryStartTime, queryEndTime, sessionid);
 
         Log.d(TAG, "[show split trip]  getRecentSessions get res : " +  res.size());
 

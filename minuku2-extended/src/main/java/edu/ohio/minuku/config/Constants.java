@@ -73,6 +73,13 @@ public class Constants {
     public static final int SESSION_IS_COMBINED_FLAG = 1;
     public static final int SESSION_SUBJECTIVELY_COMBINE_FLAG = 2;
 
+    public static final int SESSION_TYPE_ORIGINAL = 0;
+    public static final int SESSION_TYPE_COMBINED = 1;
+    public static final int SESSION_TYPE_DELETED = 2;
+    public static final int SESSION_TYPE_SPLIT = 3;
+    public static final int SESSION_TYPE_SHORT = 4;
+    public static final int SESSION_TYPE_CHANGED = 5;
+
     public static final String YES = "YES";
     public static final String NO = "NO";
 
