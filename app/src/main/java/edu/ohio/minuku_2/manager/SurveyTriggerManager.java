@@ -56,7 +56,7 @@ public class SurveyTriggerManager {
 
     private int alarmCheckCount = 0;
 
-    public static final int REFRESH_FREQUENCY = 20; //20s, 10000ms
+    public static final int REFRESH_FREQUENCY = 60; //original is 20s, test with 60s
     public static final int BACKGROUND_RECORDING_INITIAL_DELAY = 0;
 
     private static String today;

@@ -64,11 +64,13 @@ public class Sleepingohio extends AppCompatActivity {
             hideNavigationBar();
         }
 
-        initsettingohio();
+        initSettingOhio();
     }
 
     public void onResume(){
         super.onResume();
+
+        Log.d(TAG, "todayDate : "+todayDate);
 
         if(hasNavBar(this.getResources())){
 
@@ -76,7 +78,7 @@ public class Sleepingohio extends AppCompatActivity {
         }
     }
 
-    public void initsettingohio(){
+    public void initSettingOhio(){
 
         sleepStarttime = (Button)findViewById(R.id.sleepStarttime);
         sleepStarttime.setOnClickListener(starttimeing);
@@ -157,7 +159,6 @@ public class Sleepingohio extends AppCompatActivity {
 
             sleepingRange += Constants.MILLISECONDS_PER_DAY;
 
-            //TODO check
             sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
         }else {
 
