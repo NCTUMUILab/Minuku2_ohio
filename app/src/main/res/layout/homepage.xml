@@ -74,15 +74,15 @@
         android:id="@+id/Annotate"
         android:layout_width="250dp"
         android:layout_height="85dp"
+        android:layout_alignStart="@+id/linkList"
+        android:layout_below="@+id/layout_userinform"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="16dp"
         android:background="@drawable/button_style"
         android:text="Trips"
         android:textAlignment="center"
         android:textColor="#666666"
-        android:textSize="30sp"
-        android:layout_below="@id/layout_userinform"
-        android:layout_centerHorizontal="true"/>
+        android:textSize="30sp" />
 
     <Button
         android:id="@+id/linkList"

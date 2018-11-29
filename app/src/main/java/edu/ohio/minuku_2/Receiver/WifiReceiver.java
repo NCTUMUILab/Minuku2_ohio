@@ -158,8 +158,8 @@ public class WifiReceiver extends BroadcastReceiver {
                     continue;
 
                 String createdTime = tripDataPiece.getString("CreatedTime");
-//                Log.d(TAG, "Sent createdTime : "+createdTime);
-//                CSVHelper.storeToCSV(CSVHelper.CSV_SERVER_DATA_STATE, "Sent createdTime : "+createdTime);
+                Log.d(TAG, "Sent createdTime : "+createdTime);
+                CSVHelper.storeToCSV(CSVHelper.CSV_SERVER_DATA_STATE, "Sent createdTime : "+createdTime);
 
                 DBHelper.updateSessionTableByCreatedTime(Long.valueOf(createdTime), Constants.SESSION_IS_ALREADY_SENT_FLAG);
             }
@@ -258,13 +258,15 @@ public class WifiReceiver extends BroadcastReceiver {
 
         Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
 
-        while(nowTime > endTime) {
+        boolean tryToSendData = true;
+
+        while(nowTime > endTime && tryToSendData) {
 
             Log.d(TAG,"before send dump data NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
 
             Log.d(TAG,"before send dump data EndTimeString : " + ScheduleAndSampleManager.getTimeString(endTime));
 
-            sendingDumpData();
+            tryToSendData = sendingDumpData();
 
             //update nowTime
             setNowTime();
@@ -322,6 +324,9 @@ public class WifiReceiver extends BroadcastReceiver {
                 CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Trip", "EndTime == lastinsert ? "+data.getString("EndTime").equals(lasttimeInServerJson.getString("lastinsert")));
 
                 if(data.getString("EndTime").equals(lasttimeInServerJson.getString("lastinsert"))){
+
+                    Log.d(TAG, "Trip sent successfully, EndTime "+ScheduleAndSampleManager.getTimeString(Long.valueOf(lasttimeInServerJson.getString("lastinsert")) * Constants.MILLISECONDS_PER_SECOND));
+                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Trip sent successfully, EndTime "+ScheduleAndSampleManager.getTimeString(Long.valueOf(lasttimeInServerJson.getString("lastinsert")) * Constants.MILLISECONDS_PER_SECOND));
 
                     //update the sent Session to already be sent
 //                    String sentSessionId = data.getString("sessionid");
@@ -638,7 +643,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
                         if(timeOfData == fromServer){
 
-                            Log.d(TAG, "[check query] survey sent successfully ");
+                            Log.d(TAG, "[check query] survey sent successfully, time : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
+                            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Survey sent successfully, time : "+ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
 
 //                            String id = surveyCursor.getString(DBHelper.COL_INDEX_ID);
 
@@ -698,7 +704,7 @@ public class WifiReceiver extends BroadcastReceiver {
         return surveyDay;
     }
 
-    public void sendingDumpData(){
+    public boolean sendingDumpData(){
 
         //Log.d(TAG, "sendingDumpData") ;
 
@@ -722,7 +728,7 @@ public class WifiReceiver extends BroadcastReceiver {
             data.put("StartTime", startTimeInSec);
             data.put("EndTime", endTimeInSec);
 
-            SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_Dash);
+            SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DASH);
 
             data.put("StartTimeString", ScheduleAndSampleManager.getTimeString(startTime, sdf_now));
             data.put("EndTimeString", ScheduleAndSampleManager.getTimeString(endTime, sdf_now));
@@ -827,11 +833,15 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 //update the last data's startTime.
                 sharedPrefs.edit().putLong("lastSentStarttime", startTime).apply();
+
+                return true;
             }
         } catch (InterruptedException e) {
         } catch (ExecutionException e) {
         } catch (JSONException e){
         }
+
+        return false;
     }
 
     private void setNowTime(){
@@ -847,7 +857,7 @@ public class WifiReceiver extends BroadcastReceiver {
         @Override
         protected String doInBackground(String... params) {
 
-            String result=null;
+            String result = null;
             String url = params[0];
             String data = params[1];
             String dataType = params[2];
