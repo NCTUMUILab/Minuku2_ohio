@@ -86,8 +86,15 @@ public class Sleepingohio extends AppCompatActivity {
         sleepEndtime = (Button)findViewById(R.id.sleepEndtime);
         sleepEndtime.setOnClickListener(endtimeing);
 
+        //TODO check the date of sleepStartTimeLong and sleepEndTimeLong changed it to current date
         sleepStartTimeLong = sharedPrefs.getLong("sleepStartTimeLong", sleepStartTimeLong);
         sleepEndTimeLong = sharedPrefs.getLong("sleepEndTimeLong", sleepEndTimeLong);
+
+        sleepStartTimeLong = checkDate(sleepStartTimeLong);
+        sleepEndTimeLong = checkDate(sleepEndTimeLong);
+
+        Log.d(TAG, "sleepStartTimeLong : "+ScheduleAndSampleManager.getTimeString(sleepStartTimeLong));
+        Log.d(TAG, "sleepEndTimeLong : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
 
         if((sleepStartTimeLong != Constants.INVALID_IN_LONG) && (sleepEndTimeLong != Constants.INVALID_IN_LONG)){
 
@@ -105,7 +112,23 @@ public class Sleepingohio extends AppCompatActivity {
 
         SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
         todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+    }
 
+    public long checkDate(long time){
+
+        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String timeDate = ScheduleAndSampleManager.getTimeString(time, sdf_date);
+        String currentDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+
+        if(!timeDate.equals(currentDate)){
+
+            SimpleDateFormat sdf_HHmmss = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_SECOND);
+            String timeHHmmss = ScheduleAndSampleManager.getTimeString(time, sdf_HHmmss);
+
+            time = ScheduleAndSampleManager.getTimeInMillis(currentDate + " " + timeHHmmss, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
+        }
+
+        return time;
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
