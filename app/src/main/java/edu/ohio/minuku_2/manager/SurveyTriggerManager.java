@@ -70,7 +70,6 @@ public class SurveyTriggerManager {
 
     private static int interval_sample_number = 6;
 
-    private static int interval_sampled;
     private int walkoutdoor_sampled;
 
     private boolean sameTripPrevent;
@@ -83,6 +82,8 @@ public class SurveyTriggerManager {
     private boolean alarmregistered;
 
     private int dailySurveyNum, dailyResponseNum;
+
+    private final int checkYesterdaySurvey = 7;
 
     private final String LINK_NCTU = "https://nctucommunication.qualtrics.com/jfe/form/SV_aWcHPkmdagnfgDb";
     private final String LINK_OHIO = "https://osu.az1.qualtrics.com/jfe/form/SV_6xjrFJF4YwQwuMZ";
@@ -111,8 +112,6 @@ public class SurveyTriggerManager {
 
         lastTimeSend_today = sharedPrefs.getString("lastTimeSend_today","NA");
 
-        interval_sampled = sharedPrefs.getInt("interval_sampled", 0);
-
         alarmregistered = sharedPrefs.getBoolean("alarmregistered",false);
 
         sameTripPrevent = sharedPrefs.getBoolean("sameTripPrevent", false);
@@ -120,7 +119,6 @@ public class SurveyTriggerManager {
         time_base = ScheduleAndSampleManager.getCurrentTimeInMillis();
 
         mScheduledExecutorService = Executors.newScheduledThreadPool(REFRESH_FREQUENCY);
-
 
         registerActionAlarmReceiver();
 
@@ -149,7 +147,6 @@ public class SurveyTriggerManager {
     private void initialize() {
 
         lastTimeSend_today = sharedPrefs.getString("lastTimeSend_today","NA");
-        interval_sampled = sharedPrefs.getInt("interval_sampled", 0);
         alarmregistered = sharedPrefs.getBoolean("alarmregistered",false);
 
         Config.USER_ID = sharedPrefs.getString("userid","NA");
@@ -175,9 +172,7 @@ public class SurveyTriggerManager {
 
             Date mDate = sdf.parse(givenDateFormat);
             timeInMilliseconds = mDate.getTime();
-            //Log.d(TAG,"Date in milli :: " + timeInMilliseconds);
         } catch (ParseException e) {
-            //e.printStackTrace();
         }
         return timeInMilliseconds;
     }
@@ -407,16 +402,68 @@ public class SurveyTriggerManager {
         }
     }
 
-    private void checkSurveyLinkOvertime(){
+    private void checkSurveyLinkOvertime(int periodNum, int surveyDay){
+
+        Log.d(TAG, "[test insert error survey] checkSurveyLinkOvertime ");
 
         try {
 
             String latestSurveyLinkData = DBHelper.queryLatestSurveyLink();
             String latestSurveyLink_Time = latestSurveyLinkData.split(Constants.DELIMITER)[DBHelper.COL_INDEX_GENERATE_TIME];
 
+            //this only deal with the inserted one, we need to check the periodNum first then
+            //query the periodNum to check if it lost.
+
+            //update the missed one.
             DBHelper.updateOverTimeSurvey(Long.valueOf(latestSurveyLink_Time));
+
+            int checkedPeriodNum = periodNum - 1;
+
+            Log.d(TAG, "[test insert error survey] checkedPeriodNum : "+checkedPeriodNum);
+
+            for(int eachCheckedPeriodNum = 1; eachCheckedPeriodNum <= checkedPeriodNum; eachCheckedPeriodNum++){
+
+                Log.d(TAG, "[test insert error survey] surveyDay : "+surveyDay);
+                Log.d(TAG, "[test insert error survey] eachCheckedPeriodNum : "+eachCheckedPeriodNum);
+
+                String surveyBydn = DBHelper.querySurveyLinkBydn(surveyDay, eachCheckedPeriodNum);
+
+                Log.d(TAG, "[test insert error survey] surveyBydn : "+surveyBydn);
+
+                //if it isn't existed, complement it
+                if(surveyBydn.equals(Constants.INVALID_IN_STRING)){
+
+                    complementSurveyLinkToDB(surveyDay, eachCheckedPeriodNum);
+                }
+            }
+
         }catch (Exception e){
             Log.e(TAG, "exception", e);
+        }
+    }
+
+    private void complementSurveyLinkToDB(int daysInSurvey, int periodNum){
+
+        Log.d(TAG, "[test insert error survey] complementSurveyLinkToDB");
+
+        String linktoShow = LINK + "?p="+Config.USER_ID + "&g=" + Config.GROUP_NUM + "&d=" + daysInSurvey + "&n=" + periodNum + "&m=0";
+
+        ContentValues values = new ContentValues();
+
+        try{
+
+            DBHelper.updateSurveyBydn(linktoShow, noti_random, daysInSurvey, periodNum, Integer.valueOf(Constants.SURVEY_ERROR_FLAG), Constants.SURVEYLINK_SHOULD_BE_SENT_FLAG);
+        } finally {
+
+            values.clear();
+            DBManager.getInstance().closeDatabase();
+
+            Log.d(TAG, "[test insert error survey] Complement survey at the period " + periodNum + " in day "+ daysInSurvey);
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Complement survey at the period " + periodNum + " in day "+ daysInSurvey);
+            CSVHelper.storeToCSV(CSVHelper.CSV_IntervalSurveyState, "Complement the period " + periodNum + " in day "+ daysInSurvey);
+            Utils.storeToCSV_IntervalSurveyCreated(ScheduleAndSampleManager.getCurrentTimeInMillis()
+                    , daysInSurvey, periodNum, linktoShow, noti_random, mContext);
         }
     }
 
@@ -491,17 +538,21 @@ public class SurveyTriggerManager {
 
             Log.d(TAG, "checking if there is a LINK unavailable and missed");
 
-            checkSurveyLinkOvertime();
-
         }else {
 
             alarmCheckCount++;
         }
+
+        int periodNum = getPeriodNum(ScheduleAndSampleManager.getCurrentTimeInMillis());
+
+        checkSurveyLinkOvertime(periodNum, Config.daysInSurvey);
     }
 
     Runnable RunningForGivingSurveyOrNot = new Runnable() {
         @Override
         public void run() {
+
+            Log.d(TAG, "New Run!!");
 
             checkAlarmAndSurveylink();
 
@@ -530,13 +581,36 @@ public class SurveyTriggerManager {
                 Log.d(TAG, "sleepStartTimeLong String : "+ ScheduleAndSampleManager.getTimeString(sleepStartTimeLong));
 
                 long nextSleepTime = sharedPrefs.getLong("nextSleepTime", sleepStartTimeLong + Constants.MILLISECONDS_PER_DAY);
-                Log.d(TAG, "nextSleepTime String : "+ ScheduleAndSampleManager.getTimeString(nextSleepTime));
+                Log.d(TAG, "[test sleep time issue] nextSleepTime String : "+ ScheduleAndSampleManager.getTimeString(nextSleepTime));
 
                 Log.d(TAG, "[test sleep time issue] is over next Sleep Time ? "+(ScheduleAndSampleManager.getCurrentTimeInMillis() >= nextSleepTime));
                 Log.d(TAG, "[test sleep time issue] is lastTimeSend_today NA ? "+(lastTimeSend_today.equals(Constants.NOT_A_NUMBER)));
 
+                Log.d(TAG, "[test sleep time issue] lastTimeSend_today : "+lastTimeSend_today);
+
+                //is over next sleep time
+                if (ScheduleAndSampleManager.getCurrentTimeInMillis() >= nextSleepTime) {
+
+                    Log.d(TAG, "[test insert error survey] over nextSleepTime");
+
+                    //set today's survey start time to the current date
+                    long sleepEndTimeLong = sharedPrefs.getLong("sleepEndTimeLong", Constants.INVALID_IN_LONG);
+
+                    sleepEndTimeLong = Utils.changeToCurrentDate(sleepEndTimeLong);
+
+                    // 7 is for starting to check the yesterday sixth survey
+                    //in this time, Config.daysInSurvey hasn't been updated to the next day
+                    checkSurveyLinkOvertime(checkYesterdaySurvey, Config.daysInSurvey);
+
+                    sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
+                    sharedPrefs.edit().putLong("nextSleepTime", nextSleepTime + Constants.MILLISECONDS_PER_DAY).apply();
+
+                    Log.d(TAG, "after store to sharedPrefs");
+                    Log.d(TAG, "sleepEndTimeLong : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
+                    Log.d(TAG, "nextSleepTime : "+ScheduleAndSampleManager.getTimeString(nextSleepTime+ Constants.MILLISECONDS_PER_DAY));
+                }
+
                 //is over a day
-//                if (ScheduleAndSampleManager.getCurrentTimeInMillis() >= nextSleepTime || lastTimeSend_today.equals(Constants.NOT_A_NUMBER)) {
                 if(!lastTimeSend_today.equals(today)){
 
                     Log.d(TAG, "[test sleep time issue] over a day !!");
@@ -588,9 +662,6 @@ public class SurveyTriggerManager {
                         sharedPrefs.edit().putBoolean("MobilePeriod" + p, true).apply();
                     }
 
-                    interval_sampled = 0;
-                    sharedPrefs.edit().putInt("interval_sampled", interval_sampled).apply();
-
                     last_Survey_Time = Constants.INVALID_IN_LONG;
                     sharedPrefs.edit().putLong("last_Survey_Time", last_Survey_Time).apply();
 
@@ -600,9 +671,6 @@ public class SurveyTriggerManager {
                     if (lastTimeSend_today.equals(Constants.NOT_A_NUMBER)) {
                         //setting up the parameter for the survey LINK
                         setUpSurveyLink();
-                    }else{
-
-                        sharedPrefs.edit().putLong("nextSleepTime", nextSleepTime + Constants.MILLISECONDS_PER_DAY).apply();
                     }
 
                     lastTimeSend_today = today;
@@ -617,8 +685,6 @@ public class SurveyTriggerManager {
     private void checkIsWalkingSurvey(String startSleepingTime, String endSleepingTime){
 
         boolean isSleepingTime = InSleepingTime(startSleepingTime, endSleepingTime);
-
-        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "[test mobile triggering] is sleeping time ? "+ !isSleepingTime);
 
         //temporarily remove the trigger limit
         if (!isSleepingTime) {
@@ -704,7 +770,7 @@ public class SurveyTriggerManager {
         Log.d(TAG, "[test mobile triggering] condition 2 : " + (Config.daysInSurvey != Config.downloadedDayInSurvey));
         Log.d(TAG, "[test mobile triggering] condition 3 : " + (Config.daysInSurvey != -1));
 
-        boolean isPeriodToSurvey = checkPeriod(now, noti_type);
+        boolean isPeriodToSurvey = checkPeriod(now);
 
         Log.d(TAG, "[test mobile triggering] checkPeriod : "+isPeriodToSurvey);
 
@@ -734,7 +800,7 @@ public class SurveyTriggerManager {
         return isTimeToSendSurvey;
     }
 
-    private boolean checkPeriod(long triggeredTimestamp, String noti_type){
+    private boolean checkPeriod(long triggeredTimestamp){
 
         int periodNum = getPeriodNum(triggeredTimestamp);
 
@@ -774,30 +840,20 @@ public class SurveyTriggerManager {
 
     private int getPeriodNum(long triggeredTimestamp){
 
-        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER); //"22:00"
-        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
+        long sleepEndTimeLong = sharedPrefs.getLong("sleepEndTimeLong", Constants.INVALID_IN_LONG);
 
-        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
-        String date = ScheduleAndSampleManager.getTimeString(new Date().getTime(), sdf_date);
+        Log.d(TAG, "sleepEndTimeLong : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
 
-        String sleepstartTimeWithDate = date + " " + sleepingstartTime + ":00";
-        String sleepingendTimeWithDate = date + " " + sleepingendTime + ":00";
+        long period = sharedPrefs.getLong("PeriodLong", Constants.INVALID_IN_LONG);
 
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE);
-        long sleepStartTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepstartTimeWithDate, sdf);
-        long sleepEndTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepingendTimeWithDate, sdf);
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "triggeredTime : " + ScheduleAndSampleManager.getTimeString(triggeredTimestamp));
 
-        Log.d(TAG, "sleepstartTimeWithDate : " + sleepstartTimeWithDate);
-        Log.d(TAG, "sleepingendTimeWithDate : " + sleepingendTimeWithDate);
-
-        long period = sharedPrefs.getLong("PeriodLong", 0);
-
-        Log.d(TAG, "sleepingendTimeWithDate period 1 : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +period));
-        Log.d(TAG, "sleepingendTimeWithDate period 2 : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +2*period));
-        Log.d(TAG, "sleepingendTimeWithDate period 3 : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +3*period));
-        Log.d(TAG, "sleepingendTimeWithDate period 4 : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +4*period));
-        Log.d(TAG, "sleepingendTimeWithDate period 5 : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +5*period));
-        Log.d(TAG, "sleepingendTimeWithDate period 6 : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +6*period));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period 1 endtime : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +period));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period 2 endtime : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +2*period));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period 3 endtime : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +3*period));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period 4 endtime : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +4*period));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period 5 endtime : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +5*period));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period 6 endtime : " + ScheduleAndSampleManager.getTimeString(sleepEndTimeLong +6*period));
 
         if(triggeredTimestamp >= sleepEndTimeLong && triggeredTimestamp <= (sleepEndTimeLong +period)){
 
@@ -959,13 +1015,6 @@ public class SurveyTriggerManager {
         return LatLngs;
     }
 
-    private String addZero(int date){
-        if(date<10)
-            return String.valueOf("0"+date);
-        else
-            return String.valueOf(date);
-    }
-
     //add to DB in order to display it in the SurveyActivity.java
     public void addSurveyLinkToDB(String noti_type){
 
@@ -999,9 +1048,6 @@ public class SurveyTriggerManager {
 
             values.clear();
             DBManager.getInstance().closeDatabase();
-
-            //TODO deprecated, +1 is because it will be add after this function but we show the afterPlus one.
-//            int surveyNum = interval_sampled + walkoutdoor_sampled + 1;
 
             int surveyNum = periodNum;
 
@@ -1074,7 +1120,6 @@ public class SurveyTriggerManager {
 
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "after check the time, sameTripPrevent : "+ sameTripPrevent);
 
-//        ArrayList<String> linkDataToday = DataHandler.getSurveyData(startTime, endTime);
         ArrayList<String> linkDataToday = DBHelper.querySurveyLinks();
 
         //if there have data in DB
@@ -1177,12 +1222,6 @@ public class SurveyTriggerManager {
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Catch the alarm, going to consider the condition to trigger the notification.");
 
-                interval_sampled = sharedPrefs.getInt("interval_sampled", 0);
-
-                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Condition: interval_sampled Count : "+ interval_sampled);
-
-                CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Condition: interval_sampled Count < 3 ? "+ (interval_sampled < 3));
-
                 boolean isTimeToSurvey = isTimeForSurvey(noti_random);
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Condition: isTimeForSurvey ? "+ isTimeToSurvey);
@@ -1190,7 +1229,7 @@ public class SurveyTriggerManager {
                 Log.d(TAG, "[test alarm] IntervalSampleReceiver isTimeForSurvey : " + isTimeToSurvey);
 
 
-                if (interval_sampled < 6 && isTimeToSurvey) {
+                if (isTimeToSurvey) {
 
                     CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "Conditions is satisfied, going to trigger the notification.");
 

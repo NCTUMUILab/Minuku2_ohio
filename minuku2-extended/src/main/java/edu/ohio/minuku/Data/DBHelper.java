@@ -57,6 +57,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final int COL_INDEX_ID = 0;
     public static final int COL_INDEX_LINK = 1;
     public static final int COL_INDEX_GENERATE_TIME = 2;
+    public static final int COL_INDEX_SURVEY_LINK_D = 8;
+    public static final int COL_INDEX_SURVEY_LINK_N = 9;
 
     //Location and Trip
     public static final String latitude_col = "latitude";
@@ -1879,7 +1881,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         return result;
-
     }
 
     public static String queryLatestOpenedSurveyLink() {
@@ -1913,6 +1914,68 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return result;
 
+    }
+
+    public static ArrayList<String> querySurveyLinkByd(int surveyday) {
+
+        ArrayList<String> rows = new ArrayList<String>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + surveyLink_table +
+                    " where " + d_col + " = " + surveyday +
+                    " order by " + generateTime_col;
+
+            Cursor cursor = db.rawQuery(sql, null);
+            int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+                }
+                rows.add(curRow);
+            }
+            cursor.close();
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+        return rows;
+    }
+
+    public static String querySurveyLinkBydn(int surveyday, int periodNum) {
+
+        String result = Constants.INVALID_IN_STRING;
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + surveyLink_table +
+                    " where " + d_col + " = " + surveyday +
+                    " and " + n_col + " = " + periodNum +
+                    " order by " + generateTime_col;
+
+            Cursor cursor = db.rawQuery(sql, null);
+            cursor.moveToLast();
+            int columnCount = cursor.getColumnCount();
+
+            for (int i=0; i<columnCount; i++){
+                result += cursor.getString(i)+ Constants.DELIMITER;
+            }
+
+            cursor.close();
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+        return result;
     }
 
     public static ArrayList<String> getSurveysAreOpenedOrMissed(){
@@ -2006,7 +2069,7 @@ public class DBHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
 
             //surveylink error
-            values.put(openFlag_col, 2);
+            values.put(openFlag_col, 0);
             values.put(sentOrNot_col, Constants.SURVEYLINK_SHOULD_BE_SENT_FLAG);
 
             db.update(surveyLink_table, values, where, null);
@@ -2087,6 +2150,60 @@ public class DBHelper extends SQLiteOpenHelper {
 
         DBManager.getInstance().closeDatabase();
 
+    }
+
+    public static void updateSurveyBydn(String linktoShow, String noti_type, int d, int n, int openFlag) {
+
+        String where = d_col + " = " +  d + " and " + n_col + " = " + n;
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            values.put(DBHelper.generateTime_col, ScheduleAndSampleManager.getCurrentTimeInMillis());
+            values.put(DBHelper.link_col, linktoShow);
+            values.put(DBHelper.surveyType_col, noti_type);
+            values.put(DBHelper.openFlag_col, openFlag);
+            values.put(DBHelper.sentOrNot_col, Constants.SURVEYLINK_SHOULDNT_BEEN_SENT_FLAG);
+            values.put(DBHelper.d_col, d);
+            values.put(DBHelper.n_col, n);
+
+            int id = (int) db.insertWithOnConflict(surveyLink_table, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+            if (id == -1) {
+                db.update(surveyLink_table, values, where, null);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        DBManager.getInstance().closeDatabase();
+    }
+
+    public static void updateSurveyBydn(String linktoShow, String noti_type, int d, int n, int openFlag, int sentFlag) {
+
+        String where = d_col + " = " +  d + " and " + n_col + " = " + n;
+
+        try{
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            ContentValues values = new ContentValues();
+
+            values.put(DBHelper.generateTime_col, ScheduleAndSampleManager.getCurrentTimeInMillis());
+            values.put(DBHelper.link_col, linktoShow);
+            values.put(DBHelper.surveyType_col, noti_type);
+            values.put(DBHelper.openFlag_col, openFlag);
+            values.put(DBHelper.sentOrNot_col, sentFlag);
+            values.put(DBHelper.d_col, d);
+            values.put(DBHelper.n_col, n);
+
+            int id = (int) db.insertWithOnConflict(surveyLink_table, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+            if (id == -1) {
+                db.update(surveyLink_table, values, where, null);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        DBManager.getInstance().closeDatabase();
     }
 
     public static ArrayList<String> queryRecords(String table_name, long startTime, long endTime) {

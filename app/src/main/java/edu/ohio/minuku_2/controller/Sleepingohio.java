@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku_2.MainActivity;
@@ -90,9 +91,6 @@ public class Sleepingohio extends AppCompatActivity {
         sleepStartTimeLong = sharedPrefs.getLong("sleepStartTimeLong", sleepStartTimeLong);
         sleepEndTimeLong = sharedPrefs.getLong("sleepEndTimeLong", sleepEndTimeLong);
 
-        sleepStartTimeLong = checkDate(sleepStartTimeLong);
-        sleepEndTimeLong = checkDate(sleepEndTimeLong);
-
         Log.d(TAG, "sleepStartTimeLong : "+ScheduleAndSampleManager.getTimeString(sleepStartTimeLong));
         Log.d(TAG, "sleepEndTimeLong : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
 
@@ -112,23 +110,6 @@ public class Sleepingohio extends AppCompatActivity {
 
         SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
         todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
-    }
-
-    public long checkDate(long time){
-
-        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
-        String timeDate = ScheduleAndSampleManager.getTimeString(time, sdf_date);
-        String currentDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
-
-        if(!timeDate.equals(currentDate)){
-
-            SimpleDateFormat sdf_HHmmss = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_SECOND);
-            String timeHHmmss = ScheduleAndSampleManager.getTimeString(time, sdf_HHmmss);
-
-            time = ScheduleAndSampleManager.getTimeInMillis(currentDate + " " + timeHHmmss, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
-        }
-
-        return time;
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
@@ -178,15 +159,41 @@ public class Sleepingohio extends AppCompatActivity {
 
         long sleepingRange = sleepEndTimeCheck - sleepStartTimeCheck;
 
+        Log.d(TAG, "sleepStartTimeCheck : "+ ScheduleAndSampleManager.getTimeString(sleepStartTimeCheck));
+        Log.d(TAG, "sleepEndTimeCheck : "+ ScheduleAndSampleManager.getTimeString(sleepEndTimeCheck));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "sleepStartTimeCheck : "+ ScheduleAndSampleManager.getTimeString(sleepStartTimeCheck));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "sleepEndTimeCheck : "+ ScheduleAndSampleManager.getTimeString(sleepEndTimeCheck));
+
+        long surveyTimeRange;
+
         if (sleepingRange < 0) {
 
             sleepingRange += Constants.MILLISECONDS_PER_DAY;
 
+            surveyTimeRange = Constants.MILLISECONDS_PER_DAY - sleepingRange;
+
             sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
         }else {
 
+            long currentMidnightTime = ScheduleAndSampleManager.getCurrentMidNightTimeInMillis();
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "currentMidnightTime : "+ ScheduleAndSampleManager.getTimeString(currentMidnightTime));
+            Log.d(TAG, "currentMidnightTime : "+ ScheduleAndSampleManager.getTimeString(currentMidnightTime));
+
+            surveyTimeRange = Constants.MILLISECONDS_PER_DAY - (sleepEndTimeCheck - currentMidnightTime);
+
             sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
         }
+
+        long period = surveyTimeRange/6;
+
+        Log.d(TAG, "period : "+period);
+        Log.d(TAG, "period secs : "+period / Constants.MILLISECONDS_PER_SECOND);
+
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period : "+period);
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period secs : "+period / Constants.MILLISECONDS_PER_SECOND);
+
+        sharedPrefs.edit().putLong("PeriodLong", period).apply();
 
         return sleepingRange;
     }
@@ -197,32 +204,19 @@ public class Sleepingohio extends AppCompatActivity {
             Log.d(TAG, "sleepStarttime from button : " + sleepStarttime.getText());
             Log.d(TAG, "sleepEndtime from button : " + sleepEndtime.getText());
 
-            //Get date
-//            SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
-//            String todayDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
-//            String tomorrDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis() + Constants.MILLISECONDS_PER_DAY, sdf_date);
-
             String sleepStartTimeAMPM = sleepStarttime.getText().toString().split(" ")[1].toUpperCase();
             String sleepEndTimeAMPM = sleepEndtime.getText().toString().split(" ")[1].toUpperCase();
 
             Log.d(TAG, "sleepStartTimeAMPM : " + sleepStartTimeAMPM);
             Log.d(TAG, "sleepEndTimeAMPM : " + sleepEndTimeAMPM);
 
-            /*if(sleepStartTimeAMPM.equals(sleepEndTimeAMPM)){
+            sleepStartTimeLong = Utils.changeToCurrentDate(sleepStartTimeLong);
+            sleepEndTimeLong = Utils.changeToCurrentDate(sleepEndTimeLong);
 
-                sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
-            }else {
-
-                sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
-            }*/
-
-            long sleepStartTimeCheck = sleepStartTimeLong, sleepEndTimeCheck = sleepEndTimeLong;
-
-            //TODO replace the code below
             long sleepingRange = getSleepingRange(sleepStartTimeLong, sleepEndTimeLong);
 
-            Log.d(TAG, "sleepStartTimeCheck : " + sleepStartTimeCheck);
-            Log.d(TAG, "sleepEndTimeCheck : " + sleepEndTimeCheck);
+            Log.d(TAG, "sleepStartTimeLong : " + sleepStartTimeLong);
+            Log.d(TAG, "sleepEndTimeLong : " + sleepEndTimeLong);
 
             if (sleepStarttime.getText().equals("BED TIME")){
 

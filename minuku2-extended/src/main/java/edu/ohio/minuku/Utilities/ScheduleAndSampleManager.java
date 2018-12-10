@@ -47,6 +47,16 @@ public class ScheduleAndSampleManager {
 		return t;
 	}
 
+	public static long getCurrentMidNightTimeInMillis(){
+		long currentTime = getCurrentTimeInMillis();
+		SimpleDateFormat sdf_now = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+		String currentTimeString = sdf_now.format(currentTime);
+
+		long currentMidNightTime = getTimeInMillis(currentTimeString, sdf_now);
+
+		return currentMidNightTime;
+	}
+
 	public static long getTimeInMillis(String givenDateFormat, SimpleDateFormat sdf){
 		long timeInMilliseconds = 0;
 		try {
