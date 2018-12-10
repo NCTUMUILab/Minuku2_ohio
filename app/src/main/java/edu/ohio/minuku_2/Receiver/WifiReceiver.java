@@ -80,7 +80,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v1.0.0";
+    private String versionNumber = "v1.0.1";
+    private String wavesNumber = "1";
 
     public static final int HTTP_TIMEOUT = 10 * (int) Constants.MILLISECONDS_PER_SECOND;
     public static final int SOCKET_TIMEOUT = 20 * (int) Constants.MILLISECONDS_PER_SECOND;
@@ -375,6 +376,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     annotatedtripdata.put("group_number", Config.GROUP_NUM);
                     annotatedtripdata.put("device_id", Config.DEVICE_ID);
                     annotatedtripdata.put("version", versionNumber);
+                    annotatedtripdata.put("w", wavesNumber);
                     annotatedtripdata.put("android_ver", Build.VERSION.SDK_INT);
                     annotatedtripdata.put("build", getBuildInform());
 
@@ -555,6 +557,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     surveyJson.put("group_number", Config.GROUP_NUM);
                     surveyJson.put("device_id", Config.DEVICE_ID);
                     surveyJson.put("version", versionNumber);
+                    surveyJson.put("w", wavesNumber);
                     surveyJson.put("dataType", "SurveyLink");
                     surveyJson.put("android_ver", Build.VERSION.SDK_INT);
                     surveyJson.put("build", getBuildInform());
@@ -719,6 +722,7 @@ public class WifiReceiver extends BroadcastReceiver {
             data.put("device_id", Config.DEVICE_ID);
             data.put("email", Config.Email);
             data.put("version", versionNumber);
+            data.put("w", wavesNumber);
             data.put("dataType", "Dump");
             data.put("android_ver", Build.VERSION.SDK_INT);
 

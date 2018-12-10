@@ -163,6 +163,22 @@ public class Utils {
         return sw.getBuffer().toString();
     }
 
+    public static long changeToCurrentDate(long time){
+
+        SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+        String timeDate = ScheduleAndSampleManager.getTimeString(time, sdf_date);
+        String currentDate = ScheduleAndSampleManager.getTimeString(ScheduleAndSampleManager.getCurrentTimeInMillis(), sdf_date);
+
+        if(!timeDate.equals(currentDate)){
+
+            SimpleDateFormat sdf_HHmmss = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_SECOND);
+            String timeHHmmss = ScheduleAndSampleManager.getTimeString(time, sdf_HHmmss);
+
+            time = ScheduleAndSampleManager.getTimeInMillis(currentDate + " " + timeHHmmss, new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE));
+        }
+
+        return time;
+    }
 
     public static void settingAllDaysIntervalSampling(Context context){
 
@@ -196,32 +212,7 @@ public class Utils {
         storeToCSV_Interval_Samples_Times_split();
 
         SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.sharedPrefString, context.MODE_PRIVATE);
-        String sleepingstartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
-        String sleepingendTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
 
-        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
-        long startTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepingstartTime, sdf);
-        long endTimeLong = ScheduleAndSampleManager.getTimeInMillis(sleepingendTime, sdf);
-
-//        Log.d(TAG, "startTimeLong : "+startTimeLong+"| sleepingstartTime : "+sleepingstartTime);
-//        Log.d(TAG, "endTimeLong : "+endTimeLong+"| sleepingendTime : "+sleepingendTime);
-
-        boolean wakeSleepDateIsSame = sharedPrefs.getBoolean("WakeSleepDateIsSame", false);
-
-        long period;
-
-        if(wakeSleepDateIsSame){
-
-            //change the sharedPrefs into one day one PeriodLong
-            period = (startTimeLong-endTimeLong + Constants.MILLISECONDS_PER_DAY)/6;
-        }else {
-
-            period = (startTimeLong-endTimeLong)/6;
-        }
-
-//        Log.d(TAG, "period : "+period);
-
-        sharedPrefs.edit().putLong("PeriodLong", period).apply();
         sharedPrefs.edit().putBoolean("IsSleepTimeSet", true).apply();
     }
 
@@ -243,10 +234,19 @@ public class Utils {
         Log.d(TAG, "SleepStartTime Long : "+sleepStartTimeLong);
         Log.d(TAG, "SleepEndTime Long : "+sleepEndTimeLong);
 
+        long sleepingRange = sleepEndTimeLong - sleepStartTimeLong;
+        long period = (Constants.MILLISECONDS_PER_DAY - sleepingRange) / 6;
+        Log.d(TAG, "period : "+period);
+        Log.d(TAG, "period secs : "+period / Constants.MILLISECONDS_PER_SECOND);
+
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period : "+period);
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period secs : "+period / Constants.MILLISECONDS_PER_SECOND);
+
+        sharedPrefs.edit().putLong("PeriodLong", period).apply();
+
         SimpleDateFormat sdf2 = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN);
         String sleepStartTimeRaw = ScheduleAndSampleManager.getTimeString(sleepStartTimeLong, sdf2);
         String sleepEndTimeRaw = ScheduleAndSampleManager.getTimeString(sleepEndTimeLong, sdf2);
-
         Log.d(TAG, "SleepingStartTime Raw : "+sleepStartTimeRaw);
         Log.d(TAG, "SleepingEndTime Raw : "+sleepEndTimeRaw);
 
@@ -261,6 +261,15 @@ public class Utils {
         //for easy to maintain
         sharedPrefs.edit().putLong("sleepStartTimeLong", sleepStartTimeLong).apply();
         sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
+
+        //check if the current time is over the sleep time
+        if(ScheduleAndSampleManager.getCurrentTimeInMillis() >= sleepStartTimeLong){
+
+            sharedPrefs.edit().putLong("nextSleepTime", sleepStartTimeLong + Constants.MILLISECONDS_PER_DAY).apply();
+        }else {
+
+            sharedPrefs.edit().putLong("nextSleepTime", sleepStartTimeLong).apply();
+        }
 
         Utils.settingAllDaysIntervalSampling(context);
     }
@@ -375,7 +384,7 @@ public class Utils {
 
     public static void storeToCSV_IntervalSurveyCreated(long triggeredTimestamp, int daysInSurvey, int surveyNum, String surveyLink, String noti_type, Context context){
 
-        String sFileName = "IntervalSurveyState.csv";
+        String sFileName = CSVHelper.CSV_IntervalSurveyState;
 
         //Log.d(TAG, "sFileName : " + sFileName);
 

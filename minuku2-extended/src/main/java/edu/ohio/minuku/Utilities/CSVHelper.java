@@ -117,7 +117,7 @@ public class CSVHelper {
 
     public static void storeToCSV_IntervalSurveyUpdated(boolean clicked){
 
-        String sFileName = "IntervalSurveyState.csv";
+        String sFileName = CSVHelper.CSV_IntervalSurveyState;
 
 //        Log.d(TAG, "sFileName : " + sFileName);
 

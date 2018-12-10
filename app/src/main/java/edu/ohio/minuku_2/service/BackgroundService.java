@@ -578,7 +578,7 @@ public class BackgroundService extends Service {
         Log.d(TAG,"updateOngoingNotification");
 
         //check how much trips hasn't been filled
-        ArrayList<Session> recentSessions = SessionManager.getRecentNotBeenCombinedSessions();
+        ArrayList<Session> recentSessions = SessionManager.getRecentToShowSessions();
         ArrayList<Integer> ongoingSessionList = SessionManager.getOngoingSessionIdList();
 
         int unfilledTrips = 0;

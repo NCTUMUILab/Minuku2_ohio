@@ -344,7 +344,6 @@ public class MainActivity extends AppCompatActivity {
 
         Config.daysInSurvey = sharedPrefs.getInt("daysInSurvey", 0);
 
-        //button
         tolinkList = (Button) findViewById(R.id.linkList);
         tolinkList.setOnClickListener(new Button.OnClickListener() {
 
