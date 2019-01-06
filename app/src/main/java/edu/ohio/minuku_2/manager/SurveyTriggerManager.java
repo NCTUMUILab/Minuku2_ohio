@@ -122,12 +122,12 @@ public class SurveyTriggerManager {
 
         registerActionAlarmReceiver();
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to reset IntervalSamples.");
+//        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to reset IntervalSamples.");
 
         //we set them to avoid the situation that alarm being canceled by Android.
         resetIntervalSampling();
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Reset IntervalSamples, complete.");
+//        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Reset IntervalSamples, complete.");
 
         initialize();
     }
@@ -588,6 +588,7 @@ public class SurveyTriggerManager {
 
                 Log.d(TAG, "[test sleep time issue] lastTimeSend_today : "+lastTimeSend_today);
 
+
                 //is over next sleep time
                 if (ScheduleAndSampleManager.getCurrentTimeInMillis() >= nextSleepTime) {
 
@@ -600,7 +601,7 @@ public class SurveyTriggerManager {
 
                     // 7 is for starting to check the yesterday sixth survey
                     //in this time, Config.daysInSurvey hasn't been updated to the next day
-                    checkSurveyLinkOvertime(checkYesterdaySurvey, Config.daysInSurvey);
+//                    checkSurveyLinkOvertime(checkYesterdaySurvey, Config.daysInSurvey);
 
                     sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
                     sharedPrefs.edit().putLong("nextSleepTime", nextSleepTime + Constants.MILLISECONDS_PER_DAY).apply();
@@ -628,6 +629,27 @@ public class SurveyTriggerManager {
                         if(!lastTimeSend_today.equals(Constants.NOT_A_NUMBER)){
 
                             Config.daysInSurvey++;
+
+                            boolean checkAllSurvey = sharedPrefs.getBoolean("checkAllSurvey", false);
+
+                            Log.d(TAG, "[check error survey] Is the error not been checked ? "+(!checkAllSurvey));
+                            Log.d(TAG, "[check error survey] over final day ? "+(Config.daysInSurvey > Constants.FINALDAY));
+                            Log.d(TAG, "[check error survey] Is the error not been checked and over final day ? "+(Config.daysInSurvey > Constants.FINALDAY && !checkAllSurvey));
+
+                            //after Part B, check the survey data from the day after the downloaded day to the final survey day
+                            if(Config.daysInSurvey > Constants.FINALDAY && !checkAllSurvey){
+
+                                Log.d(TAG, "[check error survey] start checking the error survey ");
+
+                                for(int day = Config.downloadedDayInSurvey + 1; day <= Constants.FINALDAY; day++){
+
+                                    Log.d(TAG, "[check error survey] day : "+day);
+
+                                    checkSurveyLinkOvertime(7, day);
+                                }
+
+                                sharedPrefs.edit().putBoolean("checkAllSurvey", true).apply();
+                            }
                         }
                     }
 

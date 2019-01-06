@@ -100,7 +100,9 @@ public class SurveyActivity extends Activity {
         long startTime = ScheduleAndSampleManager.getTimeInMillis(startTimeString, sdf2);
         long endTime = startTime + Constants.MILLISECONDS_PER_DAY;
 
-        Log.d(TAG, "[test mobile triggering] startTime : "+startTimeString);
+        Log.d(TAG, "[test mobile triggering] startTimeString : "+startTimeString);
+        Log.d(TAG, "[test mobile triggering] startTime : "+ScheduleAndSampleManager.getTimeString(startTime));
+        Log.d(TAG, "[test mobile triggering] endTime : "+ScheduleAndSampleManager.getTimeString(endTime));
 
         surveyDatas = new ArrayList<>();
         linkNums = new ArrayList<>();

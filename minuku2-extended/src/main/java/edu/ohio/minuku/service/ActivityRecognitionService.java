@@ -4,16 +4,12 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Environment;
 import android.util.Log;
 
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 import com.opencsv.CSVWriter;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -22,8 +18,6 @@ import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
-import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.MinukuStreamManager;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
 import edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator;
@@ -112,15 +106,15 @@ public class ActivityRecognitionService extends IntentService {
                     mActivityRecognitionStreamGenerator.setActivitiesandDetectedtime(mProbableActivities, mMostProbableActivity, detectedtime);
 
                     //write transportation mode with the received activity data
-                    StoreToCSV(new Date().getTime(), record, record);
+//                    CSVHelper.storeToCSV_TransportationMode(new Date().getTime(), record, record);
                 }
 
             }catch(Exception e){
             }
 
-            stopARRecordExpirationTimer();
+//            stopARRecordExpirationTimer();
 
-            startARRecordExpirationTimer();
+//            startARRecordExpirationTimer();
         }
     }
 
@@ -258,87 +252,6 @@ public class ActivityRecognitionService extends IntentService {
         }
         return mActivityRecognitionRecords;
 
-    }
-
-    /**
-     * write receive AR and latest AR to the transportation log
-     * @param timestamp
-     * @param received_AR
-     * @param latest_AR
-     */
-    public void StoreToCSV(long timestamp, ActivityRecognitionDataRecord received_AR, ActivityRecognitionDataRecord latest_AR){
-
-        String sFileName = "TransportationMode.csv";
-        Log.d("ARService", "[test replay] TransportationMode_StoreToCSV entering TransportationMode_StoreToCSV ");
-
-        try{
-            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
-            Log.d("ARService", "[test replay] TransportationMode_StoreToCSV after root");
-            if (!root.exists()) {
-                root.mkdirs();
-            }
-
-            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
-
-            List<String[]> data = new ArrayList<String[]>();
-
-            String timeString = ScheduleAndSampleManager.getTimeString(timestamp);
-
-            Log.d("ARService", "[test replay] TransportationMode_StoreToCSV before definint string");
-            String rec_AR_String = "";
-            String latest_AR_String = "";
-            String transportation = "";
-            String state = "";
-
-            Log.d("ARService", "[test replay] TransportationMode_StoreToCSV receive AR is " + received_AR.toString());
-
-            if (received_AR!=null){
-
-                for (int i=0; i<received_AR.getProbableActivities().size(); i++){
-
-                    if (i!=0){
-                        rec_AR_String+=Constants.ACTIVITY_DELIMITER;
-                    }
-                    DetectedActivity activity =  received_AR.getProbableActivities().get(i);
-                    rec_AR_String += ActivityRecognitionStreamGenerator.getActivityNameFromType(activity.getType());
-                    rec_AR_String += Constants.ACTIVITY_CONFIDENCE_CONNECTOR;
-                    rec_AR_String += activity.getConfidence();
-
-                }
-
-                Log.d("ARService", "[test replay] TransportationMode_StoreToCSV writing receive AR CSV " +  rec_AR_String);
-            }
-
-            if (latest_AR!=null){
-                for (int i=0; i<latest_AR.getProbableActivities().size(); i++){
-
-                    if (i!=0){
-                        latest_AR_String+=Constants.ACTIVITY_DELIMITER;
-                    }
-                    DetectedActivity activity =  latest_AR.getProbableActivities().get(i);
-                    latest_AR_String += ActivityRecognitionStreamGenerator.getActivityNameFromType(activity.getType());
-                    latest_AR_String += Constants.ACTIVITY_CONFIDENCE_CONNECTOR;
-                    latest_AR_String += activity.getConfidence();
-
-                }
-                Log.d("ARService", "[test replay] TransportationMode_StoreToCSV writing latest AR data to CSV " + latest_AR_String);
-            }
-
-            Log.d("ARService", "[test replay] TransportationMode_StoreToCSV writing data to CSV");
-
-            //write transportation mode
-            data.add(new String[]{String.valueOf(timestamp), timeString, rec_AR_String, latest_AR_String, transportation, state, "", "", ""});
-
-            csv_writer.writeAll(data);
-
-            csv_writer.close();
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }/*catch (Exception e){
-            e.printStackTrace();
-            android.util.Log.e(TAG, "exception", e);
-        }*/
     }
 
 

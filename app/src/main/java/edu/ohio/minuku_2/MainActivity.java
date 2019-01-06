@@ -27,7 +27,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -134,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.homepage_complete);
             Button finalSurvey = (Button) findViewById(R.id.finalSurvey);
 
-            boolean isFinalButtonClicked = sharedPrefs.getBoolean("finalButtonClicked", false);
+//            boolean isFinalButtonClicked = sharedPrefs.getBoolean("finalButtonClicked", false);
 
             String finalButtonText = "PART C\n20 minutes";
             Spannable spannable = new SpannableString(finalButtonText);
@@ -144,29 +143,29 @@ public class MainActivity extends AppCompatActivity {
             finalSurvey.setText(spannable);
             finalSurvey.setTransformationMethod(null);
 
-            if(isFinalButtonClicked){
+            //TODO no more constrain for the part c button
+//            if(isFinalButtonClicked){
+//
+//                finalSurvey.setBackgroundColor(Color.LTGRAY);
+//                finalSurvey.setTextColor(Color.DKGRAY);
+//
+//                finalSurvey.setClickable(false);
+//            }else {
 
-                finalSurvey.setBackgroundColor(Color.LTGRAY);
-                finalSurvey.setTextColor(Color.DKGRAY);
+            finalSurvey.setOnClickListener(new View.OnClickListener() {
 
-                finalSurvey.setClickable(false);
-            }else {
+                @Override
+                public void onClick(View view) {
 
-                finalSurvey.setOnClickListener(new View.OnClickListener() {
+                    String url = Constants.FINAL_SURVEY_URL+"?d="+ Config.daysInSurvey+"&p="+ Config.USER_ID;
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(url));
+                    startActivity(intent);
 
-                    @Override
-                    public void onClick(View view) {
-
-                        String url = Constants.FINAL_SURVEY_URL+"?d="+ Config.daysInSurvey+"&p="+ Config.USER_ID;
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setData(Uri.parse(url));
-                        startActivity(intent);
-
-                        //TODO set the value in sharedpreference to the boolean value representing the button was clicked
-                        sharedPrefs.edit().putBoolean("finalButtonClicked", true).apply();
-                    }
-                });
-            }
+//                    sharedPrefs.edit().putBoolean("finalButtonClicked", true).apply();
+                }
+            });
+//            }
 
             user_id = (TextView) findViewById(R.id.userid);
             Config.USER_ID = sharedPrefs.getString("userid","NA");
@@ -215,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.homepage_complete);
             Button finalSurvey = (Button) findViewById(R.id.finalSurvey);
 
-            boolean isFinalButtonClicked = sharedPrefs.getBoolean("finalButtonClicked", false);
+//            boolean isFinalButtonClicked = sharedPrefs.getBoolean("finalButtonClicked", false);
             //TODO check the word looks like
             String finalButtonText = "PART C\n20 minutes";
             Spannable spannable = new SpannableString(finalButtonText);
@@ -225,29 +224,29 @@ public class MainActivity extends AppCompatActivity {
             finalSurvey.setText(spannable);
             finalSurvey.setTransformationMethod(null);
 
-            if(isFinalButtonClicked){
+//            if(isFinalButtonClicked){
+//
+//                finalSurvey.setBackgroundColor(Color.LTGRAY);
+//                finalSurvey.setTextColor(Color.DKGRAY);
+//
+//                finalSurvey.setClickable(false);
+//            }else {
 
-                finalSurvey.setBackgroundColor(Color.LTGRAY);
-                finalSurvey.setTextColor(Color.DKGRAY);
+            finalSurvey.setOnClickListener(new View.OnClickListener() {
 
-                finalSurvey.setClickable(false);
-            }else {
+                @Override
+                public void onClick(View view) {
 
-                finalSurvey.setOnClickListener(new View.OnClickListener() {
+                    String url = Constants.FINAL_SURVEY_URL+"?d="+ Config.daysInSurvey+"&p="+ Config.USER_ID;
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(url));
+                    startActivity(intent);
 
-                    @Override
-                    public void onClick(View view) {
-
-                        String url = Constants.FINAL_SURVEY_URL+"?d="+ Config.daysInSurvey+"&p="+ Config.USER_ID;
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setData(Uri.parse(url));
-                        startActivity(intent);
-
-                        //TODO set the value in sharedpreference to the boolean value representing the button was clicked
-                        sharedPrefs.edit().putBoolean("finalButtonClicked", true).apply();
-                    }
-                });
-            }
+                    //TODO set the value in sharedpreference to the boolean value representing the button was clicked
+                    sharedPrefs.edit().putBoolean("finalButtonClicked", true).apply();
+                }
+            });
+//            }
 
             user_id = (TextView) findViewById(R.id.userid);
             Config.USER_ID = sharedPrefs.getString("userid","NA");
@@ -672,7 +671,7 @@ public class MainActivity extends AppCompatActivity {
 
             userInform = new JSONObject(userInformInString);
 
-            Log.d(TAG, "user inform : "+ userInform);
+            Log.d(TAG, "[check reinstall] user inform : "+ userInform);
 
             //In order to set the survey link
             setDaysInSurveyAndTheDayTodayIs(userInform);
