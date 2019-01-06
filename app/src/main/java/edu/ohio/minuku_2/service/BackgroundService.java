@@ -145,8 +145,8 @@ public class BackgroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundServiceRunning ? "+isBackgroundServiceRunning);
-        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundRunnableRunning ? "+isBackgroundRunnableRunning);
+//        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundServiceRunning ? "+isBackgroundServiceRunning);
+//        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundRunnableRunning ? "+isBackgroundRunnableRunning);
 
         //make the WifiReceiver start sending data to the server.
         registerReceiver(mWifiReceiver, intentFilter);
@@ -198,14 +198,13 @@ public class BackgroundService extends Service {
 
             isBackgroundServiceRunning = true;
 
-            // do something
-            CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to judge the condition is ? "+(!InstanceManager.isInitialized()));
+//            CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to judge the condition is ? "+(!InstanceManager.isInitialized()));
 
             Log.d(TAG, "Is InstanceManager not initialized ? "+(!InstanceManager.isInitialized()));
 
             if(!InstanceManager.isInitialized()) {
 
-                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to start the runnable.");
+//                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to start the runnable.");
 
                 InstanceManager.getInstance(this);
                 SessionManager.getInstance(this);
@@ -239,36 +238,29 @@ public class BackgroundService extends Service {
 
             Log.d(TAG, "updateStreamManagerRunnable");
 
-            CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundServiceRunning ? "+isBackgroundServiceRunning);
-            CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundRunnableRunning ? "+isBackgroundRunnableRunning);
+//            CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundServiceRunning ? "+isBackgroundServiceRunning);
+//            CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundRunnableRunning ? "+isBackgroundRunnableRunning);
 
             try {
 
                 isBackgroundRunnableRunning = true;
 
-                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to updateStream");
-
                 //stop update it at the day after the final survey day
-                streamManager.updateStreamGenerators();
+                if(Config.daysInSurvey > Constants.FINALDAY) {
 
-                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after updateStream");
+                    streamManager.updateStreamGenerators();
+                }
 
                 //make sure that the device id will not disappear
-                if(Config.DEVICE_ID.equals("NA")){
+                if(Config.DEVICE_ID.equals(Constants.INVALID_IN_STRING)){
 
                     Utils.getDeviceid(BackgroundService.this);
-
-//                    Log.d(TAG, "DEVICE_ID : "+Constants.DEVICE_ID);
                 }
 
                 //update every 2 minutes
                 if(showOngoingNotificationCount % 12 == 0) {
 
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "before checkAndRequestPermission");
-
                     checkAndRequestPermission();
-
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after checkAndRequestPermission");
                 }
 
                 //update every 30 minutes
@@ -276,22 +268,14 @@ public class BackgroundService extends Service {
 
                     CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, "update ongoing showOngoingNotificationCount : "+showOngoingNotificationCount);
 
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to updateOngoingNotification");
-
                     updateOngoingNotification();
-
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "after updateOngoingNotification");
                 }
 
                 //update every 3 hours
                 /*if(showOngoingNotificationCount % 1080 == 0){
 
-                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, "check-in showOngoingNotificationCount : "+showOngoingNotificationCount);
-
                     //check the response time is already 3 hours
                     sendingUserInform();
-
-                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, ScheduleAndSampleManager.getCurrentTimeString(),"Check-in");
                 }*/
 
                 showOngoingNotificationCount++;
@@ -303,8 +287,8 @@ public class BackgroundService extends Service {
             }catch (Exception e){
 
 //                isBackgroundRunnableRunning = false;
-                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Something wrong in the runnable process.");
-                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, Utils.getStackTrace(e));
+//                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Something wrong in the runnable process.");
+//                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, Utils.getStackTrace(e));
             }
         }
     };
@@ -686,7 +670,7 @@ public class BackgroundService extends Service {
 
         sharedPrefs.edit().putString("ongoingNotificationText", ongoingNotificationText).apply();
 
-        Utils.ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), "TransportationMode.csv");
+//        Utils.ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), CSVHelper.CSV_TRANSPORTATIONMODE);
         Utils.ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), "TransportationState.csv");
         Utils.ServiceDestroying_StoreToCSV_onDestroy(new Date().getTime(), "windowdata.csv");
 
@@ -712,7 +696,7 @@ public class BackgroundService extends Service {
 
         sharedPrefs.edit().putString("ongoingNotificationText", ongoingNotificationText).apply();
 
-        Utils.ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), "TransportationMode.csv");
+//        Utils.ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), CSVHelper.CSV_TRANSPORTATIONMODE);
         Utils.ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), "TransportationState.csv");
         Utils.ServiceDestroying_StoreToCSV_onTaskRemoved(new Date().getTime(), "windowdata.csv");
 
@@ -898,20 +882,20 @@ public class BackgroundService extends Service {
 
                 Log.d(TAG, "[check runnable] going to check if the runnable is running");
 
-                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to check if the runnable is running");
-                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "is the runnable running ? " + isBackgroundRunnableRunning);
+//                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "going to check if the runnable is running");
+//                CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "is the runnable running ? " + isBackgroundRunnableRunning);
 
                 if (!isBackgroundRunnableRunning) {
 
                     Log.d(TAG, "[check runnable] the runnable is not running, going to restart it.");
 
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "the runnable is not running, going to restart it");
+//                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "the runnable is not running, going to restart it");
 
                     runMainThread();
 
                     Log.d(TAG, "[check runnable] the runnable is restarted.");
 
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "the runnable is restarted");
+//                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "the runnable is restarted");
                 }
 
                 PendingIntent pi = PendingIntent.getBroadcast(BackgroundService.this, 0, new Intent(CHECK_RUNNABLE_ACTION), 0);

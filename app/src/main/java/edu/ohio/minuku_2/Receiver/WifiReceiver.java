@@ -605,7 +605,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     try {
 
-                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Survey Link", "Before sending, from the server, the latest EndTime : "+surveyJson.getString("triggerTimeString"));
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Survey Link", "Before sending to the server, the survey completeType : "+surveyJson.get("completeType"));
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED,"Survey Link", "Before sending to the server, the latest EndTime : "+surveyJson.getString("triggerTimeString"));
                     }catch (JSONException e){
                         e.printStackTrace();
                     }

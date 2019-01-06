@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.Utilities.Utilities;
 import edu.ohio.minuku.config.Config;
@@ -105,10 +104,10 @@ public class MinukuStreamManager implements StreamManager {
             if(showUpdateingLogCount % 60 == 0) {
 
                 if (enclosingClass != null) {
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " examing streamGenerator: " + enclosingClass.getName());
+//                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " examing streamGenerator: " + enclosingClass.getName());
 
                 } else {
-                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " examing streamGenerator: " + streamGenerator.getClass().getName());
+//                    CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " examing streamGenerator: " + streamGenerator.getClass().getName());
                 }
             }
 
@@ -124,10 +123,10 @@ public class MinukuStreamManager implements StreamManager {
                 if(showUpdateingLogCount % 60 == 0) {
 
                     if (enclosingClass != null) {
-                        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " after update streamGenerator: " + enclosingClass.getName());
+//                        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " after update streamGenerator: " + enclosingClass.getName());
 
                     } else {
-                        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " after update streamGenerator: " + streamGenerator.getClass().getName());
+//                        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, " after update streamGenerator: " + streamGenerator.getClass().getName());
                     }
                 }
 

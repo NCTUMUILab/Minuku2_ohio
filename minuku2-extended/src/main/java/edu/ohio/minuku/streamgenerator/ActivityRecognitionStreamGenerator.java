@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 
+import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.ActivityRecognitionDataRecordDAO;
 import edu.ohio.minuku.manager.MinukuDAOManager;
@@ -97,6 +98,8 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
 
         ActivityRecognitionStreamGenerator.instance = this;
 
+        sLatestDetectionTime = Constants.INVALID_TIME_VALUE;
+
         recordCount = 0;
         sKeepalive = KEEPALIVE_MINUTE * Constants.MILLISECONDS_PER_MINUTE;
 
@@ -169,7 +172,27 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
 
         activityRecognitionDataRecord = new ActivityRecognitionDataRecord(sMostProbableActivity, sProbableActivities, sLatestDetectionTime, String.valueOf(session_id));
 
-//        Log.d(TAG, "[test replay] inside update stream " +  activityRecognitionDataRecord.getDetectedtime() + " : " +  activityRecognitionDataRecord.getProbableActivities().toString());
+        //if there don't have any updates for 10 minutes, add the NA one to represent it
+        if((ScheduleAndSampleManager.getCurrentTimeInMillis() - sLatestDetectionTime) >= Constants.MILLISECONDS_PER_MINUTE * 10
+                && (sLatestDetectionTime != Constants.INVALID_TIME_VALUE)){
+
+            DetectedActivity initialDetectedActivity = getInitialDetectedActivity();
+
+            ArrayList<DetectedActivity> initialDetectedActivities = new ArrayList<>();
+            initialDetectedActivities.add(initialDetectedActivity);
+
+            ActivityRecognitionDataRecord activityRecognitionDataRecord = new ActivityRecognitionDataRecord(initialDetectedActivity, initialDetectedActivities, ScheduleAndSampleManager.getCurrentTimeInMillis(), String.valueOf(session_id));
+
+            mStream.add(activityRecognitionDataRecord);
+            try {
+
+                mDAO.add(activityRecognitionDataRecord);
+            } catch (DAOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        }
 
         MinukuStreamManager.getInstance().setActivityRecognitionDataRecord(activityRecognitionDataRecord);
 
@@ -191,6 +214,7 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
         }
         return true;
     }
+
 
     @Override
     public long getUpdateFrequency() {
@@ -416,6 +440,11 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
             Log.e(TAG, "[onConnectionFailed] No Google Play services is available, the error code is "
                     + connectionResult.getErrorCode());
         }
+    }
+
+    private DetectedActivity getInitialDetectedActivity(){
+
+        return new DetectedActivity(-1, 100);
     }
 
     public static int getActivityTypeFromName(String activityName) {

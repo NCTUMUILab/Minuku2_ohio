@@ -2079,7 +2079,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         DBManager.getInstance().closeDatabase();
-
     }
 
     public static void updateSurveyToAlreadyBeenSent(int _id){
@@ -2129,6 +2128,7 @@ public class DBHelper extends SQLiteOpenHelper {
         String where = d_col + " = " +  d + " and " + n_col + " = " + n;
 
         try{
+            
             SQLiteDatabase db = DBManager.getInstance().openDatabase();
             ContentValues values = new ContentValues();
 
@@ -2140,10 +2140,21 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(DBHelper.d_col, d);
             values.put(DBHelper.n_col, n);
 
-            int id = (int) db.insertWithOnConflict(surveyLink_table, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-            if (id == -1) {
+            String checkDN = querySurveyLinkBydn(d, n);
+
+            //if there is already have a survey in this period and day
+            if(!checkDN.equals(Constants.INVALID_IN_STRING)){
+
+                Log.d(TAG, "update Survey by d : "+d+", n : "+n);
+
                 db.update(surveyLink_table, values, where, null);
+            }else {
+
+                Log.d(TAG, "insert Survey by d : "+d+", n : "+n);
+
+                db.insert(surveyLink_table, null, values);
             }
+
         }catch(Exception e){
             e.printStackTrace();
         }
