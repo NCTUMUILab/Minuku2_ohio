@@ -470,6 +470,13 @@ public class WifiReceiver extends BroadcastReceiver {
 //                    annotatedtripdata.put("PeriodNumber", sessionToSend.getPeriodNum());
                     annotatedtripdata.put("d", sessionToSend.getSurveyDay());
 
+                    Config.finalDayEndTime = sharedPrefs.getLong("finalDayEndTime", Config.finalDayEndTime);
+
+                    //imply that currently over day 14
+                    if(sessionEndTime > Config.finalDayEndTime){
+                        continue;
+                    }
+
                 } catch (JSONException e) {
 
                 } catch (Exception e) {
@@ -566,6 +573,13 @@ public class WifiReceiver extends BroadcastReceiver {
                     surveyJson.put("triggerTimeString", ScheduleAndSampleManager.getTimeString(Long.valueOf(timestamp)));
 
                     surveyJson.put("clickedtime", clickedtime);
+
+                    Config.finalDayEndTime = sharedPrefs.getLong("finalDayEndTime", Config.finalDayEndTime);
+
+                    //imply that currently over day 14
+                    if(Long.valueOf(timestamp) > Config.finalDayEndTime){
+                        continue;
+                    }
 
                     if(clickedtime != null && !clickedtime.isEmpty()){
 
@@ -754,6 +768,20 @@ public class WifiReceiver extends BroadcastReceiver {
 
         }
 
+        Config.finalDayEndTime = sharedPrefs.getLong("finalDayEndTime", Config.finalDayEndTime);
+
+
+        Log.d(TAG, "[show data response] endTimeOfJson : "+ScheduleAndSampleManager.getTimeString(endTime));
+        Log.d(TAG, "[show data response] final endtime : "+ScheduleAndSampleManager.getTimeString(Config.finalDayEndTime));
+
+        Log.d(TAG, "[show data response] endtime over day 15 ? "+(endTime > Config.finalDayEndTime));
+
+        //imply that currently over day 14
+        if(endTime > Config.finalDayEndTime){
+
+            return false;
+        }
+
         storeTransporatation(data);
         storeLocation(data);
         storeActivityRecognition(data);
@@ -763,7 +791,7 @@ public class WifiReceiver extends BroadcastReceiver {
         storeAppUsage(data);
         storeActionLog(data);
 
-        Log.d(TAG,"[show data response] checking data Dump : "+ data.toString());
+//        Log.d(TAG,"[show data response] checking data Dump : "+ data.toString());
 
 //        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAFORMAT,"Dump", data.toString());
 

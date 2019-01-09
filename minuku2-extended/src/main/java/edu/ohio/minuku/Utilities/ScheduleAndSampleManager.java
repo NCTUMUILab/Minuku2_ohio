@@ -37,7 +37,10 @@ public class ScheduleAndSampleManager {
 		return getTimeString(getCurrentTimeInMillis());
 	}
 
+	public static String getCurrentMidNightTimeString() {
 
+		return getTimeString(getCurrentMidNightTimeInMillis());
+	}
 	/**get the current time in milliseconds**/
 	public static long getCurrentTimeInMillis(){
 		//get timzone
