@@ -245,8 +245,10 @@ public class BackgroundService extends Service {
 
                 isBackgroundRunnableRunning = true;
 
+                Log.d(TAG, "daysInSurvey : "+Config.daysInSurvey+" , downloadedDayInSurvey : "+Config.downloadedDayInSurvey+" , FINALDAY : "+Constants.FINALDAY);
+
                 //stop update it at the day after the final survey day
-                if(Config.daysInSurvey <= Constants.FINALDAY) {
+                if(Config.daysInSurvey <= Constants.FINALDAY && Config.daysInSurvey > Config.downloadedDayInSurvey) {
 
                     streamManager.updateStreamGenerators();
                 }

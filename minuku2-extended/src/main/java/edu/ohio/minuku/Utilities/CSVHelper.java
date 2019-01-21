@@ -38,6 +38,8 @@ public class CSVHelper {
 
     public static final String CSV_TRANSPORTATIONMODE= "TransportationMode.csv";
 
+    public static final String CSV_TEST_WIFI_CONNECTION = "TestWifiConnection.csv";
+
     public static final String CSV_SERVER_DATA_STATE = "ServerDataState.csv";
     public static final String CSV_UserInteract = "UserInteraction.csv";
     public static final String CSV_PULLING_DATA_CHECK = "pulling_data_check.csv";
