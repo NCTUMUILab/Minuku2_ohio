@@ -743,7 +743,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "[check finalday end time] final end time : "+ScheduleAndSampleManager.getTimeString(Config.finalDayEndTime));
 
-        sharedPrefs.edit().putLong("finalDayEndTime", Config.finalDayEndTime);
+        sharedPrefs.edit().putLong("finalDayEndTime", Config.finalDayEndTime).apply();
     }
 
     private void setDownloadedDaysInSurveyIs(JSONObject userInform){
