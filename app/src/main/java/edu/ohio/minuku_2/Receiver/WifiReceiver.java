@@ -498,8 +498,15 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     Config.finalDayEndTime = sharedPrefs.getLong("finalDayEndTime", Config.finalDayEndTime);
 
+                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Going to send a piece of trip data.");
+
                     //imply that currently over day 14
                     if(sessionEndTime > Config.finalDayEndTime){
+
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "sessionEndTime is bigger than finalDayEndTime");
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "endTime : "+ScheduleAndSampleManager.getTimeString(sessionEndTime));
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "finalDayEndTime : "+ScheduleAndSampleManager.getTimeString(Config.finalDayEndTime));
+
                         continue;
                     }
 
@@ -602,8 +609,15 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     Config.finalDayEndTime = sharedPrefs.getLong("finalDayEndTime", Config.finalDayEndTime);
 
+                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Going to send a piece of survey data.");
+
                     //imply that currently over day 14
                     if(Long.valueOf(timestamp) > Config.finalDayEndTime){
+
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "survey time is bigger than finalDayEndTime");
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "endTime : "+ScheduleAndSampleManager.getTimeString(Long.valueOf(timestamp)));
+                        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "finalDayEndTime : "+ScheduleAndSampleManager.getTimeString(Config.finalDayEndTime));
+
                         continue;
                     }
 
@@ -752,6 +766,9 @@ public class WifiReceiver extends BroadcastReceiver {
 
         //Log.d(TAG, "sendingDumpData") ;
 
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Going to send a piece of device data.");
+
+
         JSONObject data = new JSONObject();
 
         long endTimeOfJson = -999;
@@ -804,6 +821,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
         //imply that currently over day 14
         if(endTime > Config.finalDayEndTime){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "endTime is bigger than finalDayEndTime");
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "endTime : "+ScheduleAndSampleManager.getTimeString(endTime));
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "finalDayEndTime : "+ScheduleAndSampleManager.getTimeString(Config.finalDayEndTime));
 
             return false;
         }
