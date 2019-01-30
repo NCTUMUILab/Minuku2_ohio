@@ -142,7 +142,7 @@ public class WifiReceiver extends BroadcastReceiver {
             }else {
 
                 CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "activeNetwork != null ? "+(activeNetwork != null));
-                CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "activeNetwork type == wifi ? "+(activeNetwork.getType() == ConnectivityManager.TYPE_WIFI));
+//                CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "activeNetwork type == wifi ? "+(activeNetwork.getType() == ConnectivityManager.TYPE_WIFI));
                 CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "Not in Wifi.");
             }
         }
