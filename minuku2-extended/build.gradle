@@ -50,6 +50,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.7'
     /*Logger*/
     compile 'com.bugfender.sdk:android:0.+'
-    //TODO bad style, should be changed
-    implementation files('/home/muilab/Desktop/bighead/Minuku2_ohio/javatuples-1.2.jar')
+
+    implementation files('libs/javatuples-1.2.jar', 'libs/javatuples-1.2.jar')
+
 }
