@@ -72,6 +72,24 @@ public class ScheduleAndSampleManager {
 		return timeInMilliseconds;
 	}
 
+	public static long changeTimetoCurrentDate(long givenTime){
+
+		long currentDateInGivenTime = Constants.INVALID_TIME_VALUE;
+
+		SimpleDateFormat sdf_date = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+		String currentDate = getTimeString(getCurrentTimeInMillis(), sdf_date);
+
+		SimpleDateFormat sdf_HHmmss = new SimpleDateFormat(Constants.DATE_FORMAT_HOUR_MIN_SECOND);
+		String givenHHmmss = getTimeString(givenTime, sdf_HHmmss);
+
+//		DATE_FORMAT_NOW_NO_ZONE
+		SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_NO_ZONE);
+		String currentDateInGivenTimeString = currentDate + " " + givenHHmmss;
+		currentDateInGivenTime = getTimeInMillis(currentDateInGivenTimeString, sdf);
+
+		return currentDateInGivenTime;
+	}
+
 	public static int getHourOfTimeOfDay (String TimeOfDay){
 
 		return Integer.parseInt(TimeOfDay.split(":")[0] ) ;

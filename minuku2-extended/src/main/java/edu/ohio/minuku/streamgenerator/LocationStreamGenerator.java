@@ -25,7 +25,6 @@ package edu.ohio.minuku.streamgenerator;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -47,19 +46,14 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.dao.LocationDataRecordDAO;
-import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
-import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.logger.Log;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuStreamManager;
@@ -236,7 +230,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
 
         Log.d(TAG, "Stream " + TAG + " registered successfully");
 
-        EventBus.getDefault().post(new IncrementLoadingProcessCountEvent());
+        /*EventBus.getDefault().post(new IncrementLoadingProcessCountEvent());
 
         AsyncTask.execute(new Runnable() {
             @Override
@@ -261,7 +255,7 @@ public class LocationStreamGenerator extends AndroidStreamGenerator<LocationData
                     EventBus.getDefault().post(new DecrementLoadingProcessCountEvent());
                 }
             }
-        });
+        });*/
 
     }
 

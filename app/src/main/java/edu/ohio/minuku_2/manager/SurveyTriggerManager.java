@@ -125,7 +125,8 @@ public class SurveyTriggerManager {
 //        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Going to reset IntervalSamples.");
 
         //we set them to avoid the situation that alarm being canceled by Android.
-        resetIntervalSampling();
+        //TODO deprecated
+        //resetIntervalSampling();
 
 //        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "Reset IntervalSamples, complete.");
 
@@ -577,6 +578,7 @@ public class SurveyTriggerManager {
             if(!startSleepingTime.equals(Constants.NOT_A_NUMBER) && !endSleepingTime.equals(Constants.NOT_A_NUMBER)) {
 
                 //after a day, switch the survey day after the bed time
+                //TODO before get the time change the timezone to the current one
                 long sleepStartTimeLong = sharedPrefs.getLong("sleepStartTimeLong", Constants.INVALID_IN_LONG);
                 Log.d(TAG, "sleepStartTimeLong String : "+ ScheduleAndSampleManager.getTimeString(sleepStartTimeLong));
 
@@ -864,7 +866,13 @@ public class SurveyTriggerManager {
 
         long sleepEndTimeLong = sharedPrefs.getLong("sleepEndTimeLong", Constants.INVALID_IN_LONG);
 
-        Log.d(TAG, "sleepEndTimeLong : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
+        Log.d(TAG, "[test alarm] sleepEndTimeLong before reformat : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
+
+        //check the sleepEndTimeLong is in today's date
+        sleepEndTimeLong = ScheduleAndSampleManager.changeTimetoCurrentDate(sleepEndTimeLong);
+
+
+        Log.d(TAG, "[test alarm] sleepEndTimeLong : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
 
         long period = sharedPrefs.getLong("PeriodLong", Constants.INVALID_IN_LONG);
 

@@ -92,9 +92,8 @@ public class BackgroundService extends Service {
     private static final String TAG = "BackgroundService";
 
     final static String CHECK_RUNNABLE_ACTION = "checkRunnable";
-    final static String CONNECTIVITY_ACTION = "android.net.conn.CONNECTIVITY_CHANGE";
 
-    WifiReceiver mWifiReceiver;
+    WifiReceiver mWifiReceiver = null;
     IntentFilter intentFilter;
 
     MinukuStreamManager streamManager;
@@ -137,19 +136,29 @@ public class BackgroundService extends Service {
         CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, "oncreate showOngoingNotificationCount : "+showOngoingNotificationCount);
 
         intentFilter = new IntentFilter();
-//        intentFilter.addAction(CONNECTIVITY_ACTION);
         intentFilter.addAction(Constants.CONNECTIVITY_CHANGE);
-        mWifiReceiver = new WifiReceiver();
+
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_WIFI_PROCESS_ALIVE, "Is wifiReceiver existed ? " + (mWifiReceiver == null));
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, "Is wifiReceiver existed ? " + (mWifiReceiver == null));
+        Log.d(TAG, "Is wifiReceiver existed ? " + !(mWifiReceiver == null));
+
+        if(mWifiReceiver == null) {
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_CHECK_IN, "wifiReceiver is gone, create a new one.");
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_WIFI_PROCESS_ALIVE, "wifiReceiver is gone, create a new one.");
+
+            mWifiReceiver = new WifiReceiver();
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_WIFI_PROCESS_ALIVE, "register wifiReceiver");
+
+            //make the WifiReceiver start sending data to the server.
+            registerReceiver(mWifiReceiver, intentFilter);
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-//        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundServiceRunning ? "+isBackgroundServiceRunning);
-//        CSVHelper.storeToCSV(CSVHelper.CSV_RUNNABLE_CHECK, "isBackgroundRunnableRunning ? "+isBackgroundRunnableRunning);
-
-        //make the WifiReceiver start sending data to the server.
-        registerReceiver(mWifiReceiver, intentFilter);
         registerConnectivityNetworkMonitorForAPI21AndUp();
 
         IntentFilter checkRunnableFilter = new IntentFilter(CHECK_RUNNABLE_ACTION);
@@ -164,7 +173,7 @@ public class BackgroundService extends Service {
         );
 
 
-        //TODO set the value to prevent to reset the Default time back
+        //set the value to prevent to reset the Default time back
         boolean isSleepTimeSet = sharedPrefs.getBoolean("IsSleepTimeSet", false);
         if(!isSleepTimeSet) {
 
@@ -285,6 +294,8 @@ public class BackgroundService extends Service {
                 showOngoingNotificationCount %= 1080;
 
                 sharedPrefs.edit().putInt("showOngoingNotificationCount", showOngoingNotificationCount).apply();
+
+                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_WIFI_PROCESS_ALIVE, "Is wifiReceiver existed ? " + !(mWifiReceiver == null));
 
             }catch (Exception e){
 
@@ -682,6 +693,8 @@ public class BackgroundService extends Service {
 //        checkingRemovedFromForeground();
         removeRunnable();
 
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_WIFI_PROCESS_ALIVE, "onDestroy");
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_WIFI_PROCESS_ALIVE, "unregister wifiReceiver");
         unregisterReceiver(mWifiReceiver);
     }
 
@@ -709,6 +722,8 @@ public class BackgroundService extends Service {
         removeRunnable();
 
         sendBroadcastToStartService();
+
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_WIFI_PROCESS_ALIVE, "onTaskRemoved");
 
     }
 
@@ -751,6 +766,8 @@ public class BackgroundService extends Service {
     @Override
     public void onLowMemory(){
         super.onLowMemory();
+
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_WIFI_PROCESS_ALIVE, "onLowMemory");
 
         sharedPrefs.edit().putString("ongoingNotificationText", ongoingNotificationText).apply();
     }

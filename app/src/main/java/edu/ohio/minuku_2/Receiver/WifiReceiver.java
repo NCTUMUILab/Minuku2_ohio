@@ -10,6 +10,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
 import android.util.Log;
 
 import org.javatuples.Ennead;
@@ -80,8 +81,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v1.0.1";
-    private String wavesNumber = "1";
+    private String versionNumber = "v1.0.2";
+    private String wavesNumber = "2";
 
     public static final int HTTP_TIMEOUT = 10 * (int) Constants.MILLISECONDS_PER_SECOND;
     public static final int SOCKET_TIMEOUT = 20 * (int) Constants.MILLISECONDS_PER_SECOND;
@@ -96,8 +97,11 @@ public class WifiReceiver extends BroadcastReceiver {
     private static final String querySurveyLinkUrl = "http://mcog.asc.ohio-state.edu/apps/surveycheck?userid=";
     private static final String queryTripUrl = "http://mcog.asc.ohio-state.edu/apps/tripcheck?userid=";
 
+    private static boolean firstConnect = true;
+    private Handler handler = new Handler();
+
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
 
         Log.d(TAG, "onReceive");
 
@@ -131,19 +135,57 @@ public class WifiReceiver extends BroadcastReceiver {
 
         if (Constants.CONNECTIVITY_CHANGE.equals(intent.getAction())) {
 
+            Log.d(TAG, "firstConnect : "+firstConnect);
+
             //activeNetwork may return null if there's no default Internet
             if (activeNetwork != null &&
                     activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
 
-                updateSurveyLinkState();
-                updateTripState();
+                if(firstConnect) {
 
-                uploadData();
+                    firstConnect = false;
+
+                    Log.d(TAG, "start to wait for 10 min");
+                    CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "start to wait for 10 min");
+
+                    //wait for 10 seconds then check if it still in Wi-Fi
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            Log.d(TAG, "It's 10 min, check the network");
+                            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "It's 10 min, check the network");
+
+                            ConnectivityManager tenMinCm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                            NetworkInfo tenMinNetworkActiveInfo = tenMinCm.getActiveNetworkInfo();
+
+                            Log.d(TAG, "tenMinNetworkActiveInfo != null ? "+(tenMinNetworkActiveInfo != null));
+                            Log.d(TAG, "Is in Wi-Fi ? "+((tenMinNetworkActiveInfo != null) && (tenMinNetworkActiveInfo.getType() == ConnectivityManager.TYPE_WIFI)));
+
+                            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "tenMinNetworkActiveInfo != null ? "+(tenMinNetworkActiveInfo != null));
+                            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Is in Wi-Fi ? "+((tenMinNetworkActiveInfo != null) && (tenMinNetworkActiveInfo.getType() == ConnectivityManager.TYPE_WIFI)));
+
+                            if (tenMinNetworkActiveInfo != null &&
+                                    tenMinNetworkActiveInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+
+                                updateSurveyLinkState();
+                                updateTripState();
+
+                                uploadData();
+
+                                //the current iteration is done, set it back to true for preparing next time
+                                firstConnect= true;
+                            }
+                        }
+                    }, 10 * Constants.MILLISECONDS_PER_MINUTE);
+
+                }
             }else {
 
-                CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "activeNetwork != null ? "+(activeNetwork != null));
-//                CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "activeNetwork type == wifi ? "+(activeNetwork.getType() == ConnectivityManager.TYPE_WIFI));
-                CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "Not in Wifi.");
+                firstConnect= true;
+
+                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "activeNetwork != null ? "+(activeNetwork != null));
+                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Not in Wifi.");
             }
         }
 
@@ -151,11 +193,13 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private void updateTripState(){
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "updateTripState...");
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "updateTripState...");
 
         try {
 
             JSONArray tripDataJson = queryDataFromServer(queryTripUrl);
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "tripDataJson length : "+tripDataJson.length());
 
             //based on the createdTime, update the trip data.
             for(int index = 0; index < tripDataJson.length(); index++){
@@ -172,17 +216,21 @@ public class WifiReceiver extends BroadcastReceiver {
                 DBHelper.updateSessionTableByCreatedTime(Long.valueOf(createdTime), Constants.SESSION_IS_ALREADY_SENT_FLAG);
             }
         }catch (JSONException e){
-//            e.printStackTrace();
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "JSONException on checking SurveyLinkState ...");
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, Utils.getStackTrace(e));
         }
     }
 
     private void updateSurveyLinkState(){
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "updateSurveyLinkState...");
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "updateSurveyLinkState...");
 
         try {
 
             JSONArray surveyDataJson = queryDataFromServer(querySurveyLinkUrl);
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "surveyDataJson length : "+surveyDataJson.length());
 
             //based on the d and n value, update the survey link data.
             for(int index = 0; index < surveyDataJson.length(); index++){
@@ -197,7 +245,9 @@ public class WifiReceiver extends BroadcastReceiver {
                 DBHelper.updateSurveyBydn(d, n);
             }
         }catch (JSONException e){
-//            e.printStackTrace();
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "JSONException on checking SurveyLinkState ...");
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, Utils.getStackTrace(e));
         }
     }
 
@@ -236,10 +286,13 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private void uploadData(){
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "update Data...");
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "update Data...");
 
         //dump only can be sent when wifi is connected
         long lastSentStarttime = sharedPrefs.getLong("lastSentStarttime", Constants.INVALID_IN_LONG);
+
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "lastSentStarttime : "+ScheduleAndSampleManager.getTimeString(lastSentStarttime));
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Is lastSentStarttime equal to "+Constants.INVALID_IN_LONG+" ? "+(lastSentStarttime == Constants.INVALID_IN_LONG));
 
         if(lastSentStarttime == Constants.INVALID_IN_LONG){
 
@@ -266,14 +319,18 @@ public class WifiReceiver extends BroadcastReceiver {
             Log.d(TAG, "[show data response] (lastSentStarttime == 0), current iteration endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
         }
 
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "current iteration startTime : "+ScheduleAndSampleManager.getTimeString(startTime));
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "current iteration endTime : "+ScheduleAndSampleManager.getTimeString(endTime));
+
         setNowTime();
 
         Log.d(TAG,"NowTimeString : " + ScheduleAndSampleManager.getTimeString(nowTime));
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "current iteration nowTime : "+ScheduleAndSampleManager.getTimeString(nowTime));
 
         boolean tryToSendData = true;
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "going to send device Data...");
-        CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "nowTime > endTime ? "+(nowTime > endTime));
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "going to send device Data...");
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "nowTime > endTime ? "+(nowTime > endTime));
 
         while(nowTime > endTime && tryToSendData) {
 
@@ -287,13 +344,15 @@ public class WifiReceiver extends BroadcastReceiver {
             setNowTime();
         }
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "going to send trip Data...");
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "going to send trip Data...");
 
         sendingTripData(nowTime);
 
-        CSVHelper.storeToCSV(CSVHelper.CSV_TEST_WIFI_CONNECTION, "going to send survey Data...");
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "going to send survey Data...");
 
         sendingSurveyLinkData(nowTime);
+
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "after send survey Data...");
     }
 
     private void sendingTripData(long time24HrAgo){
@@ -350,8 +409,10 @@ public class WifiReceiver extends BroadcastReceiver {
                     //update the sent Session to already be sent
 //                    String sentSessionId = data.getString("sessionid");
 //                    DataHandler.updateSession(Integer.valueOf(sentSessionId), Constants.SESSION_IS_ALREADY_SENT_FLAG);
-                }
+                }else {
 
+                    break;
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
@@ -602,7 +663,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     surveyJson.put("android_ver", Build.VERSION.SDK_INT);
                     surveyJson.put("build", getBuildInform());
 
-                    surveyJson.put("triggerTime", timestampInSec);
+                    surveyJson.put("triggerTime", Long.valueOf(timestampInSec));
                     surveyJson.put("triggerTimeString", ScheduleAndSampleManager.getTimeString(Long.valueOf(timestamp)));
 
                     surveyJson.put("clickedtime", clickedtime);
@@ -623,10 +684,11 @@ public class WifiReceiver extends BroadcastReceiver {
 
                     if(clickedtime != null && !clickedtime.isEmpty()){
 
-                        surveyJson.put("clickedtime", clickedtime.substring(0, clickedtime.length() - 3));
+                        long recordClickedtime = Long.valueOf(clickedtime.substring(0, clickedtime.length() - 3));
+                        surveyJson.put("clickedtime", recordClickedtime);
                     }else{
 
-                        surveyJson.put("clickedtime", Constants.NOT_A_NUMBER);
+                        surveyJson.put("clickedtime", Constants.INVALID_TIME_VALUE);
                     }
 
                     String completeType = surveyCursor.getString(5);
@@ -645,9 +707,9 @@ public class WifiReceiver extends BroadcastReceiver {
                     //clickornot
                     surveyJson.put("completeType", completeType);
 
-                    surveyJson.put("d", d);
-                    surveyJson.put("n", n);
-                    surveyJson.put("m", m);
+                    surveyJson.put("d", Integer.valueOf(d));
+                    surveyJson.put("n", Integer.valueOf(n));
+                    surveyJson.put("m", Integer.valueOf(m));
 
                     timeOfData = Long.valueOf(timestampInSec);
 
@@ -707,6 +769,9 @@ public class WifiReceiver extends BroadcastReceiver {
 //                            String id = surveyCursor.getString(DBHelper.COL_INDEX_ID);
 
 //                            DBHelper.updateSurveyToAlreadyBeenSent(Integer.valueOf(id));
+                        }else {
+
+                            break;
                         }
 
                         surveyCursor.moveToNext();
@@ -764,8 +829,6 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public boolean sendingDumpData(){
 
-        //Log.d(TAG, "sendingDumpData") ;
-
         CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Going to send a piece of device data.");
 
 
@@ -808,18 +871,23 @@ public class WifiReceiver extends BroadcastReceiver {
 
             endTimeOfJson = endTimeInSec;
         }catch (JSONException e){
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Dump data JSONException");
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, Utils.getStackTrace(e));
 
         }
 
         Config.finalDayEndTime = sharedPrefs.getLong("finalDayEndTime", Config.finalDayEndTime);
-
+        Config.downloadedDayEndTime = sharedPrefs.getLong("downloadedDayEndTime", Config.downloadedDayEndTime);
 
         Log.d(TAG, "[show data response] endTimeOfJson : "+ScheduleAndSampleManager.getTimeString(endTime));
         Log.d(TAG, "[show data response] final endtime : "+ScheduleAndSampleManager.getTimeString(Config.finalDayEndTime));
-
         Log.d(TAG, "[show data response] endtime over day 15 ? "+(endTime > Config.finalDayEndTime));
 
-        //imply that currently over day 14
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, " endTimeOfJson : "+ScheduleAndSampleManager.getTimeString(endTime));
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, " final endtime ? "+ScheduleAndSampleManager.getTimeString(Config.finalDayEndTime));
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, " endtime over day 15 ? "+(endTime > Config.finalDayEndTime));
+
+        //imply that currently was over day 14
         if(endTime > Config.finalDayEndTime){
 
             CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "endTime is bigger than finalDayEndTime");
@@ -827,6 +895,33 @@ public class WifiReceiver extends BroadcastReceiver {
             CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "finalDayEndTime : "+ScheduleAndSampleManager.getTimeString(Config.finalDayEndTime));
 
             return false;
+        }
+
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, " downloadedDayEndTime ? "+ScheduleAndSampleManager.getTimeString(Config.downloadedDayEndTime));
+
+        //TODO before day 0, filter them
+        //imply that currently was in day 0 or downloaded day
+        if(endTime <= Config.downloadedDayEndTime){
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "endTime is lower than downloadedDayEndTime");
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "endTime : "+ScheduleAndSampleManager.getTimeString(endTime));
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "downloadedDayEndTime : "+ScheduleAndSampleManager.getTimeString(Config.downloadedDayEndTime));
+
+            Log.d(TAG, "[show data response] endTime is lower than downloadedDayEndTime");
+            Log.d(TAG, "[show data response] endTime : " + ScheduleAndSampleManager.getTimeString(endTime));
+            Log.d(TAG, "[show data response] downloadedDayEndTime : " + ScheduleAndSampleManager.getTimeString(Config.downloadedDayEndTime));
+
+            //set the next data period to avoid infinite loop
+            startTime = endTime;
+            endTime = startTime + Constants.MILLISECONDS_PER_HOUR;
+
+            Log.d(TAG, "[show data response] next iteration startTimeString : " + ScheduleAndSampleManager.getTimeString(startTime));
+            Log.d(TAG, "[show data response] next iteration endTimeString : " + ScheduleAndSampleManager.getTimeString(endTime));
+
+            //update the last data's startTime.
+            sharedPrefs.edit().putLong("lastSentStarttime", startTime).apply();
+
+            return true;
         }
 
         storeTransporatation(data);
@@ -864,10 +959,10 @@ public class WifiReceiver extends BroadcastReceiver {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
                 lastTimeInServer = new HttpAsyncPostJsonTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                    postDumpUrl,
-                    data.toString(),
-                    "Dump",
-                    curr).get();
+                        postDumpUrl,
+                        data.toString(),
+                        "Dump",
+                        curr).get();
             else
                 lastTimeInServer = new HttpAsyncPostJsonTask().execute(
                         postDumpUrl,
@@ -876,6 +971,7 @@ public class WifiReceiver extends BroadcastReceiver {
                         curr).get();
 
             Log.d(TAG, "[show data response] Dump lastTimeInServer : "+lastTimeInServer);
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "Server Response : "+lastTimeInServer);
 
             JSONObject lasttimeInServerJson = new JSONObject(lastTimeInServer);
 
@@ -899,16 +995,9 @@ public class WifiReceiver extends BroadcastReceiver {
                 //setting nextime interval
                 //improve it to get the value from the server
                 startTime = latestUpdatedTime;
-
                 endTime = startTime + Constants.MILLISECONDS_PER_HOUR;
 
-                //Log.d(TAG,"latestUpdatedTime : " + latestUpdatedTime);
-                //Log.d(TAG,"latestUpdatedTime + 1 hour : " + latestUpdatedTime + nextinterval);
-
-                Log.d(TAG, "[show data response] next iteration startTime : " + startTime);
                 Log.d(TAG, "[show data response] next iteration startTimeString : " + ScheduleAndSampleManager.getTimeString(startTime));
-
-                Log.d(TAG, "[show data response] next iteration endTime : " + endTime);
                 Log.d(TAG, "[show data response] next iteration endTimeString : " + ScheduleAndSampleManager.getTimeString(endTime));
 
                 //update the last data's startTime.
@@ -963,6 +1052,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
                 CSVHelper.dataUploadingCSV("Response", "After sending, getting from the server, the latest EndTime : " + ScheduleAndSampleManager.getTimeString(fromServer * Constants.MILLISECONDS_PER_SECOND));
             }catch (JSONException e){
+                CSVHelper.dataUploadingCSV("Response", "JSONException result : "+result);
+                CSVHelper.dataUploadingCSV("Response", Utils.getStackTrace(e));
 
             }
         }
