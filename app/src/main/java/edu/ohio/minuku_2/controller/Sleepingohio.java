@@ -277,6 +277,8 @@ public class Sleepingohio extends AppCompatActivity {
 
                     boolean firstTimeEnterSleepTimePage = sharedPrefs.getBoolean("FirstTimeEnterSleepTimePage", false);
 
+                    Log.d(TAG, "firstTimeEnterSleepTimePage : "+firstTimeEnterSleepTimePage);
+
                     if(firstTimeEnterSleepTimePage)
                         cancelAlarmsByResetSleepTime();
 

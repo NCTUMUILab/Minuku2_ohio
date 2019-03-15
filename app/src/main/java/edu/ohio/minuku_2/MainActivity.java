@@ -120,13 +120,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        Log.d(TAG, "Creating Main activity");
 
         MultiDex.install(this);
 
         sharedPrefs = getSharedPreferences(Constants.sharedPrefString, MODE_PRIVATE);
-
-        //TODO if the daysInSurvey is already set, send to userinform again
 
         if(Config.daysInSurvey > Constants.FINALDAY + 1){
 
@@ -527,9 +524,11 @@ public class MainActivity extends AppCompatActivity {
                             Config.Email = sharedPrefs.getString("Email", "NA");
 
 
-                            boolean isEmailValid = checkUserInform();
+                            // [testing] split the line for testing
+                            boolean isEmailValid;
+                            isEmailValid = checkUserInform();
 
-                            //TODO for testing
+                            // [testing]
 //                            isEmailValid = true;
 //                            Config.daysInSurvey = 0;
 //                            sharedPrefs.edit().putInt("daysInSurvey", Config.daysInSurvey).apply();
@@ -537,11 +536,17 @@ public class MainActivity extends AppCompatActivity {
 //                            Config.downloadedDayInSurvey = 0;
 //                            sharedPrefs.edit().putInt("downloadedDayInSurvey", Config.downloadedDayInSurvey).apply();
 //
-//                            setMidnightStart(ScheduleAndSampleManager.getCurrentTimeInMillis());
-                            //TODO...
+//                            long firstresearchday = ScheduleAndSampleManager.getCurrentMidNightTimeInMillis();
+//                            Config.midnightstart = firstresearchday;
+//                            sharedPrefs.edit().putLong("midnightstart", Config.midnightstart).apply();
+//                            sharedPrefs.edit().putBoolean("resetIntervalSurveyFlag", true).apply();
+//
+//                            setFinalDaysUnixTime();
+                            // [testing] ...
 
                             if(isEmailValid){
 
+                                // [testing] comment this line for testing
                                 sendingUserInform(installedOrNot);
 
                                 startSettingSleepingTime(); //the appearing order is reversed from the code.
@@ -743,7 +748,13 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "[check finalday end time] final end time : "+ScheduleAndSampleManager.getTimeString(Config.finalDayEndTime));
 
+        Config.downloadedDayEndTime = ScheduleAndSampleManager.getCurrentMidNightTimeInMillis() + Constants.MILLISECONDS_PER_DAY;
+
+        Log.d(TAG, "[check finalday end time] downloadedDay end time : "+ScheduleAndSampleManager.getTimeString(Config.downloadedDayEndTime));
+
         sharedPrefs.edit().putLong("finalDayEndTime", Config.finalDayEndTime).apply();
+        sharedPrefs.edit().putLong("downloadedDayEndTime", Config.downloadedDayEndTime).apply();
+
     }
 
     private void setDownloadedDaysInSurveyIs(JSONObject userInform){
@@ -845,7 +856,6 @@ public class MainActivity extends AppCompatActivity {
 
                         Log.d(TAG, "sleepStartHour : "+sleepStartHour);
                         Log.d(TAG, "sleepEndHour : "+sleepEndHour);
-
                     }
                     else {
 
@@ -1065,6 +1075,8 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 Log.e(TAG, "IOException");
                 e.printStackTrace();
+                //TODO happen when the server is down
+                //return "";
             } finally {
                 if (connection != null) {
                     connection.disconnect();

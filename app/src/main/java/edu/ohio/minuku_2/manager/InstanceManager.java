@@ -24,14 +24,8 @@ package edu.ohio.minuku_2.manager;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import edu.ohio.minuku.Data.DBHelper;
 import edu.ohio.minuku.Utilities.FileHelper;
@@ -44,9 +38,6 @@ import edu.ohio.minuku.dao.RingerDataRecordDAO;
 import edu.ohio.minuku.dao.TelephonyDataRecordDAO;
 import edu.ohio.minuku.dao.TransportationModeDAO;
 import edu.ohio.minuku.dao.UserInteractionDataRecordDAO;
-import edu.ohio.minuku.dao.UserSubmissionStatsDAO;
-import edu.ohio.minuku.event.DecrementLoadingProcessCountEvent;
-import edu.ohio.minuku.event.IncrementLoadingProcessCountEvent;
 import edu.ohio.minuku.manager.MinukuDAOManager;
 import edu.ohio.minuku.manager.MinukuSituationManager;
 import edu.ohio.minuku.model.DataRecord.ActivityRecognitionDataRecord;
@@ -176,51 +167,6 @@ public class InstanceManager {
 
         // All situations must be registered AFTER the stream generators are registers.
         MinukuSituationManager situationManager = MinukuSituationManager.getInstance();
-
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                Future<UserSubmissionStats> submissionStatsFuture = ((UserSubmissionStatsDAO)
-                        MinukuDAOManager.getInstance().getDaoFor(UserSubmissionStats.class)).get();
-                EventBus.getDefault().post(new IncrementLoadingProcessCountEvent());
-                while (!submissionStatsFuture.isDone()) {
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        //e.printStackTrace();
-                    }
-                }
-                //
-                try {
-                    //Log.d(LOG_TAG, "initialize: getting mUserSubmissionStats from future ");
-                     mUserSubmissionStats = submissionStatsFuture.get();
-                    //date check - ensuring that every day we have a new instance of submission
-                    // stats. Needs to be tested
-
-                    if(!areDatesEqual((new Date().getTime()), mUserSubmissionStats.getCreationTime())
-                            || mUserSubmissionStats==null) {
-                        if(mUserSubmissionStats == null)
-                            //Log.d(LOG_TAG, "initialize: userSubmissionStats is null");
-                        //Log.d(LOG_TAG, "initialize: userSubmissionStats is either null or we have a new date." +
-//                                "Creating new userSubmissionStats object");
-                        mUserSubmissionStats = new UserSubmissionStats();
-
-                    }
-                    EventBus.getDefault().post(mUserSubmissionStats);
-                } catch (InterruptedException e) {
-                    //e.printStackTrace();
-                    //Log.d(LOG_TAG, "initialize: Creating mUserSubmissionStats");
-                    //gotUserStatsFromDatabase(null);
-                } catch (ExecutionException e) {
-                    //e.printStackTrace();
-                    //Log.d(LOG_TAG, "initialize: Creating mUserSubmissionStats");
-                    //gotUserStatsFromDatabase(null);
-                } finally {
-                    EventBus.getDefault().post(new DecrementLoadingProcessCountEvent());
-                }
-            }
-        });
-
     }
 
     protected boolean areDatesEqual(long currentTime, long previousTime) {
