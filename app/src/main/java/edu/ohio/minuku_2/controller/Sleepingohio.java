@@ -87,7 +87,7 @@ public class Sleepingohio extends AppCompatActivity {
         sleepEndtime = (Button)findViewById(R.id.sleepEndtime);
         sleepEndtime.setOnClickListener(endtimeing);
 
-        //TODO check the date of sleepStartTimeLong and sleepEndTimeLong changed it to current date
+        //check the date of sleepStartTimeLong and sleepEndTimeLong changed it to current date
         sleepStartTimeLong = sharedPrefs.getLong("sleepStartTimeLong", sleepStartTimeLong);
         sleepEndTimeLong = sharedPrefs.getLong("sleepEndTimeLong", sleepEndTimeLong);
 
@@ -164,6 +164,28 @@ public class Sleepingohio extends AppCompatActivity {
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "sleepStartTimeCheck : "+ ScheduleAndSampleManager.getTimeString(sleepStartTimeCheck));
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "sleepEndTimeCheck : "+ ScheduleAndSampleManager.getTimeString(sleepEndTimeCheck));
 
+        if (sleepingRange < 0) {
+
+            sleepingRange += Constants.MILLISECONDS_PER_DAY;
+
+            sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", false).apply();
+        }else {
+
+            long currentMidnightTime = ScheduleAndSampleManager.getCurrentMidNightTimeInMillis();
+
+            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "currentMidnightTime : "+ ScheduleAndSampleManager.getTimeString(currentMidnightTime));
+            Log.d(TAG, "currentMidnightTime : "+ ScheduleAndSampleManager.getTimeString(currentMidnightTime));
+
+            sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
+        }
+
+        return sleepingRange;
+    }
+
+    private long getPeriodLong(long sleepStartTimeCheck, long sleepEndTimeCheck){
+
+        long sleepingRange = sleepEndTimeCheck - sleepStartTimeCheck;
+
         long surveyTimeRange;
 
         if (sleepingRange < 0) {
@@ -185,6 +207,7 @@ public class Sleepingohio extends AppCompatActivity {
             sharedPrefs.edit().putBoolean("WakeSleepDateIsSame", true).apply();
         }
 
+
         long period = surveyTimeRange/6;
 
         Log.d(TAG, "period : "+period);
@@ -193,9 +216,9 @@ public class Sleepingohio extends AppCompatActivity {
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period : "+period);
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "period secs : "+period / Constants.MILLISECONDS_PER_SECOND);
 
-        sharedPrefs.edit().putLong("PeriodLong", period).apply();
+//        sharedPrefs.edit().putLong("PeriodLong", period).apply();
 
-        return sleepingRange;
+        return period;
     }
 
     private Button.OnClickListener confirming = new Button.OnClickListener() {
@@ -247,8 +270,6 @@ public class Sleepingohio extends AppCompatActivity {
                 Log.d(TAG, "SleepingStartTime Raw : "+sleepStartTimeRaw);
                 Log.d(TAG, "SleepingEndTime Raw : "+sleepEndTimeRaw);
 
-                //TODO if the hour and min didn't changed, don't reset the overview interval sample times
-
                 String previousSleepingStartTime = sharedPrefs.getString("SleepingStartTime", Constants.NOT_A_NUMBER);
                 String previousSleepingEndTime = sharedPrefs.getString("SleepingEndTime", Constants.NOT_A_NUMBER);
                 Log.d(TAG, "previousSleepingStartTime : "+ previousSleepingStartTime);
@@ -257,8 +278,39 @@ public class Sleepingohio extends AppCompatActivity {
                 sharedPrefs.edit().putString("SleepingStartTime", sleepStartTimeRaw).apply();
                 sharedPrefs.edit().putString("SleepingEndTime", sleepEndTimeRaw).apply();
 
+
+                boolean firstTimeEnterSleepTimePage = sharedPrefs.getBoolean("FirstTimeEnterSleepTimePage", false);
+
+                Log.d(TAG, "firstTimeEnterSleepTimePage : "+firstTimeEnterSleepTimePage);
+
+                if(firstTimeEnterSleepTimePage){
+
+                    boolean sleepTimeChanged = sharedPrefs.getBoolean("sleepTimeChanged", false);
+
+                    Log.d(TAG, "sleepTimeChanged : "+sleepTimeChanged);
+
+                    if(!sleepTimeChanged){
+
+                        //set the previousSleepingEndTime in sharedPreference called itself
+                        long previousSleepingEndTimelong = sharedPrefs.getLong("sleepEndTimeLong", Constants.INVALID_IN_LONG);
+                        sharedPrefs.edit().putLong("previousSleepingEndTimelong", previousSleepingEndTimelong).apply();
+
+                        Log.d(TAG, "previousSleepingEndTimelong : "+ScheduleAndSampleManager.getTimeString(previousSleepingEndTimelong));
+
+                        long previousPeriodLong = sharedPrefs.getLong("PeriodLong", Constants.INVALID_IN_LONG);
+                        sharedPrefs.edit().putLong("previousPeriodLong", previousPeriodLong).apply();
+
+                        sharedPrefs.edit().putBoolean("sleepTimeChanged", true).apply();
+                    }
+                }
+
+                //update the sleep time
                 sharedPrefs.edit().putLong("sleepStartTimeLong", sleepStartTimeLong).apply();
                 sharedPrefs.edit().putLong("sleepEndTimeLong", sleepEndTimeLong).apply();
+
+                long periodLong = getPeriodLong(sleepStartTimeLong, sleepEndTimeLong);
+                sharedPrefs.edit().putLong("PeriodLong", periodLong).apply();
+
 
                 //check if the current time is over the sleep time
                 if(ScheduleAndSampleManager.getCurrentTimeInMillis() >= sleepStartTimeLong){
@@ -275,12 +327,14 @@ public class Sleepingohio extends AppCompatActivity {
                     Log.d(TAG, "previousSleepingTime is same as the current one, don't reset the survey times");
                 }else {
 
-                    boolean firstTimeEnterSleepTimePage = sharedPrefs.getBoolean("FirstTimeEnterSleepTimePage", false);
-
                     Log.d(TAG, "firstTimeEnterSleepTimePage : "+firstTimeEnterSleepTimePage);
 
-                    if(firstTimeEnterSleepTimePage)
+                    CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_SETTING, "firstTimeEnterSleepTimePage : "+firstTimeEnterSleepTimePage);
+
+                    if(firstTimeEnterSleepTimePage) {
+
                         cancelAlarmsByResetSleepTime();
+                    }
 
                     sharedPrefs.edit().putBoolean("FirstTimeEnterSleepTimePage", true).apply();
                     Utils.settingAllDaysIntervalSampling(getApplicationContext());
@@ -307,6 +361,8 @@ public class Sleepingohio extends AppCompatActivity {
 
     public void cancelAlarmsByResetSleepTime(){
 
+        //leave today's sampling schedule instead of delete all
+
         //cancel the alarm first
         int alarmTotal = sharedPrefs.getInt("alarmCount", 1);
 
@@ -328,6 +384,9 @@ public class Sleepingohio extends AppCompatActivity {
             Log.d(TAG, "[test alarm] check alarm time "+alarmCount+" : "+ScheduleAndSampleManager.getTimeString(time));
             Log.d(TAG, "[test alarm] check tomorrowStartTime : "+ScheduleAndSampleManager.getTimeString(tomorrowStartTime));
 
+            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_SETTING, "check alarm time "+alarmCount+" : "+ScheduleAndSampleManager.getTimeString(time));
+            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_SETTING, "check tomorrowStartTime : "+alarmCount+" : "+ScheduleAndSampleManager.getTimeString(tomorrowStartTime));
+
             if(time > tomorrowStartTime){
 
                 alarmStartFromTomor = alarmCount;
@@ -338,6 +397,9 @@ public class Sleepingohio extends AppCompatActivity {
         //updated alarm Count
         sharedPrefs.edit().putInt("alarmCount", alarmStartFromTomor-1).apply();
 
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_SETTING, "alarmCount : "+(alarmStartFromTomor-1));
+        CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_SETTING, "alarmTotal : "+alarmTotal);
+
         for(int alarmCount = alarmStartFromTomor; alarmCount <= alarmTotal; alarmCount ++) {
 
             int request_code = sharedPrefs.getInt("alarm_time_request_code" + alarmCount, -1);
@@ -346,6 +408,7 @@ public class Sleepingohio extends AppCompatActivity {
             long time = sharedPrefs.getLong("alarm_time_" + alarmCount, -1);
 
             Log.d(TAG, "[test alarm] deleting time : "+ScheduleAndSampleManager.getTimeString(time));
+            CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_SETTING, "deleting time : "+ScheduleAndSampleManager.getTimeString(time));
 
             cancelAlarmIfExists(mContext, request_code);
         }

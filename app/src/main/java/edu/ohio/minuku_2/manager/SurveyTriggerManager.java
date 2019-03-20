@@ -578,7 +578,6 @@ public class SurveyTriggerManager {
             if(!startSleepingTime.equals(Constants.NOT_A_NUMBER) && !endSleepingTime.equals(Constants.NOT_A_NUMBER)) {
 
                 //after a day, switch the survey day after the bed time
-                //TODO before get the time change the timezone to the current one
                 long sleepStartTimeLong = sharedPrefs.getLong("sleepStartTimeLong", Constants.INVALID_IN_LONG);
                 Log.d(TAG, "sleepStartTimeLong String : "+ ScheduleAndSampleManager.getTimeString(sleepStartTimeLong));
 
@@ -593,6 +592,9 @@ public class SurveyTriggerManager {
 
                 //is over next sleep time
                 if (ScheduleAndSampleManager.getCurrentTimeInMillis() >= nextSleepTime) {
+
+                    //variable use to check the sleep time is changed in the same day
+                    sharedPrefs.edit().putBoolean("sleepTimeChanged", false).apply();
 
                     Log.d(TAG, "[test insert error survey] over nextSleepTime");
 
@@ -871,10 +873,28 @@ public class SurveyTriggerManager {
         //check the sleepEndTimeLong is in today's date
         sleepEndTimeLong = ScheduleAndSampleManager.changeTimetoCurrentDate(sleepEndTimeLong);
 
-
         Log.d(TAG, "[test alarm] sleepEndTimeLong : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
 
         long period = sharedPrefs.getLong("PeriodLong", Constants.INVALID_IN_LONG);
+
+        boolean sleepTimeChanged = sharedPrefs.getBoolean("sleepTimeChanged", false);
+
+        Log.d(TAG, "[test alarm] sleepTimeChanged : "+sleepTimeChanged);
+
+        if(sleepTimeChanged){
+
+            sleepEndTimeLong = sharedPrefs.getLong("previousSleepingEndTimelong", Constants.INVALID_IN_LONG);
+
+            Log.d(TAG, "[test alarm] previous sleepEndTimeLong before reformat : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
+
+            sleepEndTimeLong = ScheduleAndSampleManager.changeTimetoCurrentDate(sleepEndTimeLong);
+
+            Log.d(TAG, "[test alarm] previous sleepEndTimeLong : "+ScheduleAndSampleManager.getTimeString(sleepEndTimeLong));
+
+            period = sharedPrefs.getLong("previousPeriodLong", Constants.INVALID_IN_LONG);
+
+            Log.d(TAG, "[test alarm] previous period : "+period);
+        }
 
         CSVHelper.storeToCSV(CSVHelper.CSV_ALARM_CHECK, "triggeredTime : " + ScheduleAndSampleManager.getTimeString(triggeredTimestamp));
 
