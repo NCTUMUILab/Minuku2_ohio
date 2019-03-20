@@ -74,15 +74,15 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private int year, month, day, hour, min;
 
-    private long latestUpdatedTime = -9999;
-    private long nowTime = -9999;
-    private long startTime = -9999;
-    private long endTime = -9999;
+    private long latestUpdatedTime = Constants.INVALID_TIME_VALUE;
+    private long nowTime = Constants.INVALID_TIME_VALUE;
+    private long startTime = Constants.INVALID_TIME_VALUE;
+    private long endTime = Constants.INVALID_TIME_VALUE;
 
     public Context context;
 
-    private String versionNumber = "v1.0.2";
-    private String wavesNumber = "2";
+    private String versionNumber = "v1.0.3";
+    private String wavesNumber = "3";
 
     public static final int HTTP_TIMEOUT = 10 * (int) Constants.MILLISECONDS_PER_SECOND;
     public static final int SOCKET_TIMEOUT = 20 * (int) Constants.MILLISECONDS_PER_SECOND;

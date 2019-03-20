@@ -46,7 +46,7 @@ public class CSVHelper {
     public static final String CSV_SESSION_ACTIONLOG_FORMAT = "ActionLog.csv";
     public static final String CSV_SESSION_CONCAT_CHECK = "Session_concat.csv";
     public static final String CSV_ALARM_CHECK = "Alarm_check.csv";
-//    public static final String CSV_RUNNABLE_CHECK = "Runnable_check.csv";
+    public static final String CSV_ALARM_SETTING = "Alarm_setting.csv";
     public static final String CSV_RESET_INTERVALSAMPLES_CHECK = "ResetIntervalSamples_check.csv";
     public static final String CSV_Interval_Samples_Times = "Interval_Samples_Times.csv";
 

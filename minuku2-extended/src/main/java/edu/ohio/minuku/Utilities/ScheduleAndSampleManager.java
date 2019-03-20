@@ -37,6 +37,24 @@ public class ScheduleAndSampleManager {
 		return getTimeString(getCurrentTimeInMillis());
 	}
 
+	public static String getCurrentDate() {
+
+		SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+
+		return getTimeString(getCurrentTimeInMillis(), sdf);
+	}
+
+	public static boolean isCurrentDate(long time) {
+
+		SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_NOW_DAY);
+
+		String timeDate = getTimeString(time, sdf);
+
+		String currentDate = getTimeString(getCurrentTimeInMillis(), sdf);
+
+		return timeDate.equals(currentDate);
+	}
+
 	public static String getCurrentMidNightTimeString() {
 
 		return getTimeString(getCurrentMidNightTimeInMillis());
