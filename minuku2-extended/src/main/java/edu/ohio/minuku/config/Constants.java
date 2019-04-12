@@ -79,6 +79,9 @@ public class Constants {
     public static final int SESSION_TYPE_SPLIT = 3;
     public static final int SESSION_TYPE_SHORT = 4;
     public static final int SESSION_TYPE_CHANGED = 5;
+    public static final int SESSION_TYPE_ORIGINAL_COMBINED = 6;
+    public static final int SESSION_TYPE_ORIGINAL_SPLIT = 7;
+
 
     public static final String YES = "YES";
     public static final String NO = "NO";
@@ -177,6 +180,6 @@ public class Constants {
 
     public static final String ACTIVITY_CONFIDENCE_CONNECTOR = ":";
 
-    public static final long invalidLong = -999;
-
+    public static final int KEEPALIVE_MINUTE = 3;
+    public static final long KEEPALIVE = KEEPALIVE_MINUTE * MILLISECONDS_PER_MINUTE;
 }

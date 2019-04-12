@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.CSVHelper;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Config;
@@ -35,8 +36,6 @@ import edu.ohio.minukucore.dao.DAOException;
 import edu.ohio.minukucore.exception.StreamAlreadyExistsException;
 import edu.ohio.minukucore.exception.StreamNotFoundException;
 import edu.ohio.minukucore.stream.Stream;
-
-import static edu.ohio.minuku.streamgenerator.ActivityRecognitionStreamGenerator.getLocalRecordPool;
 
 /**
  * Created by Lawrence on 2017/5/22.
@@ -175,6 +174,15 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
         mCurrentState = sharedPrefs.getInt("CurrentState", STATE_STATIC);
         mConfirmedActivityType = sharedPrefs.getInt("ConfirmedActivityType", NO_ACTIVITY_TYPE);
 
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_TRANSPORTATION,
+                "transportationCreationTime",
+                "transportationConfirmedActivity",
+                "transportationSuspectedTime",
+                "transportationSuspectedStartActivity",
+                "transportationSuspectedStopActivity",
+                "activityRecognitionMostProbableActivity",
+                "activityRecognitionProbableActivity");
+
         this.register();
     }
 
@@ -211,6 +219,14 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
                 //getting latest Transportation based on the incoming record
                 examineTransportation(record);
 
+                CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_TRANSPORTATION,
+                        ScheduleAndSampleManager.getCurrentTimeString(),
+                        getConfirmedActvitiyString(),
+                        ScheduleAndSampleManager.getTimeString(TransportationModeStreamGenerator.getSuspectTime()),
+                        getActivityNameFromType(TransportationModeStreamGenerator.getSuspectedStartActivityType()),
+                        getActivityNameFromType(TransportationModeStreamGenerator.getSuspectedStopActivityType()),
+                        record.getMostProbableActivity().toString(),
+                        record.getProbableActivities().toString());
                 //Log.d(TAG, "[test replay] test trip: after examine transportation the current activity is  is " + getConfirmedActvitiyString() + " the status is " + getCurrentState());
             }
 
@@ -933,12 +949,22 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
 
         ArrayList<ActivityRecognitionDataRecord> windowData = new ArrayList<ActivityRecognitionDataRecord>();
 
+        long windowStartTime = startTime;
+        if(endTime - Constants.KEEPALIVE > windowStartTime){
+
+            windowStartTime = endTime - Constants.KEEPALIVE;
+        }
+
         //TODO: get activity records from the database
-        //windowData = DataHandler.getActivityRecognitionRecordsBetweenTimes(Trip_startTime, Trip_endTime);
+        windowData = DataHandler.getActivityRecognitionRecordsBetweenTimes(windowStartTime, endTime);
+
+        //TODO log the window data content
+        CSVHelper.windowDataCSV(CSVHelper.CSV_AR_DATA, windowData);
 
         ///for testing: get data from the testData
 
-        ArrayList<ActivityRecognitionDataRecord> recordPool = getLocalRecordPool();
+        //TODO to deprecated, if the DataHandler works
+        /*ArrayList<ActivityRecognitionDataRecord> recordPool = getLocalRecordPool();
 
 //        //Log.d(LOG_TAG, " examineTransportation you find " + recordPool.size() + " records in the activity recognition pool");
 
@@ -946,13 +972,13 @@ public class TransportationModeStreamGenerator extends AndroidStreamGenerator<Tr
 
             ActivityRecognitionDataRecord record = (ActivityRecognitionDataRecord) recordPool.get(i);
 
-            //       //Log.d(LOG_TAG, " record.getTimestamp() " + record.getTimestamp() +
-            //             " windwo Trip_startTime " + Trip_startTime + " windwo Trip_endTime " + Trip_endTime);
+//            Log.d(LOG_TAG, " record.getTimestamp() " + record.getTimestamp() +
+//                         " windwo Trip_startTime " + Trip_startTime + " windwo Trip_endTime " + Trip_endTime);
 
 
             if (record.getTimestamp() >= startTime && record.getTimestamp() <= endTime)
                 windowData.add(record);
-        }
+        }*/
 
         return windowData;
     }

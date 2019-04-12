@@ -194,9 +194,9 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                             try {
 
-                                //TODO add the information to show they are from the same trip.
+                                //add the information to show they are from the same trip.
                                 //keep the original one hided
-                                DBHelper.hideSessionTable(mSessionId, Constants.SESSION_TYPE_CHANGED);
+                                DBHelper.hideSessionTable(mSessionId, Constants.SESSION_TYPE_ORIGINAL_SPLIT);
 
                                 //update the session into two different sessions
                                 Session lastSession = SessionManager.getLastSession();
@@ -405,7 +405,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     public void initAnnotationView(){
 
         initQuestionnaire();
-
     }
 
     private void showRecordingVizualization(final int sessionId, GoogleMap mGoogleMap){

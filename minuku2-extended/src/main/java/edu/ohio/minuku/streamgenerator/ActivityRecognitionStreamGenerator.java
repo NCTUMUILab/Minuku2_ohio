@@ -349,7 +349,7 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
 
 //        Log.e("mLocalRecordPool ", String.valueOf(mLocalRecordPool));
         mLocalRecordPool.add(activityRecognitionDataRecord); //it's working.
-        Log.e(TAG, "[test logging]add record " + "logged at " + activityRecognitionDataRecord.getTimeString() );
+        Log.e(TAG, "[test logging] add record " + "logged at " + activityRecognitionDataRecord.getTimeString() );
         //Log.e(TAG, String.valueOf(mLocalRecordPool.size()));
 
         /**2. check whether we should remove old record **/
@@ -493,5 +493,28 @@ public class ActivityRecognitionStreamGenerator extends AndroidStreamGenerator<A
                 return STRING_DETECTED_ACTIVITY_NA;
         }
         return "NA";
+    }
+
+    public static int zzsu(String activityString) {
+        switch(activityString) {
+            case "IN_VEHICLE":
+                return 0;
+            case "ON_BICYCLE":
+                return 1;
+            case "ON_FOOT":
+                return 2;
+            case "STILL":
+                return 3;
+            case "UNKNOWN":
+                return 4;
+            case "TILTING":
+                return 5;
+            case "WALKING":
+                return 7;
+            case "RUNNING":
+                return 8;
+            default:
+                return -1;
+        }
     }
 }

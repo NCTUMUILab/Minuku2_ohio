@@ -1,10 +1,16 @@
 package edu.ohio.minuku_2.controller;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -12,14 +18,29 @@ import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import edu.ohio.minuku.Data.DBHelper;
+import edu.ohio.minuku.Data.DataHandler;
 import edu.ohio.minuku.Utilities.ScheduleAndSampleManager;
 import edu.ohio.minuku.config.Config;
 import edu.ohio.minuku.config.Constants;
 import edu.ohio.minuku.manager.SessionManager;
+import edu.ohio.minuku.model.Annotation;
 import edu.ohio.minuku.model.Session;
 import edu.ohio.minuku_2.R;
 
@@ -102,6 +123,39 @@ public class CombinationActivity extends Activity {
                     }
                 }
 
+                updateConfirmButtonClickable();
+            }
+        });
+
+        listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
+
+                final LayoutInflater inflater = LayoutInflater.from(CombinationActivity.this);
+                final AlertDialog.Builder builder = new AlertDialog.Builder(CombinationActivity.this);
+                final View layout = inflater.inflate(R.layout.map_dialog,null);
+
+                final Session sessionChosen = mSessions.get(position);
+
+                DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "List - trip to combine - long click to be show the map sessionid : "+sessionChosen.getId() + " - sessionid : " +sessionToCombineId);
+
+                builder.setView(layout)
+                        .setPositiveButton(getResources().getString(R.string.confirm), null);
+
+                final AlertDialog mAlertDialog = builder.create();
+                mAlertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+                    @Override
+                    public void onShow(DialogInterface dialogInterface) {
+
+                        showMapInDialog(sessionChosen, mAlertDialog, layout);
+                    }
+                });
+
+                mAlertDialog.show();
+
+                return true;
             }
         });
 
@@ -112,6 +166,36 @@ public class CombinationActivity extends Activity {
             confirm.setVisibility(View.GONE);
         else
             confirm.setVisibility(View.VISIBLE);
+
+        updateConfirmButtonClickable();
+    }
+
+    //TODO test
+    private void updateConfirmButtonClickable(){
+
+        if(sessionPosList.size() == 0){
+
+            confirm.setClickable(false);
+        }else{
+
+            confirm.setClickable(true);
+        }
+    }
+
+    private void showMapInDialog(final Session sessionChosen, Dialog dialog, final View view){
+
+        MapView mapView = (MapView) view.findViewById(R.id.mapView);
+        MapsInitializer.initialize(this);
+
+        mapView.onCreate(dialog.onSaveInstanceState());
+        mapView.onResume();
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(final GoogleMap googleMap) {
+
+                showRecordingVizualization((int) sessionChosen.getId(), googleMap);
+            }
+        });
     }
 
     private Button.OnClickListener confirming = new Button.OnClickListener() {
@@ -150,7 +234,6 @@ public class CombinationActivity extends Activity {
                 DBHelper.updateSessionTable(sessionid, Constants.SESSION_SHOULD_BE_SENT_FLAG, Constants.SESSION_IS_COMBINED_FLAG);
 
                 //update the background data with the corresponding sessionids
-//                DBHelper.updateRecordsInSessionConcat(DBHelper.STREAM_TYPE_LOCATION, sessionid, sessionToCombineId);
                 DBHelper.updateRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, sessionid, newSessionId);
 
                 if(index == 0){
@@ -162,7 +245,7 @@ public class CombinationActivity extends Activity {
 
             referenceId += ","+sessionToCombineId;
 
-            DBHelper.hideSessionTable(sessionToCombineId, Constants.SESSION_TYPE_CHANGED);
+            DBHelper.hideSessionTable(sessionToCombineId, Constants.SESSION_TYPE_ORIGINAL_COMBINED);
             DBHelper.updateRecordsInSession(DBHelper.STREAM_TYPE_LOCATION, sessionToCombineId, newSessionId);
 
             Session session = new Session(sessionToCombineId);
@@ -229,14 +312,204 @@ public class CombinationActivity extends Activity {
 
             try {
 
-//                sessions = SessionManager.getRecentNotBeenCombinedSessions(sessionToCombineId);
+//                sessions = SessionManager.getRecentIncompleteSessions(sessionToCombineId);
                 sessions = SessionManager.getRecentToShowSessions(sessionToCombineId);
+
+                //filtered filled sessions
+                for(Session session : sessions){
+
+                    ArrayList<Annotation> annotations = session.getAnnotationsSet().getAnnotationByTag("ESM");
+                    if(annotations.size() > 0){
+
+                        sessions.remove(session);
+                    }
+                }
+
             }catch (Exception e) {
 
             }
 
             return sessions;
         }
+    }
+
+    private void showRecordingVizualization(final int sessionId, GoogleMap mGoogleMap){
+
+        //draw map
+        if (mGoogleMap!=null){
+
+            //if we're reviewing a previous session ( the trip is not ongoing), get session from the database (note that we have to use session id to check instead of a session instance)
+            if (!SessionManager.isSessionOngoing(sessionId)) {
+
+                //because there could be many points for already ended trace, so we use asynch to download the annotations
+
+                try{
+
+                    ArrayList<LatLng> points;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                        points = new LoadDataAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionId).get();
+                    else
+                        points = new LoadDataAsyncTask().execute(sessionId).get();
+
+                    if (points.size()>0){
+
+                        LatLng startLatLng  = points.get(0);
+                        LatLng endLatLng = points.get(points.size()-1);
+                        LatLng middleLagLng = points.get((points.size()/2));
+
+                        Log.d(TAG, "[test show trips] the session is not in the currently recording session");
+                        //we first need to know what visualization we want to use, then we get data for that visualization
+
+                        //show maps with path (draw polylines)
+                        showMapWithPaths(mGoogleMap, points, middleLagLng, startLatLng, endLatLng);
+                    }
+
+                } catch(InterruptedException e) {
+
+                } catch (ExecutionException e) {
+
+                }
+            }
+            //the recording is ongoing, so we periodically query the database to show the latest path
+            else {
+
+                try{
+
+                    //get location points to draw on the map..
+                    ArrayList<LatLng> points = getLocationPointsToDrawOnMap(sessionId);
+
+                    //we use endLatLng, which is the user's current location as the center of the camera
+                    LatLng startLatLng, endLatLng;
+
+                    //only has one point
+                    if (points.size()==1){
+
+                        startLatLng  = points.get(0);
+                        endLatLng = points.get(0);
+
+                        showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
+                    }
+                    //when have multiple locaiton points
+                    else if (points.size()>1) {
+
+                        startLatLng  = points.get(0);
+                        endLatLng = points.get(points.size()-1);
+
+                        showMapWithPathsAndCurLocation(mGoogleMap, points, endLatLng);
+                    }
+
+                }catch (IllegalArgumentException e){
+
+                }
+
+            }
+
+        }
+
+    }
+
+    public void showMapWithPaths(GoogleMap map, ArrayList<LatLng> points, LatLng cameraCenter, LatLng startLatLng, LatLng endLatLng) {
+
+        //map option
+        GoogleMapOptions options = new GoogleMapOptions();
+        options.tiltGesturesEnabled(false);
+        options.rotateGesturesEnabled(false);
+
+        //center the map
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(cameraCenter, 13));
+
+        //draw linges between points and add end and start points
+        PolylineOptions pathPolyLineOption = new PolylineOptions().color(Color.RED).geodesic(true);
+        pathPolyLineOption.addAll(points);
+
+        //draw lines
+        Polyline path = map.addPolyline(pathPolyLineOption);
+
+        //after getting the start and ened point of location trace, we put a marker
+        map.addMarker(new MarkerOptions().position(startLatLng).title("Start"))
+                .setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        map.addMarker(new MarkerOptions().position(endLatLng).title("End"));
+
+    }
+
+    public ArrayList<LatLng> getLocationPointsToDrawOnMap(int sessionId) {
+
+        ArrayList<LatLng> points = new ArrayList<>();
+
+        //get data from the database
+        ArrayList<String> data = DataHandler.getDataBySession(sessionId, DBHelper.STREAM_TYPE_LOCATION);
+        Log.d(TAG, "[test show trip] getLocationPointsToDrawOnMap get data:" + data.size() + "rows");
+
+        for (int i=0; i<data.size(); i++){
+
+            String[] record = data.get(i).split(Constants.DELIMITER);
+
+            double lat = Double.parseDouble(record[2]);
+            double lng = Double.parseDouble(record[3]);
+
+            points.add(new LatLng(lat, lng));
+        }
+
+        return points;
+    }
+
+    public void showMapWithPathsAndCurLocation(GoogleMap map, ArrayList<LatLng> points, LatLng curLoc) {
+
+        map.clear();
+
+        //map option
+        GoogleMapOptions options = new GoogleMapOptions();
+        options.tiltGesturesEnabled(false);
+        options.rotateGesturesEnabled(false);
+
+        //get current zoom level
+        float zoomlevel = map.getCameraPosition().zoom;
+
+        //center the map
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
+
+        Marker me =  map.addMarker(new MarkerOptions()
+                .position(curLoc)
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.mylocation))
+
+        );
+
+        //draw linges between points and add end and start points
+        PolylineOptions pathPolyLineOption = new PolylineOptions().color(Color.RED).geodesic(true);
+        pathPolyLineOption.addAll(points);
+
+        //draw lines
+        Polyline path = map.addPolyline(pathPolyLineOption);
+
+    }
+
+    //use Asynk task to load sessions
+    private class LoadDataAsyncTask extends AsyncTask<Integer, Void, ArrayList<LatLng>> {
+
+        @Override
+        protected ArrayList<LatLng> doInBackground(Integer... params) {
+
+            int sessionId = params[0];
+            ArrayList<LatLng> points = getLocationPointsToDrawOnMap(sessionId);
+
+            return points;
+        }
+
+        // can use UI thread here
+        @Override
+        protected void onPreExecute() {
+            //Log.d(TAG, "[test show trip] onPreExecute ");
+        }
+
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(ArrayList<LatLng> points) {
+            super.onPostExecute(points);
+
+            Log.d(TAG, "[test show trip] in onPostExecute, the poitns obtained are : " + points.size());
+        }
+
     }
 
 }
