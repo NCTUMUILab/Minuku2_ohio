@@ -175,6 +175,7 @@ public class Constants {
 
     public static final String HELP_URL = "http://u.osu.edu/dailymobilitystudy/";
 
+    public static final String IS_COMBINED_IDENTIFIER = "IsCombinedIdentifier";
 
     public static final String INTERVAL_SAMPLE = "INTERVAL_SAMPLE";
 

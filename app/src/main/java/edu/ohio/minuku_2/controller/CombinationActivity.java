@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -12,9 +13,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckedTextView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -105,7 +108,6 @@ public class CombinationActivity extends Activity {
 
                 CheckedTextView chkItem = (CheckedTextView) view.findViewById(R.id.check1);
                 chkItem.setChecked(!chkItem.isChecked());
-//                listShow.set(position, chkItem.isChecked());
 
                 Session sessionChosen = mSessions.get(position);
 
@@ -117,9 +119,10 @@ public class CombinationActivity extends Activity {
 
                     try{
 
-                        sessionPosList.remove(position);
+                        //the position is not reliable for the index of list
+                        //int != Integer
+                        sessionPosList.remove(Integer.valueOf(position));
                     }catch (Exception e){
-
                     }
                 }
 
@@ -141,7 +144,12 @@ public class CombinationActivity extends Activity {
                 DBHelper.insertActionLogTable(ScheduleAndSampleManager.getCurrentTimeInMillis(), "List - trip to combine - long click to be show the map sessionid : "+sessionChosen.getId() + " - sessionid : " +sessionToCombineId);
 
                 builder.setView(layout)
-                        .setPositiveButton(getResources().getString(R.string.confirm), null);
+                        .setPositiveButton(getResources().getString(R.string.closemap), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        });
 
                 final AlertDialog mAlertDialog = builder.create();
                 mAlertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
@@ -152,8 +160,12 @@ public class CombinationActivity extends Activity {
                         showMapInDialog(sessionChosen, mAlertDialog, layout);
                     }
                 });
-
                 mAlertDialog.show();
+
+                final Button positiveButton = mAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) positiveButton.getLayoutParams();
+                layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                positiveButton.setLayoutParams(layoutParams);
 
                 return true;
             }
@@ -266,6 +278,9 @@ public class CombinationActivity extends Activity {
 
             Toast.makeText(CombinationActivity.this, getResources().getString(R.string.reminder_trips_combined_successfully), Toast.LENGTH_SHORT).show();
 
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra(Constants.IS_COMBINED_IDENTIFIER, true);
+            setResult(Activity.RESULT_OK, resultIntent);
             finish();
         }
     };

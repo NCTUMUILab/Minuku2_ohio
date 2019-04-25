@@ -30,11 +30,12 @@
     <string name="cancel">cancel</string>
     <string name="confirm">confirm</string>
 
+    <string name="closemap">Close Map</string>
+
     <string name="log_in_title">Please enter your Confirmation # and Contact Email below.</string>
     <string name="log_in_confirmation_number_hint">Confirmation #</string>
     <string name="log_in_contact_email_hint">Contact Email</string>
 
-    <string name="page_annotate_session_duration_time">Time: </string>
     <string name="page_annotate_session_duration_time_till_unknown"> - Unknown</string>
     <string name="page_annotate_session_duration_time_till_now"> - Now</string>
 

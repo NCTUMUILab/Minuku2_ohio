@@ -27,8 +27,9 @@
         android:layout_height="wrap_content"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
+        android:paddingTop="16dp"
         android:text="Press and hold on a trip to see your route. Please note that you cannot combine trips that have already been submitted."
-        android:textSize="12sp" />
+        android:textSize="14sp" />
 
     <!-- empty view -->
     <LinearLayout
