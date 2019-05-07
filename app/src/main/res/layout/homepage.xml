@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:paddingRight="30dp"
-            android:text="v2.0.4"
+            android:text="v1.0.4"
             android:textColor="#ffffff"
             android:textSize="14sp" />
 
