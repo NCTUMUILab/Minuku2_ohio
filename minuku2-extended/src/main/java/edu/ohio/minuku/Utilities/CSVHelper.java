@@ -39,6 +39,7 @@ public class CSVHelper {
     public static final String CSV_CHECK_XML_WIFI_PROCESS_ALIVE = "CheckXmlWifiProcessAlive.csv";
 
     public static final String CSV_TRANSPORTATIONMODE= "TransportationMode.csv";
+    public static final String CSV_CHECK_TRANSPORTATION = "CheckTransportationMode.csv";
 
     public static final String CSV_SERVER_DATA_STATE = "ServerDataState.csv";
     public static final String CSV_UserInteract = "UserInteraction.csv";
@@ -49,6 +50,8 @@ public class CSVHelper {
     public static final String CSV_ALARM_SETTING = "Alarm_setting.csv";
     public static final String CSV_RESET_INTERVALSAMPLES_CHECK = "ResetIntervalSamples_check.csv";
     public static final String CSV_Interval_Samples_Times = "Interval_Samples_Times.csv";
+
+    public static final String CSV_AR_DATA = "ARdata.csv";
 
     public static CSVWriter csv_writer = null;
 
@@ -414,6 +417,39 @@ public class CSVHelper {
 
         }catch (IOException e){
             e.printStackTrace();
+        }
+    }
+
+    public static void windowDataCSV(String sFileName, ArrayList<ActivityRecognitionDataRecord> windowData){
+
+        try{
+
+            File root = new File(Environment.getExternalStorageDirectory() + Constants.PACKAGE_DIRECTORY_PATH);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+
+            //Log.d(TAG, "root : " + root);
+
+            csv_writer = new CSVWriter(new FileWriter(Environment.getExternalStorageDirectory()+Constants.PACKAGE_DIRECTORY_PATH+sFileName,true));
+
+            List<String[]> data = new ArrayList<String[]>();
+
+            for(ActivityRecognitionDataRecord eachWindowData : windowData){
+
+                data.add(new String[]{eachWindowData.getMostProbableActivity().toString(),
+                        eachWindowData.getProbableActivities().toString(),
+                        String.valueOf(eachWindowData.getDetectedtime()), eachWindowData.getSessionid()});
+            }
+
+            csv_writer.writeAll(data);
+
+            csv_writer.close();
+
+        }catch (IOException e){
+            //e.printStackTrace();
+        }catch (Exception e){
+            //e.printStackTrace();
         }
     }
 

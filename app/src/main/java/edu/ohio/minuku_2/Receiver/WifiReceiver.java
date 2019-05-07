@@ -81,8 +81,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
     public Context context;
 
-    private String versionNumber = "v1.0.3";
-    private String wavesNumber = "3";
+    private String versionNumber = "v1.0.4";
+    private String wavesNumber = "5";
 
     public static final int HTTP_TIMEOUT = 10 * (int) Constants.MILLISECONDS_PER_SECOND;
     public static final int SOCKET_TIMEOUT = 20 * (int) Constants.MILLISECONDS_PER_SECOND;
@@ -104,6 +104,7 @@ public class WifiReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, Intent intent) {
 
         Log.d(TAG, "onReceive");
+        CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "onReceive");
 
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
@@ -136,6 +137,7 @@ public class WifiReceiver extends BroadcastReceiver {
         if (Constants.CONNECTIVITY_CHANGE.equals(intent.getAction())) {
 
             Log.d(TAG, "firstConnect : "+firstConnect);
+            CSVHelper.storeToCSV(CSVHelper.CSV_CHECK_DATAUPLOADED, "firstConnect : "+firstConnect);
 
             //activeNetwork may return null if there's no default Internet
             if (activeNetwork != null &&
@@ -605,6 +607,11 @@ public class WifiReceiver extends BroadcastReceiver {
                 return "short";
             case Constants.SESSION_TYPE_CHANGED:
                 return "changed";
+            case Constants.SESSION_TYPE_ORIGINAL_COMBINED:
+                return "orig_comb";
+            case Constants.SESSION_TYPE_ORIGINAL_SPLIT:
+                return "orig_split";
+
         }
         return "original";
     }

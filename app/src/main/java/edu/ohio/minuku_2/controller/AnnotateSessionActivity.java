@@ -194,9 +194,9 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
 
                             try {
 
-                                //TODO add the information to show they are from the same trip.
+                                //add the information to show they are from the same trip.
                                 //keep the original one hided
-                                DBHelper.hideSessionTable(mSessionId, Constants.SESSION_TYPE_CHANGED);
+                                DBHelper.hideSessionTable(mSessionId, Constants.SESSION_TYPE_ORIGINAL_SPLIT);
 
                                 //update the session into two different sessions
                                 Session lastSession = SessionManager.getLastSession();
@@ -405,7 +405,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
     public void initAnnotationView(){
 
         initQuestionnaire();
-
     }
 
     private void showRecordingVizualization(final int sessionId, GoogleMap mGoogleMap){
@@ -527,7 +526,6 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         Marker me =  map.addMarker(new MarkerOptions()
                 .position(curLoc)
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.mylocation))
-
         );
 
         //draw linges between points and add end and start points
@@ -803,13 +801,13 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT_DATE_TEXT_HOUR_MIN_AMPM);
 
         if (endTime==0){
-            time.setText( getResources().getString(R.string.page_annotate_session_duration_time) + ScheduleAndSampleManager.getTimeString(startTime, sdf) + getResources().getString(R.string.page_annotate_session_duration_time_till_unknown) );
+            time.setText( ScheduleAndSampleManager.getTimeString(startTime, sdf) + getResources().getString(R.string.page_annotate_session_duration_time_till_unknown) );
         } else {
 
             if (SessionManager.isSessionOngoing(mSessionId))
-                time.setText( getResources().getString(R.string.page_annotate_session_duration_time) + ScheduleAndSampleManager.getTimeString(startTime, sdf) + getResources().getString(R.string.page_annotate_session_duration_time_till_now)  );
+                time.setText( ScheduleAndSampleManager.getTimeString(startTime, sdf) + getResources().getString(R.string.page_annotate_session_duration_time_till_now)  );
             else
-                time.setText( getResources().getString(R.string.page_annotate_session_duration_time) + ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - " + ScheduleAndSampleManager.getTimeString(endTime, sdf)  );
+                time.setText( ScheduleAndSampleManager.getTimeString(startTime, sdf) + " - " + ScheduleAndSampleManager.getTimeString(endTime, sdf)  );
         }
 
         //Log.d(TAG,"[test show trip] setting time label" + time.getText().toString());
@@ -840,6 +838,7 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
         }
     };
 
+    public final int COMBINE_FLAG = 16;
     private Button.OnClickListener combining = new Button.OnClickListener() {
         public void onClick(View v) {
 
@@ -851,11 +850,28 @@ public class AnnotateSessionActivity extends Activity implements OnMapReadyCallb
             mBundle.putInt("Sessionid", mSessionId);
             intent.putExtras(mBundle);
 
-            startActivity(intent);
+            startActivityForResult(intent, COMBINE_FLAG);
 
-            AnnotateSessionActivity.this.finish();
+            //do on activity result
+//            AnnotateSessionActivity.this.finish();
         }
     };
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case (COMBINE_FLAG) : {
+                if (resultCode == Activity.RESULT_OK) {
+                    boolean isCombined = data.getBooleanExtra(Constants.IS_COMBINED_IDENTIFIER, false);
+
+                    if(isCombined)
+                        AnnotateSessionActivity.this.finish();
+                }
+                break;
+            }
+        }
+    }
 
     private Button.OnClickListener deleting = new Button.OnClickListener() {
         public void onClick(View v) {

@@ -656,9 +656,35 @@ public class SessionManager {
 
 
         //query//get sessions between the starTime and endTime
-        ArrayList<String> res =  DBHelper.queryToShowSessionsBetweenTimes(queryStartTime, queryEndTime, sessionid);
+        ArrayList<String> res = DBHelper.queryToShowSessionsBetweenTimes(queryStartTime, queryEndTime, sessionid);
 
         Log.d(TAG, "[show split trip]  getRecentSessions get res : " +  res.size());
+
+        //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
+        for (int i=0; i<res.size() ; i++) {
+
+            Session session = convertStringToSession(res.get(i));
+            sessions.add(session);
+        }
+
+        return sessions;
+    }
+
+    public static ArrayList<Session> getRecentIncompleteSessions(int sessionid) {
+
+        ArrayList<Session> sessions = new ArrayList<Session>();
+
+        long queryEndTime = ScheduleAndSampleManager.getCurrentTimeInMillis();
+        //start time = a specific hours ago
+        long queryStartTime = ScheduleAndSampleManager.getCurrentTimeInMillis() - Constants.MILLISECONDS_PER_HOUR * SESSION_DISPLAY_RECENCY_THRESHOLD_HOUR;
+
+        //Log.d(TAG, " [test show trip] going to query session between " + ScheduleAndSampleManager.getTimeString(queryStartTime) + " and " + ScheduleAndSampleManager.getTimeString(queryEndTime) );
+
+
+        //query, get sessions between the starTime and endTime
+        ArrayList<String> res = DBHelper.queryToShowIncompleteSessionsBetweenTimes(queryStartTime, queryEndTime, sessionid);
+
+        Log.d(TAG, "[show split trip] getRecentSessions get res : " +  res.size());
 
         //we start from 1 instead of 0 because the 1st session is the background recording. We will skip it.
         for (int i=0; i<res.size() ; i++) {

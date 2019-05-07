@@ -883,7 +883,46 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         return rows;
+    }
 
+    public static ArrayList<String> queryToShowIncompleteSessionsBetweenTimes(long startTime, long endTime, int sessionid) {
+
+        ArrayList<String> rows = new ArrayList<String>();
+
+        try{
+
+            SQLiteDatabase db = DBManager.getInstance().openDatabase();
+            String sql = "SELECT *"  +" FROM " + SESSION_TABLE_NAME +
+                    " where " + COL_SESSION_START_TIME + " > " + startTime + " and " +
+                    COL_SESSION_START_TIME + " < " + endTime + " and " +
+//                    COL_SESSION_TYPE+ " = 1" + " and " +
+                    COL_ID + " <> " + sessionid +
+//                    " and " + COL_SESSION_ANNOTATION_SET + " IS NULL " +
+                    " order by " + COL_SESSION_START_TIME + " DESC ";
+
+            //Log.d(TAG, "test combine [querySessionsBetweenTimes] the query statement is " +sql);
+
+            Cursor cursor = db.rawQuery(sql, null);
+            int columnCount = cursor.getColumnCount();
+            while(cursor.moveToNext()){
+
+                String curRow = "";
+                for (int i=0; i<columnCount; i++){
+
+                    curRow += cursor.getString(i)+ Constants.DELIMITER;
+                }
+                rows.add(curRow);
+            }
+            cursor.close();
+           //Log.d(TAG,"cursor.getCount : "+cursor.getCount());
+
+            DBManager.getInstance().closeDatabase();
+
+        }catch (Exception e){
+
+        }
+
+        return rows;
     }
 
     public static ArrayList<String> querySessionsBetweenTimes(long startTime, long endTime, int sessionid) {
@@ -1686,7 +1725,7 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(COL_SESSION_SENTORNOT_FLAG, toBeSent);
             values.put(COL_SESSION_COMBINEDORNOT_FLAG, isCombined);
             values.put(COL_SESSION_TO_SHOW, false);
-            values.put(COL_SESSION_TYPE, Constants.SESSION_TYPE_CHANGED);
+            values.put(COL_SESSION_TYPE, Constants.SESSION_TYPE_ORIGINAL_COMBINED);
 
             db.update(SESSION_TABLE_NAME, values, where, null);
 
