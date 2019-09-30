@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
 //            boolean isFinalButtonClicked = sharedPrefs.getBoolean("finalButtonClicked", false);
 
-            String finalButtonText = "PART C\n20 minutes";
+            String finalButtonText = "PART C\n(Final 20min Survey)";
             Spannable spannable = new SpannableString(finalButtonText);
             spannable.setSpan(new StyleSpan(Typeface.NORMAL), 0, 6,Spannable.SPAN_INCLUSIVE_INCLUSIVE);
             spannable.setSpan(new RelativeSizeSpan(0.5f), 7, finalButtonText.length(),Spannable.SPAN_INCLUSIVE_INCLUSIVE);
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
 
 //            boolean isFinalButtonClicked = sharedPrefs.getBoolean("finalButtonClicked", false);
             //TODO check the word looks like
-            String finalButtonText = "PART C\n20 minutes";
+            String finalButtonText = "PART C\n(Final 20min Survey)";
             Spannable spannable = new SpannableString(finalButtonText);
             spannable.setSpan(new StyleSpan(Typeface.NORMAL), 0, 6,Spannable.SPAN_INCLUSIVE_INCLUSIVE);
             spannable.setSpan(new RelativeSizeSpan(0.5f), 7, finalButtonText.length(),Spannable.SPAN_INCLUSIVE_INCLUSIVE);

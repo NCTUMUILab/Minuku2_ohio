@@ -351,6 +351,7 @@ public class MinukuStreamManager implements StreamManager {
                         lastSession.setLongEnough(isSessionLongEnough);
 
                         if(!isSessionLongEnough) {
+
                             lastSession.setType(Constants.SESSION_TYPE_SHORT);
                             lastSession.setToShow(false);
                         }else{
