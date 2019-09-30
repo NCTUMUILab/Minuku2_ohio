@@ -99,7 +99,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:gravity="center"
-            android:text="Please do not uninstall the app until you receive an email confirmation."
+            android:text="Please do not uninstall the app until you receive an email confirmation or 72 hours after finishing Part C."
             android:textColor="#ffffff"
             android:textSize="26sp" />
 

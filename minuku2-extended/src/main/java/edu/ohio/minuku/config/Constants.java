@@ -140,7 +140,8 @@ public class Constants {
     public static final String NOTIFICATION_TEXT_NEW_TRIPS = " New Trips";
     public static final String NOTIFICATION_TEXT_FINAL_DAY_PLUS_1_WITH_TRIPS = "Your final trips are available now.";
     public static final String NOTIFICATION_TEXT_FINAL_DAY_PLUS_1_WITHOUT_TRIPS = "Part C will become available tomorrow.";
-    public static final String NOTIFICATION_TEXT_AFTER_FINAL_DAY_PLUS_1 = "Part C is available today and lasts 20 mins.";
+    public static final String NOTIFICATION_TEXT_AFTER_FINAL_DAY_PLUS_1 = "Complete Part C once and connect to Wi-Fi.";
+//    Part C is available today and lasts 20 mins.
     public static final String NOTIFICATION_TEXT_AFTER_FINAL_DAY_PLUS_1_WAIT_DATA_TRANSFER
             = "Connect your phone to WiFi to finish the study.";
 
