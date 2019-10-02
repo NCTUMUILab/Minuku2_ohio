@@ -83,8 +83,8 @@ public class WifiReceiver extends BroadcastReceiver {
 
     //P.S. v1.0.4 is for v8
     //P.S. v2.0.4 is for v9
-    private String versionNumber = "v1.0.4";
-    private String wavesNumber = "13";
+    private String versionNumber = "v2.0.4";
+    private String wavesNumber = "14";
 
     public static final int HTTP_TIMEOUT = 10 * (int) Constants.MILLISECONDS_PER_SECOND;
     public static final int SOCKET_TIMEOUT = 20 * (int) Constants.MILLISECONDS_PER_SECOND;
